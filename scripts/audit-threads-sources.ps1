@@ -1,28 +1,27 @@
 <#
 .SYNOPSIS
-    Refresh the Facebook-family source census and report every way the sources moved.
+    Refresh the Threads source census and report every way the sources moved.
 
 .DESCRIPTION
     Holds sources/threads-sources.json to what the indexes and the forges say today, and changes
     nothing but dates. It reads:
 
-    - the official Morphe patch bundle's patches-list.json, which has shipped no Facebook-family
-      patch so far;
+    - the official Morphe patch bundle's patches-list.json, which has shipped no Threads patch so
+      far;
     - the Morphe community directory, Awesome Morphe, the Morphe Patch Tracker and Jman's bundle
-      index, for every bundle that targets com.facebook.katana, com.facebook.orca or
-      com.facebook.lite, and for whether HushThreads is listed on each, plus the Morphe Archive for
-      HushThreads's own listing;
-    - GitHub code search for the three package names in patch lists, patch code and Xposed hooks,
+      index, for every bundle that targets com.instagram.barcelona, and for whether HushThreads is
+      listed on each, plus the Morphe Archive for HushThreads's own listing;
+    - GitHub code search for the Threads package name in patch lists, patch code and Xposed hooks,
       with the two archive mirrors mapped back to the repositories they copied, and GitLab code
       search when GITLAB_TOKEN is set and -SkipGitLabCodeSearch isn't passed;
     - every ledger source's repository, licence, branches and forks. A source with watchPaths is
       read through the newest commit that touched those paths, so a busy multi-app repository only
-      counts as moved when its Facebook-family code did.
+      counts as moved when its Threads code did.
 
     A repository the ledger doesn't know is an addition, unless every file code search found in it
     is byte for byte a file the ledger already holds (the same git blob id), which makes it a copy
     of that lineage: it's reported under that lineage and not counted again. A removed or changed
-    licence, a branch head that moved or a new branch with Facebook-family work, a fork the ledger
+    licence, a branch head that moved or a new branch with Threads work, a fork the ledger
     hasn't seen, a recorded fork or out-of-scope repository an index lists as a bundle of its own, a
     repository that's gone, renamed or archived, and a listing that changed are the other findings.
     Any finding, or a source that couldn't be read, writes the report and exits 1 with the ledger
@@ -318,7 +317,7 @@ $candidates = @{}
 function Add-Candidate {
     <#
         Packages are what an index says a bundle targets. Code search only proves a file names the
-        package, which a Messenger patch opening Facebook does too, so its packages are Mentions.
+        package, which an Instagram patch that opens Threads links does too, so its packages are Mentions.
     #>
     param([string]$Key, [string]$Source, [string[]]$Packages, [string[]]$Mentions, [string]$Path, [string]$Blob, [string[]]$Features)
     if (-not $Key) { return }
@@ -390,7 +389,7 @@ Invoke-Source 'official Morphe bundle' {
             -Detail ("the official bundle now patches [" + ($found -join ', ') + "], the ledger records [" + ($recorded -join ', ') + ']') `
             -Evidence ([ordered]@{ added = $added; dropped = $dropped })
     }
-    "$(@((Get-JsonItems $list.patches)).Count) patches, Facebook-family packages: " + $(if ($found.Count) { $found -join ', ' } else { 'none' })
+    "$(@((Get-JsonItems $list.patches)).Count) patches, Threads packages: " + $(if ($found.Count) { $found -join ', ' } else { 'none' })
 }
 
 Invoke-Source 'Morphe directory' {
@@ -416,7 +415,7 @@ Invoke-Source 'Morphe directory' {
         Add-Candidate -Key $key -Source 'Morphe directory' -Packages $apps -Features $features
         $count++
     }
-    "$count Facebook-family bundles; HushThreads " + $(if ($listed['morphe-directory']) { 'listed' } else { 'not listed' })
+    "$count Threads bundles; HushThreads " + $(if ($listed['morphe-directory']) { 'listed' } else { 'not listed' })
 }
 
 Invoke-Source 'Awesome Morphe' {
@@ -431,7 +430,7 @@ Invoke-Source 'Awesome Morphe' {
         Add-Candidate -Key $key -Source 'Awesome Morphe' -Packages $apps
         $count++
     }
-    "$count Facebook-family bundles; HushThreads " + $(if ($listed['awesome-morphe']) { 'listed' } else { 'not listed' })
+    "$count Threads bundles; HushThreads " + $(if ($listed['awesome-morphe']) { 'listed' } else { 'not listed' })
 }
 
 Invoke-Source 'Morphe Patch Tracker' {
@@ -448,7 +447,7 @@ Invoke-Source 'Morphe Patch Tracker' {
         Add-Candidate -Key $key -Source 'Morphe Patch Tracker' -Packages @($apps | ForEach-Object { $_.package }) -Features $features
         $seen[$key] = $true
     }
-    "$($seen.Count) Facebook-family bundles; HushThreads " + $(if ($listed['morphe-patch-tracker']) { 'listed' } else { 'not listed' })
+    "$($seen.Count) Threads bundles; HushThreads " + $(if ($listed['morphe-patch-tracker']) { 'listed' } else { 'not listed' })
 }
 
 Invoke-Source 'Jman''s bundle index' {
@@ -464,8 +463,7 @@ Invoke-Source 'Jman''s bundle index' {
     }
     $catalog = Invoke-SourceRequest -Uri 'https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/PATCH-LIST-CATALOG.md'
     if ($catalog.Status -ne 200) { throw "Jman's patch list catalog answered HTTP $($catalog.Status)." }
-    $appPackages = @{ 'facebook' = 'com.facebook.katana'; 'messenger' = 'com.facebook.orca'; 'facebook lite' = 'com.facebook.lite'
-        'com.facebook.katana' = 'com.facebook.katana'; 'com.facebook.orca' = 'com.facebook.orca'; 'com.facebook.lite' = 'com.facebook.lite' }
+    $appPackages = @{ 'threads' = 'com.instagram.barcelona'; 'com.instagram.barcelona' = 'com.instagram.barcelona' }
     $section = $null
     $found = @{}
     foreach ($line in ($catalog.Content -split "`r?`n")) {
@@ -489,12 +487,12 @@ Invoke-Source 'Jman''s bundle index' {
         $key = $byName[$sectionName.ToLowerInvariant()]
         if (-not $key) {
             Add-Finding -Kind 'index-unresolved' -Repository $null `
-                -Detail "Jman's catalog lists Facebook-family patches under '$sectionName', and bundle-sources.json names no repository for it" -Evidence $null
+                -Detail "Jman's catalog lists Threads patches under '$sectionName', and bundle-sources.json names no repository for it" -Evidence $null
             continue
         }
         Add-Candidate -Key $key -Source 'Jman''s bundle index' -Packages @($found[$sectionName].Packages.Keys) -Features @($found[$sectionName].Features)
     }
-    "$($found.Count) Facebook-family bundles; HushThreads " + $(if ($listed['jman-bundles']) { 'listed' } else { 'not listed' })
+    "$($found.Count) Threads bundles; HushThreads " + $(if ($listed['jman-bundles']) { 'listed' } else { 'not listed' })
 }
 
 Invoke-Source 'Morphe Archive' {
@@ -600,11 +598,11 @@ function Test-KnownRepository {
         $diverged = @($Blobs | Where-Object { -not $knownBlobs.ContainsKey($_) })
         if ($diverged.Count -gt 0) {
             Add-Finding -Kind 'mirror-changed' -Repository ([string]$Record.Record.repository) `
-                -Detail "a copy of $($Record.Lineage) now holds Facebook-family files the lineage doesn't" `
+                -Detail "a copy of $($Record.Lineage) now holds Threads files the lineage doesn't" `
                 -Evidence ([ordered]@{ hits = @($Candidate.Hits | Where-Object { $diverged -contains $_.blob }) })
         }
     } elseif ($Candidate.Packages.Count -gt 0) {
-        # An index listing a recorded fork or an out-of-scope repository for a Facebook-family
+        # An index listing a recorded fork or an out-of-scope repository for a Threads
         # package means it publishes a bundle of its own. The Morphe Archive keeps every fork's
         # patch list, so a fork only it lists counts for packages its entry doesn't target.
         $listers = @($Candidate.Sources | Where-Object { $_ -notlike '*code search' }) -join ', '
@@ -679,7 +677,7 @@ foreach ($copy in $collapsed) {
 
 # --- every source the ledger holds ---------------------------------------------------------------
 
-function Get-GitHubFacebookHead {
+function Get-GitHubWatchedHead {
     param([string]$Path, [string]$Branch, [string[]]$WatchPaths, [string]$Head)
     if (@($WatchPaths).Count -eq 0) { return $Head }
     $newest = $null
@@ -697,7 +695,7 @@ function Get-GitHubFacebookHead {
     return $newest.Sha
 }
 
-function Get-GitLabFacebookHead {
+function Get-GitLabWatchedHead {
     param([string]$Project, [string]$Branch, [string[]]$WatchPaths, [string]$Head)
     if (@($WatchPaths).Count -eq 0) { return $Head }
     $newest = $null
@@ -754,7 +752,7 @@ function Read-GitHubSource {
     $branches = [ordered]@{}
     foreach ($branch in $branchList.Items) {
         $branches[[string]$branch.name] = [pscustomobject]@{ Head = [string]$branch.commit.sha
-            Facebook = (Get-GitHubFacebookHead -Path $Path -Branch ([string]$branch.name) -WatchPaths $watch -Head ([string]$branch.commit.sha)) }
+            Watched = (Get-GitHubWatchedHead -Path $Path -Branch ([string]$branch.name) -WatchPaths $watch -Head ([string]$branch.commit.sha)) }
     }
     return [pscustomobject]@{ Status = 200; FullName = "github.com/$($repo.full_name)".ToLowerInvariant(); Archived = [bool]$repo.archived
         License = $license; Branches = $branches; Forks = @($forkList.Items | ForEach-Object { [string]$_.full_name }) }
@@ -785,7 +783,7 @@ function Read-GitLabSource {
     $branches = [ordered]@{}
     foreach ($branch in $branchList.Items) {
         $branches[[string]$branch.name] = [pscustomobject]@{ Head = [string]$branch.commit.id
-            Facebook = (Get-GitLabFacebookHead -Project $project -Branch ([string]$branch.name) -WatchPaths $watch -Head ([string]$branch.commit.id)) }
+            Watched = (Get-GitLabWatchedHead -Project $project -Branch ([string]$branch.name) -WatchPaths $watch -Head ([string]$branch.commit.id)) }
     }
     return [pscustomobject]@{ Status = 200; FullName = "gitlab.com/$($repo.path_with_namespace)".ToLowerInvariant(); Archived = [bool]$repo.archived
         License = $license; Branches = $branches; Forks = @($forkList.Items | ForEach-Object { [string]$_.path_with_namespace }) }
@@ -830,25 +828,25 @@ foreach ($entry in $entries) {
                 continue
             }
             $now = $live.Branches[$name]
-            if ($now.Facebook -ne [string]$pin.commit) {
+            if ($now.Watched -ne [string]$pin.commit) {
                 Add-Finding -Kind 'changed-head' -Repository $repository `
-                    -Detail ("branch $name moved from $([string]$pin.commit) to " + $(if ($now.Facebook) { $now.Facebook } else { 'no Facebook-family code' })) `
-                    -Evidence ([ordered]@{ branch = $name; pinned = [string]$pin.commit; facebookHead = $now.Facebook; head = $now.Head })
+                    -Detail ("branch $name moved from $([string]$pin.commit) to " + $(if ($now.Watched) { $now.Watched } else { 'no Threads code' })) `
+                    -Evidence ([ordered]@{ branch = $name; pinned = [string]$pin.commit; watchedHead = $now.Watched; head = $now.Head })
             }
         }
         foreach ($name in @($live.Branches.Keys)) {
             if ($pinnedNames -contains $name) { continue }
             $now = $live.Branches[$name]
-            if (-not $now.Facebook -or $pinnedCommits -contains $now.Facebook) { continue }
-            # A branch cut from a pinned one before its Facebook-family code last moved carries
+            if (-not $now.Watched -or $pinnedCommits -contains $now.Watched) { continue }
+            # A branch cut from a pinned one before its Threads code last moved carries
             # nothing new, and busy repositories keep dozens of those.
             $contained = $false
             foreach ($pinned in $pinnedCommits) {
-                if (Test-CommitContained -Where $where -Commit $now.Facebook -Within $pinned) { $contained = $true; break }
+                if (Test-CommitContained -Where $where -Commit $now.Watched -Within $pinned) { $contained = $true; break }
             }
             if (-not $contained) {
-                Add-Finding -Kind 'new-branch' -Repository $repository -Detail "branch $name carries Facebook-family work the ledger hasn't pinned" `
-                    -Evidence ([ordered]@{ branch = $name; facebookHead = $now.Facebook; head = $now.Head })
+                Add-Finding -Kind 'new-branch' -Repository $repository -Detail "branch $name carries Threads work the ledger hasn't pinned" `
+                    -Evidence ([ordered]@{ branch = $name; watchedHead = $now.Watched; head = $now.Head })
             }
         }
         $recordedForks = @(Get-SourceProperty $entry 'forks' | Where-Object { $_ } | ForEach-Object { "$_".ToLowerInvariant() })
@@ -876,7 +874,7 @@ foreach ($entry in $entries) {
                         @(Get-JsonItems $_.patches | Where-Object { -not [bool]$_.applied }).Count -eq 0 })
                 if ($proved.Count -eq 0) {
                     Add-Finding -Kind 'fixture-evidence' -Repository $repository `
-                        -Detail "the receipt $receiptUri has no unforced run of Facebook $build with every patch applied" -Evidence $null
+                        -Detail "the receipt $receiptUri has no unforced run of Threads $build with every patch applied" -Evidence $null
                 }
             }
             "receipt $([IO.Path]::GetFileName($receiptUri)) read for $(@($adopted.fixtures.builds) -join ', ')"

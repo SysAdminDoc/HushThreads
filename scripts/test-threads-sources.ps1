@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Hold the Facebook-family source ledger and its audit to their rules, with no network.
+    Hold the Threads source ledger and its audit to their rules, with no network.
 
 .DESCRIPTION
     The checked-in ledger has to keep every rule of scripts/threads-sources.ps1, and
@@ -9,13 +9,15 @@
     adopted source missing its pinned commit, compatible licence, NOTICE entry, provenance rule or
     two-fixture evidence, an unlicensed or contaminated source that isn't behavior-only, a
     provenance rule crediting a source the ledger doesn't allow, an index with no listing record.
-    The census is held to its 14 days on both sides of the line.
+    The checked-in ledger adopts nothing and holds no behavior-only source, so the copy gets an
+    adopted, an unlicensed and a contaminated fixture source for those rules to bite on. The census
+    is held to its 14 days on both sides of the line.
 
     scripts/audit-threads-sources.ps1 then runs against a stand-in for every forge and index it
     reads, so nothing here touches the network: a request the stand-in doesn't know fails the case.
     A clean run stamps only dates and collapses a byte-for-byte copy into its lineage; an addition
     from an index or code search, a removed licence, a moved branch head, a new branch with
-    Facebook-family work, an unseen fork, a repository that's gone and a changed listing each exit
+    Threads work, an unseen fork, a repository that's gone and a changed listing each exit
     1 with the ledger untouched. Through all of it the audit writes nothing but its report and the
     ledger's dates, and a parse of its source finds nothing that clones, downloads to disk or
     copies files, with a copy that does each of those as the proof the parse can see them.
@@ -72,15 +74,49 @@ $ledger = Read-SourceLedger -Path $ledgerPath
 $checkedIn = Test-SourceLedger -Ledger $ledger -Root $Root
 Assert-True $checkedIn.Valid ("The checked-in ledger breaks its rules: " + ($checkedIn.Problems -join ' | '))
 $entries = @($ledger.entries)
-Assert-True (@($entries | Where-Object { $_.disposition -eq 'adopted' }).Count -ge 1) `
-    'The checked-in ledger adopts nothing, so the adopted gates below would test an empty set.'
 foreach ($package in Get-SourcePackages) {
     Assert-True (@($entries | Where-Object { @($_.packages) -contains $package }).Count -gt 0) "The checked-in ledger has no $package source."
 }
 
+# Fixture sources for the rules the checked-in ledger has nothing to test with: it adopts nothing
+# and holds no unlicensed or contaminated source. The rule cases below add them to a copy, with the
+# NOTICE line and provenance rule the adopted one needs.
+$catalogBuilds = @((Get-PatchTarget -PatchList ([IO.File]::ReadAllText((Join-Path $Root 'patches-list.json')) | ConvertFrom-Json)).PackageVersions)
+Assert-True ($catalogBuilds.Count -ge 1) 'The catalog declares no Threads build, so the two-fixture cases would prove nothing.'
+# Two-fixture evidence is two builds, every declared one among them. Threads declares one, so the
+# fixture adds the build before it.
+$olderBuild = '448.0.0.54.85'
+Assert-True ($catalogBuilds -notcontains $olderBuild) "The catalog declares $olderBuild, so the fixture's second build is no second build."
+$fixtureLicenseHash = 'a' * 64
+$fixtureAdoptedRepository = 'https://github.com/fixture-owner/adopted-patches'
+$fixtureAdoptedCommit = 'ad' * 20
+$fixtureUnlicensedRepository = 'https://github.com/fixture-owner/unlicensed-module'
+function New-RuleFixtureEntry {
+    param([string]$Id, [string]$Repository, [string]$Kind, $License, [string]$Disposition, $ContaminatedBy, [string[]]$Forks)
+    return [pscustomobject][ordered]@{ id = $Id; repository = $Repository; lineage = $Id; upstream = $null; kind = $Kind
+        packages = @('com.instagram.barcelona'); targetVersions = [pscustomobject]@{ 'com.instagram.barcelona' = @($catalogBuilds[0]) }
+        features = @('Hide ads'); branches = @([pscustomobject]@{ name = 'main'; commit = ('0f' * 20) }); watchPaths = @()
+        license = $License; contaminatedBy = $ContaminatedBy; disposition = $Disposition; reason = 'A fixture source.'; archived = $false
+        forks = @($Forks); contentHashes = @(); mirrors = @(); lastChecked = '2026-09-01' }
+}
+function Add-RuleFixtures {
+    param($Copy)
+    $adopted = New-RuleFixtureEntry 'fixture-adopted' $fixtureAdoptedRepository 'morphe-patches' `
+        ([pscustomobject]@{ spdx = 'GPL-3.0'; url = "$fixtureAdoptedRepository/blob/main/LICENSE"; sha256 = $fixtureLicenseHash }) 'adopted' $null @()
+    $adopted | Add-Member -NotePropertyName adopted -NotePropertyValue ([pscustomobject]@{ commit = $fixtureAdoptedCommit
+        fixtures = [pscustomobject]@{ receipt = 'https://github.com/SysAdminDoc/HushThreads/releases/download/v9.9.9/release-receipt-9.9.9.json'
+            builds = @($catalogBuilds + $olderBuild) } })
+    $unlicensed = New-RuleFixtureEntry 'fixture-unlicensed' $fixtureUnlicensedRepository 'xposed-module' $null 'behavior-only' $null @('someone/unlicensed-module')
+    $contaminated = New-RuleFixtureEntry 'fixture-contaminated' 'https://github.com/fixture-owner/contaminated-patches' 'morphe-patches' `
+        ([pscustomobject]@{ spdx = 'GPL-3.0'; url = 'https://github.com/fixture-owner/contaminated-patches/blob/main/LICENSE'; sha256 = $fixtureLicenseHash }) `
+        'behavior-only' ([pscustomobject]@{ source = $fixtureUnlicensedRepository; evidence = 'https://github.com/fixture-owner/contaminated-patches/issues/1' }) @()
+    $Copy.entries = @(@($Copy.entries) + $adopted + $unlicensed + $contaminated)
+    return $Copy
+}
+
 # docs/sources.md is the readable version of the ledger. A source it links has to be one the
-# ledger knows, and a behavior-only source can never be described as portable: the line that
-# said NexAlloy's Facebook code could be ported with credit is what this item started from.
+# ledger knows, and a behavior-only source can never be described as portable, which prose alone
+# can't stop: a sibling's docs once called a port of an unlicensed module portable with credit.
 $known = @{}
 foreach ($entry in $entries) {
     $known[(ConvertTo-SourceKey $entry.repository)] = $entry
@@ -96,8 +132,16 @@ foreach ($index in @($ledger.indexes)) {
         if ($indexKey) { $known[$indexKey] = $index }
     }
 }
+# The family repositories HushThreads was built from aren't ledger entries. provenance.json names
+# them as the upstream of the files taken from them, and that record is what lets the page link them.
+foreach ($rule in @(([IO.File]::ReadAllText((Join-Path $Root 'provenance.json')) | ConvertFrom-Json).rules)) {
+    foreach ($address in @(@($rule.upstream) + @($rule.via) | Where-Object { $_ })) {
+        $ruleKey = ConvertTo-SourceKey $address
+        if ($ruleKey) { $known[$ruleKey] = $rule }
+    }
+}
 function Test-SourcesDoc {
-    param([string]$Text)
+    param([string]$Text, $Entries = $entries)
     $problems = New-Object System.Collections.Generic.List[string]
     foreach ($match in [regex]::Matches($Text, 'https://(?:github\.com|gitlab\.com)/[A-Za-z0-9_.\-/]+')) {
         $key = ConvertTo-SourceKey ($match.Value.TrimEnd('.', ')'))
@@ -106,7 +150,7 @@ function Test-SourcesDoc {
     $portable = '(?i)\b(can be ported|ported with credit|port(ed)? it with credit|can be copied|copy its code)\b'
     foreach ($line in ($Text -split "`r?`n")) {
         if ($line -notmatch $portable) { continue }
-        foreach ($entry in $entries | Where-Object { $_.disposition -eq 'behavior-only' }) {
+        foreach ($entry in $Entries | Where-Object { $_.disposition -eq 'behavior-only' }) {
             if ($line.IndexOf([string]$entry.repository, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
                 $problems.Add("docs/sources.md calls $($entry.repository) portable, and the ledger says behavior-only: $line")
             }
@@ -117,13 +161,12 @@ function Test-SourcesDoc {
 $sourcesDoc = [IO.File]::ReadAllText((Join-Path $Root 'docs/sources.md'))
 $docProblems = @(Test-SourcesDoc $sourcesDoc)
 Assert-True ($docProblems.Count -eq 0) ($docProblems -join ' | ')
-$nexalloy = @($entries | Where-Object { $_.id -eq 'nexalloy' })[0]
-Assert-True ($null -ne $nexalloy -and $nexalloy.disposition -eq 'behavior-only' -and $null -ne $nexalloy.contaminatedBy) `
-    'The ledger no longer holds NexAlloy as contaminated and behavior-only.'
-$oldLine = "- [gnadgnaoh/NexAlloy-XES]($($nexalloy.repository)) (GPL-3.0) ports those hooks. Its code can be ported with credit."
-Assert-True (@(@(Test-SourcesDoc ($sourcesDoc + "`n" + $oldLine)) -like '*calls*portable*').Count -gt 0) `
-    'A docs line calling NexAlloy''s code portable passed the check.'
-Assert-True (@(@(Test-SourcesDoc ($sourcesDoc + "`nSee https://github.com/unknown-owner/new-facebook-patches.")) -like '*unknown-owner*').Count -gt 0) `
+$docEntries = @((Add-RuleFixtures (Copy-Json $ledger)).entries)
+$contaminated = @($docEntries | Where-Object { $_.id -eq 'fixture-contaminated' })[0]
+$oldLine = "- [fixture-owner/contaminated-patches]($($contaminated.repository)) (GPL-3.0) ports those hooks. Its code can be ported with credit."
+Assert-True (@(@(Test-SourcesDoc ($sourcesDoc + "`n" + $oldLine) $docEntries) -like '*calls*portable*').Count -gt 0) `
+    'A docs line calling a contaminated source''s code portable passed the check.'
+Assert-True (@(@(Test-SourcesDoc ($sourcesDoc + "`nSee https://github.com/unknown-owner/new-threads-patches.")) -like '*unknown-owner*').Count -gt 0) `
     'A docs link to a source the ledger doesn''t know passed the check.'
 
 Write-Host '[sources] the checked-in ledger and docs/sources.md keep their rules'
@@ -135,10 +178,18 @@ New-Item -ItemType Directory -Path $rulesRoot -Force | Out-Null
 foreach ($name in @('NOTICE', 'provenance.json', 'patches-list.json')) {
     Copy-Item -LiteralPath (Join-Path $Root $name) -Destination (Join-Path $rulesRoot $name)
 }
+# What the fixture adopted source needs outside the ledger: its NOTICE line and its ported rule.
+[IO.File]::AppendAllText((Join-Path $rulesRoot 'NOTICE'), "`n  fixture  $fixtureAdoptedRepository`n")
+$rulesProvenance = [IO.File]::ReadAllText((Join-Path $rulesRoot 'provenance.json')) | ConvertFrom-Json
+$rulesProvenance.rules = @(@($rulesProvenance.rules) + [pscustomobject]@{ paths = @('patches/fixture/**'); origin = 'ported'
+    upstream = $fixtureAdoptedRepository; commit = $fixtureAdoptedCommit; license = 'GPL-3.0'; via = @() })
+[IO.File]::WriteAllText((Join-Path $rulesRoot 'provenance.json'), ($rulesProvenance | ConvertTo-Json -Depth 10))
+$ruleLedger = Add-RuleFixtures (Copy-Json $ledger)
+$ruleEntries = @($ruleLedger.entries)
 $today = [datetime]::UtcNow.Date.ToString('yyyy-MM-dd')
 function Test-Broken {
     param([scriptblock]$Break, [string]$Pattern, [string]$Message, [scriptblock]$BreakRoot)
-    $copy = Copy-Json $ledger
+    $copy = Copy-Json $ruleLedger
     & $Break $copy
     $savedNotice = [IO.File]::ReadAllText((Join-Path $rulesRoot 'NOTICE'))
     $savedProvenance = [IO.File]::ReadAllText((Join-Path $rulesRoot 'provenance.json'))
@@ -154,10 +205,10 @@ function Test-Broken {
         "$Message It was refused, but not for that: $($result.Problems -join ' | ')"
 }
 function Get-Entry { param($Copy, [string]$Id) return @($Copy.entries | Where-Object { $_.id -eq $Id })[0] }
-$adoptedId = [string]@($entries | Where-Object { $_.disposition -eq 'adopted' })[0].id
-$adoptedRepository = [string](Get-Entry $ledger $adoptedId).repository
+$adoptedId = [string]@($ruleEntries | Where-Object { $_.disposition -eq 'adopted' })[0].id
+$adoptedRepository = [string](Get-Entry $ruleLedger $adoptedId).repository
 
-$control = Test-SourceLedger -Ledger (Copy-Json $ledger) -Root $rulesRoot -Today $today
+$control = Test-SourceLedger -Ledger (Copy-Json $ruleLedger) -Root $rulesRoot -Today $today
 Assert-True $control.Valid ("The unchanged copy was refused, so the cases below would prove nothing: " + ($control.Problems -join ' | '))
 
 # The five things an adopted source needs.
@@ -177,10 +228,10 @@ Test-Broken { param($c) (Get-Entry $c $adoptedId).adopted.fixtures.receipt = 'ht
     'An adopted source with no release receipt'
 
 # Unlicensed or contaminated sources stay behavior-only.
-$unlicensed = [string]@($entries | Where-Object { $null -eq $_.license })[0].id
+$unlicensed = [string]@($ruleEntries | Where-Object { $null -eq $_.license })[0].id
 Test-Broken { param($c) (Get-Entry $c $unlicensed).disposition = 'candidate' } '*has no licence, so it is behavior-only*' `
     'An unlicensed source marked candidate'
-Test-Broken { param($c) (Get-Entry $c 'nexalloy').disposition = 'candidate' } '*carries code from*behavior-only*' `
+Test-Broken { param($c) (Get-Entry $c 'fixture-contaminated').disposition = 'candidate' } '*carries code from*behavior-only*' `
     'A contaminated source marked candidate'
 $licensedCandidate = [string]@($entries | Where-Object { $_.disposition -eq 'candidate' -and $null -ne $_.license })[0].id
 Test-Broken { param($c) (Get-Entry $c $licensedCandidate).license.spdx = 'CC-BY-NC-4.0' } '*can''t be combined with GPL-3.0*' `
@@ -188,7 +239,7 @@ Test-Broken { param($c) (Get-Entry $c $licensedCandidate).license.spdx = 'CC-BY-
 Test-Broken { param($c) (Get-Entry $c $unlicensed).disposition = 'adopted' } '*has no licence*' 'An unlicensed source marked adopted'
 
 # provenance.json can't credit what the ledger doesn't allow, and can't port from what isn't adopted.
-$behaviorOnly = [string]@($entries | Where-Object { $_.disposition -eq 'behavior-only' })[0].repository
+$behaviorOnly = [string]@($ruleEntries | Where-Object { $_.disposition -eq 'behavior-only' })[0].repository
 Test-Broken { param($c) } '*credits*but the ledger lists it as behavior-only*' 'A provenance rule crediting a behavior-only source' {
     $path = Join-Path $rulesRoot 'provenance.json'
     $document = [IO.File]::ReadAllText($path) | ConvertFrom-Json
@@ -199,7 +250,7 @@ Test-Broken { param($c) $e = Get-Entry $c $adoptedId; $e.disposition = 'candidat
     'A ported provenance rule from a source that isn''t adopted'
 # A recorded fork or mirror carries its entry's code, so it's held to that entry's disposition and
 # is never a porting source of its own.
-$forkedEntry = @($entries | Where-Object { $_.disposition -eq 'behavior-only' -and @($_.forks | Where-Object { $_ }).Count -gt 0 })[0]
+$forkedEntry = @($ruleEntries | Where-Object { $_.disposition -eq 'behavior-only' -and @($_.forks | Where-Object { $_ }).Count -gt 0 })[0]
 $behaviorOnlyFork = 'https://' + (ConvertTo-SourceKey $forkedEntry.repository).Split('/')[0] + '/' + @($forkedEntry.forks)[0]
 $recordedMirror = [string]@(@($entries | Where-Object { @($_.mirrors | Where-Object { $_ }).Count -gt 0 })[0].mirrors)[0].repository
 function Set-FirstRule {
@@ -218,7 +269,8 @@ Test-Broken { param($c) } '*ports files from*only as a mirror of*' 'A ported pro
 
 # The records themselves.
 Test-Broken { param($c) $c.indexes[0].hushthreads.status = '' } '*records no HushThreads listing*' 'An index with no listing record'
-Test-Broken { param($c) $i = @($c.indexes | Where-Object { $_.hushthreads.status -eq 'listed' })[0]; $i.hushthreads.url = $null } `
+# No index lists HushThreads before its first release, so the listing is made here.
+Test-Broken { param($c) $c.indexes[0].hushthreads = [pscustomobject]@{ status = 'listed'; url = $null; checked = '2026-09-25' } } `
     '*listed but records no https listing url*' 'A listing with no URL'
 Test-Broken { param($c) $c.indexes[0].hushthreads = [pscustomobject]@{ status = 'submitted'; url = 'https://example.com/issue/1' } } `
     '*submission date is not a yyyy-MM-dd date*' 'A submission with no date'
@@ -229,7 +281,12 @@ Test-Broken { param($c) $c.entries[0].lastChecked = '25/09/2026' } '*lastChecked
 Test-Broken { param($c) $c.entries[0].lastChecked = '2999-01-01' } '*lastChecked is 2999-01-01, after today*' 'A lastChecked in the future'
 Test-Broken { param($c) $c.entries[0].features = @() } '*names no features*' 'A source with no features'
 Test-Broken { param($c) $c.entries[0].targetVersions = [pscustomobject]@{} } '*records no declared target versions*' 'A source with no target versions'
-Test-Broken { param($c) $c.entries[0].packages = @('com.instagram.android') } '*not a Facebook-family package*' 'A source for another app'
+Test-Broken { param($c) $c.entries[0].packages = @('com.instagram.android') } '*names no Threads package*outOfScope*' 'An Instagram-only source'
+Test-Broken { param($c) $c.entries[0].packages = @('com.instagram.barcelona', 'com.facebook.katana') } '*neither Threads nor Instagram*' `
+    'A source for another app'
+Test-Broken { param($c) $e = @($c.entries | Where-Object { @($_.packages) -contains 'com.instagram.android' })[0]
+    $e.targetVersions = [pscustomobject]@{ 'com.instagram.android' = @('449.0.0.52.84') } } '*records no declared target versions for com.instagram.barcelona*' `
+    'A source for both apps that records only Instagram''s builds'
 Test-Broken { param($c) $c.entries[0].license = [pscustomobject]@{ spdx = 'GPL-3.0'; url = 'https://example.com/LICENSE'; sha256 = 'abc' } } `
     '*licence has no sha256*' 'A licence with no hash'
 Test-Broken { param($c) $c.entries[0].lineage = '' } '*names no lineage*' 'A source with no lineage'
@@ -303,8 +360,9 @@ New-Item -ItemType Directory -Path (Join-Path $fixtureRoot 'sources'), (Join-Pat
 # rule an adopted source needs, and the catalog whose two builds its receipt has to prove.
 Copy-Item -LiteralPath (Join-Path $Root 'patches-list.json') -Destination (Join-Path $fixtureRoot 'patches-list.json')
 $adoptedCommit = 'ad' * 20
-$declaredBuilds = @((Get-PatchTarget -PatchList ([IO.File]::ReadAllText((Join-Path $Root 'patches-list.json')) | ConvertFrom-Json)).PackageVersions)
-Assert-True ($declaredBuilds.Count -ge 2) "The catalog declares $($declaredBuilds.Count) build(s), so the receipt cases would prove nothing."
+$declaredBuilds = $catalogBuilds
+# The adopted source's two fixtures: every declared build, and the one before when Threads declares one.
+$adoptedBuilds = @($catalogBuilds + $olderBuild)
 [IO.File]::WriteAllText((Join-Path $fixtureRoot 'NOTICE'), "Fixture NOTICE`n  alpha  https://github.com/fixture-owner/alpha-patches`n")
 [IO.File]::WriteAllText((Join-Path $fixtureRoot 'provenance.json'), (@{ rules = @(@{ paths = @('patches/**'); origin = 'ported'
     upstream = 'https://github.com/fixture-owner/alpha-patches'; commit = $adoptedCommit; license = 'GPL-3.0'; via = @() }) } | ConvertTo-Json -Depth 6))
@@ -339,27 +397,27 @@ $fixtureLedger = [ordered]@{
     )
     entries = @(
         [ordered]@{ id = 'alpha'; repository = 'https://github.com/fixture-owner/alpha-patches'; lineage = 'alpha'; upstream = $null
-            kind = 'morphe-patches'; packages = @('com.facebook.katana'); targetVersions = [ordered]@{ 'com.facebook.katana' = @('580.0.0.51.74') }
+            kind = 'morphe-patches'; packages = @('com.instagram.barcelona'); targetVersions = [ordered]@{ 'com.instagram.barcelona' = @('449.0.0.54.82') }
             features = @('Hide ads'); branches = @([ordered]@{ name = 'main'; commit = $commitA1 }); watchPaths = @()
             license = [ordered]@{ spdx = 'GPL-3.0'; url = "https://github.com/fixture-owner/alpha-patches/blob/$commitA1/LICENSE"; sha256 = $licenseHash }
             contaminatedBy = $null; disposition = 'adopted'; reason = 'A fixture source.'; archived = $false
-            adopted = [ordered]@{ commit = $adoptedCommit; fixtures = [ordered]@{ receipt = $receiptUrl; builds = $declaredBuilds } }
+            adopted = [ordered]@{ commit = $adoptedCommit; fixtures = [ordered]@{ receipt = $receiptUrl; builds = $adoptedBuilds } }
             forks = @('someone/alpha-patches'); contentHashes = @($blobKnown)
             mirrors = @([ordered]@{ repository = 'https://github.com/copier/alpha-copy'; reason = 'A fixture copy.'; blobs = @($blobMirror) })
             lastChecked = '2026-09-01' }
         [ordered]@{ id = 'beta'; repository = 'https://github.com/fixture-owner/beta-module'; lineage = 'beta'; upstream = $null
-            kind = 'xposed-module'; packages = @('com.facebook.orca'); targetVersions = [ordered]@{ 'com.facebook.orca' = @() }
-            features = @('Hide inbox ads'); branches = @([ordered]@{ name = 'main'; commit = $commitB1 }); watchPaths = @('app/messenger')
+            kind = 'xposed-module'; packages = @('com.instagram.barcelona', 'com.instagram.android'); targetVersions = [ordered]@{ 'com.instagram.barcelona' = @() }
+            features = @('Hide feed ads'); branches = @([ordered]@{ name = 'main'; commit = $commitB1 }); watchPaths = @('app/threads')
             license = $null; contaminatedBy = $null; disposition = 'behavior-only'; reason = 'A fixture module with no licence.'; archived = $false
             forks = @(); contentHashes = @(); mirrors = @(); lastChecked = '2026-09-01' }
         [ordered]@{ id = 'gamma'; repository = 'https://gitlab.com/fixture-group/gamma-patches'; lineage = 'gamma'; upstream = $null
-            kind = 'revanced-patches'; packages = @('com.facebook.lite'); targetVersions = [ordered]@{ 'com.facebook.lite' = @() }
+            kind = 'revanced-patches'; packages = @('com.instagram.barcelona'); targetVersions = [ordered]@{ 'com.instagram.barcelona' = @() }
             features = @('Open links outside'); branches = @([ordered]@{ name = 'main'; commit = $commitG1 }); watchPaths = @()
             license = [ordered]@{ spdx = 'GPL-3.0'; url = "https://gitlab.com/fixture-group/gamma-patches/-/blob/$commitG1/LICENSE"; sha256 = $licenseHash }
             contaminatedBy = $null; disposition = 'candidate'; reason = 'A fixture GitLab source.'; archived = $false
             forks = @(); contentHashes = @(); mirrors = @(); lastChecked = '2026-09-01' }
     )
-    outOfScope = @([ordered]@{ repository = 'https://github.com/noise/mentions-facebook'; reason = 'Names the package in a list.'; lastChecked = '2026-09-01' })
+    outOfScope = @([ordered]@{ repository = 'https://github.com/noise/mentions-threads'; reason = 'Names the package in a list.'; lastChecked = '2026-09-01' })
 }
 $fixtureLedgerText = ($fixtureLedger | ConvertTo-Json -Depth 20) -replace "`r`n", "`n"
 function Reset-FixtureLedger { [IO.File]::WriteAllText($fixtureLedgerPath, $fixtureLedgerText, (New-Object Text.UTF8Encoding $false)) }
@@ -373,19 +431,19 @@ function New-FakeAnswers {
     $answers = [ordered]@{
         official = @{ Status = 200; Content = '{"patches":[{"name":"Example","compatiblePackages":{"com.google.android.youtube":["20.1"]}}]}' }
         directory = @{ Status = 200; Content = (@{
-            bundles = @(@{ source = 'github'; repo = 'fixture-owner/alpha-patches'; name = 'Alpha'; targetApps = @('com.facebook.katana')
+            bundles = @(@{ source = 'github'; repo = 'fixture-owner/alpha-patches'; name = 'Alpha'; targetApps = @('com.instagram.barcelona')
                 patches = @(@{ name = 'Hide ads'; compatiblePackagesKey = 0 }) })
-            compatibilities = @(@{ packageName = 'com.facebook.katana'; targets = @(@{ version = '580.0.0.51.74' }) }) } | ConvertTo-Json -Depth 8) }
-        awesome = @{ Status = 200; Content = '{"fixture-owner/alpha-patches":{"com.facebook.katana":"0123"},"SysAdminDoc/hushfeed":{"com.zhiliaoapp.musically":"4567"}}' }
+            compatibilities = @(@{ packageName = 'com.instagram.barcelona'; targets = @(@{ version = '449.0.0.54.82' }) }) } | ConvertTo-Json -Depth 8) }
+        awesome = @{ Status = 200; Content = '{"fixture-owner/alpha-patches":{"com.instagram.barcelona":"0123"},"SysAdminDoc/hushfeed":{"com.zhiliaoapp.musically":"4567"}}' }
         tracker = @{ Status = 200; Content = (@{
-            'sysadmindoc:stable' = @{ repo_url = 'https://github.com/SysAdminDoc/HushThreads'; apps = @(@{ package = 'com.facebook.katana'; patches = @(@{ name = 'Hide sponsored posts' }) }) }
-            'alpha:stable' = @{ repo_url = 'https://github.com/fixture-owner/alpha-patches'; apps = @(@{ package = 'com.facebook.katana'; patches = @(@{ name = 'Hide ads' }) }) }
+            'sysadmindoc:stable' = @{ repo_url = 'https://github.com/SysAdminDoc/HushThreads'; apps = @(@{ package = 'com.instagram.barcelona'; patches = @(@{ name = 'Hide ads' }) }) }
+            'alpha:stable' = @{ repo_url = 'https://github.com/fixture-owner/alpha-patches'; apps = @(@{ package = 'com.instagram.barcelona'; patches = @(@{ name = 'Hide ads' }) }) }
         } | ConvertTo-Json -Depth 8) }
         jmanSources = @{ Status = 200; Content = '{"alpha-stable":{"patches":"https://api.github.com/repos/fixture-owner/alpha-patches"},"gamma-stable":{"patches":"https://gitlab.com/api/v4/projects/fixture-group%2Fgamma-patches"}}' }
         jmanCatalog = @{ Status = 200; Content = ("# Catalog`n| [Alpha](#alpha) | 1 | 1 | Generated |`n### X Alpha Bundle Patch List:`n" +
             "| **Name** | **Description** | **Compatible Apps** | **Compatible Versions** |`n|---|---|---|---|`n" +
-            "| ${tick}Hide ads${tick} | ${tick}Removes ads.${tick} | ${tick}Facebook${tick} | ${tick}580.0.0.51.74${tick} |`n" +
-            "### X Gamma Bundle Patch List:`n| ${tick}Open links outside${tick} | ${tick}d${tick} | ${tick}Facebook Lite${tick} | ${tick}Any${tick} |`n") }
+            "| ${tick}Hide ads${tick} | ${tick}Removes ads.${tick} | ${tick}Threads${tick} | ${tick}449.0.0.54.82${tick} |`n" +
+            "### X Gamma Bundle Patch List:`n| ${tick}Open links outside${tick} | ${tick}d${tick} | ${tick}Threads${tick} | ${tick}Any${tick} |`n") }
         archive = @{ Status = 200; Content = '{"name":"patches-list.json"}' }
         searchHits = @(
             @{ repository = @{ full_name = 'fixture-owner/alpha-patches' }; path = 'patches/Alpha.kt'; sha = $blobKnown }
@@ -393,12 +451,11 @@ function New-FakeAnswers {
             @{ repository = @{ full_name = 'clone/alpha-clone' }; path = 'src/Alpha.kt'; sha = $blobKnown }
             @{ repository = @{ full_name = 'rushiforai/morphe-archive' }; path = 'examplepatches/fixture-owner/alpha-patches/patches-list.json'; sha = ('3b' * 20) }
             @{ repository = @{ full_name = 'rushiforai/morphe-archive' }; path = 'examplepatches/Jman-Github/ReVanced-Patch-Bundles/patch-bundles/x/y-patches-list.json'; sha = ('4b' * 20) }
-            @{ repository = @{ full_name = 'noise/mentions-facebook' }; path = 'list.txt'; sha = ('5b' * 20) }
+            @{ repository = @{ full_name = 'noise/mentions-threads' }; path = 'list.txt'; sha = ('5b' * 20) }
             @{ repository = @{ full_name = 'SysAdminDoc/HushThreads' }; path = 'patches-list.json'; sha = ('6b' * 20) }
             # The archive keeps a recorded fork's patch list for its entry's own package, which is no bundle of its own.
             @{ repository = @{ full_name = 'rushiforai/morphe-archive' }; path = 'examplepatches/someone/alpha-patches/patches-list.json'; sha = ('7b' * 20) }
         )
-        orcaListHits = @()
         alphaRepo = @{ Status = 200; Content = '{"full_name":"fixture-owner/alpha-patches","archived":false,"default_branch":"main"}' }
         alphaLicense = @{ Status = 200; Content = (@{ path = 'LICENSE'; content = $licenseBase64; license = @{ spdx_id = 'GPL-3.0' } } | ConvertTo-Json) }
         alphaBranches = @{ Status = 200; Content = "[{`"name`":`"main`",`"commit`":{`"sha`":`"$commitA1`"}}]" }
@@ -414,9 +471,9 @@ function New-FakeAnswers {
         gammaLicense = @{ Status = 200; Content = (@{ file_name = 'LICENSE'; content = $licenseBase64 } | ConvertTo-Json) }
         gammaBranches = @{ Status = 200; Content = "[{`"name`":`"main`",`"commit`":{`"id`":`"$commitG1`"}}]" }
         gammaForks = @{ Status = 200; Content = '[]' }
-        repoMeta = @{ Status = 200; Content = '{"full_name":"newcomer/fb-patches","license":{"spdx_id":"MIT"},"fork":false,"archived":false,"pushed_at":"2026-09-20T00:00:00Z","description":"Facebook patches"}' }
+        repoMeta = @{ Status = 200; Content = '{"full_name":"newcomer/threads-patches","license":{"spdx_id":"MIT"},"fork":false,"archived":false,"pushed_at":"2026-09-20T00:00:00Z","description":"Threads patches"}' }
         oldNameMeta = @{ Status = 200; Content = '{"full_name":"fixture-owner/alpha-patches","fork":false,"archived":false}' }
-        receipt = @{ Status = 200; Content = (@{ targets = @($declaredBuilds | ForEach-Object {
+        receipt = @{ Status = 200; Content = (@{ targets = @($adoptedBuilds | ForEach-Object {
             @{ source = @{ versionName = $_; forced = $false }; patches = @(@{ name = 'Hide ads'; applied = $true }) } }) } | ConvertTo-Json -Depth 8) }
     }
     return $answers
@@ -443,8 +500,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
             '^https://api\.github\.com/repos/rushiforai/morphe-archive/contents/examplepatches/SysAdminDoc/HushThreads/patches-list\.json$' { $answer = $a.archive; break }
             '^https://api\.github\.com/search/code\?q=([^&]+)&per_page=100&page=1$' {
                 $query = [Uri]::UnescapeDataString($Matches[1])
-                $items = if ($query -eq '"com.facebook.katana" bytecodePatch') { @($a.searchHits) }
-                    elseif ($query -eq '"com.facebook.orca" filename:patches-list.json') { @($a.orcaListHits) } else { @() }
+                $items = if ($query -eq '"com.instagram.barcelona" bytecodePatch') { @($a.searchHits) } else { @() }
                 $answer = @{ Status = 200; Content = (@{ total_count = $items.Count; incomplete_results = $false; items = $items } | ConvertTo-Json -Depth 8) }
                 break
             }
@@ -460,14 +516,14 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
             '^https://api\.github\.com/repos/fixture-owner/beta-module$' { $answer = $a.betaRepo; break }
             '^https://api\.github\.com/repos/fixture-owner/beta-module/license$' { $answer = $a.betaLicense; break }
             '^https://api\.github\.com/repos/fixture-owner/beta-module/branches\?per_page=100&page=1$' { $answer = $a.betaBranches; break }
-            '^https://api\.github\.com/repos/fixture-owner/beta-module/commits\?sha=main&path=app%2Fmessenger&per_page=1$' { $answer = $a.betaWatch; break }
+            '^https://api\.github\.com/repos/fixture-owner/beta-module/commits\?sha=main&path=app%2Fthreads&per_page=1$' { $answer = $a.betaWatch; break }
             '^https://api\.github\.com/repos/fixture-owner/beta-module/forks\?per_page=100&page=1$' { $answer = $a.betaForks; break }
             '^https://gitlab\.com/api/v4/projects/fixture-group%2Fgamma-patches$' { $answer = $a.gammaProject; break }
             '^https://gitlab\.com/api/v4/projects/fixture-group%2Fgamma-patches/repository/tree\?ref=main&per_page=100&page=1$' { $answer = $a.gammaTree; break }
             '^https://gitlab\.com/api/v4/projects/fixture-group%2Fgamma-patches/repository/files/LICENSE\?ref=main$' { $answer = $a.gammaLicense; break }
             '^https://gitlab\.com/api/v4/projects/fixture-group%2Fgamma-patches/repository/branches\?per_page=100&page=1$' { $answer = $a.gammaBranches; break }
             '^https://gitlab\.com/api/v4/projects/fixture-group%2Fgamma-patches/forks\?per_page=100&page=1$' { $answer = $a.gammaForks; break }
-            '^https://api\.github\.com/repos/(newcomer/fb-patches|clone/alpha-clone)$' { $answer = $a.repoMeta; break }
+            '^https://api\.github\.com/repos/(newcomer/threads-patches|clone/alpha-clone)$' { $answer = $a.repoMeta; break }
             '^https://api\.github\.com/repos/fixture-owner/alpha-old$' { $answer = $a.oldNameMeta; break }
             '^https://github\.com/SysAdminDoc/HushThreads/releases/download/v9\.9\.9/release-receipt-9\.9\.9\.json$' { $answer = $a.receipt; break }
         }
@@ -564,10 +620,10 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     Reset-FixtureLedger
 
     # Each way a source can move, one at a time, each put back after.
-    $fakeForge.Answers.directory.Content = $fakeForge.Answers.directory.Content.Replace('"repo":  "fixture-owner/alpha-patches"', '"repo":  "newcomer/fb-patches"').Replace(
-        '"repo": "fixture-owner/alpha-patches"', '"repo": "newcomer/fb-patches"')
-    Assert-True ($fakeForge.Answers.directory.Content -like '*newcomer/fb-patches*') 'The directory answer was not edited, so the addition case would prove nothing.'
-    Assert-Drift 'addition' '*github.com/newcomer/fb-patches*Morphe directory*' 'A bundle only the directory knows'
+    $fakeForge.Answers.directory.Content = $fakeForge.Answers.directory.Content.Replace('"repo":  "fixture-owner/alpha-patches"', '"repo":  "newcomer/threads-patches"').Replace(
+        '"repo": "fixture-owner/alpha-patches"', '"repo": "newcomer/threads-patches"')
+    Assert-True ($fakeForge.Answers.directory.Content -like '*newcomer/threads-patches*') 'The directory answer was not edited, so the addition case would prove nothing.'
+    Assert-Drift 'addition' '*github.com/newcomer/threads-patches*Morphe directory*' 'A bundle only the directory knows'
     $fakeForge.Answers = New-FakeAnswers
 
     $fakeForge.Answers.searchHits[2].sha = ('9b' * 20)
@@ -590,7 +646,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     Assert-Drift 'changed-head' '*beta-module*branch main moved*' 'A watched path that moved under a branch whose head the ledger never pinned'
     $fakeForge.Answers = New-FakeAnswers
 
-    # A branch cut from main before its Facebook code last moved carries nothing new; one ahead of it does.
+    # A branch cut from main before its Threads code last moved carries nothing new; one ahead of it does.
     $fakeForge.Answers.alphaBranches.Content = "[{`"name`":`"main`",`"commit`":{`"sha`":`"$commitA1`"}},{`"name`":`"old`",`"commit`":{`"sha`":`"$('a3' * 20)`"}}]"
     $fakeForge.Answers.compare[('a3' * 20)] = 'behind'
     $contained = Invoke-Audit
@@ -598,7 +654,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
         (@($contained.Report.findings | ForEach-Object { "$($_.kind): $($_.detail)" }) -join ' | '))
     Reset-FixtureLedger
     $fakeForge.Answers.compare[('a3' * 20)] = 'ahead'
-    Assert-Drift 'new-branch' '*alpha-patches*branch old carries Facebook-family work*' 'A branch with work of its own'
+    Assert-Drift 'new-branch' '*alpha-patches*branch old carries Threads work*' 'A branch with work of its own'
     $fakeForge.Answers = New-FakeAnswers
 
     $fakeForge.Answers.alphaForks.Content = '[{"full_name":"someone/alpha-patches"},{"full_name":"stranger/alpha-patches"}]'
@@ -617,27 +673,22 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     Assert-Drift 'listing-changed' '*Morphe Patch Tracker no longer lists HushThreads*' 'A listing that disappeared'
     $fakeForge.Answers = New-FakeAnswers
 
-    $fakeForge.Answers.official.Content = '{"patches":[{"name":"Hide ads","compatiblePackages":[{"packageName":"com.facebook.orca"}]}]}'
-    Assert-Drift 'official-bundle-changed' '*official bundle now patches*com.facebook.orca*' 'The official bundle taking on Messenger'
+    $fakeForge.Answers.official.Content = '{"patches":[{"name":"Hide ads","compatiblePackages":[{"packageName":"com.instagram.barcelona"}]}]}'
+    Assert-Drift 'official-bundle-changed' '*official bundle now patches*com.instagram.barcelona*' 'The official bundle taking on Threads'
     $fakeForge.Answers = New-FakeAnswers
 
     # An adopted source's receipt has to prove every declared build, unforced.
     $fakeForge.Answers.receipt.Content = $fakeForge.Answers.receipt.Content -replace '"forced":\s*false', '"forced": true'
-    Assert-Drift 'fixture-evidence' "*alpha-patches*no unforced run of Facebook $($declaredBuilds[0])*" 'An adopted source whose receipt forced a build'
+    Assert-Drift 'fixture-evidence' "*alpha-patches*no unforced run of Threads $($declaredBuilds[0])*" 'An adopted source whose receipt forced a build'
     $fakeForge.Answers = New-FakeAnswers
 
     $fakeForge.Answers.alphaRepo.Content = $fakeForge.Answers.alphaRepo.Content.Replace('"fixture-owner/alpha-patches"', '"fixture-owner/alpha-renamed"')
     Assert-Drift 'renamed' '*alpha-patches*now https://github.com/fixture-owner/alpha-renamed*' 'A source that was renamed'
     $fakeForge.Answers = New-FakeAnswers
 
-    $fakeForge.Answers.directory.Content = $fakeForge.Answers.directory.Content -replace '"com\.facebook\.katana"(\s*)\]', '"com.facebook.katana", "com.facebook.orca"$1]'
-    Assert-True ($fakeForge.Answers.directory.Content -like '*com.facebook.orca*') 'The directory answer was not edited, so the packages case would prove nothing.'
-    Assert-Drift 'packages-changed' '*alpha-patches*now targets com.facebook.orca*' 'A source an index says now targets Messenger'
-    $fakeForge.Answers = New-FakeAnswers
-
     # A recorded fork or an out-of-scope repository that an index lists as a bundle of its own. The
     # control's archived copy of the fork's list, for alpha's own package, stayed quiet.
-    foreach ($listed in @('someone/alpha-patches', 'noise/mentions-facebook')) {
+    foreach ($listed in @('someone/alpha-patches', 'noise/mentions-threads')) {
         $fakeForge.Answers.directory.Content = $fakeForge.Answers.directory.Content.Replace('"repo":  "fixture-owner/alpha-patches"', "`"repo`":  `"$listed`"").Replace(
             '"repo": "fixture-owner/alpha-patches"', "`"repo`": `"$listed`"")
         Assert-True ($fakeForge.Answers.directory.Content -like "*$listed*") "The directory answer was not edited, so the $listed case would prove nothing."
@@ -645,10 +696,6 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
         Assert-Drift 'listed-as-bundle' $expected "The directory listing $listed as a bundle"
         $fakeForge.Answers = New-FakeAnswers
     }
-    $fakeForge.Answers.orcaListHits = @(@{ repository = @{ full_name = 'rushiforai/morphe-archive' }
-        path = 'examplepatches/someone/alpha-patches/patches-list.json'; sha = ('7c' * 20) })
-    Assert-Drift 'listed-as-bundle' '*someone/alpha-patches*com.facebook.orca*' 'A recorded fork whose archived patch list takes on Messenger'
-    $fakeForge.Answers = New-FakeAnswers
 
     $fakeForge.Answers.searchHits[1].sha = ('8b' * 20)
     Assert-Drift 'mirror-changed' '*copier/alpha-copy*' 'A recorded copy whose file changed'
@@ -663,8 +710,8 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     $fakeForge.Answers = New-FakeAnswers
 
     $tick = [string][char]96 * 3
-    $fakeForge.Answers.jmanCatalog.Content += "### X Delta Bundle Patch List:`n| ${tick}Hide reels${tick} | ${tick}d${tick} | ${tick}Facebook${tick} | ${tick}Any${tick} |`n"
-    Assert-Drift 'index-unresolved' "*Jman's catalog lists Facebook-family patches under 'Delta'*" 'A Jman section no repository stands behind'
+    $fakeForge.Answers.jmanCatalog.Content += "### X Delta Bundle Patch List:`n| ${tick}Hide replies${tick} | ${tick}d${tick} | ${tick}Threads${tick} | ${tick}Any${tick} |`n"
+    Assert-Drift 'index-unresolved' "*Jman's catalog lists Threads patches under 'Delta'*" 'A Jman section no repository stands behind'
     $fakeForge.Answers = New-FakeAnswers
 
     # An index still spelling a source by its old name is that source, not an addition.

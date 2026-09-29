@@ -1,22 +1,23 @@
 <#
 .SYNOPSIS
-    The Facebook-family source ledger, sources/threads-sources.json: reading it, holding it to its
-    rules, and the census age a release is held to.
+    The Threads source ledger, sources/threads-sources.json: reading it, holding it to its rules,
+    and the census age a release is held to.
 
 .DESCRIPTION
     Dot-source this. The ledger names every patch source, Xposed module and archive found for
-    com.facebook.katana, com.facebook.orca and com.facebook.lite, the branches and commits each was
-    last read at, its licence, and what HushThreads may take from it. docs/sources.md said in prose
-    that one of them could be ported with credit when its Facebook code was itself a port of an
-    unlicensed module, and nothing could have caught that. Here the rules are checked:
+    com.instagram.barcelona, the branches and commits each was last read at, its licence, and what
+    HushThreads may take from it. A source that also patches Instagram (com.instagram.android)
+    names both packages; an Instagram-only source belongs to HushGram's ledger and is recorded here
+    as out of scope. Prose can't stop someone calling a source portable when its code was itself a
+    port of an unlicensed module. Here the rules are checked:
 
     - A source with no licence, one whose licence can't be combined with GPL-3.0, or one whose
-      Facebook code came from such a source (contaminatedBy) is behavior-only. Its code is never
-      read for porting; what it does can be rediscovered from Facebook's own code.
+      Threads code came from such a source (contaminatedBy) is behavior-only. Its code is never
+      read for porting; what it does can be rediscovered from Threads' own code.
     - An adopted source, one whose code HushThreads ships, needs a pinned commit, a compatible
       licence with its URL and hash, its repository in NOTICE, a ported rule in provenance.json
-      naming that repository and commit, and evidence from both Facebook fixtures the catalog
-      declares. A provenance rule can't name a source the ledger doesn't allow.
+      naming that repository and commit, and evidence from two Threads fixtures, every build the
+      catalog declares among them. A provenance rule can't name a source the ledger doesn't allow.
     - Every index people find patch sources through records whether HushThreads is listed there,
       when that was checked, or the dated submission.
 
@@ -28,13 +29,20 @@
 . (Join-Path $PSScriptRoot 'patch-target.ps1')
 
 function Get-SourcePackages {
-    # The three packages the census covers. Messenger and Facebook Lite aren't patched here yet,
-    # but their sources are where a sibling bundle would start, and they share Facebook's code.
-    return @('com.facebook.katana', 'com.facebook.orca', 'com.facebook.lite')
+    # The package the census covers: what the indexes and code search are read for, and what every
+    # entry has to name.
+    return @('com.instagram.barcelona')
+}
+
+function Get-SourceRelatedPackages {
+    # Packages an entry may name beside Threads, because the same source patches them too.
+    # Instagram shares a lot of Threads' code, but its sources are HushGram's to census, so they
+    # aren't searched for here and their target versions aren't recorded.
+    return @('com.instagram.android')
 }
 
 function Get-SourceCensusMaxAgeDays {
-    # A release goes out on a census no older than this. Facebook ships weekly and so do the busier
+    # A release goes out on a census no older than this. Threads ships weekly and so do the busier
     # sources, so two weeks is one missed cycle, not two.
     return 14
 }
@@ -72,12 +80,12 @@ function Get-SourceLedgerPath {
 function Read-SourceLedger {
     param([Parameter(Mandatory = $true)][string]$Path)
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
-        throw "The Facebook-family source ledger is missing: $Path"
+        throw "The Threads source ledger is missing: $Path"
     }
     try {
         return [System.IO.File]::ReadAllText($Path) | ConvertFrom-Json
     } catch {
-        throw "The Facebook-family source ledger is not JSON: $($_.Exception.Message)"
+        throw "The Threads source ledger is not JSON: $($_.Exception.Message)"
     }
 }
 
@@ -181,6 +189,7 @@ function Test-SourceLedger {
     $problems = New-Object System.Collections.Generic.List[string]
     $todayDate = Get-SourceToday $Today
     $packages = Get-SourcePackages
+    $related = Get-SourceRelatedPackages
     $compatible = Get-SourceCompatibleLicenses
     $dispositions = Get-SourceDispositions
     $kinds = Get-SourceKinds
@@ -220,7 +229,7 @@ function Test-SourceLedger {
     }
     foreach ($package in @(Get-SourceProperty $official 'packages')) {
         if ($null -ne $package -and $packages -notcontains "$package") {
-            $problems.Add("officialBundle.packages names '$package', which is not a Facebook-family package.")
+            $problems.Add("officialBundle.packages names '$package', which is not a package the census covers.")
         }
     }
 
@@ -311,12 +320,17 @@ function Test-SourceLedger {
         if ($kinds -notcontains $kind) { $problems.Add("$label kind '$kind' is not one of $($kinds -join ', ').") }
 
         $entryPackages = @(Get-SourceProperty $entry 'packages' | Where-Object { $null -ne $_ } | ForEach-Object { "$_" })
-        if ($entryPackages.Count -eq 0) { $problems.Add("$label names no Facebook-family package.") }
+        if (@($entryPackages | Where-Object { $packages -contains $_ }).Count -eq 0) {
+            $problems.Add("$label names no Threads package. A source for Instagram alone belongs in outOfScope.")
+        }
         foreach ($package in $entryPackages) {
-            if ($packages -notcontains $package) { $problems.Add("$label names '$package', which is not a Facebook-family package.") }
+            if ($packages -notcontains $package -and $related -notcontains $package) {
+                $problems.Add("$label names '$package', which is neither Threads nor Instagram.")
+            }
         }
         $targets = Get-SourceProperty $entry 'targetVersions'
-        foreach ($package in $entryPackages) {
+        # Only the census package's builds: Instagram's are HushGram's ledger's to record.
+        foreach ($package in @($entryPackages | Where-Object { $packages -contains $_ })) {
             $declared = Get-SourceProperty $targets $package
             if ($null -eq $targets -or $null -eq $targets.PSObject.Properties[$package]) {
                 $problems.Add("$label records no declared target versions for $package (an empty list says it declares none).")
@@ -442,7 +456,7 @@ function Test-SourceLedger {
         try {
             $declaredBuilds = @((Get-PatchTarget -PatchList ([System.IO.File]::ReadAllText($catalogPath) | ConvertFrom-Json)).PackageVersions)
         } catch {
-            $problems.Add("The declared Facebook builds could not be read from patches-list.json: $($_.Exception.Message)")
+            $problems.Add("The declared Threads builds could not be read from patches-list.json: $($_.Exception.Message)")
         }
     }
     foreach ($entry in $adoptedEntries) {
@@ -578,7 +592,7 @@ function Test-SourceReleaseGate {
     $rules = Test-SourceLedger -Ledger $ledger -Root $Root -Today $Today
     if (-not $rules.Valid) {
         return [pscustomobject]@{ Valid = $false; Summary = $null
-            Reason = "the Facebook-family source ledger breaks its rules: $(($rules.Problems | Select-Object -First 5) -join ' ')" }
+            Reason = "the Threads source ledger breaks its rules: $(($rules.Problems | Select-Object -First 5) -join ' ')" }
     }
     $census = Test-SourceCensus -Ledger $ledger -Today $Today
     if (-not $census.Valid) {
@@ -593,6 +607,6 @@ function Test-SourceReleaseGate {
             ' yet and has no submission recorded there (submit it, then record the URL and date)'
     }
     return [pscustomobject]@{ Valid = $true; Reason = $null
-        Summary = ("the Facebook-family source census is $($census.AgeDays) day(s) old ($($census.CheckedAt)), " +
+        Summary = ("the Threads source census is $($census.AgeDays) day(s) old ($($census.CheckedAt)), " +
             "$($entries.Count) sources in $($lineages.Count) lineages, and $indexes") }
 }
