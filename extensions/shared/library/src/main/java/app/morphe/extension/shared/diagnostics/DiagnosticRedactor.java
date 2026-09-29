@@ -15,10 +15,12 @@ import java.util.regex.Pattern;
 
 /** Removes request addresses, credentials and device identifiers from exported text. */
 public final class DiagnosticRedactor {
-    /** Facebook's own hosts, its CDN and short-link domains, and Messenger's. */
+    /**
+     * Threads' own hosts, Instagram's, which Threads shares an account and an API with, and the two
+     * CDNs its pictures and videos come from.
+     */
     private static final String HOST_SUFFIXES =
-            "(?:facebook\\.com|facebook\\.net|fbcdn\\.net|fbsbx\\.com|fb\\.com|fb\\.me|fb\\.watch"
-                    + "|fb\\.gg|messenger\\.com|meta\\.com|meta\\.ai)";
+            "(?:threads\\.com|threads\\.net|instagram\\.com|cdninstagram\\.com|fbcdn\\.net)";
     /**
      * A word edge, between an ASCII letter, digit or underscore and anything else, written out for
      * the rules to use in place of \b. Android runs them on ICU, whose \b takes a letter such as é,
@@ -66,10 +68,11 @@ public final class DiagnosticRedactor {
                     + "|authored|authoring|author|authorize|authorized|authorizes|authorizing|unauthorized"
                     + "|authorities|authority)";
     /**
-     * Credential and device names. c_user, xs and datr are the cookies that make up a Facebook
-     * session, and fr and sb go with them; fb_dtsg is its request token; family_device_id,
-     * X-FB-Device-ID and advertiser_id identify the phone across Meta's apps. xs, fr, sb and pwd
-     * are matched whole below, being too short to look for inside a word.
+     * Credential and device names. sessionid, ds_user_id and csrftoken are the cookies that make up
+     * an Instagram session, which Threads signs in with, and rur, mid and ig_did go with them.
+     * family_device_id, X-IG-Device-ID, X-IG-Android-ID and advertiser_id identify the phone across
+     * Meta's apps. rur, mid and pwd are matched whole below, being too short to look for inside a
+     * word. ds_user_id is also an account id, which {@link #USER_ID_NAMES} takes.
      *
      * <p>sid, uid, iid and auth (and guid, which holds uid) count anywhere in a name, run into
      * other words or not: authkey, basicauth, SAPISID and FBUID are all credentials. They also sit
@@ -80,23 +83,24 @@ public final class DiagnosticRedactor {
     private static final String CREDENTIAL_NAMES =
             "[a-z0-9_-]*(?:token|session|sessionid|secret|password|passwd|passphrase|passcode|signature"
                     + "|cookie|credential|api_?key|access_?key|private_?key|device[_-]?id|install[_-]?id"
-                    + "|openudid|c_user|datr|fb_dtsg|machine[_-]?id|advertiser[_-]?id|advertising[_-]?id"
-                    + "|adid)[a-z0-9_-]*"
+                    + "|openudid|android[_-]?id|ds_user_id|ig_did|machine[_-]?id|advertiser[_-]?id"
+                    + "|advertising[_-]?id|adid)[a-z0-9_-]*"
                     + "|(?!" + ORDINARY_WORDS + "(?![a-z0-9_]|-(?!>)))[a-z0-9_-]*(?:sid|uid|iid|auth)[a-z0-9_-]*"
-                    + "|xs|fr|sb|pwd";
+                    + "|rur|mid|pwd";
     /** Names whose unquoted value can hold spaces and semicolons, so it runs to the end of its line. */
     private static final String PASSWORD_NAMES = "[a-z0-9_-]*(?:password|passwd|passphrase|passcode)[a-z0-9_-]*|pwd";
     /**
-     * Names carrying the id of one account, post, story, comment or message. Each of these
-     * resolves to something somebody can open, so a shared report would otherwise carry a slice of
-     * what was read, or who read it. The short ones, aid and cid, are matched whole or after an
-     * underscore or hyphen, so an ordinary setting such as {@code hide_paid_partnership} keeps its
-     * value. The longer ones may follow any prefix, camel case included ({@code topLevelPostId}),
+     * Names carrying the id of one account, post, reply or message. Each of these resolves to
+     * something somebody can open, so a shared report would otherwise carry a slice of what was
+     * read, or who read it. The short ones, aid, cid and pk (Instagram's name for a post's or an
+     * account's id), are matched whole or after an underscore or hyphen, so an ordinary setting
+     * such as {@code hide_paid_partnership} keeps its value. The longer ones may follow any prefix, camel case included ({@code topLevelPostId}),
      * and take a hyphen as well as an underscore. An account's own id is {@link #USER_ID_NAMES}.
      */
     private static final String CONTENT_ID_NAMES =
-            "(?:[a-z0-9]+[_-])*(?:aid|cid)|[a-z0-9_-]*(?:fbid|story[_-]?id|post[_-]?id|feedback[_-]?id"
-                    + "|video[_-]?id|item[_-]?id|group[_-]?id|page[_-]?id|profile[_-]?id|actor[_-]?id"
+            "(?:[a-z0-9]+[_-])*(?:aid|cid|pk)|[a-z0-9_-]*(?:fbid|pk[_-]?id|media[_-]?id|story[_-]?id"
+                    + "|post[_-]?id|feedback[_-]?id|video[_-]?id|item[_-]?id|group[_-]?id|page[_-]?id"
+                    + "|profile[_-]?id|actor[_-]?id"
                     + "|thread[_-]?id|comment[_-]?id|msg[_-]?id|message[_-]?id)";
     /**
      * Names carrying the id of an account, or a list of them: user_id, userid, userId, user-id and
@@ -185,10 +189,10 @@ public final class DiagnosticRedactor {
     private static final String USER_ID_VALUE = "[^ \\t\\r\\n;&\"')}]*(?:[ \\t]++(?![a-z][a-z0-9_-]*" + SEPARATOR
             + ")[^ \\t\\r\\n;&\"')}]*)*";
     /**
-     * A bare id, for the places that print a list of them with no name in front. Facebook's
-     * account ids are fifteen digits (the newer ones seventeen) and its post and story ids run to
-     * nineteen; nothing else these reports carry is a number that long. A millisecond timestamp
-     * is thirteen digits, so it stays readable.
+     * A bare id, for the places that print a list of them with no name in front. A Threads post's
+     * id, which is an Instagram media id, runs to nineteen digits, and the Meta ids that come with
+     * it are fifteen or more. Nothing else these reports carry is a number that long. A
+     * millisecond timestamp is thirteen digits, so it stays readable.
      *
      * <p>Bounded by digits rather than by word edges. A CDN file name joins its ids with
      * underscores ({@code 475148478_1134540631592283_1316146539584337463_n.jpg}), an underscore is
@@ -209,7 +213,7 @@ public final class DiagnosticRedactor {
     private static final String ISOLATED_NAME = "⁨[^⁩\\n]*⁩?";
     /**
      * A name right after @ that the credential, user id or content id rules would otherwise
-     * redact: {@code @token}, {@code @access_token}, {@code @c_user}, {@code @user_id}. Left to
+     * redact: {@code @token}, {@code @access_token}, {@code @sessionid}, {@code @user_id}. Left to
      * {@link #HANDLE}, taken first, it took the name out of {@code @token=secret} and left the
      * value behind, the same way a name glued to a non-ASCII letter did. {@link #NAMED_HANDLE}
      * waits for those rules instead.
@@ -229,23 +233,23 @@ public final class DiagnosticRedactor {
             + KNOWN_HANDLE_NAME + "))[A-Za-z0-9_.]{2,}";
     /**
      * A handle straight after a character outside ASCII, taken last. Taken first, it took the
-     * name out of {@code é@token=secret} or {@code josé@facebook.com/dana.q.1987} and left the
+     * name out of {@code é@token=secret} or {@code josé@threads.com/dana.q.1987} and left the
      * secret or the path behind, so the credential, id and host rules see it before it goes.
      */
     private static final String GLUED_HANDLE = "(?<=[^\\x00-\\x7F])@[A-Za-z0-9_.]{2,}";
     /**
      * A handle naming a credential, a user id or a content id, taken last for the same reason as
-     * {@link #GLUED_HANDLE}: taken first, it left {@code @token=secret}, {@code @c_user=100012}
+     * {@link #GLUED_HANDLE}: taken first, it left {@code @token=secret}, {@code @sessionid=100012}
      * and {@code @user_id=100012} holding their values, since the name behind the @ was gone by
      * the time the credential, user id and content id rules ran.
      */
     private static final String NAMED_HANDLE = "(?<![A-Za-z0-9_.@/:])(?<![^\\x00-\\x7F])@(?=(?i:"
             + KNOWN_HANDLE_NAME + "))[A-Za-z0-9_.]{2,}";
     /**
-     * One of Facebook's hosts without a scheme, with any port or path after it. The subdomain is
-     * optional: the rule asked for one, so {@code facebook.com/dana.q.1987} passed while
-     * {@code www.facebook.com/dana.q.1987} didn't. A host has to end at a word edge, so a package
-     * name ({@code com.facebook.katana}) and a longer name ({@code facebook.community}) stay.
+     * One of Threads' hosts without a scheme, with any port or path after it. The subdomain is
+     * optional: the rule asked for one, so {@code threads.com/@dana.q.1987} passed while
+     * {@code www.threads.com/@dana.q.1987} didn't. A host has to end at a word edge, so a package
+     * name ({@code com.instagram.barcelona}) and a longer name ({@code threads.community}) stay.
      */
     private static final String HOST =
             "(?i)" + EDGE + "(?:[a-z0-9-]+\\.)*" + HOST_SUFFIXES + EDGE + "(?:[:/][^" + SPACE + "\"'<>]*)?";

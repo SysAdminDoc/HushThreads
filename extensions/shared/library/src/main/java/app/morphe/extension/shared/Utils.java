@@ -159,9 +159,8 @@ public class Utils {
     }
 
     /**
-     * The host's version code, such as 475019344 for Facebook 580.0.0.51.74, or -1 when the
-     * package manager can't say. Facebook ships several builds under one version name, and the
-     * code is what tells them apart in a report.
+     * The host's version code, or -1 when the package manager can't say. Threads ships several
+     * builds under one version name, and the code is what tells them apart in a report.
      */
     @SuppressWarnings("deprecation")
     public static long getAppVersionCode() {
@@ -820,7 +819,7 @@ public class Utils {
         }
     }
 
-    /** Keeps a fire-and-forget callback from escaping into Facebook's process. */
+    /** Keeps a fire-and-forget callback from escaping into Threads' process. */
     private static void runAndLogFailure(Runnable runnable) {
         try {
             runnable.run();

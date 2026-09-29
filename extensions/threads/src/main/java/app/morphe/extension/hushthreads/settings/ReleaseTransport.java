@@ -25,17 +25,17 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The release check's connection, through the platform's HttpURLConnection. With the media
- * downloader, the only code in the extension that opens one (ExtensionHostsTest).
+ * The release check's connection, through the platform's HttpURLConnection. It's the only code in
+ * the extension that opens one.
  *
  * <p>{@link ReleaseCheck} decides what may be asked and reads what comes back. This sends one GET
  * and hands back the answer: no redirect followed, no cache, the connection closed after it, and
  * no cookie.
  *
  * <p>The cookie is the part HttpURLConnection doesn't let a caller turn off. It puts on every
- * request whatever the process's default CookieHandler offers for the address, and Facebook 580
- * makes a java.net.CookieManager that default when it builds its own HttpURLConnection request
- * handler (the one for its on-demand hosts). So the handler is asked first what it would add.
+ * request whatever the process's default CookieHandler offers for the address, and Meta's apps
+ * can make a java.net.CookieManager that default when they build an HttpURLConnection request
+ * handler of their own. So the handler is asked first what it would add.
  * Whatever a CookieManager keeps for api.github.com is dropped, since only an answer from there
  * could have left it, and a handler that would still add a cookie stops the request before it goes
  * out. What an answer stores is dropped again when the exchange closes.
@@ -70,7 +70,7 @@ final class ReleaseTransport implements ReleaseCheck.Transport {
             connection.setUseCaches(false);
             connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
             connection.setReadTimeout(READ_TIMEOUT_MS);
-            // Nothing is left open in the pool for the rest of Facebook's run.
+            // Nothing is left open in the pool for the rest of Threads' run.
             connection.setRequestProperty("Connection", "close");
             for (Map.Entry<String, String> header : headers.entrySet()) {
                 connection.setRequestProperty(header.getKey(), header.getValue());

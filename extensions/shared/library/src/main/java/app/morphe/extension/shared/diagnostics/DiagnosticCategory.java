@@ -9,10 +9,7 @@ package app.morphe.extension.shared.diagnostics;
 
 public enum DiagnosticCategory {
     CRASH_REPORTS("crash"),
-    FOLLOW("follow"),
-    DOWNLOADS("downloads"),
-    FEED_AND_NAVIGATION("feed"),
-    FEATURE_GATE_LAB("feature_gate"),
+    FEED("feed"),
     SETTINGS("settings"),
     PATCH_ERRORS("errors"),
     OTHER("other");

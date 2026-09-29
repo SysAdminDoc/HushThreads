@@ -34,38 +34,23 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import app.morphe.extension.hushthreads.comments.CommentOrder;
-import app.morphe.extension.hushthreads.download.DownloadQuality;
-import app.morphe.extension.hushthreads.download.FileNameTemplate;
-import app.morphe.extension.hushthreads.download.SaveFolder;
-import app.morphe.extension.hushthreads.feed.PostWords;
-import app.morphe.extension.hushthreads.media.PlaybackQuality;
-import app.morphe.extension.hushthreads.navigation.StartTab;
 import app.morphe.extension.shared.settings.BooleanSetting;
-import app.morphe.extension.shared.settings.EnumSetting;
 import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.shared.settings.SettingsJson;
-import app.morphe.extension.shared.settings.StringSetting;
 
 /**
  * HushThreads's switches as a file, and back.
  *
  * <p>Morphe Manager can export the patches that were picked and the signing key. It can't see the
- * switches, which live in Facebook's own data, so a reinstall or a new phone started them all
- * over. This writes them to a JSON file the person chooses and reads one back.
+ * switches, which live in Threads' own data, so a reinstall or a new phone started them all over.
+ * This writes them to a JSON file the person chooses and reads one back.
  *
- * <p>Only the switches in {@link #ALLOWLIST} and the settings in {@link #VALUES} (the word
- * filter's two lists, the save folder, the save quality, the video file name, the tab Facebook
- * opens on, the order comments open in and the quality videos play at) go out or come in. Pause,
- * safe mode, the debug settings, the app language and the counters HushThreads keeps for itself
- * stay out, and so do the log, the diagnostic data and anything about the person or the phone: a
- * file is a format name, a version number, one true or false per switch, two word lists, one
- * folder name, one save quality, one file name template, one tab, one comment order and one
- * playback quality. The word lists go only into the file the person picks, with the rest. An
- * import applies what it read in one preference commit. A file that is too large, isn't JSON,
- * names something twice, holds a value of the wrong type, a word list that isn't one clean list, a
- * folder or a template that isn't one clean name, or a quality, tab or comment order this build
- * doesn't offer, or comes from a newer version changes nothing.
+ * <p>Only the switches in {@link #ALLOWLIST} go out or come in. Pause, safe mode, the debug
+ * settings, the app language and the counters HushThreads keeps for itself stay out, and so do
+ * the log, the diagnostic data and anything about the person or the phone: a file is a format
+ * name, a version number and one true or false per switch. An import applies what it read in one
+ * preference commit. A file that is too large, isn't JSON, names something twice, holds a value of
+ * the wrong type or comes from a newer version changes nothing.
  * <p>The release check stays out of the file: it puts the phone online, so it's switched on
  * from the phone's own screen, never by a file.
  *
@@ -88,119 +73,9 @@ public final class SettingsBackup {
      * until someone decides it belongs here, and SettingsBackupTest fails until they do.
      */
     static final List<BooleanSetting> ALLOWLIST = Collections.unmodifiableList(Arrays.asList(
-            Settings.HIDE_SPONSORED_POSTS,
-            Settings.HIDE_PROMOTED_POSTS,
-            Settings.HIDE_SUGGESTED_POSTS,
-            Settings.HIDE_SUGGESTED_FOR_YOU,
-            Settings.HIDE_PEOPLE_YOU_MAY_KNOW,
-            Settings.HIDE_SUGGESTED_GROUPS,
-            Settings.HIDE_STORIES_YOU_MIGHT_LIKE,
-            Settings.HIDE_STORIES_TRAY,
-            Settings.HIDE_FEED_REELS,
-            Settings.BLOCK_RETURN_REFRESH,
-            Settings.RETURN_REFRESH_NO_LIMIT,
-            Settings.HIDE_AI_DETECTED_POSTS,
-            Settings.HIDE_AI_LABELLED_POSTS,
-            Settings.HIDE_AI_DETECTED_REELS,
-            Settings.HIDE_POSTS_WITH_WORDS,
-            Settings.HIDE_SPONSORED_STORIES,
-            Settings.HIDE_SUGGESTED_STORIES,
-            Settings.BLOCK_STORY_AUTO_ADVANCE,
-            Settings.VIEW_STORIES_ANONYMOUSLY,
-            Settings.HIDE_SPONSORED_REELS,
-            Settings.HIDE_SPONSORED_SEARCH_RESULTS,
-            Settings.HIDE_SPONSORED_PROFILE_POSTS,
-            Settings.HIDE_SPONSORED_MARKETPLACE_LISTINGS,
-            Settings.HIDE_REEL_CHIPS,
-            Settings.HIDE_REEL_FOLLOW_BUTTON,
-            Settings.HIDE_REEL_SOCIAL_FOOTER,
-            Settings.DONT_SEND_REEL_WATCH_HISTORY,
-            Settings.TURN_OFF_DOUBLE_TAP_LIKE,
-            Settings.KEEP_REEL_SPEED,
-            Settings.HOLD_REEL_FOR_2X,
-            Settings.DEFAULT_COMMENT_ORDER,
-            Settings.TAG_SUGGESTIONS_ONLY_AFTER_AT,
-            Settings.TAP_TO_PLAY,
-            Settings.RESUME_LONG_VIDEOS,
-            Settings.DEFAULT_PLAYBACK_QUALITY,
-            Settings.USE_SYSTEM_FONT,
-            Settings.USE_SYSTEM_EMOJI,
-            Settings.OPEN_LINKS_EXTERNALLY,
+            Settings.HIDE_ADS,
             Settings.SANITIZE_SHARING_LINKS,
-            Settings.STOP_UPDATE_PROMPTS,
-            Settings.DOWNLOAD_STORIES,
-            Settings.DOWNLOAD_REELS,
-            Settings.DOWNLOAD_VIDEOS,
-            Settings.DOWNLOAD_COMPATIBLE,
-            Settings.OPEN_ON_CHOSEN_TAB,
-            Settings.MARKETPLACE_ONLY,
-            Settings.MARKETPLACE_QUIET_NOTIFICATIONS,
-            Settings.MARKETPLACE_SKIP_FEED_PREFETCH,
-            Settings.HIDE_REELS_TAB,
-            Settings.HIDE_GET_MESSENGER_CARD,
-            Settings.OPEN_MESSENGER_APP,
-            Settings.HIDE_MENU_UPGRADES,
-            Settings.HIDE_MENU_ALSO_FROM_META,
-            Settings.HIDE_META_AI_IN_SEARCH,
-            Settings.BLOCK_TRENDING_VIDEO_NOTIFICATIONS,
-            Settings.BLOCK_MEMORY_NOTIFICATIONS,
-            Settings.BLOCK_BIRTHDAY_NOTIFICATIONS,
-            Settings.BLOCK_HIGHLIGHT_NOTIFICATIONS,
-            Settings.BLOCK_PEOPLE_YOU_MAY_KNOW_NOTIFICATIONS,
-            Settings.BLOCK_NEARBY_NOTIFICATIONS));
-
-    /**
-     * The word filter's two lists, held in a file exactly as the settings row stores them: one
-     * phrase per line within {@link PostWords}' bounds. A value {@link PostWords#clean} would change
-     * refuses the whole file, as a switch that isn't true or false does, so a file can't slip in a
-     * list longer or looser than the row allows.
-     */
-    static final StringSetting HIDDEN = Settings.HIDDEN_WORDS;
-    static final StringSetting KEPT = Settings.KEPT_WORDS;
-
-    /**
-     * The one setting a file carries that isn't a switch: the folder saves go to. A file holds it
-     * as the clean folder name the saves use, and an import takes nothing else there. A value
-     * {@link SaveFolder#sanitize} would change refuses the whole file, as a switch that isn't true
-     * or false does, so a file can't point the saves at a path. A character this phone doesn't know
-     * yet, from a newer Android, counts as an ordinary one ({@link SaveFolder#isImportable}), and
-     * the folder taken is the name the saves here will use.
-     */
-    static final StringSetting FOLDER = Settings.SAVE_FOLDER;
-
-    /**
-     * The quality video saves ask for, held in a file as its {@link DownloadQuality#fileValue}.
-     * Anything but one of those refuses the whole file, as a switch that isn't true or false does.
-     */
-    static final EnumSetting<DownloadQuality> QUALITY = Settings.DOWNLOAD_QUALITY;
-
-    /**
-     * The name saved videos get, held in a file as the clean template the saves use and taken back
-     * only as one, like the folder ({@link FileNameTemplate#isImportable}).
-     */
-    static final StringSetting FILE_NAME = Settings.FILENAME_TEMPLATE;
-
-    /**
-     * The tab a start from the launcher icon opens on, held in a file as its
-     * {@link StartTab#fileValue}. Anything else refuses the whole file, as a quality does.
-     */
-    static final EnumSetting<StartTab> START = Settings.START_TAB;
-
-    /**
-     * The order comment sheets ask for, held in a file as its {@link CommentOrder#fileValue}.
-     * Anything else refuses the whole file, as a tab does.
-     */
-    static final EnumSetting<CommentOrder> ORDER = Settings.COMMENT_ORDER;
-
-    /**
-     * The quality videos play at, held in a file as its {@link PlaybackQuality#fileValue}. Anything
-     * else refuses the whole file, as a comment order does.
-     */
-    static final EnumSetting<PlaybackQuality> PLAYBACK = Settings.PLAYBACK_QUALITY;
-
-    /** The settings a file carries that aren't switches, in the order Settings declares them. */
-    static final List<Setting<?>> VALUES = Collections.unmodifiableList(
-            Arrays.<Setting<?>>asList(HIDDEN, KEPT, FOLDER, QUALITY, FILE_NAME, START, ORDER, PLAYBACK));
+            Settings.DISABLE_ANALYTICS));
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
@@ -258,81 +133,24 @@ public final class SettingsBackup {
         }
     }
 
-    /**
-     * What a file says: a value for each switch it names, the folder, the quality, the file name,
-     * the start tab, the comment order and the playback quality when it names them, and how many
-     * other names it holds.
-     */
+    /** What a file says: a value for each switch it names, and how many other names it holds. */
     public static final class Snapshot {
         private static final String SWITCHES = "switches";
         private static final String UNKNOWN = "unknown";
-        private static final String FOLDER_NAME = "folder";
-        private static final String QUALITY_NAME = "quality";
-        private static final String FILE_NAME_NAME = "file_name";
-        private static final String START_NAME = "start_tab";
-        private static final String ORDER_NAME = "comment_order";
-        private static final String HIDDEN_NAME = "hidden_words";
-        private static final String KEPT_NAME = "kept_words";
-        private static final String PLAYBACK_NAME = "playback_quality";
 
         /** In {@link #ALLOWLIST} order, and only the switches the file named. */
         final Map<BooleanSetting, Boolean> values;
-        /** The clean folder name the file holds, or null when it names none. */
-        @Nullable
-        final String folder;
-        /** The save quality the file holds, or null when it names none. */
-        @Nullable
-        final DownloadQuality quality;
-        /** The clean file name template the file holds, or null when it names none. */
-        @Nullable
-        final String fileName;
-        /** The tab Facebook opens on that the file holds, or null when it names none. */
-        @Nullable
-        final StartTab start;
-        /** The order comments open in that the file holds, or null when it names none. */
-        @Nullable
-        final CommentOrder order;
-        /** The clean list of words to hide the file holds, or null when it names none. */
-        @Nullable
-        final String hidden;
-        /** The clean list of words that keep a post the file holds, or null when it names none. */
-        @Nullable
-        final String kept;
-        /** The quality videos play at that the file holds, or null when it names none. */
-        @Nullable
-        final PlaybackQuality playback;
         /** Names the file holds that aren't settings this build knows. They're left out. */
         final int unknown;
 
-        Snapshot(Map<BooleanSetting, Boolean> values, @Nullable String folder, @Nullable DownloadQuality quality,
-                 @Nullable String fileName, @Nullable StartTab start, @Nullable CommentOrder order, int unknown) {
-            this(values, folder, quality, fileName, start, order, null, null, unknown);
-        }
-
-        Snapshot(Map<BooleanSetting, Boolean> values, @Nullable String folder, @Nullable DownloadQuality quality,
-                 @Nullable String fileName, @Nullable StartTab start, @Nullable CommentOrder order,
-                 @Nullable String hidden, @Nullable String kept, int unknown) {
-            this(values, folder, quality, fileName, start, order, hidden, kept, null, unknown);
-        }
-
-        Snapshot(Map<BooleanSetting, Boolean> values, @Nullable String folder, @Nullable DownloadQuality quality,
-                 @Nullable String fileName, @Nullable StartTab start, @Nullable CommentOrder order,
-                 @Nullable String hidden, @Nullable String kept, @Nullable PlaybackQuality playback, int unknown) {
+        Snapshot(Map<BooleanSetting, Boolean> values, int unknown) {
             this.values = Collections.unmodifiableMap(values);
-            this.folder = folder;
-            this.quality = quality;
-            this.fileName = fileName;
-            this.start = start;
-            this.order = order;
-            this.hidden = hidden;
-            this.kept = kept;
-            this.playback = playback;
             this.unknown = unknown;
         }
 
         /**
-         * The settings whose saved value this file changes, the switches first. Saved, not what a
-         * paused Facebook is answered: a file holds what the person chose.
+         * The switches whose saved value this file changes. Saved, not what a paused Threads is
+         * answered: a file holds what the person chose.
          */
         Map<Setting<?>, Object> changes() {
             Map<Setting<?>, Object> changes = new LinkedHashMap<>();
@@ -341,91 +159,12 @@ public final class SettingsBackup {
                     changes.put(entry.getKey(), entry.getValue());
                 }
             }
-            String folderChange = folderChange();
-            if (folderChange != null) changes.put(FOLDER, folderChange);
-            DownloadQuality qualityChange = qualityChange();
-            if (qualityChange != null) changes.put(QUALITY, qualityChange);
-            String fileNameChange = fileNameChange();
-            if (fileNameChange != null) changes.put(FILE_NAME, fileNameChange);
-            StartTab startChange = startChange();
-            if (startChange != null) changes.put(START, startChange);
-            CommentOrder orderChange = orderChange();
-            if (orderChange != null) changes.put(ORDER, orderChange);
-            String hiddenChange = hiddenChange();
-            if (hiddenChange != null) changes.put(HIDDEN, hiddenChange);
-            String keptChange = keptChange();
-            if (keptChange != null) changes.put(KEPT, keptChange);
-            PlaybackQuality playbackChange = playbackChange();
-            if (playbackChange != null) changes.put(PLAYBACK, playbackChange);
             return changes;
         }
 
         /** How many switches this file changes, the number the preview and the toast give. */
         int switchChanges() {
-            int count = 0;
-            for (Map.Entry<BooleanSetting, Boolean> entry : values.entrySet()) {
-                if (!entry.getValue().equals(entry.getKey().savedValue())) count++;
-            }
-            return count;
-        }
-
-        /**
-         * The folder name this file moves the saves to, or null when it names none or the one the
-         * saves already use.
-         */
-        @Nullable
-        String folderChange() {
-            if (folder == null) return null;
-            return folder.equals(SaveFolder.sanitize(FOLDER.savedValue())) ? null : folder;
-        }
-
-        /** The quality this file sets, or null when it names none or the one saves already use. */
-        @Nullable
-        DownloadQuality qualityChange() {
-            return quality == null || quality == QUALITY.savedValue() ? null : quality;
-        }
-
-        /** The template this file sets, or null when it names none or the one saves already use. */
-        @Nullable
-        String fileNameChange() {
-            if (fileName == null) return null;
-            return fileName.equals(FileNameTemplate.sanitize(FILE_NAME.savedValue())) ? null : fileName;
-        }
-
-        /** The start tab this file sets, or null when it names none or the one already set. */
-        @Nullable
-        StartTab startChange() {
-            return start == null || start == START.savedValue() ? null : start;
-        }
-
-        /** The comment order this file sets, or null when it names none or the one already set. */
-        @Nullable
-        CommentOrder orderChange() {
-            return order == null || order == ORDER.savedValue() ? null : order;
-        }
-
-        /** The playback quality this file sets, or null when it names none or the one already set. */
-        @Nullable
-        PlaybackQuality playbackChange() {
-            return playback == null || playback == PLAYBACK.savedValue() ? null : playback;
-        }
-
-        /** The list of words to hide this file sets, or null when it names none or the one already set. */
-        @Nullable
-        String hiddenChange() {
-            return listChange(hidden, HIDDEN);
-        }
-
-        /** The list of words that keep a post this file sets, or null when it names none or the one already set. */
-        @Nullable
-        String keptChange() {
-            return listChange(kept, KEPT);
-        }
-
-        @Nullable
-        private static String listChange(@Nullable String list, StringSetting setting) {
-            if (list == null) return null;
-            return list.equals(PostWords.clean(setting.savedValue())) ? null : list;
+            return changes().size();
         }
 
         /** For the settings page's saved state, so a preview outlives the page being rebuilt. */
@@ -436,14 +175,6 @@ public final class SettingsBackup {
             }
             Bundle state = new Bundle();
             state.putBundle(SWITCHES, switches);
-            if (folder != null) state.putString(FOLDER_NAME, folder);
-            if (quality != null) state.putString(QUALITY_NAME, quality.fileValue);
-            if (fileName != null) state.putString(FILE_NAME_NAME, fileName);
-            if (start != null) state.putString(START_NAME, start.fileValue);
-            if (order != null) state.putString(ORDER_NAME, order.fileValue);
-            if (hidden != null) state.putString(HIDDEN_NAME, hidden);
-            if (kept != null) state.putString(KEPT_NAME, kept);
-            if (playback != null) state.putString(PLAYBACK_NAME, playback.fileValue);
             state.putInt(UNKNOWN, unknown);
             return state;
         }
@@ -464,22 +195,12 @@ public final class SettingsBackup {
                 Object value = switches.get(setting.key);
                 if (value instanceof Boolean) values.put(setting, (Boolean) value);
             }
-            Object folder = state.get(FOLDER_NAME);
-            Object fileName = state.get(FILE_NAME_NAME);
-            Object hidden = state.get(HIDDEN_NAME);
-            Object kept = state.get(KEPT_NAME);
-            return new Snapshot(values, folder instanceof String && SaveFolder.isClean((String) folder)
-                    ? (String) folder : null, DownloadQuality.fromFile(state.get(QUALITY_NAME)),
-                    fileName instanceof String && FileNameTemplate.isClean((String) fileName) ? (String) fileName : null,
-                    StartTab.fromFile(state.get(START_NAME)), CommentOrder.fromFile(state.get(ORDER_NAME)),
-                    hidden instanceof String && PostWords.isClean((String) hidden) ? (String) hidden : null,
-                    kept instanceof String && PostWords.isClean((String) kept) ? (String) kept : null,
-                    PlaybackQuality.fromFile(state.get(PLAYBACK_NAME)), unknown);
+            return new Snapshot(values, unknown);
         }
     }
 
     /**
-     * The file for the switches as they're saved now. Saved rather than what a paused Facebook is
+     * The file for the switches as they're saved now. Saved rather than what a paused Threads is
      * answered, so exporting while paused keeps what the person chose.
      */
     public static String create() throws JSONException {
@@ -487,16 +208,6 @@ public final class SettingsBackup {
         for (BooleanSetting setting : ALLOWLIST) {
             switches.put(setting.key, setting.savedValue().booleanValue());
         }
-        // The name the saves use, so a file never carries one an import would refuse.
-        switches.put(FOLDER.key, SaveFolder.sanitize(FOLDER.savedValue()));
-        switches.put(QUALITY.key, QUALITY.savedValue().fileValue);
-        switches.put(FILE_NAME.key, FileNameTemplate.sanitize(FILE_NAME.savedValue()));
-        switches.put(START.key, START.savedValue().fileValue);
-        switches.put(ORDER.key, ORDER.savedValue().fileValue);
-        switches.put(PLAYBACK.key, PLAYBACK.savedValue().fileValue);
-        // The lists the filter reads, so a file never carries one an import would refuse.
-        switches.put(HIDDEN.key, PostWords.clean(HIDDEN.savedValue()));
-        switches.put(KEPT.key, PostWords.clean(KEPT.savedValue()));
         return new JSONObject()
                 .put(FORMAT_NAME, FORMAT)
                 .put(SCHEMA_NAME, SCHEMA)
@@ -581,65 +292,9 @@ public final class SettingsBackup {
         Map<String, BooleanSetting> known = new HashMap<>();
         for (BooleanSetting setting : ALLOWLIST) known.put(setting.key, setting);
         Map<BooleanSetting, Boolean> found = new HashMap<>();
-        String folder = null;
-        DownloadQuality quality = null;
-        String fileName = null;
-        StartTab start = null;
-        CommentOrder order = null;
-        String hidden = null;
-        String kept = null;
-        PlaybackQuality playback = null;
         JSONObject values = (JSONObject) settings;
         for (Iterator<String> names = values.keys(); names.hasNext(); ) {
             String name = names.next();
-            if (FOLDER.key.equals(name)) {
-                Object value = values.opt(name);
-                if (!(value instanceof String) || !SaveFolder.isImportable((String) value)) {
-                    throw new Rejected(Reason.VALUE, "Not one clean folder name: " + name);
-                }
-                // A newer phone's name can hold characters this one doesn't know yet, which the
-                // saves here drop, so the folder taken is the one they'll really use.
-                folder = SaveFolder.sanitize((String) value);
-                continue;
-            }
-            if (QUALITY.key.equals(name)) {
-                quality = DownloadQuality.fromFile(values.opt(name));
-                if (quality == null) throw new Rejected(Reason.VALUE, "Not a save quality: " + name);
-                continue;
-            }
-            if (FILE_NAME.key.equals(name)) {
-                Object value = values.opt(name);
-                if (!(value instanceof String) || !FileNameTemplate.isImportable((String) value)) {
-                    throw new Rejected(Reason.VALUE, "Not one clean file name: " + name);
-                }
-                fileName = FileNameTemplate.sanitize((String) value);
-                continue;
-            }
-            if (START.key.equals(name)) {
-                start = StartTab.fromFile(values.opt(name));
-                if (start == null) throw new Rejected(Reason.VALUE, "Not a start tab: " + name);
-                continue;
-            }
-            if (ORDER.key.equals(name)) {
-                order = CommentOrder.fromFile(values.opt(name));
-                if (order == null) throw new Rejected(Reason.VALUE, "Not a comment order: " + name);
-                continue;
-            }
-            if (PLAYBACK.key.equals(name)) {
-                playback = PlaybackQuality.fromFile(values.opt(name));
-                if (playback == null) throw new Rejected(Reason.VALUE, "Not a playback quality: " + name);
-                continue;
-            }
-            if (HIDDEN.key.equals(name) || KEPT.key.equals(name)) {
-                Object value = values.opt(name);
-                // The setting's name only: a list's words stay out of what a refusal says.
-                if (!(value instanceof String) || !PostWords.isClean((String) value)) {
-                    throw new Rejected(Reason.VALUE, "Not one clean word list: " + name);
-                }
-                if (HIDDEN.key.equals(name)) hidden = (String) value;
-                else kept = (String) value;
-                continue;
-            }
             BooleanSetting setting = known.get(name);
             if (setting == null) {
                 // A name this build doesn't know, Pause and the debug settings included: left
@@ -658,14 +313,14 @@ public final class SettingsBackup {
             Boolean value = found.get(setting);
             if (value != null) ordered.put(setting, value);
         }
-        return new Snapshot(ordered, folder, quality, fileName, start, order, hidden, kept, playback, unknown);
+        return new Snapshot(ordered, unknown);
     }
 
     /**
-     * Writes the switches and the other settings a file changes, all of them in one preference
-     * commit. A setting the file doesn't name is left as it is.
+     * Writes the switches a file changes, all of them in one preference commit. A switch the file
+     * doesn't name is left as it is.
      *
-     * @return how many settings changed, each setting that isn't a switch counted as one.
+     * @return how many switches changed.
      * @throws ApplyFailed when the commit failed. {@link Setting#saveAll} puts the switches
      *                     back, live and stored; {@link ApplyFailed#rolledBack} says whether that
      *                     worked for every one of them.

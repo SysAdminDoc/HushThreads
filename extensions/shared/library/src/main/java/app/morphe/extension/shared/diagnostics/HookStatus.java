@@ -22,9 +22,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * What each hook family found in this Facebook build, and what it did not.
+ * What each hook family found in this Threads build, and what it did not.
  *
- * <p>The patches attach to code Facebook renames on every release, and a hook that no longer
+ * <p>The patches attach to code Threads renames on every release, and a hook that no longer
  * finds its anchor fails quietly: the switch still reads on and the thing it promises simply
  * does not happen. Nothing told anyone, so the lookups report here and the Diagnostics screen
  * shows a family at a time.
@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>Only lookups the caller has no fallback for belong here. Most readers try a getter and
  * then a field, or several shapes of row in turn, and expect most of those to miss. Neither
  * does a condition that varies from row to row: this says whether a build is broken, and a
- * single comment cell that came up without its thumbs down is not that.
+ * single post that came through without the field an ad check reads is not that.
  *
  * <p>Reporting runs on the layout callback of a scrolling feed, several times per pass, so an
  * answer already known has to cost a hash lookup and nothing else. No lock is taken on a
@@ -166,7 +166,7 @@ public final class HookStatus {
      * Removes a view-id miss after the same required view is found later.
      *
      * <p>Android can run a layout listener while an activity is still inflating. A lookup can
-     * therefore miss on the first pass and bind on the next one without any Facebook contract
+     * therefore miss on the first pass and bind on the next one without any Threads contract
      * having changed. Keeping that first pass forever makes a working build look broken. Only
      * the exact view-id key is removed; member misses and hooks that threw remain evidence.
      */
@@ -195,7 +195,7 @@ public final class HookStatus {
 
     /**
      * A hook of this family ran. What it found is reported separately; this says only that
-     * Facebook reached it, which is the first thing a report of "the switch is on and nothing
+     * Threads reached it, which is the first thing a report of "the switch is on and nothing
      * happens" needs to know. A repeat costs one hash lookup and one increment.
      *
      * <p>Hooks call this first thing, often before their own guard, so it never throws.
@@ -221,12 +221,12 @@ public final class HookStatus {
     }
 
     /**
-     * One more of something a hook decided, under a name the caller holds as a constant: a reel
-     * sidebar built with its button, or without it and why. It says which way a hook went where
-     * nothing else is counted, such as a button that was never drawn and so never tapped (#18).
+     * One more of something a hook decided, under a name the caller holds as a constant: a feed
+     * page with an ad taken out of it, or an upload address that was replaced. It says which way a
+     * hook went where nothing else is counted, such as a filter that ran and found nothing to take.
      *
      * <p>The name is written into the report as it is, so it is fixed text, never anything read
-     * from Facebook. A family keeps sixteen names at most. Like
+     * from Threads. A family keeps sixteen names at most. Like
      * {@link #invoked}, a repeat costs a hash lookup and an increment, and it never throws.
      */
     public static void counted(String family, String what) {
@@ -276,7 +276,7 @@ public final class HookStatus {
      * A hook that found its anchor, ran, and came back out through a catch.
      *
      * <p>This is a different failure from a missing view or a renamed member, and it used to
-     * leave no trace at all: the extension logged an exception and returned Facebook's own value,
+     * leave no trace at all: the extension logged an exception and returned Threads' own value,
      * so the export called the family healthy while the feature silently did nothing. It counts
      * as a miss because a hook that threw did not do its job, and the first one is named on the
      * family's line.
@@ -292,7 +292,7 @@ public final class HookStatus {
         record(family, key,
                 "a working '" + name + "' hook (it threw " + cause + ")",
                 "The '" + name + "' hook for " + family + " threw " + cause
-                        + ", so Facebook's own behaviour was left alone", false);
+                        + ", so Threads' own behaviour was left alone", false);
     }
 
     private static void record(String family, String key, String detail) {
@@ -314,7 +314,7 @@ public final class HookStatus {
         // Never hold STATE_LOCK while Logger enters LogBufferManager. Diagnostic clear takes
         // the buffer lock first and then snapshots this state, so doing both here would deadlock.
         String message = ownMessage == null ? "no " + detail + " for " + family : ownMessage;
-        String line = ownMessage == null ? "This Facebook build has " + message : message;
+        String line = ownMessage == null ? "This Threads build has " + message : message;
         Logger.printInfo(() -> line);
         LogBufferManager.appendEvent(DiagnosticCategory.PATCH_ERRORS, "HookStatus", "WARN", message);
     }
@@ -468,7 +468,7 @@ public final class HookStatus {
 
     /**
      * Says that this family's hooks take no setting into account. A paused export marks every
-     * other family as taking Facebook's own path, and a family that does not has to say so, or the
+     * other family as taking Threads' own path, and a family that does not has to say so, or the
      * sticker save button reads as switched off while it is on the screen working.
      */
     public static void runsWhilePaused(String family) {

@@ -20,20 +20,14 @@ import app.morphe.extension.shared.settings.BaseSettings;
 @SuppressWarnings({"deprecation", "unused"})
 public class LogExportFilterPreference extends Preference {
     private static final String VALUE_ALL = "all";
-    private static final String VALUE_FOLLOW = "follow";
-    private static final String VALUE_DOWNLOADS = "downloads";
     private static final String VALUE_FEED = "feed";
-    private static final String VALUE_FEATURE_GATE = "feature_gate";
     private static final String VALUE_SETTINGS = "settings";
     private static final String VALUE_ERRORS = "errors";
     private static final String VALUE_OTHER = "other";
 
     private static final String[] VALUES = {
             VALUE_ALL,
-            VALUE_FOLLOW,
-            VALUE_DOWNLOADS,
             VALUE_FEED,
-            VALUE_FEATURE_GATE,
             VALUE_SETTINGS,
             VALUE_ERRORS,
             VALUE_OTHER
@@ -41,10 +35,7 @@ public class LogExportFilterPreference extends Preference {
 
     private static final String[] LABELS = {
             "All events",
-            "Follow probe",
-            "Downloads",
-            "Feed and navigation",
-            "Feature Gate Lab",
+            "Feed",
             "Settings",
             "Errors",
             "Other"

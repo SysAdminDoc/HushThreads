@@ -615,7 +615,7 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
     }
 
     protected CharSequence initializationErrorSummary(@Nullable Context context) {
-        return L10n.t(context, "Try again, or go back to Facebook.");
+        return L10n.t(context, "Try again, or go back to Threads.");
     }
 
     protected CharSequence initializationBackLabel(@Nullable Context context) {
@@ -637,7 +637,7 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
     public static void showRestartDialog(Context context) {
         Utils.verifyOnMainThread();
         CharSequence message = savedMessage == null
-                ? L10n.t(context, "Saved. Restart Facebook to apply this change.")
+                ? L10n.t(context, "Saved. Restart Threads to apply this change.")
                 : savedMessage;
         RestartFeedbackPresenter presenter = restartFeedbackPresenter;
         if (presenter != null) {
