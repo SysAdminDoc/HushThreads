@@ -1,0 +1,576 @@
+# Spanish for HushThreads: the English key, a tab, the translation. One row per string.
+# After editing, run python scripts/gen-l10n.py from the repository root.
+"Pages you may like" cards and the cards Facebook uses to push its own features. In-feed surveys go too.	“Páginas que quizá te gusten” y las tarjetas con las que Facebook promociona sus propias funciones. También se ocultan las encuestas del feed.
+%1$d item in that file isn't a setting this version of HushThreads knows, so it'll be left out.	%1$d elemento de ese archivo no es un ajuste que conozca esta versión de HushThreads, así que se omitirá.
+%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.	%1$d elementos de ese archivo no son ajustes que conozca esta versión de HushThreads, así que se omitirán.
+%1$d switch will change.	Cambiará %1$d interruptor.
+%1$d switches will change.	Cambiarán %1$d interruptores.
+%1$s of %2$s	%1$s de %2$s
+%1$s so far	%1$s hasta ahora
+%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.	%1$s. Este cambio se aplicó al parchear, así que Pausar no puede desactivarlo. Para descartarlo, vuelve a parchear sin ese parche.
+%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.	%1$s. Estos cambios se aplicaron al parchear, así que Pausar no puede desactivarlos. Para descartar uno, vuelve a parchear sin el parche que aparece entre paréntesis después de él.
+A change here applies after Facebook restarts.	Un cambio de aquí se aplica cuando Facebook se reinicie.
+A diagnostic report is already being saved.	Ya se está guardando un informe de diagnóstico.
+Add a Download button to reels, using your download quality. Off or paused, Facebook's own buttons return.	Añade Descargar a los reels con tu calidad de descarga. Desactivado o en pausa, vuelven los botones de Facebook.
+A file named %1$s in %2$s paused HushThreads.	Un archivo llamado %1$s en %2$s pausó HushThreads.
+About	Acerca de
+Ad cards between the stories people posted.	Tarjetas de anuncios entre las historias que publicó la gente.
+Ad telemetry blocked	Telemetría de anuncios bloqueada
+Add Download to phone to feed and Watch video menus. Uses the quality below. Off or paused, Facebook's menu returns.	Añade Descargar al teléfono a los menús de vídeos del feed y Watch. Usa la calidad de abajo. Desactivado o en pausa, vuelve el menú de Facebook.
+Add Save to every story menu, using your download quality. Off or paused, Facebook only saves your own stories.	Añade Guardar a todas las historias con tu calidad de descarga. Desactivado o en pausa, Facebook solo guarda tus propias historias.
+Ads inside Reels, starting with the next batch Facebook loads. Banners, mid-rolls and app-inserted ads stay blocked even while paused.	Anuncios dentro de Reels, a partir de la próxima tanda que cargue Facebook. Los banners, los anuncios a mitad de video y los que inserta la app siguen bloqueados incluso en pausa.
+AMOLED black theme	Tema negro AMOLED
+Appearance	Apariencia
+Audience Network off	Sin Audience Network
+Back	Atrás
+Background ad prefetch blocked	Precarga de anuncios en segundo plano bloqueada
+Cancel	Cancelar
+Cancel saving this photo	Cancelar el guardado de esta foto
+Cancel saving this video	Cancelar el guardado de este video
+Changing these	Cómo cambiarlos
+Choose a settings file. Before anything is imported, you'll see how many switches it changes and any new download settings.	Elige un archivo de configuración. Antes de importar nada, verás cuántos interruptores cambia y los ajustes de descarga nuevos.
+Clear diagnostic data	Borrar datos de diagnóstico
+Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.	Copia un informe rápido o guarda el completo en Download/Morphe. Se omiten enlaces, ID, cookies y tokens de inicio de sesión. Revisa si queda otro texto privado antes de compartirlo.
+Copy quick report	Copiar informe rápido
+Copying to the gallery	Copiando a la galería
+Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.	No se pudo importar la configuración ni restaurar la que tenías. Revisa los interruptores de esta pantalla.
+Couldn't import the settings. Nothing was changed.	No se pudo importar la configuración. No se cambió nada.
+Couldn't open that file. Nothing was changed.	No se pudo abrir ese archivo. No se cambió nada.
+Couldn't open the file picker. Try again.	No se pudo abrir el selector de archivos. Inténtalo de nuevo.
+Couldn't put back the diagnostic data. Try again.	No se pudieron restaurar los datos de diagnóstico. Inténtalo de nuevo.
+Couldn't save the settings file. Try again.	No se pudo guardar el archivo de configuración. Inténtalo de nuevo.
+Couldn't save this video. Play it for a moment, then try again.	No se pudo guardar este video. Reprodúcelo un momento y vuelve a intentarlo.
+Couldn't start that. Try again in a moment.	No se pudo iniciar. Inténtalo de nuevo en un momento.
+Couldn't start the report export. Try again shortly.	No se pudo iniciar la exportación del informe. Inténtalo de nuevo en breve.
+Couldn't turn HushThreads back on. Try again.	No se pudo volver a activar HushThreads. Inténtalo de nuevo.
+Dark mode draws black instead of dark grey. Turn on dark mode in Facebook to see it.	El modo oscuro usa negro en lugar de gris oscuro. Activa el modo oscuro en Facebook para verlo.
+Debug logging	Registro de depuración
+Diagnostic data cleared. Tap again to put it back.	Se borraron los datos de diagnóstico. Toca de nuevo para restaurarlos.
+Diagnostic data put back.	Se restauraron los datos de diagnóstico.
+Diagnostic report copied to the clipboard.	Informe de diagnóstico copiado en el portapapeles.
+Download	Descargar
+Download button on reels	Botón de descarga en los reels
+Download failed	No se pudo descargar
+Download feed and Watch videos	Descargar videos del feed y de Watch
+Download to phone	Descargar en el teléfono
+Downloading	Descargando
+Downloads	Descargas
+Empties the log and the filter counts a report would include.	Vacía el registro y los recuentos de filtros que incluiría un informe.
+Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.	Todos los interruptores, salvo el Registro de depuración, funcionan como si estuvieran desactivados, y lo que se aplicó al parchear se mantiene. Tu configuración no cambia.
+Export diagnostic report	Exportar informe de diagnóstico
+Export settings	Exportar configuración
+Facebook crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.	Tres veces seguidas, Facebook falló o se congeló durante el primer minuto tras iniciarse, así que HushThreads se pausó solo.
+Facebook doesn't download ads or its ad model in the background.	Facebook no descarga anuncios ni su modelo de anuncios en segundo plano.
+Facebook doesn't serve ads to other apps on this phone.	Facebook no envía anuncios a otras apps de este teléfono.
+Facebook dark mode and this screen use your wallpaper colours. Android 11 uses blue instead. Turn on Facebook dark mode to see it.	El modo oscuro de Facebook y esta pantalla usan los colores de tu fondo. Android 11 usa azul en su lugar. Activa el modo oscuro de Facebook para verlo.
+Joining the picture and sound	Uniendo la imagen y el sonido
+From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.	Desde el próximo inicio, todos los interruptores, salvo el Registro de depuración, funcionan como si estuvieran desactivados. Lo que se aplicó al parchear se mantiene, y tus preferencias quedan guardadas.
+Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.	Configuración exportada. La app que guarda el archivo no dejó que HushThreads lo volviera a leer, así que no se comprobó.
+The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.	La app que guarda ese archivo tarda demasiado, así que HushThreads dejó de esperar. No se cambió nada.
+The app holding the last settings file still hasn't answered. Try again later.	La app del último archivo de configuración aún no ha respondido. Inténtalo más tarde.
+The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.	La app que guarda el archivo de configuración tarda demasiado, así que HushThreads dejó de esperar. Esa app aún puede terminar de guardarlo, así que revisa el archivo antes de confiar en él.
+The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	No se pudo eliminar el archivo %1$s. Bórralo de %2$s y luego vuelve a tocar Reanudar.
+The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.	El archivo de configuración se guardó, pero al volver a leerlo no coincide con lo que se escribió. Guárdalo de nuevo como un archivo nuevo.
+Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.	Hasta que reanudes, todos los interruptores, salvo el Registro de depuración, funcionan como si estuvieran desactivados. Lo que se aplicó al parchear se mantiene.
+Use your phone's emoji. Reactions and stickers stay the same. Restart Facebook after changing it.	Usa los emojis del teléfono. Las reacciones y pegatinas no cambian. Reinicia Facebook después de cambiarlo.
+Use your phone's font or a file chosen below. Restart Facebook after changing it.	Usa la fuente del teléfono o un archivo elegido abajo. Reinicia Facebook después de cambiarla.
+Font file	Archivo de fuente
+Use your phone's font	Usar la fuente del teléfono
+Stops using the font file and goes back to your phone's font.	Deja de usar el archivo de fuente y vuelve a la fuente de tu teléfono.
+None chosen, so your phone's font is used. Choose a TrueType or OpenType file of up to %1$d MB.	No hay ninguno, así que se usa la fuente de tu teléfono. Elige un archivo TrueType u OpenType de hasta %1$d MB.
+HushThreads's copy of %1$s is gone, so your phone's font is used. Choose the file again.	La copia de %1$s que guardaba HushThreads ya no está, así que se usa la fuente de tu teléfono. Vuelve a elegir el archivo.
+Using %1$s. Choose another file to replace it.	Usando %1$s. Elige otro archivo para reemplazarlo.
+Copying the font file	Copiando el archivo de fuente
+Font set to %1$s. Restart Facebook to see it.	Fuente establecida en %1$s. Reinicia Facebook para verla.
+That isn't a TrueType or OpenType font file. Your font didn't change.	Eso no es un archivo de fuente TrueType u OpenType. Tu fuente no cambió.
+That font file is over %1$d MB. Your font didn't change.	Ese archivo de fuente pesa más de %1$d MB. Tu fuente no cambió.
+Android couldn't draw with that font file. Your font didn't change.	Android no pudo dibujar con ese archivo de fuente. Tu fuente no cambió.
+Couldn't save a copy of that font. Check that the phone has room, then try again.	No se pudo guardar una copia de esa fuente. Comprueba que el teléfono tenga espacio y vuelve a intentarlo.
+Couldn't open that file. Your font didn't change.	No se pudo abrir ese archivo. Tu fuente no cambió.
+Back to your phone's font. Restart Facebook to see it.	Se volvió a la fuente de tu teléfono. Reinicia Facebook para verla.
+Couldn't go back to your phone's font. Try again.	No se pudo volver a la fuente de tu teléfono. Inténtalo de nuevo.
+Full report saved to %1$s	Informe completo guardado en %1$s
+GPL-3.0, with the notices of the projects this is built on	GPL-3.0, con los avisos de los proyectos en los que se basa
+Hide "People you may know"	Ocultar “Personas que quizá conozcas”
+Hide "Suggested for you" posts	Ocultar publicaciones “Sugerencias para ti”
+Hide AI-detected posts	Ocultar publicaciones detectadas como IA
+Hide promoted posts	Ocultar publicaciones promocionadas
+Hide Reels in the feed	Ocultar reels en el feed
+Hide sponsored posts	Ocultar publicaciones publicitarias
+Hide sponsored reels	Ocultar reels publicitarios
+Hide sponsored stories	Ocultar historias publicitarias
+Hide page suggestions and Facebook's own promos	Ocultar sugerencias de páginas y autopromociones de Facebook
+Hide the Stories tray	Ocultar la bandeja de historias
+How far a photo or video you're saving has got, with a button to cancel it	El progreso de la foto o el video que estás guardando, con un botón para cancelar
+HushThreads %1$s on Facebook %2$s	HushThreads %1$s en Facebook %2$s
+HushThreads is on	HushThreads está activado
+HushThreads is paused	HushThreads está en pausa
+HushThreads saves	Descargas de HushThreads
+HushThreads settings	Configuración de HushThreads
+HushThreads settings couldn't open	No se pudo abrir la configuración de HushThreads
+HushThreads turns back on when Facebook restarts.	HushThreads vuelve a activarse cuando Facebook se reinicie.
+Import	Importar
+Import settings	Importar configuración
+Importing settings	Importando la configuración
+Licenses	Licencias
+Link expired. Reopen the item and try again	El enlace expiró. Vuelve a abrir el contenido e inténtalo de nuevo
+Links	Enlaces
+Material You theme	Tema Material You
+News feed	Feed
+No screenshot watching for ads, and no reports of which apps you install.	Sin vigilancia de capturas de pantalla para anuncios ni informes sobre las apps que instalas.
+Not saved: that isn't a Facebook photo or video	No se guardó: no es una foto ni un video de Facebook
+Not saved: the file is over 512 MB	No se guardó: el archivo supera los 512 MB
+OK	Aceptar
+Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.	Elige un nombre de carpeta en Movies y Pictures. Los caracteres no válidos se convierten en guiones bajos. Déjalo vacío para usar la carpeta predeterminada, %1$s.
+Open links in your browser	Abrir enlaces en tu navegador
+Paid ads in the feed. They're dropped before Facebook adds them, so no gap is left.	Anuncios pagados en el feed. Se eliminan antes de que Facebook los inserte, así que no queda ningún espacio vacío.
+Pause HushThreads	Pausar HushThreads
+Posts Facebook files as promotions rather than as ads.	Publicaciones que Facebook clasifica como promociones y no como anuncios.
+Posts Facebook slips into your feed from people and pages you don't follow and groups you haven't joined.	Publicaciones de personas y páginas que no sigues y de grupos a los que no te has unido que Facebook mete en tu feed.
+Posts that Facebook's own detection marks as made with AI. A post that only its creator labelled as AI stays. It's off by default because it hasn't been tested on a real feed yet.	Publicaciones que la detección propia de Facebook marca como creadas con IA. Una publicación que solo su autor etiquetó como IA se mantiene. Este interruptor viene desactivado porque todavía no se probó en un feed real.
+Profiles and some Settings pages open again on this re-signed build.	Los perfiles y algunas páginas de Configuración vuelven a abrirse en esta versión firmada de nuevo.
+Re-signed build fix	Arreglo para la nueva firma
+Reading the settings file	Leyendo el archivo de configuración
+Reels and Watch	Reels y Watch
+# context: the How to block Reels map at the top of Reels and Watch; the last row's %1$s is a patch name as Morphe Manager shows it, kept in English
+How to block Reels	Cómo bloquear los reels
+Reels show up in four places, and each one has its own control.	Los reels aparecen en cuatro sitios, y cada uno tiene su propio control.
+Reels in the feed	Reels en el feed
+In News feed, Hide Reels in the feed blocks the rows of reels between posts.	En Feed, “Ocultar reels en el feed” bloquea las filas de reels entre las publicaciones.
+Reels that play by themselves	Reels que se reproducen solos
+In Playback, Tap to play blocks autoplay, so reels and other videos wait for your tap.	En Reproducción, “Toca para reproducir” bloquea la reproducción automática, así que los reels y otros vídeos esperan a que toques.
+The Reels tab	La pestaña Reels
+# context: map line without the patch; %1$s is the patch's English name in Morphe Manager
+Facebook's own setting blocks it. Open Settings, Tab bar, Customize the bar and choose Hide next to Reels, which some accounts call Video. If neither is listed, choose the %1$s patch in Morphe Manager and patch again.	La bloquea el propio ajuste de Facebook. Abre Configuración, Barra de pestañas, Personalizar la barra y elige Ocultar junto a Reels, que en algunas cuentas se llama Video. Si no aparece ninguna de las dos, elige el parche %1$s en Morphe Manager y vuelve a parchear.
+# context: map line with the patch; Reels and Watch is this settings section, Hide the Reels tab is the switch below
+In Reels and Watch, Hide the Reels tab blocks it after a restart.	En “Reels y Watch”, “Ocultar la pestaña Reels” la bloquea tras un reinicio.
+# context: switch title under Reels and Watch; the tab some accounts call Video
+Hide the Reels tab	Ocultar la pestaña Reels
+# context: summary of that switch
+Take the Reels tab, called Video on some accounts, off the tab bar. Reel links and reels in the feed still open. Changes show after Facebook restarts.	Quita de la barra de pestañas la pestaña Reels, que en algunas cuentas se llama Video. Los enlaces a reels y los reels del feed se siguen abriendo. Los cambios se ven al reiniciar Facebook.
+# context: start tab row summary when Video is the chosen tab and Hide the Reels tab is on; Home and Video are tab names
+Facebook opens on Home while Hide the Reels tab is on, since Video is off the tab bar. Your choice stays saved.	Facebook se abre en Inicio mientras “Ocultar la pestaña Reels” esté activado, porque Video no está en la barra de pestañas. Tu selección se conserva.
+Everything except Marketplace	Todo menos Marketplace
+In Opening Facebook, Marketplace only blocks the feed, the Reels tab and the other social tabs after a restart.	En “Al abrir Facebook”, “Solo Marketplace” bloquea el feed, la pestaña Reels y las demás pestañas sociales tras un reinicio.
+Not in this build. To block this, choose the %1$s patch in Morphe Manager and patch again.	No está en esta compilación. Para bloquearlo, elige el parche %1$s en Morphe Manager y vuelve a parchear.
+Remove tracking from shared links	Quitar el seguimiento de los enlaces compartidos
+Retry	Reintentar
+Save any story	Guardar cualquier historia
+Save cancelled	Se canceló el guardado
+Save folder	Carpeta de guardado
+Save full report	Guardar informe completo
+Saved to %1$s	Se guardó en %1$s
+Saved to the gallery	Se guardó en la galería
+Saved to %1$s in lower quality than on Facebook	Se guardó en %1$s con menos calidad que en Facebook
+Saved to the gallery in lower quality than on Facebook	Se guardó en la galería con menos calidad que en Facebook
+Saved. Restart Facebook to apply this change.	Guardado. Reinicia Facebook para aplicar este cambio.
+Save your switches and download settings to a file. Pause and Debug logging aren't included, and neither is the release check.	Guarda tus interruptores y los ajustes de descarga en un archivo. La pausa y el Registro de depuración no se incluyen, y la búsqueda de nuevas versiones tampoco.
+# The release check: its switch and Check now row under Updates, the status card's line about a newer release, and what a failed try says.
+Check for new HushThreads releases	Buscar nuevas versiones de HushThreads
+Ask GitHub once a day at startup and show newer releases on the overview. Off by default. Nothing is downloaded.	Consulta GitHub una vez al día al iniciar y muestra nuevas versiones en el resumen. Desactivado por defecto. No descarga nada.
+Check now	Comprobar ahora
+Asks GitHub for the newest release right now, even with the switch above off.	Pregunta ahora mismo a GitHub por la versión más reciente, aunque el interruptor de arriba esté desactivado.
+Checking GitHub now.	Consultando GitHub ahora.
+HushThreads %1$s is out. Update it in Morphe Manager.	Ya salió HushThreads %1$s. Actualízalo en Morphe Manager.
+It targets Facebook %1$s.	Está pensado para Facebook %1$s.
+HushThreads %1$s targets Facebook %2$s.	HushThreads %1$s está pensado para Facebook %2$s.
+You have the newest HushThreads release.	Tienes la versión más reciente de HushThreads.
+The newest HushThreads release is %1$s.	La versión más reciente de HushThreads es la %1$s.
+Couldn't reach GitHub. Try again later.	No se pudo contactar con GitHub. Inténtalo de nuevo más tarde.
+GitHub is turning away checks from this network for now. Try again later.	GitHub está rechazando por ahora las consultas desde esta red. Inténtalo de nuevo más tarde.
+GitHub's answer couldn't be used. Try again later.	No se pudo usar la respuesta de GitHub. Inténtalo de nuevo más tarde.
+Saves will go to a folder named %1$s.	Lo que guardes irá a una carpeta llamada %1$s.
+Saving a photo	Guardando una foto
+Saving a video	Guardando un video
+Saving the settings file	Guardando el archivo de configuración
+Saving...	Guardando...
+Set when you patched	Aplicado al parchear
+Settings couldn't open	No se pudo abrir la configuración
+Settings couldn't refresh completely. Reopen settings and try again.	No se pudo actualizar la configuración por completo. Vuelve a abrirla e inténtalo de nuevo.
+Settings exported.	Configuración exportada.
+Settings imported. %1$d switch changed.	Configuración importada. Cambió %1$d interruptor.
+Settings imported. %1$d switches changed.	Configuración importada. Cambiaron %1$d interruptores.
+Settings imported. Saves will go to a folder named %1$s.	Configuración importada. Lo que guardes irá a una carpeta llamada %1$s.
+Source code and issues	Código fuente e incidencias
+Stays in while paused	Se mantiene durante la pausa
+Stories	Historias
+Takes tracking tags such as mibextid off the links you share or copy. A facebook.com/share/ link is made for one share, so Facebook can still trace it back to you.	Quita las etiquetas de seguimiento, como mibextid, de los enlaces que compartes o copias. Un enlace de facebook.com/share/ se crea para una sola acción de compartir, así que Facebook puede vincularlo contigo de todos modos.
+Tap to turn it back on.	Toca para volver a activarlo.
+That file is too large to be a settings file. Nothing was changed.	Ese archivo es demasiado grande para ser un archivo de configuración. No se cambió nada.
+That file isn't readable text, so it may have been damaged on the way. Nothing was changed.	Ese archivo no es texto legible, así que puede haberse dañado por el camino. No se cambió nada.
+That file lists a setting twice, so there's no telling which value to use. Nothing was changed.	Ese archivo incluye un ajuste dos veces, así que no se sabe qué valor usar. No se cambió nada.
+That isn't a HushThreads settings file. Nothing was changed.	Eso no es un archivo de configuración de HushThreads. No se cambió nada.
+That settings file holds a value HushThreads can't read. Nothing was changed.	Ese archivo de configuración contiene un valor que HushThreads no puede leer. No se cambió nada.
+That settings file is damaged or only partly downloaded. Nothing was changed.	Ese archivo de configuración está dañado o solo se descargó en parte. No se cambió nada.
+That settings file was written by a newer HushThreads than this one. Nothing was changed.	Ese archivo de configuración lo escribió una versión de HushThreads más reciente que esta. No se cambió nada.
+the Audience Network block	el bloqueo de Audience Network
+the black background in dark mode	el fondo negro del modo oscuro
+the block on downloading ads in the background	el bloqueo de la descarga de anuncios en segundo plano
+the block on reports of ad screenshots and app installs	el bloqueo de los informes sobre capturas de pantalla de anuncios y apps instaladas
+The diagnostic report couldn't be saved yet. Try again in a moment.	Todavía no se pudo guardar el informe de diagnóstico. Inténtalo de nuevo en un momento.
+The diagnostic report couldn't be saved. Try again.	No se pudo guardar el informe de diagnóstico. Inténtalo de nuevo.
+The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.	No se pudo eliminar el archivo %1$s. Bórralo de %2$s para volver a activar HushThreads.
+the part of the Reels ad block patched into the app	la parte del bloqueo de anuncios de Reels integrada en la app
+the re-signed build fix	el arreglo para la nueva firma
+the recoloured dark mode	el cambio de colores del modo oscuro
+The row of friend suggestions between posts, and the one on your own profile.	La fila de sugerencias de amistad entre las publicaciones y la de tu propio perfil.
+The row of stories at the top of the feed, Create story included.	La fila de historias en la parte superior del feed, con “Crear historia” incluida.
+The rows of reels between posts, and the reels Facebook adds where your feed ends.	Las filas de reels entre las publicaciones y los reels que Facebook añade donde termina tu feed.
+The setting couldn't finish updating. Its saved value is shown.	No se pudo terminar de actualizar el ajuste. Se muestra su valor guardado.
+There's no diagnostic data to clear.	No hay datos de diagnóstico que borrar.
+There's no diagnostic data to put back.	No hay datos de diagnóstico que restaurar.
+They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.	Se eligen en Morphe Manager al parchear, y Pausar no los desactiva. Vuelve a parchear para cambiarlos.
+This phone has no file picker, so there's no way to choose a file here.	Este teléfono no tiene selector de archivos, así que aquí no hay forma de elegir un archivo.
+Try again, or go back to Facebook.	Inténtalo de nuevo o vuelve a Facebook.
+The switch takes effect when Facebook restarts.	El interruptor surte efecto cuando Facebook se reinicie.
+Use the system font	Usar la fuente del sistema
+Use the phone's emoji	Usar los emojis del teléfono
+Version	Versión
+Version %1$s for Facebook %2$s	Versión %1$s para Facebook %2$s
+Videos go to %1$s and photos to %2$s.	Los videos van a %1$s y las fotos a %2$s.
+Open web links in your browser. Facebook's own pages stay in the app.	Abre enlaces web en tu navegador. Las páginas de Facebook se quedan en la app.
+Record patch activity and show errors for a bug report. Leave off during normal use.	Registra la actividad de los parches y muestra errores para un informe. Déjalo desactivado en el uso normal.
+You paused HushThreads.	Pausaste HushThreads.
+Your switches already match that file, so nothing will change.	Tus interruptores ya coinciden con ese archivo, así que no cambiará nada.
+Keep feed position on return	Mantener la posición del feed al volver
+Returning to Facebook within ten minutes keeps your place. Pull to refresh still works.	Si vuelves a Facebook en menos de diez minutos, seguirás donde estabas. Puedes deslizar hacia abajo para actualizar.
+No time limit	Sin límite de tiempo
+With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.	Con el interruptor de arriba activado, tu lugar se mantiene sin importar cuánto tiempo estés fuera. Deslizar para actualizar y abrir la app de nuevo siguen cargando publicaciones nuevas.
+A finished story stays on screen until you tap or swipe. Turn this off for Facebook's timing.	Una historia terminada permanece en pantalla hasta que toques o deslices. Desactiva esto para usar el tiempo de Facebook.
+View stories anonymously	Ver historias de forma anónima
+Facebook isn't told which stories you watch, so you stay off their viewer lists. Replying or reacting still shows you, and stories you've watched keep their unwatched ring.	Facebook no sabe qué historias ves, así que no apareces en sus listas de espectadores. Si respondes o reaccionas, se te sigue viendo, y las historias que ya viste conservan el círculo de historia sin ver.
+Stop Story auto-advance	Detener el avance automático de historias
+Copy a short report to the clipboard.	Copia un informe breve en el portapapeles.
+Save the full report in Download/Morphe.	Guarda el informe completo en Download/Morphe.
+Folder set to %1$s.	Carpeta establecida en %1$s.
+Save	Guardar
+Folder name	Nombre de carpeta
+Hide prompts and promos under reels	Ocultar invitaciones y promociones en los reels
+Remix, Use template, Add yours and Edits buttons, plus Stars, games, partner apps and outside links. The song and other labels stay.	Los botones para hacer un remix, usar la plantilla, sumar el tuyo o abrir Edits, y los de estrellas, juegos, apps asociadas y enlaces externos. La canción y las demás etiquetas se quedan.
+Hide the Follow button on reels	Ocultar el botón Seguir en los reels
+The Follow button next to the reel's author. You can still follow them from their profile.	El botón Seguir junto a quien publicó el reel. Puedes seguir a esa persona desde su perfil.
+Hide comment and reaction previews	Ocultar las vistas previas de comentarios y reacciones
+The comment Facebook previews under a reel and the bubbles of friends who reacted. Open the comments to see them all.	El comentario que Facebook muestra como vista previa debajo de un reel y las burbujas de los amigos que reaccionaron. Abre los comentarios para verlos todos.
+Download quality	Calidad de descarga
+Best	La mejor
+Smallest	La más pequeña
+Each video saves at the best quality the player streams.	Cada video se guarda con la mejor calidad que ofrece el reproductor.
+Each video saves at its lowest quality, for the smallest file.	Cada video se guarda con su calidad más baja, para que el archivo sea lo más pequeño posible.
+Each video saves at %1$s or the closest quality below it. A video with nothing that low saves at the closest quality above.	Cada video se guarda en %1$s o en la calidad más cercana por debajo. Si un video no tiene ninguna tan baja, se guarda en la más cercana por encima.
+Videos will save at the best quality.	Los videos se guardarán con la mejor calidad.
+Videos will save at their lowest quality, for the smallest files.	Los videos se guardarán con su calidad más baja, para que los archivos sean lo más pequeños posible.
+Videos will save at %1$s or the closest quality below it. A video with nothing that low will save at the closest quality above.	Los videos se guardarán en %1$s o en la calidad más cercana por debajo. Si un video no tiene ninguna tan baja, se guardará en la más cercana por encima.
+Settings imported.	Configuración importada.
+Video file name	Nombre de archivo de los videos
+%1$s becomes the date and time of the save, %2$s the video's number on Facebook, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.	%1$s se convierte en la fecha y la hora del guardado, %2$s en el número del video en Facebook, %3$s en quien lo publicó y %4$s en el día en que se publicó. Lo que el guardado no sabe se omite, y a un nombre sin ninguno de ellos se le añade la fecha. Si el nombre ya está en la carpeta, se le añade al final la hora del guardado. Los caracteres no válidos se convierten en guiones bajos. Déjalo vacío para usar el nombre predeterminado, %5$s.
+Videos are named %1$s. Photos keep Facebook's own %2$s names.	Los videos se llaman %1$s. Las fotos conservan los nombres %2$s propios de Facebook.
+Saved videos will be named %1$s.	Los videos guardados se llamarán %1$s.
+File name	Nombre de archivo
+File name set to %1$s.	Nombre de archivo establecido en %1$s.
+Hide AI-detected reels and videos	Ocultar reels y videos detectados como IA
+No app on this phone can open the link. The address is %1$s.	Ninguna app de este teléfono puede abrir el enlace. La dirección es %1$s.
+HushThreads pauses when Facebook restarts.	HushThreads se pausa cuando Facebook se reinicie.
+Pause, backup and diagnostics	Pausa, copia de seguridad y diagnóstico
+Updates	Actualizaciones
+Stop update prompts	Detener los avisos de actualización
+Facebook stops asking you to update through Meta App Manager and stops having it look for one. Chat promotions aimed at older versions go too. A patched build can't install Meta's updates anyway.	Facebook deja de pedirte que actualices a través de Meta App Manager y deja de hacer que busque una actualización. Las promociones de chat dirigidas a versiones antiguas también desaparecen. Una versión parcheada no puede instalar las actualizaciones de Meta de todos modos.
+Reels and Watch videos that Facebook's own detection marks as made with AI, starting with the next batch Facebook loads. One that only its creator labelled as AI stays. It's off by default because it hasn't been tested on a real account yet.	Reels y videos de Watch que la detección propia de Facebook marca como creados con IA, a partir de la próxima tanda que cargue Facebook. Uno que solo su autor etiquetó como IA se mantiene. Este interruptor viene desactivado porque todavía no se probó con una cuenta real.
+Don't send reel watch history	No enviar el historial de reels vistos
+Stop sending watched-reel lists to Facebook. It uses them to rank your feed, so watched reels may return.	Deja de enviar listas de reels vistos a Facebook. Las usa para ordenar tu feed, así que pueden repetirse reels.
+the rename of the shared permissions	el cambio de nombre de los permisos compartidos
+Room for Meta's apps	Espacio para las apps de Meta
+Messenger, Facebook Lite, Business Suite and Workplace install beside this Facebook. It gives the two permissions they share with it names of its own.	Messenger, Facebook Lite, Business Suite y Workplace se instalan junto a este Facebook. Les da nombres propios a los dos permisos que comparten con él.
+# context: settings section heading for the Open on a chosen tab rows
+Opening Facebook	Al abrir Facebook
+# context: switch title; the list below it picks the tab
+Open on a chosen tab	Abrir en una pestaña elegida
+Choose where Facebook opens from its icon. Notifications and links still open their destination.	Elige dónde abre Facebook desde su icono. Las notificaciones y los enlaces siguen abriendo su destino.
+# context: title of the list of tabs Facebook can open on
+Tab to open on	Pestaña al abrir
+# context: the names of Facebook's own tabs, as its tab bar shows them
+Home	Inicio
+Feeds	Feeds
+Video	Video
+Friends	Amigos
+Marketplace	Marketplace
+Notifications	Notificaciones
+Menu	Menú
+# context: summary of the tab list; %1$s is one of the tab names above
+Facebook opens on %1$s. If your tab bar doesn't have it, Facebook opens on Home.	Facebook se abre en %1$s. Si tu barra de pestañas no la tiene, Facebook se abre en Inicio.
+# context: a sentence in the settings import preview and its toast; %1$s is a tab name
+Facebook will open on %1$s.	Facebook se abrirá en %1$s.
+Jump to a section	Ir a una sección
+Go straight to one group of settings. Back returns to where you were.	Ve directo a un grupo de ajustes. Atrás te devuelve a donde estabas.
+# context: switch title under Downloads; on, every video save keeps to formats other apps accept
+Save videos other apps can open	Guardar videos que otras apps puedan abrir
+# context: summary of that switch; WhatsApp is a name and stays as it is, and saves are the videos the user saved to the phone
+For WhatsApp, video editors such as CapCut and InShot, or a gallery or player that plays saves without sound. May lower quality.	Para WhatsApp, editores de video como CapCut e InShot, o una galería o un reproductor que reproduzca sin sonido los videos guardados. Puede bajar la calidad.
+# context: section title for the Chats settings, named like Facebook's own Chats screen
+Chats	Chats
+# context: switch title under Chats; the card is Facebook's own "Get the Messenger app" card
+Hide the Get Messenger card	Ocultar la tarjeta para obtener Messenger
+# context: summary of that switch; Messenger is the app's name and stays as it is
+The card at the top of Chats that asks you to get the Messenger app goes while Messenger is installed. Without Messenger it stays, so you can still install it from there.	La tarjeta de la parte superior de Chats que te pide que descargues la app de Messenger desaparece mientras Messenger esté instalado. Sin Messenger, se queda para que puedas seguir instalándolo desde ahí.
+# context: switch title under Chats; on, Facebook's Messenger icon opens the Messenger app
+Open the Messenger app	Abrir la app de Messenger
+# context: summary of that switch; Messenger is the app's name, Chats is Facebook's own chat screen as named above
+A tap on the Messenger icon at the top of Facebook opens the Messenger app instead of Chats. Without Messenger installed, Chats opens as before.	Al tocar el icono de Messenger de la parte superior de Facebook se abre la app de Messenger en lugar de Chats. Si Messenger no está instalado, Chats se abre como antes.
+# context: settings section heading for the Tap to play switch
+Playback	Reproducción
+# context: switch title; on, videos and music wait for a tap before they play
+Tap to play	Toca para reproducir
+# context: summary of that switch; Autoplay and Off are the name and value of Facebook's own setting, as Facebook shows them in this language
+Videos, reels, stories and music wait for your tap. Facebook's Autoplay setting temporarily reads Off.	Vídeos, reels, historias y música esperan a que toques. La reproducción automática de Facebook muestra Desactivada temporalmente.
+# context: switch title under Opening Facebook; Marketplace is Facebook's tab and keeps its name
+Marketplace only	Solo Marketplace
+# context: summary of that switch; the tab names are Facebook's own, as its tab bar shows them
+# context: switch title under Menu; Upgrades is the name of a section in Facebook's own Menu
+Hide Upgrades	Ocultar “Mejoras”
+# context: summary of that switch; Settings and Help and support are Facebook's own Menu sections
+The Upgrades section and its offers leave Facebook's Menu. Settings, Help and support and the rest of the Menu stay.	La sección “Mejoras” y sus ofertas desaparecen del menú de Facebook. Configuración, Ayuda y soporte técnico y el resto del menú se quedan.
+# context: switch title under Menu; Also from Meta is the name of a section in Facebook's own Menu
+Hide Also from Meta	Ocultar “También de Meta”
+# context: summary of that switch; the section links to Meta's other apps and shows ads for its devices
+The Also from Meta section leaves Facebook's Menu, with its links to Meta's other apps and its ads for Meta's devices. Your own shortcuts stay.	La sección “También de Meta” desaparece del menú de Facebook, con sus enlaces a las otras apps de Meta y sus anuncios de dispositivos de Meta. Tus propios accesos directos se quedan.
+# context: section title for the search settings, named like Facebook's own search
+Search	Búsqueda
+# context: switch title under Search; Meta AI is Meta's assistant and keeps its name
+Hide Meta AI in search	Ocultar Meta AI en la búsqueda
+# context: summary of that switch; Meta AI and Ask Meta AI are Meta's own names, as Facebook shows them
+Search results lose the Meta AI answer and the Ask Meta AI prompts, and a suggestion no longer sends your search to Meta AI. People, groups, pages and posts stay, and the Meta AI button still opens Meta AI.	Los resultados de búsqueda ya no muestran la respuesta de Meta AI ni las sugerencias para preguntarle a Meta AI, y una sugerencia ya no envía tu búsqueda a Meta AI. Las personas, los grupos, las páginas y las publicaciones se mantienen, y el botón de Meta AI sigue abriendo Meta AI.
+# context: settings section heading for the Default comment order switch and its list
+Comments	Comentarios
+# context: switch title; on, a post's comments open in the order chosen in the list below it
+Default comment order	Orden predeterminado de los comentarios
+# context: summary of that switch; a link to a comment is one from a notification, say
+Use the order below. A choice made on a post lasts until restart. Links to comments keep Facebook's order.	Usa el orden de abajo. El elegido en una publicación dura hasta reiniciar. Los enlaces a comentarios conservan el orden de Facebook.
+# context: title of the list of comment orders, and of its dialog
+Comment order	Orden de los comentarios
+# context: entry of that list: the order Facebook's servers pick, which is what happens without HushThreads
+Facebook's choice	Lo que elija Facebook
+# context: entry of that list; Facebook's own name for this order in the sort menu of a post's comments
+Most relevant	Más relevantes
+# context: entry of that list; Facebook's own name for this order in the sort menu of a post's comments
+Newest	Más recientes
+# context: entry of that list; Facebook's own name for this order in the sort menu of a post's comments
+All comments	Todos los comentarios
+# context: summary of the list when Facebook's choice is picked; Most relevant is Facebook's own name for that order
+Comments open in the order Facebook picks, which is usually Most relevant.	Los comentarios se abren en el orden que elige Facebook, que suele ser Más relevantes.
+# context: summary of the list; %1$s is one of the order names above, as Facebook's sort menu shows it
+A post's comments open with %1$s picked in their sort menu, where the post offers it.	Los comentarios de una publicación se abren con %1$s elegido en su menú de orden, si la publicación lo ofrece.
+# context: sentence in the import preview and the toast after an import that sets the comment order to Facebook's choice
+Comments will open in the order Facebook picks.	Los comentarios se abrirán en el orden que elija Facebook.
+# context: sentence in the import preview and the toast after an import that sets the comment order; %1$s is one of the order names above
+Comments will open with %1$s picked in their sort menu.	Los comentarios se abrirán con %1$s elegido en su menú de orden.
+# context: switch title under Search; the ads Facebook puts between search results
+Hide sponsored search results	Ocultar resultados de búsqueda publicitarios
+# context: summary of that switch
+Ads between the results when you search Facebook. What you searched for stays.	Anuncios entre los resultados cuando buscas en Facebook. Lo que buscaste se queda.
+# context: switch title under News feed; the ads between the posts on a person's profile or a Page
+Hide sponsored profile posts	Ocultar publicaciones publicitarias en perfiles
+# context: summary of that switch; Page is Facebook's name for a business or public figure's page
+Ads between the posts on someone's profile or a Page. Their own posts stay.	Anuncios entre las publicaciones del perfil de alguien o de una página. Sus propias publicaciones se quedan.
+# context: what stays in while HushThreads is paused, followed by the patch name in brackets; the row in Facebook's own Menu that opens HushThreads settings
+the settings row in Facebook's Menu	la fila de configuración en el menú de Facebook
+# context: a short message when the HushThreads row in Facebook's Menu couldn't open the settings
+HushThreads settings can't open here. Long-press the Facebook logo instead.	La configuración de HushThreads no se puede abrir aquí. Mantén pulsado el logotipo de Facebook.
+# context: switch title under News feed; the row of groups Facebook suggests joining, shown between posts
+Hide suggested groups	Ocultar grupos sugeridos
+# context: summary of that switch; Discover more groups is the label of Facebook's own button under that row
+The row of groups to join between posts, with its Discover more groups button. Posts from groups you're in stay.	La fila de grupos para unirte entre las publicaciones, con su botón Descubrir más grupos. Las publicaciones de tus grupos se quedan.
+# context: switch title under News feed; Facebook's own header of a row of Stories from people you don't know, shown between posts
+Hide "Stories you might like"	Ocultar “Historias que te pueden gustar”
+# context: summary of that switch; the Stories tray is the row of Stories at the top of the feed
+The row of Stories from people you aren't connected to that Facebook puts between posts. Your friends' Stories and the Stories tray stay.	La fila de historias de personas con las que no tienes conexión que Facebook pone entre las publicaciones. Las historias de tus amigos y la bandeja de historias se quedan.
+# context: switch title under Notifications; trending videos Facebook sends as push notifications
+Block trending video notifications	Bloquear notificaciones de videos en tendencia
+# context: summary of that switch; reels are Facebook's short videos
+Trending videos and the reels Facebook picked for you stop showing up in your notifications.	Los videos en tendencia y los reels que Facebook eligió para ti dejan de aparecer en tus notificaciones.
+# context: switch title under Notifications; memories are Facebook's posts from past years on the same day
+Block memory notifications	Bloquear notificaciones de recuerdos
+# context: summary of that switch; On this day is the name Facebook gives its memories feature
+Facebook's "On this day" memories stop showing up in your notifications.	Los recuerdos de “Un día como hoy” de Facebook dejan de aparecer en tus notificaciones.
+# context: switch title under Notifications; reminders of friends' birthdays
+Block birthday notifications	Bloquear notificaciones de cumpleaños
+# context: summary of that switch
+No more reminders that it's a friend's birthday.	Se acabaron los avisos de que un amigo cumple años.
+# context: switch title under Notifications; Page is Facebook's name for a business or public figure's page
+Block group and Page highlights	Bloquear destacados de grupos y páginas
+# context: summary of that switch; creators are the people and Pages who post videos and posts you follow
+Digests of what's going on in groups, Pages and creators you follow stop. Comments, replies and mentions still come through.	Dejan de llegar los resúmenes de lo que pasa en los grupos, las páginas y los creadores que sigues. Los comentarios, las respuestas y las menciones siguen llegando.
+# context: switch title under Notifications; People you may know is Facebook's name for its friend suggestions, as in Hide "People you may know"
+Block "People you may know"	Bloquear “Personas que quizá conozcas”
+# context: summary of that switch; friend requests are other notifications, which always come through
+Friend suggestions stop showing up in your notifications. Friend requests still come through.	Las sugerencias de amistad dejan de aparecer en tus notificaciones. Las solicitudes de amistad siguen llegando.
+# context: switch title under Notifications; places near you and weather alerts Facebook sends
+Block nearby and weather notifications	Bloquear notificaciones de lugares cercanos y del clima
+# context: summary of that switch
+Alerts about places near you and about the weather stop.	Dejan de llegar los avisos sobre lugares cercanos y sobre el clima.
+# context: title of a note under Notifications, below the switches; what no switch there blocks
+What always comes through	Lo que siempre llega
+# context: text of that note; Android's own settings are the phone's per-app notification categories, which Facebook's server defines
+Messages, friend requests, comments, mentions, calls and login alerts, and any kind HushThreads doesn't know. Android's own settings for Facebook's notification categories work too, since Facebook drops a notification whose category you turned off. Facebook's server decides which categories you get, though, so they may not split these kinds out.	Los mensajes, las solicitudes de amistad, los comentarios, las menciones, las llamadas y las alertas de inicio de sesión, además de cualquier tipo que HushThreads no conozca. Los ajustes propios de Android para las categorías de notificaciones de Facebook también funcionan, porque Facebook descarta una notificación cuya categoría hayas desactivado. Pero es el servidor de Facebook el que decide qué categorías tienes, así que puede que no separen estos tipos.
+# context: switch title under Stories; the stories Facebook suggests in the Stories tray from accounts you don't follow
+Hide suggested stories	Ocultar historias sugeridas
+# context: summary of that switch; Suggested is the label Facebook shows under such a story in the tray, and the tray reloads on its own schedule
+Keep friends and followed Pages in the Stories tray. Applies when Facebook next loads the tray.	Mantén amigos y páginas seguidas en la bandeja de historias. Se aplica cuando Facebook vuelve a cargarla.
+# context: switch title under Marketplace; the ads Facebook puts between the things people sell in Marketplace's feed
+Hide sponsored Marketplace listings	Ocultar artículos publicitarios de Marketplace
+# context: summary of that switch; a boosted listing is one its seller paid Facebook to show to more people
+Ads and boosted listings in Marketplace's feed and search results. The other listings stay.	Anuncios y artículos promocionados en el feed y en los resultados de búsqueda de Marketplace. Los demás artículos se quedan.
+# context: switch title under News feed; hides posts whose text holds a word or phrase the person listed
+Hide posts with words you choose	Ocultar publicaciones con las palabras que elijas
+# context: summary of that switch; the keep list is the second list under it, and a settings file is the one Export settings writes
+Posts whose text has a word or phrase from your list below. A post with a word from your keep list stays, and so does a post with no text. Your words only leave the phone in a settings file you export.	Publicaciones cuyo texto tiene una palabra o frase de tu lista de abajo. Una publicación con una palabra de tu lista para conservar se mantiene, igual que una publicación sin texto. Tus palabras solo salen del teléfono en un archivo de configuración que exportes.
+# context: title of the row and dialog holding the list of words and phrases that hide a post
+Words to hide	Palabras para ocultar
+# context: title of the row and dialog holding the list of words and phrases that keep a post even when it has a word to hide
+Words that keep a post	Palabras que mantienen una publicación
+# context: message of the Words to hide dialog; %1$d is how many phrases a list holds (50), %2$d and %3$d the shortest and longest phrase in characters (2 and 60)
+One word or phrase per line, up to %1$d, each %2$d to %3$d characters long, or just one for an emoji, a Chinese character, a kana or a Hangul syllable. Capital letters don't matter, and a phrase matches anywhere in a post's text, inside longer words too.	Una palabra o frase por línea, hasta %1$d, cada una de %2$d a %3$d caracteres, o solo uno si es un emoji, un carácter chino, un kana o una sílaba hangul. Las mayúsculas no importan, y una frase coincide en cualquier parte del texto de una publicación, también dentro de palabras más largas.
+# context: message of the Words that keep a post dialog; %1$d is how many phrases a list holds (50), %2$d and %3$d the shortest and longest phrase in characters (2 and 60)
+A post with any of these stays, even when it also has a word to hide. One per line, up to %1$d, each %2$d to %3$d characters long, or just one for an emoji, a Chinese character, a kana or a Hangul syllable.	Una publicación con cualquiera de estas se mantiene, aunque también tenga una palabra para ocultar. Una por línea, hasta %1$d, cada una de %2$d a %3$d caracteres, o solo uno si es un emoji, un carácter chino, un kana o una sílaba hangul.
+# context: hint in the empty text box of both word list dialogs
+One word or phrase per line	Una palabra o frase por línea
+# context: toast after saving a word list, one line left out; %2$d and %3$d are the shortest and longest phrase in characters, %4$d how many a list holds
+%1$d line was left out. A phrase needs %2$d to %3$d characters, or just one for an emoji, a Chinese character, a kana or a Hangul syllable. One given twice counts once, and a list holds %4$d.	Se omitió %1$d línea. Una frase necesita de %2$d a %3$d caracteres, o solo uno si es un emoji, un carácter chino, un kana o una sílaba hangul. Una repetida cuenta una sola vez y una lista admite %4$d.
+# context: toast after saving a word list, several lines left out; %2$d and %3$d are the shortest and longest phrase in characters, %4$d how many a list holds
+%1$d lines were left out. A phrase needs %2$d to %3$d characters, or just one for an emoji, a Chinese character, a kana or a Hangul syllable. One given twice counts once, and a list holds %4$d.	Se omitieron %1$d líneas. Una frase necesita de %2$d a %3$d caracteres, o solo uno si es un emoji, un carácter chino, un kana o una sílaba hangul. Una repetida cuenta una sola vez y una lista admite %4$d.
+# context: summary of the Words to hide row while it's empty
+No words yet, so no post is hidden.	Todavía no hay palabras, así que no se oculta ninguna publicación.
+# context: summary of the Words that keep a post row while it's empty
+No words yet.	Todavía no hay palabras.
+# context: summary of a word list row holding one phrase
+%1$d word or phrase.	%1$d palabra o frase.
+# context: summary of a word list row holding several phrases
+%1$d words or phrases.	%1$d palabras o frases.
+# context: added to the Words to hide summary: posts the filter hid since Facebook last started, one
+Hid %1$d post since Facebook started.	Se ocultó %1$d publicación desde que Facebook se inició.
+# context: added to the Words to hide summary: posts the filter hid since Facebook last started, several
+Hid %1$d posts since Facebook started.	Se ocultaron %1$d publicaciones desde que Facebook se inició.
+# context: sentence in the import preview and the toast after an import that empties the list of words to hide
+Your list of words to hide will be empty.	Tu lista de palabras para ocultar quedará vacía.
+# context: sentence in the import preview and the toast after an import; the list of words to hide will hold one phrase
+Your list of words to hide will hold %1$d word or phrase.	Tu lista de palabras para ocultar tendrá %1$d palabra o frase.
+# context: sentence in the import preview and the toast after an import; the list of words to hide will hold several phrases
+Your list of words to hide will hold %1$d words or phrases.	Tu lista de palabras para ocultar tendrá %1$d palabras o frases.
+# context: sentence in the import preview and the toast after an import that empties the keep list
+Your list of words that keep a post will be empty.	Tu lista de palabras que mantienen una publicación quedará vacía.
+# context: sentence in the import preview and the toast after an import; the keep list will hold one phrase
+Your list of words that keep a post will hold %1$d word or phrase.	Tu lista de palabras que mantienen una publicación tendrá %1$d palabra o frase.
+# context: sentence in the import preview and the toast after an import; the keep list will hold several phrases
+Your list of words that keep a post will hold %1$d words or phrases.	Tu lista de palabras que mantienen una publicación tendrá %1$d palabras o frases.
+# context: section title for the settings about writing posts and comments
+Writing	Escritura
+# context: switch title under Writing; @ is the at sign that starts a mention and stays as it is
+Tag suggestions only after @	Sugerencias para etiquetar solo después de @
+# context: summary of that switch; the list is Facebook's list of people to tag, and @ stays as it is
+Type @ before Facebook suggests someone to tag in posts or comments. Your text stays unchanged.	Escribe @ para que Facebook sugiera a quién etiquetar en publicaciones o comentarios. Tu texto no cambia.
+# context: switch title under Playback; on, a long video you left partway starts again where you left it
+Resume long videos	Reanudar videos largos
+# context: summary of that switch; the seek bar is the bar under a video you drag to move through it; Reels is Facebook's name for its short videos
+Resume videos over two minutes where you left off. Seek to start elsewhere. Reels, live videos and ads start as usual.	Reanuda vídeos de más de dos minutos donde los dejaste. Usa la barra para cambiar el inicio. Reels, directos y anuncios empiezan como siempre.
+# context: switch title under News feed, right below Hide AI-detected posts; on, posts their creator labelled as AI go too
+Also hide posts labelled as AI	Ocultar también publicaciones etiquetadas como IA
+# context: summary of that switch; the AI label is the one Facebook shows next to the poster's name on such posts
+Posts whose creator marked them as made with AI. Facebook puts its AI label next to the name on these as well as on the posts its detection found, and with this on, both kinds go. It's off by default because it hasn't been tested on a real feed yet.	Publicaciones que su autor marcó como creadas con IA. Facebook pone su etiqueta de IA junto al nombre en estas y también en las que encontró su propia detección, y con este interruptor activado se ocultan las dos. Viene desactivado porque todavía no se probó en un feed real.
+Return to regular Facebook	Volver a Facebook normal
+Restore the normal tabs at the next restart. Your other settings stay saved.	Restaura las pestañas normales al reiniciar. Tus otros ajustes se conservan.
+Marketplace mode is off. Restart Facebook to restore its normal tabs.	El modo Marketplace está desactivado. Reinicia Facebook para restaurar sus pestañas normales.
+Couldn't save the change. Try again.	No se pudo guardar el cambio. Inténtalo de nuevo.
+Marketplace mode chooses the opening tab. Your previous choice stays saved.	El modo Marketplace elige la pestaña de inicio. Tu selección anterior se conserva.
+Restart needed. Marketplace mode will turn on the next time Facebook starts.	Es necesario reiniciar. El modo Marketplace se activará la próxima vez que se inicie Facebook.
+Restart needed. The normal tabs will return the next time Facebook starts.	Es necesario reiniciar. Las pestañas normales volverán la próxima vez que se inicie Facebook.
+Marketplace is hidden in Facebook's tab settings. Show it under Settings, Tab bar, Customize the bar. Your normal tabs stay available.	Marketplace está oculto en los ajustes de pestañas de Facebook. Muéstralo en Configuración, Barra de pestañas, Personalizar la barra. Tus pestañas normales siguen disponibles.
+Marketplace unavailable. Facebook hasn't supplied a Marketplace tab for this account. Your normal tabs stay available.	Marketplace no está disponible. Facebook no ha proporcionado una pestaña de Marketplace para esta cuenta. Tus pestañas normales siguen disponibles.
+Couldn't check the tab bar. Your normal tabs stay available. Restart Facebook to try again.	No se pudo comprobar la barra de pestañas. Tus pestañas normales siguen disponibles. Reinicia Facebook para volver a intentarlo.
+Waiting for Facebook's tab bar. Marketplace mode will apply when Facebook builds it.	Esperando la barra de pestañas de Facebook. El modo Marketplace se aplicará cuando Facebook la cree.
+Off. Turn on to open Marketplace and hide the feed and other social tabs after restarting Facebook.	Desactivado. Actívalo para abrir Marketplace y ocultar el feed y otras pestañas sociales después de reiniciar Facebook.
+Quiet social notifications	Silenciar notificaciones sociales
+Skip feed preloading	Omitir la precarga del feed
+Marketplace mode is off.	El modo Marketplace está desactivado.
+Paused with HushThreads. Your Marketplace choice stays saved. Tabs already hidden return after a restart while paused.	En pausa junto con HushThreads. Tu elección de Marketplace se conserva. Las pestañas ocultas vuelven al reiniciar mientras HushThreads sigue en pausa.
+Silence video suggestions, memories, birthdays and friend suggestions while this mode is on. Messages and trading updates stay. Your other notification choices stay saved.	Silencia sugerencias de videos, recuerdos, cumpleaños y sugerencias de amistad mientras este modo está activado. Se conservan los mensajes y las novedades de compras y ventas. Tus otros ajustes de notificaciones se mantienen.
+Reduce background feed loading while Marketplace mode is active. Some loading can still happen during startup.	Reduce la carga del feed en segundo plano mientras el modo Marketplace está activo. Aún pueden cargarse algunos datos al iniciar.
+Active. Marketplace, Notifications and Profile/Menu stay. Find HushThreads settings in Menu, under Settings and privacy.	Activo. Se conservan Marketplace, Notificaciones y Perfil/Menú. Los ajustes de HushThreads están en Menú, en Configuración y privacidad.
+
+# context: Settings overview, category navigation and search.
+Marketplace mode and your start tab	Modo Marketplace y pestaña de inicio
+Ads, suggestions and word filters	Anuncios, sugerencias y filtros de palabras
+Suggestions, saving, auto-advance and viewing anonymously	Sugerencias, guardado, avance automático y visualización anónima
+Cleaner reels and video controls	Reels más limpios y controles de vídeo
+Tap to play, quality and resume	Tocar para reproducir, calidad y reanudar
+Quality, format and file names	Calidad, formato y nombres de archivo
+Browse settings	Explorar ajustes
+More settings	Más ajustes
+Additional Facebook preferences	Otras preferencias de Facebook
+No matching settings	No hay ajustes coincidentes
+%1$d setting found	%1$d ajuste encontrado
+%1$d settings found	%1$d ajustes encontrados
+Try a different word or clear the search.	Prueba otra palabra o borra la búsqueda.
+Search settings	Buscar ajustes
+Clear search	Borrar búsqueda
+Your controls are active.	Tus controles están activos.
+Your choices are saved. Tap Resume, then restart Facebook.	Tus preferencias están guardadas. Toca Reanudar y luego reinicia Facebook.
+Pause	Pausar
+Resume	Reanudar
+Undo	Deshacer
+
+# context: Settings overview, category navigation and search.
+Example without post details	Ejemplo sin datos de la publicación
+
+# context: Links section, the Supported links row. It reads Android's own per-app selection of Facebook's web addresses (Android 12 and later) and opens Android's Open by default page for this app. Use the phone's own names for Open supported links, Open by default and App info.
+Supported links	Enlaces compatibles
+Android verified this app for Facebook's web addresses, so their links open here.	Android verificó esta app para las direcciones web de Facebook, así que sus enlaces se abren aquí.
+Facebook's web addresses are selected for this app in Android's settings, so their links open here.	Las direcciones web de Facebook están seleccionadas para esta app en los ajustes de Android, así que sus enlaces se abren aquí.
+Only some of Facebook's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Solo algunas direcciones web de Facebook están seleccionadas para esta app, y los enlaces a las demás se abren en otro sitio. Toca para seleccionarlas en los ajustes de Android.
+None of Facebook's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Ninguna dirección web de Facebook está seleccionada para esta app, así que sus enlaces se abren en otro sitio. Toca para seleccionarlas en los ajustes de Android.
+Opening supported links is off for this app in Android's settings. Tap to turn it on.	“Abrir enlaces compatibles” está desactivado para esta app en los ajustes de Android. Toca para activarlo.
+Android didn't say which links open here. Tap to check in Android's settings.	Android no indicó qué enlaces se abren aquí. Toca para comprobarlo en los ajustes de Android.
+Android 11 doesn't say which links open here. Tap to open this app's settings, then Open by default.	Android 11 no indica qué enlaces se abren aquí. Toca para abrir los ajustes de esta app y luego Abrir de forma predeterminada.
+Selecting links by hand	Seleccionar enlaces a mano
+Android checks Facebook's links against Meta's signing key, which a re-signed build doesn't have. Selecting the addresses sends their links here again. It doesn't restore Meta's verification, and your other link settings stay as they are.	Android comprueba los enlaces de Facebook con la clave de firma de Meta, que una versión firmada de nuevo no tiene. Al seleccionar las direcciones, sus enlaces vuelven a llegar aquí. Eso no recupera la verificación de Meta, y tus otros ajustes de enlaces se quedan como están.
+Android's settings for this app didn't open. Open App info from Facebook's icon, then Open by default.	No se abrieron los ajustes de Android para esta app. Abre Información de la app desde el icono de Facebook y luego Abrir de forma predeterminada.
+# context: message when a save starts and its notification can't show (Facebook's notifications or the saves channel are off); Downloads is the settings section that lists running saves, each with its own Cancel
+Saving... Cancel: Downloads in HushThreads.	Guardando... Cancelar: Descargas en HushThreads.
+# context: switch title under Reels and Watch; on, a double tap on a reel or a video doesn't like it
+Turn off double tap to like	Desactivar tocar dos veces para dar Me gusta
+# context: summary of that switch; Like is the name of Facebook's own button, as Facebook shows it in this language
+A double tap on a reel or video no longer likes it or shows a heart. A single tap and the Like button work as before.	Tocar dos veces un reel o un vídeo ya no le da Me gusta ni muestra un corazón. Un toque y el botón Me gusta funcionan como antes.
+Keep the reel speed	Mantener la velocidad de los reels
+# context: summary of that switch
+A playback speed you pick in a reel's menu stays for the next reels until you pick another or Facebook restarts. Off, every reel starts at normal speed.	La velocidad de reproducción que elijas en el menú de un reel se mantiene en los siguientes reels hasta que elijas otra o Facebook se reinicie. Desactivado, cada reel empieza a velocidad normal.
+Hold a reel for 2x	Mantener pulsado un reel para 2x
+# context: summary of that switch; more button is the reel's own button with three dots
+Holding a reel plays it at double speed until you let go, in place of Facebook's long-press menu. The reel's more button still opens that menu.	Mantener pulsado un reel lo reproduce al doble de velocidad hasta que lo sueltes, en lugar de abrir el menú de pulsación larga de Facebook. El botón Más del reel sigue abriendo ese menú.
+Default playback quality	Calidad de reproducción predeterminada
+Play videos, reels and stories at the quality below. A quality picked in a video's own menu still wins.	Reproduce vídeos, reels e historias en la calidad de abajo. Una calidad elegida en el menú de un vídeo sigue teniendo prioridad.
+Playback quality	Calidad de reproducción
+Auto	Automática
+Data saver	Ahorro de datos
+Up to %1$s	Hasta %1$s
+Highest	La más alta
+Facebook picks the quality as each video plays, from your connection.	Facebook elige la calidad mientras se reproduce cada vídeo, según tu conexión.
+Videos play at the lowest quality Facebook offers for each.	Los vídeos se reproducen en la calidad más baja que Facebook ofrece para cada uno.
+Videos play at the best quality up to %1$s that Facebook offers for each, or the closest above.	Los vídeos se reproducen en la mejor calidad hasta %1$s que Facebook ofrece para cada uno, o en la más cercana por encima.
+Videos play at the highest quality Facebook offers for each.	Los vídeos se reproducen en la calidad más alta que Facebook ofrece para cada uno.
+Facebook will pick the quality videos play at.	Facebook elegirá la calidad de reproducción de los vídeos.
+Playback quality will be set to %1$s.	La calidad de reproducción será %1$s.
+# context: row title under Pause, backup and diagnostics, shown only while Debug logging is on
+Test the Messenger link	Probar la conexión con Messenger
+# context: summary of that row; Debug logging is the switch's name as this table gives it
+Runs the two reads Facebook makes of Messenger at startup, now, and shows whether each one answered. Shown while Debug logging is on.	Hace ahora las dos lecturas que Facebook hace de Messenger al iniciarse y muestra si cada una respondió. Visible mientras Registro de depuración está activado.
+# context: toast when the test can't begin
+The Messenger link test couldn't start.	La prueba de la conexión con Messenger no pudo empezar.
+# context: toast on a build without the test
+This build can't run the Messenger link test.	Esta versión no puede hacer la prueba de la conexión con Messenger.
+# context: toast when Facebook has no signed-in account
+No signed-in account to test with.	No hay ninguna cuenta con sesión iniciada para la prueba.
+# context: toast with the test's result; each placeholder is one of: answered, no answer, failed (...)
+Opt-out read: %1$s. Triggered read: %2$s.	Lectura de exclusión: %1$s. Lectura de activación: %2$s.
+# context: a read's result in that toast
+no answer	sin respuesta
+# context: a read's result in that toast
+answered	respondió
+# context: a read's result in that toast; the placeholder is an error's class name, left in English
+failed (%1$s)	falló (%1$s)

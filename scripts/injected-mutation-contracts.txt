@@ -1,0 +1,108 @@
+# Call sites a patched Facebook must have, checked across every dex of the APK by DexDiff.java.
+#   single-call <method reference> in <caller method name>
+#   first-call <method reference> on <class>
+#   first-call <method reference> on-type-named <GraphQL type>
+#   first-call <method reference> outside <package prefix>
+#   start-call <method reference> [in [static|instance] <(parameters)return, * for any run>] holding <string> [<string> ...]
+#   no-call <method reference> outside <package prefix>
+#   next-call <method reference> after <method reference> [in [static|instance] <shape>] holding <string> [<string> ...]
+#   sole-call <method reference> replacing <method reference> [in [static|instance] <shape>] holding <string> [<string> ...]
+#   once-call <method reference> [in [static|instance] <shape>] holding <string> [<string> ...]
+# A start-call, next-call, sole-call or once-call rule picks its method by every string it names
+# and its shape, and exactly one of Facebook's methods may answer that; name as much as the patch
+# itself finds the method by.
+# Two feed guards stacked on addNewEdgeToCollection is the shape that broke builds before, and a
+# guard anywhere else filters nothing.
+single-call Lapp/morphe/extension/hushthreads/feed/FeedFilter;->hideEdge(Ljava/lang/Object;Ljava/lang/Object;)Z in addNewEdgeToCollection
+# An edge swapped in over another one never reaches that funnel. The runnable that makes the swap,
+# FeedUnitCollectionManager's onEdgeSwapped, asks the extension about the incoming edge once, after
+# reading it and before the swap, so the guard can't come first. Its run() holds the swap log line's
+# "Edge swap dropped", which a rule can't name for its spaces, and the two sizes the line reports,
+# which no other method of 580 or 577 loads. Left out, every ad Facebook hot-swaps into the feed goes
+# in unchecked; twice or anywhere else, it's no longer the one guard the patch wrote.
+once-call Lapp/morphe/extension/hushthreads/feed/FeedFilter;->hideSwappedEdge(Ljava/lang/Object;Ljava/lang/Object;)Z in instance ()V holding sizeBefore sizeAfter
+# Each story-flag stub has to call GraphQLStory's renamed accessor before it returns. A patch that
+# stops filling one leaves the stub answering its marker, and the rule keeps every post.
+first-call Lapp/morphe/extension/hushthreads/feed/GenAiLabel;->detectedInfo(Ljava/lang/Object;)Ljava/lang/Object; on Lcom/facebook/graphql/model/GraphQLStory;
+first-call Lapp/morphe/extension/hushthreads/feed/GenAiLabel;->selfDisclosureInfo(Ljava/lang/Object;)Ljava/lang/Object; on Lcom/facebook/graphql/model/GraphQLStory;
+first-call Lapp/morphe/extension/hushthreads/feed/RecommendationLabel;->recommendationContext(Ljava/lang/Object;)Ljava/lang/Object; on Lcom/facebook/graphql/model/GraphQLStory;
+# The GenAI reel stub has to call Facebook's attribution finder before it returns. The finder's
+# class and name are Redex's and it answers no type name, so the rule asks only that the stub's
+# first call leaves the extension. Left unfilled it answers its marker, and the Reels rule keeps
+# every reel with nothing but a Hook status line to say why.
+first-call Lapp/morphe/extension/hushthreads/feed/GenAiReelFilter;->transparencyAttribution(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object; outside Lapp/morphe/extension/
+# The Stories tray patch asks the extension first thing in both of the feed's tray adapters: the
+# classic one, holding its trace name, and the unified one, holding its create-adapter start and stop
+# names and "tofu". The tray controller's constructor holds the start and stop names too.
+start-call Lapp/morphe/extension/hushthreads/feed/FeedFilter;->hideStoriesTray(I)Z holding NewsFeedAdapterConfiguration.addStoriesAdapter
+start-call Lapp/morphe/extension/hushthreads/feed/FeedFilter;->hideStoriesTray(I)Z holding stories_tray_create_adapter_start stories_tray_create_adapter_stop tofu
+# The reels patch fills the showcase stub with the story type accessor of the one class whose
+# getTypeName() answers ShowcaseFeedUnit, a class Redex renames, so the rule names it by that type.
+first-call Lapp/morphe/extension/hushthreads/feed/ShowcaseType;->storyType(Ljava/lang/Object;)Ljava/lang/Object; on-type-named ShowcaseFeedUnit
+# And it asks the extension first thing in the pre-EOF injector, which holds its adapter's name and
+# adds its own Reels row at the tail of the feed without passing the feed guard.
+start-call Lapp/morphe/extension/hushthreads/feed/FeedFilter;->hidePreEofReels()Z holding PreEofIfuSectionAdapter
+# The background-return gate starts the controller's resume callback, which is distinct from the
+# NewsFeedFragment swipe-refresh callback. A later call would refresh before asking the switch. Five
+# methods hold the controller's name on 580 and 577; the callback alone holds "onRefresh" beside it.
+start-call Lapp/morphe/extension/hushthreads/feed/ReturnRefresh;->skip()Z holding FeedRefreshTriggerController onRefresh
+# Clean up Reels asks the extension first thing in Facebook's Follow check, which a reel's author
+# row asks before it builds a Follow button, and which names the two surfaces where Facebook holds
+# the button back for a friend. Left out or put later, the Follow button stays on every reel of an
+# author you don't follow, the Reels tab's among them. Nineteen methods name both surfaces; the check
+# is the one that's static, takes the session first and answers a boolean.
+start-call Lapp/morphe/extension/hushthreads/reels/ReelDeclutter;->hideFollowButton()Z in static (Lcom/facebook/auth/usersession/FbUserSession;*)Z holding friendly_feed friends_tab_ifu
+# Use the phone's emoji asks the extension first thing in Facebook's emoji typeface provider, the one
+# method holding the end-to-end flag for the phone's emoji font and the provider's log tag. Left out
+# or put later, the provider hands out Meta's emoji font whatever the switch says. A string table
+# holds the log tag too; the flag is the provider's alone.
+start-call Lapp/morphe/extension/hushthreads/emoji/SystemEmoji;->typeface()Landroid/graphics/Typeface; in instance ()Landroid/graphics/Typeface; holding fb.e2e.force_system_emoji_font FacebookEmojiTypefaceProviderImpl
+# It also asks the extension first thing in Facebook's maker of emoji picture addresses, the one
+# static method answering a String that holds the base address of Meta's emoji pictures. Left out
+# or put later, a chat's big emoji keeps Meta's picture whatever the switch says.
+start-call Lapp/morphe/extension/hushthreads/emoji/SystemEmoji;->skipRemoteEmoji()Z in static (Ljava/lang/String;*)Ljava/lang/String; holding https://www.facebook.com/images/mobileemoji
+# Open Messenger from the top bar asks the extension first thing in the tap of the top bar's
+# Messenger icon, the one method holding both of its entry points, and in the Messenger button
+# handler the tap goes on to behind a MobileConfig flag, the one static method of the handler's
+# shape holding "long_press" (161 other methods hold it on 580, none with that shape). Left out or
+# put later, the icon opens Facebook's Chats whatever the switch says.
+start-call Lapp/morphe/extension/hushthreads/chats/MessengerIcon;->open(Landroid/content/Context;Z)Z in static (Landroid/content/Context;Lcom/facebook/auth/usersession/FbUserSession;*)V holding entry_point_navbar_global_icon_ entry_point_navbar_global_icon_reels_tab
+start-call Lapp/morphe/extension/hushthreads/chats/MessengerIcon;->open(Landroid/content/Context;Z)Z in static (Landroid/content/Context;Lcom/facebook/auth/usersession/FbUserSession;Ljava/lang/String;ZZ)V holding long_press
+# Turn off double tap to like asks the extension first thing in the reel like helper's like, the
+# one method in 580 and 577 holding FbShortsMutationUtil's trace, an instance method taking the
+# session first and the like's source last. Left out or put later, the players whose own double-tap
+# listener likes a reel still like it whatever the switch says.
+start-call Lapp/morphe/extension/hushthreads/reels/DoubleTapLike;->holdBackLike(Ljava/lang/String;)Z in instance (Lcom/facebook/auth/usersession/FbUserSession;*)V holding FbShortsMutationUtil.mutateViewerLikeReaction
+# It also asks first thing in the onDoubleTap of the feed attachment that chains into Reels, the
+# one instance (MotionEvent)Z method of either build loading "translationY", the property its own
+# heart rises by. Left out or put later, the attachment plays its heart for a double tap the switch
+# keeps from liking.
+start-call Lapp/morphe/extension/hushthreads/reels/DoubleTapLike;->holdBackTap()Z in instance (Landroid/view/MotionEvent;)Z holding translationY
+# Keep the reel speed asks the extension first thing in the Reels menu's speed toast, which a pick in
+# either of the menu's speed pickers shows right after it sets the speed: the one method of 580 and
+# 577 holding its selector's name, a static method taking a context and the speed. Left out or put
+# later, a speed picked in the Reels menu isn't kept for the next reels.
+start-call Lapp/morphe/extension/hushthreads/media/ReelSpeed;->picked(F)V in static (Landroid/content/Context;F)V holding InlinePlaybackSpeedAttributeSelector
+# Facebook ranks its own launcher shortcuts ahead of the HushThreads one with these calls, so the
+# settings patch sends every one to SettingsEntry, which makes it and puts the HushThreads shortcut
+# back in front (#2). One left in Facebook's code would let it drop out of the long-press menu.
+no-call Landroid/content/pm/ShortcutManager;->pushDynamicShortcut(Landroid/content/pm/ShortcutInfo;)V outside Lapp/morphe/extension/
+no-call Landroid/content/pm/ShortcutManager;->addDynamicShortcuts(Ljava/util/List;)Z outside Lapp/morphe/extension/
+no-call Landroid/content/pm/ShortcutManager;->setDynamicShortcuts(Ljava/util/List;)Z outside Lapp/morphe/extension/
+no-call Landroid/content/pm/ShortcutManager;->updateShortcuts(Ljava/util/List;)Z outside Lapp/morphe/extension/
+no-call Landroid/content/pm/ShortcutManager;->removeAllDynamicShortcuts()V outside Lapp/morphe/extension/
+# A long press on the Facebook logo at the top of the feed opens the settings screen, the way in
+# for a launcher with no shortcut menu (#2). The settings patch sends the call that gives the logo
+# its touch listener to SettingsEntry, in the top bar's logo builder, right after the logo gets its
+# tap. Left out, the long press does nothing; on another call or register, another view takes it.
+# The builder holds both of the logo's trace sections, and Redex makes it static and hands it a
+# context and the bar, which keeps its name (580 and 577 have one more static method of that shape
+# in the bar, holding neither section).
+next-call Lapp/morphe/extension/hushthreads/settings/SettingsEntry;->setLogoTouchListener(Landroid/view/View;Landroid/view/View$OnTouchListener;)V after Landroid/view/View;->setOnClickListener(Landroid/view/View$OnClickListener;)V in static (Landroid/content/Context;Lcom/facebook/navigation/navbar/legacy/search/WordmarkNavigationBar;)V holding WordmarkNavigationBar#createWordmarkView WordmarkNavigationBar.initContents
+# Don't send reel watch history takes the place of the Reels viewer's hand-over of each batch of
+# watched reels: the one Executor.execute call in the batcher's flush becomes ReelWatchHistory.send,
+# on the executor's and the send's registers in that order. The flush is the one method holding the
+# mutation's name and its input field, an instance method taking nothing (on 580 and 577 no other
+# method holds the mutation's name). Left out or left beside the stand-in, the batch goes out; on
+# other registers, the stand-in gets the send as its executor.
+sole-call Lapp/morphe/extension/hushthreads/reels/ReelWatchHistory;->send(Ljava/util/concurrent/Executor;Ljava/lang/Runnable;)V replacing Ljava/util/concurrent/Executor;->execute(Ljava/lang/Runnable;)V in instance ()V holding FbShortsSeenStateMutation video_ids
