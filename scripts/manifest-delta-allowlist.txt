@@ -1,4 +1,4 @@
-# Reviewed Android manifest changes the HushThreads patches make to a stock Facebook APK.
+# Reviewed Android manifest changes the HushThreads patches make to a stock Threads APK.
 #
 # One line per change, as "<kind> <value>":
 #   permission-added     <permission name>      the patched app asks for something stock did not
@@ -12,18 +12,19 @@
 # a way it doesn't list. A line nothing produces any more fails the receipt as well, so this
 # cannot quietly outlive the change it approved.
 #
-# Everything here is Install beside Meta's apps. Facebook declares two signature permissions that
-# Messenger, Facebook Lite, Business Suite and Workplace declare too, and Android lets one signing
-# key own a permission name, so a re-signed Facebook and those apps couldn't be installed
-# together. The patch renames every mention of Facebook's two from com.facebook. to
-# app.hushthreads., and what the receipt sees of that is Facebook asking for the new names in
-# place of the old ones. It declares the new names itself at the same signature level, so nothing
-# it asks for is granted to anyone the old names weren't.
+# Two changes are approved.
+#
+# HushThreads settings adds an alias of Threads' launcher activity that answers
+# android.intent.action.APPLICATION_PREFERENCES, so Android's App info page for Threads shows
+# "Additional settings in the app". An alias has to be exported for that page to open it. It
+# targets BarcelonaActivity, which Threads already exports as its launcher, so nothing new is
+# reachable: the alias only gives other apps a second name for a screen they could already open.
+#
+# Remove the advertising ID drops Threads' request for the advertising ID permission, so Google
+# Play services hands the app no advertising ID at all.
 #
 # Nothing else is approved. A patch that asks for any other permission, drops one, or changes what
 # other apps can reach still stops the release until somebody says why.
 
-permission-added app.hushthreads.permission.prod.FB_APP_COMMUNICATION
-permission-added app.hushthreads.receiver.permission.ACCESS
-permission-removed com.facebook.permission.prod.FB_APP_COMMUNICATION
-permission-removed com.facebook.receiver.permission.ACCESS
+exported-added activity-alias:app.morphe.extension.hushthreads.settings.OpenSettings
+permission-removed com.google.android.gms.permission.AD_ID
