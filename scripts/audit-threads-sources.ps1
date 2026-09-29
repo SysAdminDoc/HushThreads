@@ -10,7 +10,7 @@
       far;
     - the Morphe community directory, Awesome Morphe, the Morphe Patch Tracker and Jman's bundle
       index, for every bundle that targets com.instagram.barcelona, and for whether HushThreads is
-      listed on each, plus the Morphe Archive for HushThreads's own listing;
+      listed on each, plus the Morphe Archive for HushThreads' own listing;
     - GitHub code search for the Threads package name in patch lists, patch code and Xposed hooks,
       with the two archive mirrors mapped back to the repositories they copied, and GitLab code
       search when GITLAB_TOKEN is set and -SkipGitLabCodeSearch isn't passed;
@@ -882,7 +882,7 @@ foreach ($entry in $entries) {
     }
 }
 
-# --- HushThreads's own listings -----------------------------------------------------------------
+# --- HushThreads' own listings -----------------------------------------------------------------
 
 foreach ($index in @($ledgerDocument.indexes)) {
     $id = [string]$index.id

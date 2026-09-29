@@ -49,7 +49,7 @@ function Get-SourceCensusMaxAgeDays {
 
 function Get-SourceCompatibleLicenses {
     <#
-        SPDX identifiers whose code can be combined into HushThreads's GPL-3.0 work, as GitHub and
+        SPDX identifiers whose code can be combined into HushThreads' GPL-3.0 work, as GitHub and
         GitLab report them. Anything else, NOASSERTION included, is treated as no licence at all.
     #>
     return @('GPL-3.0', 'GPL-3.0-only', 'GPL-3.0-or-later', 'GPL-2.0-or-later', 'LGPL-2.1-or-later',
