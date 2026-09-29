@@ -5,8 +5,8 @@
 .DESCRIPTION
     verify-all-patches.ps1 answers whether the patches apply and throws its APK away. This
     keeps one, signed with the sideload keystore so it installs on a phone, and installs it
-    over adb when a serial is given. The stock Facebook on the phone has a different signer, so
-    it has to be uninstalled first; that is what -Replace does, and it wipes Facebook's data on
+    over adb when a serial is given. The stock Threads on the phone has a different signer, so
+    it has to be uninstalled first; that is what -Replace does, and it wipes Threads' data on
     that phone.
 
     The signing password comes from HUSHTHREADS_SIDELOAD_KEYSTORE_PASSWORD. When it is unset, the
@@ -30,9 +30,9 @@ param(
     [switch]$Replace,
     # Print every line the desktop CLI writes, not only errors.
     [switch]$ShowPatchLog,
-    # Patch names to leave out of this build. The catalog applies everything, the patches that
-    # are off by default included (AMOLED black theme, Download any video), so a check of what
-    # Facebook does without one of them needs a build that leaves it out.
+    # Patch names to leave out of this build. The catalog applies everything, including any patch
+    # that is off by default, so a check of what Threads does without one of them needs a build
+    # that leaves it out.
     [string[]]$Exclude = @(),
     # Patch with the release bundle even when a source file is newer than it, for replaying
     # an earlier build on purpose. Without it a stale bundle stops the run.
@@ -70,7 +70,7 @@ catch { throw "Could not read patch list ${catalogPath}: $($_.Exception.Message)
 $target = Get-PatchTarget -PatchList $catalog
 if (-not $Apk -and $env:HUSHTHREADS_FIXTURE_DIR -and (Test-Path -LiteralPath $env:HUSHTHREADS_FIXTURE_DIR -PathType Container)) {
     $Apk = (Get-ChildItem -LiteralPath $env:HUSHTHREADS_FIXTURE_DIR `
-        -File | Where-Object { $_.Name -like "*$($target.PackageVersion)*" -and $_.Extension -in '.apk', '.apkm' } |
+        -File | Where-Object { $_.Name -like "*$($target.PackageVersion)*" -and $_.Extension -in '.apk', '.apkm', '.xapk' } |
         Select-Object -First 1).FullName
 }
 if (-not $Apk -or -not (Test-Path -LiteralPath $Apk -PathType Leaf)) {
@@ -78,10 +78,11 @@ if (-not $Apk -or -not (Test-Path -LiteralPath $Apk -PathType Leaf)) {
         'HUSHTHREADS_FIXTURE_DIR to the folder that holds it.')
 }
 # The version the result is held to: the vendor APK's own, read the way verify-all-patches.ps1
-# and the receipt read it. The catalog declares more than one build and the CLI reports the
-# version of the APK it was given, so holding every run to the newest build failed a 577 build
-# after it had been patched. A build the catalog doesn't declare is refused here: without -f the
-# CLI refuses it too, but only after unpacking it, and this is the APK that goes on a phone.
+# and the receipt read it. The catalog can declare more than one build and the CLI reports the
+# version of the APK it was given, so holding every run to the newest build failed an older build
+# after it had been patched (the Facebook sibling's 577). A build the catalog doesn't declare is
+# refused here: without -f the CLI refuses it too, but only after unpacking it, and this is the
+# APK that goes on a phone.
 $Aapt2 = Resolve-Aapt2 -Explicit $Aapt2 -Root $root
 $stockBase = Join-Path $OutDir 'stock-base.apk'
 try {
@@ -169,7 +170,7 @@ try {
     if ($cliExitCode -ne 0) { throw "The desktop CLI exited with $cliExitCode" }
 } finally {
     Remove-Item -LiteralPath $argumentFile -Force -ErrorAction SilentlyContinue
-    # The CLI unpacks the whole APK here and a run against Facebook leaves gigabytes behind.
+    # The CLI unpacks the whole APK here and a run against Threads leaves gigabytes behind.
     if (Test-Path -LiteralPath $temp) { Remove-Item -LiteralPath $temp -Recurse -Force -ErrorAction SilentlyContinue }
 }
 # The same report check the throwaway verification applies: every requested patch, every

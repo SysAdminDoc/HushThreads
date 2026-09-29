@@ -694,7 +694,7 @@ function Test-ChangelogManagerEntry {
     .DESCRIPTION
         Manager fetches this file from main and reads it with its own parser (ChangelogParser,
         Manager 1.30.0). A heading only counts when it ends in a date, "## 0.41.0 (2026-09-18)",
-        and an app only gets its update badge when a bullet is scoped to it, "* **Facebook:** ...".
+        and an app only gets its update badge when a bullet is scoped to it, "* **Threads:** ...".
         Scoped lines are kept one line at a time, so a bullet wrapped onto a second line loses
         the rest. Every heading from 0.23.0 to 0.40.0 was bare, Manager's list stopped at 0.22.0
         and every update showed nothing, and no gate noticed, because Test-ChangelogVersions
@@ -707,7 +707,7 @@ function Test-ChangelogManagerEntry {
     param(
         [Parameter(Mandatory = $true)][string]$Current,
         [Parameter(Mandatory = $true)][string]$ExpectedVersion,
-        [string]$App = 'Facebook'
+        [string]$App = 'Threads'
     )
 
     function Fail { param([string]$Reason) return [pscustomobject]@{ Valid = $false; Reason = $Reason; Date = $null; Bullets = 0 } }

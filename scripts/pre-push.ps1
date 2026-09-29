@@ -521,7 +521,7 @@ try {
     }).Count -gt 0
     # The source ledger's rules read NOTICE, provenance.json and the catalog's declared builds, and
     # hold docs/sources.md to the ledger, so a push of any of them runs the ledger's suite too.
-    $facebookSourcePaths = @(
+    $threadsSourcePaths = @(
         'NOTICE',
         'docs/sources.md',
         'patches-list.json',
@@ -532,8 +532,8 @@ try {
         'scripts/test-threads-sources.ps1',
         'sources/threads-sources.json'
     )
-    $touchesFacebookSources = @($paths | Where-Object {
-        $_ -in $facebookSourcePaths
+    $touchesThreadsSources = @($paths | Where-Object {
+        $_ -in $threadsSourcePaths
     }).Count -gt 0
     $touchesRelease = @($paths | Where-Object {
         $_ -eq 'patches-bundle.json' -or $_ -eq 'patches-list.json' -or
@@ -567,7 +567,7 @@ try {
         $head = $null
         $dirty = @()
         $gateCommits = @($null)
-    } elseif ($touchesCode -or $touchesRelease -or $touchesScripts -or $touchesContracts -or $touchesFacebookSources) {
+    } elseif ($touchesCode -or $touchesRelease -or $touchesScripts -or $touchesContracts -or $touchesThreadsSources) {
         $head = ([string](Invoke-HookGit @('-C', $Root, 'rev-parse', 'HEAD') | Select-Object -Last 1)).Trim()
         $dirty = @(Invoke-HookGit @('-C', $Root, 'status', '--porcelain', '--untracked-files=all'))
         $gateCommits = @($script:pushedCommits)
@@ -625,9 +625,9 @@ try {
         $suites += , @('scripts/test-fingerprint-candidates.ps1', 'fingerprint ranking changed, running its calibration',
             'The fingerprint ranking calibration did not pass.')
     }
-    if ($touchesFacebookSources) {
-        $suites += , @('scripts/test-threads-sources.ps1', 'the Facebook-family source ledger or what it reads changed, running its rules',
-            'The Facebook-family source ledger does not keep its rules.')
+    if ($touchesThreadsSources) {
+        $suites += , @('scripts/test-threads-sources.ps1', 'the Threads source ledger or what it reads changed, running its rules',
+            'The Threads source ledger does not keep its rules.')
     }
     if ($suites.Count -gt 0) {
         $scriptsLock = $null
@@ -859,7 +859,7 @@ try {
     }
 
     if (-not $touchesScripts -and -not $touchesCode -and -not $touchesRelease -and -not $touchesContracts -and
-            -not $touchesFacebookSources) {
+            -not $touchesThreadsSources) {
         Write-Step 'no code or published file changed'
     }
     Write-Step 'ok'
