@@ -13,7 +13,7 @@ import org.junit.Assert.fail
 import org.junit.Assume.assumeTrue
 
 /**
- * The vendor Facebook builds the fixture tests read, from the folder `HUSHTHREADS_FIXTURE_DIR`
+ * The vendor Threads builds the fixture tests read, from the folder `HUSHTHREADS_FIXTURE_DIR`
  * names.
  *
  * Unset, every fixture test skips and says which variable to set: the APKs are hundreds of
@@ -29,17 +29,20 @@ internal object Fixtures {
     fun files(accept: (File) -> Boolean): List<File> {
         val configured = System.getenv(VARIABLE)
         assumeTrue(
-            "$VARIABLE is not set, so the Facebook fixture tests skip. Point it at the folder " +
-                "that holds the vendor Facebook APKs to run them.",
+            "$VARIABLE is not set, so the Threads fixture tests skip. Point it at the folder " +
+                "that holds the vendor Threads APKs to run them.",
             !configured.isNullOrBlank(),
         )
         val directory = File(configured!!)
         if (!directory.isDirectory) fail("$VARIABLE names $directory, which is not a folder.")
         val found = directory.listFiles()?.filter { it.isFile && accept(it) }?.sortedBy { it.name }.orEmpty()
-        if (found.isEmpty()) fail("$VARIABLE names $directory, which holds none of the Facebook files this test reads.")
+        if (found.isEmpty()) fail("$VARIABLE names $directory, which holds none of the Threads files this test reads.")
         return found
     }
 
-    /** Every Facebook APK in the fixture folder. */
-    fun apks(): List<File> = files { it.extension == "apk" }
+    /**
+     * Every Threads APK in the fixture folder: the files named `threads-*.apk`. The folder may also
+     * hold the Instagram build the coexistence checks read, which no Threads test wants.
+     */
+    fun apks(): List<File> = files { it.extension == "apk" && it.name.startsWith("threads-") }
 }

@@ -8,11 +8,11 @@
 package app.morphe.patches.threads.misc.settings
 
 import app.morphe.ExtensionDex
+import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.RepoFiles
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
-import app.morphe.patches.threads.feed.FixtureDex
 import app.morphe.patches.shared.compat.AppCompatibilities
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -40,9 +40,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Facebook's shortcut calls go through SettingsEntry, which puts the HushThreads shortcut back in
- * front after each one. Facebook pushes its own at rank 0, the newest push goes first, and the
- * HushThreads shortcut ended up last, where a launcher showing a few cut it off (#2).
+ * Threads' shortcut calls go through SettingsEntry, which puts the HushThreads shortcut back in
+ * front after each one. Threads pushes its own at rank 0, the newest push goes first, and the
+ * HushThreads shortcut would end up last, where a launcher showing a few cuts it off.
  */
 class ShortcutCallsTest {
     private fun call(name: String): ImmutableMethodReference {
@@ -144,7 +144,7 @@ class ShortcutCallsTest {
      * exactly the descriptor the rewrite writes: the manager, then the framework call's own
      * parameters, then its answer. Read from the compiled extension, so a Java parameter that
      * compiles to another type fails here. A match on the source's name and first parameter let
-     * that through to a NoSuchMethodError in Facebook's notification code.
+     * that through to a NoSuchMethodError in Threads' own code.
      */
     @Test
     fun everyCallSentHasAStandIn() {
@@ -188,41 +188,41 @@ class ShortcutCallsTest {
     }
 
     /**
-     * The settings patch itself, run over an application, a main activity, a top bar and two classes
-     * that make all five calls: Facebook's, where every call goes to its stand-in, and the
+     * The settings patch itself, run over an application, a launcher activity and two classes
+     * that make all five calls: Threads', where every call goes to its stand-in, and the
      * extension's, whose calls are the real ones the stand-ins make and stay. Sending those would
      * make each stand-in call itself.
      */
     @Test
     fun theSettingsPatchSendsEveryCallOutsideTheExtension() {
-        val facebook = "Lfixture/ShortcutPublisher;"
-        val context = PatchContexts.of(SettingsPatchHosts.all() + publisher(facebook) + publisher(ENTRY))
+        val threads = "Lfixture/ShortcutPublisher;"
+        val context = PatchContexts.of(SettingsPatchHosts.all() + publisher(threads) + publisher(ENTRY))
 
         settingsPatch.execute(context)
 
-        val sent = context.mutableClassDefBy(facebook).methods.single().instructions()
-        assertEquals("framework calls left in Facebook's code", emptyList<String>(), sent.mapNotNull { it.frameworkCall() })
-        assertEquals("stand-ins in Facebook's code", SHORTCUT_CALLS.keys.sorted(), sent.mapNotNull { it.standInCall() }.sorted())
+        val sent = context.mutableClassDefBy(threads).methods.single().instructions()
+        assertEquals("framework calls left in Threads' code", emptyList<String>(), sent.mapNotNull { it.frameworkCall() })
+        assertEquals("stand-ins in Threads' code", SHORTCUT_CALLS.keys.sorted(), sent.mapNotNull { it.standInCall() }.sorted())
         val kept = context.mutableClassDefBy(ENTRY).methods.single().instructions()
         assertEquals("the extension's own calls", SHORTCUT_CALLS.keys.sorted(), kept.mapNotNull { it.frameworkCall() }.sorted())
         assertEquals("stand-ins in the extension", emptyList<String>(), kept.mapNotNull { it.standInCall() })
     }
 
     /**
-     * Both declared builds push through the AndroidX helper and the Messenger chat shortcuts, and
-     * update through the helper and two account switcher paths. The settings patch, run over each
-     * build's classes that make those calls, sends every one to its stand-in with the registers it
-     * had, the instruction count unchanged, and leaves none behind. The application, main activity
-     * and top bar the patch's other hooks go into are stand-ins here, since this reads only the
+     * The declared build pushes and adds through the AndroidX helper, updates from two places and
+     * clears its shortcuts when the session ends. The settings patch, run over the build's classes
+     * that make those calls, sends every one to its stand-in with the registers it had, the
+     * instruction count unchanged, and leaves none behind. The application and launcher activity
+     * the patch's other hooks go into are stand-ins here, since this reads only the
      * shortcut calls. A whole patching run is out of a unit test's reach: there the receipt's
      * no-call rules read the patched APK.
      */
     @Test
     fun eachDeclaredBuildSendsEveryCallThatRanksItsShortcuts() {
-        val versions = AppCompatibilities.facebook().single().targets.mapNotNull { it.version }.toSet()
+        val versions = AppCompatibilities.threads().single().targets.mapNotNull { it.version }.toSet()
         val checked = mutableSetOf<String>()
         for (version in versions) {
-            for (bundle in Fixtures.files { it.extension == "apkm" && it.name.contains("-$version-") }) {
+            for (bundle in Fixtures.files { it.name.startsWith("threads-") && it.extension == "xapk" && it.name.contains("-$version-") }) {
                 val callers = mutableListOf<ClassDef>()
                 FixtureDex.forEach(bundle) { dex ->
                     if (dex.methodSection.none { it.definingClass == SHORTCUT_MANAGER && it.name in SHORTCUT_CALLS }) {
@@ -238,7 +238,10 @@ class ShortcutCallsTest {
                     .mapNotNull { it.frameworkCall() }.groupingBy { it }.eachCount()
                 assertEquals(
                     "${bundle.name}: shortcut calls in the stock build",
-                    mapOf("pushDynamicShortcut" to 2, "updateShortcuts" to 3),
+                    mapOf(
+                        "pushDynamicShortcut" to 1, "addDynamicShortcuts" to 2, "updateShortcuts" to 2,
+                        "removeAllDynamicShortcuts" to 1,
+                    ),
                     found,
                 )
                 val hosts = SettingsPatchHosts.all()
@@ -316,7 +319,7 @@ class ShortcutCallsTest {
         ImmutableMethodImplementation(registers, instructions.toList(), null, null)
 
     /**
-     * A class of [type] whose one static method makes all five calls the way Facebook's code does:
+     * A class of [type] whose one static method makes all five calls the way Threads' code does:
      * v1 the manager, v2 a list, v3 a shortcut, each boolean answer read into v0, and the set as a
      * range call.
      */

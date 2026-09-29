@@ -56,7 +56,7 @@ class PartialTargetsTest {
                 handleTargets("Fixture patch", "widgets", targets) { "$it isn't in this build" }
             }
             val message = refused.message.orEmpty()
-            assertTrue(message, message.startsWith("Fixture patch: this Facebook build has none of the 3 widgets"))
+            assertTrue(message, message.startsWith("Fixture patch: this Threads build has none of the 3 widgets"))
             targets.forEach { assertTrue(message, message.contains("$it isn't in this build")) }
         }
         assertEquals("a refused patch logs no partial warnings", emptyList<String>(), warnings)
@@ -74,6 +74,6 @@ class PartialTargetsTest {
 
     @Test
     fun `a descriptor is named the way Java writes the class`() {
-        assertEquals("com.facebook.ads.AdsScreenshotDetector", javaName("Lcom/facebook/ads/AdsScreenshotDetector;"))
+        assertEquals("com.instagram.barcelona.app.BarcelonaAppShell", javaName("Lcom/instagram/barcelona/app/BarcelonaAppShell;"))
     }
 }

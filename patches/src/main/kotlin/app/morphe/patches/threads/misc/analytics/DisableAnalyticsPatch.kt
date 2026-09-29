@@ -8,6 +8,8 @@ package app.morphe.patches.threads.misc.analytics
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -18,10 +20,15 @@ import app.morphe.patches.threads.misc.extension.requireStatusMethod
 import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
 import app.morphe.patches.threads.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.findMutableMethodOf
+import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstStringInstruction
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val PATCH = "Disable analytics"
 
@@ -42,14 +49,6 @@ internal object PigeonUrlFingerprint : Fingerprint(
     filters = listOf(string("/pigeon_nest"), string("/logging_client_events")),
 )
 
-/** A provider whose `get()` answers the default event log address and nothing else. */
-internal object LoggingUrlProviderFingerprint : Fingerprint(
-    name = "get",
-    returnType = "Ljava/lang/Object;",
-    parameters = listOf(),
-    filters = listOf(string(LOGGING_URL)),
-)
-
 /**
  * The MQTT client's settings, read from a JSON object. One of them is the address its own
  * analytics go to, with the default event log address as the fallback.
@@ -66,8 +65,12 @@ internal object MqttSettingsFingerprint : Fingerprint(
  * Each place Threads builds the address it posts event logs to hands that address to the
  * extension, which answers a port on the phone itself that nothing listens on while the switch is
  * on. The upload fails there and then, and nothing else about the request, or any other request,
- * changes. The three places stand alone: a build that renamed one still has the others covered,
- * and the patch log names the one it went without.
+ * changes. The three kinds of place stand alone: a build that renamed one still has the others
+ * covered, and the patch log names the one it went without.
+ *
+ * Found by reading 449 (2026-09-29): the Pigeon logger builds its address from a host, a provider
+ * and Redex's pool of shared strings each answer the default address as it is, and the MQTT
+ * client's settings fall back on it.
  */
 @Suppress("unused")
 val disableAnalyticsPatch = bytecodePatch(
@@ -84,23 +87,62 @@ val disableAnalyticsPatch = bytecodePatch(
     execute {
         requireStatusMethod("disableAnalytics")
 
-        val targets = listOf(PigeonUrlFingerprint, LoggingUrlProviderFingerprint, MqttSettingsFingerprint)
-        handleTargets(PATCH, "analytics addresses", targets) { fingerprint ->
-            val method = fingerprint.methodOrNull ?: return@handleTargets when (fingerprint) {
-                PigeonUrlFingerprint -> "no static (String, boolean) method builds the Pigeon logger's address"
-                LoggingUrlProviderFingerprint -> "no provider's get() answers $LOGGING_URL"
-                else -> "no constructor reads analytics_endpoint from the MQTT client's settings"
-            }
-            if (fingerprint == MqttSettingsFingerprint) {
-                method.wrapAnalyticsSetting()
-            } else {
-                method.wrapEveryReturn()
-                null
+        handleTargets(PATCH, "kinds of analytics address", AddressSite.entries) { site ->
+            when (site) {
+                AddressSite.PIGEON -> PigeonUrlFingerprint.methodOrNull?.let { it.wrapEveryReturn(); null }
+                    ?: "no static (String, boolean) method builds the Pigeon logger's address"
+                AddressSite.DEFAULT -> if (wrapDefaultAddressAnswers() > 0) null
+                    else "no method answers $LOGGING_URL as it is"
+                AddressSite.MQTT -> MqttSettingsFingerprint.methodOrNull.let { method ->
+                    if (method == null) "no constructor reads analytics_endpoint from the MQTT client's settings"
+                    else method.wrapAnalyticsSetting()
+                }
             }
         }
 
         enableStatus("disableAnalytics")
     }
+}
+
+/** The kinds of place Threads gets an analytics upload address from. */
+private enum class AddressSite { PIGEON, DEFAULT, MQTT }
+
+/**
+ * Sends [LOGGING_URL] through the extension wherever a method loads it and returns it straight
+ * away, and answers how many such returns there were. A provider's `get()` does, and so does one
+ * case of the method Redex made of the app's shared strings, which answers the string for a number
+ * and is called for this one from wherever the app wants it. Only that case changes.
+ */
+private fun BytecodePatchContext.wrapDefaultAddressAnswers(): Int {
+    val sites = mutableListOf<Pair<Pair<ClassDef, Method>, List<Int>>>()
+    classDefForEach { classDef ->
+        for (method in classDef.methods) {
+            val instructions = method.implementation?.instructions?.toList() ?: continue
+            val returns = (1 until instructions.size).filter { index ->
+                val load = instructions[index - 1]
+                val answer = instructions[index]
+                answer.opcode == Opcode.RETURN_OBJECT &&
+                    (load.opcode == Opcode.CONST_STRING || load.opcode == Opcode.CONST_STRING_JUMBO) &&
+                    load.getReference<StringReference>()?.string == LOGGING_URL &&
+                    (load as OneRegisterInstruction).registerA == (answer as OneRegisterInstruction).registerA
+            }
+            if (returns.isNotEmpty()) sites += (classDef to method) to returns
+        }
+    }
+    sites.forEach { (where, returns) ->
+        val method = mutableClassDefBy(where.first).findMutableMethodOf(where.second)
+        returns.asReversed().forEach { index ->
+            val register = (method.getInstruction(index) as OneRegisterInstruction).registerA
+            method.addInstructions(
+                index,
+                """
+                    invoke-static/range { v$register .. v$register }, $ENDPOINT
+                    move-result-object v$register
+                """,
+            )
+        }
+    }
+    return sites.sumOf { it.second.size }
 }
 
 /**

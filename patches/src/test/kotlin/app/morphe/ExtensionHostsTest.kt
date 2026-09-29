@@ -16,7 +16,7 @@ import org.junit.Test
 
 /**
  * What the README's Privacy section says about the extension, held to its source: which web
- * addresses the code names, and the two places that open a connection by themselves.
+ * addresses the code names, and the one place that opens a connection by itself.
  *
  * <p>Comments don't count. Licence headers and design notes name hosts the code never contacts,
  * so string literals and code are read apart first, which also stops the `//` inside a URL from
@@ -42,12 +42,12 @@ class ExtensionHostsTest {
     }
 
     @Test
-    fun `only the media transport and the release check open a connection themselves`() {
+    fun `only the release check opens a connection itself`() {
         val openers = sources().filter { (_, source) -> NETWORK.containsMatchIn(split(source).second) }
             .map { it.first }.toSortedSet()
         assertEquals(
-            "The README says the extension goes online by itself only to download what you save, and " +
-                "to ask GitHub for the newest release once that check is turned on. These files open connections",
+            "The README says the extension goes online by itself only to ask GitHub for the newest " +
+                "release once that check is turned on. These files open connections",
             TRANSPORTS.toSortedSet(),
             openers,
         )
@@ -111,12 +111,14 @@ class ExtensionHostsTest {
     }
 
     private companion object {
-        /** The hosts the README's Privacy section names. */
-        val ALLOWED_HOSTS = setOf("github.com", "api.github.com", "gitlab.com", "www.gnu.org")
+        /**
+         * The hosts the README's Privacy section names. 127.0.0.1 is where Disable analytics sends
+         * Threads' event logs: the phone itself, on a port nothing listens on.
+         */
+        val ALLOWED_HOSTS = setOf("github.com", "api.github.com", "gitlab.com", "www.gnu.org", "127.0.0.1")
         const val RELEASE_CHECK =
             "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ReleaseCheck.java"
         val TRANSPORTS = listOf(
-            "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/Downloader.java",
             "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ReleaseTransport.java",
         )
         val URL = Regex("""(?:https?|wss?)://([A-Za-z0-9.-]+)""")

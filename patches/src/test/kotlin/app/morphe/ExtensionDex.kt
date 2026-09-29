@@ -15,7 +15,7 @@ import com.android.tools.smali.dexlib2.iface.value.StringEncodedValue
 import java.nio.ByteBuffer
 
 /**
- * The Facebook extension as the bundle carries it: the dex R8 wrote, which the Morphe plugin puts
+ * The Threads extension as the bundle carries it: the dex R8 wrote, which the Morphe plugin puts
  * among this module's resources as `extensions/threads.mpe`, so every test run reads the one built
  * from the current sources. A test that reads it sees the descriptors and constants the patched app
  * gets, not the Java that compiles to them.

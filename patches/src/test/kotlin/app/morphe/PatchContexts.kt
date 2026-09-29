@@ -31,7 +31,7 @@ internal object PatchContexts {
         val metadata = metadataType.getConstructor(
             String::class.java, String::class.java, String::class.java,
             Class.forName("com.reandroid.archive.block.ApkSignatureBlock"),
-        ).newInstance("com.facebook.katana", "0", "0", null)
+        ).newInstance("com.instagram.barcelona", "0", "0", null)
         val context = BytecodePatchContext::class.java.getConstructor(PatcherConfig::class.java, metadataType)
             .newInstance(config, metadata)
         val poolType = Class.forName("app.morphe.patcher.util.PatchClasses")

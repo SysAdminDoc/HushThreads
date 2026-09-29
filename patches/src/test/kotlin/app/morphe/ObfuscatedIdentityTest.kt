@@ -14,16 +14,15 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Every name Meta's obfuscator made up for one Facebook build, written into this repository as
+ * Every name Meta's obfuscator made up for one Threads build, written into this repository as
  * though it were the name of something.
  *
- * <p>Facebook's classes are renamed into package `X` on every release (`LX/1lD;` on 577 was
- * `LX/1vv;` on 573), and most method and field names become short tokens such as `A0K`, `B8f` or
- * `BQd`. A patch that writes one of them down applies on the build it was written against and
+ * <p>Threads' classes are renamed into package `X` on every release (Redex names such as `LX/8rc;`
+ * or `LX/0K9;`), and most method and field names become short tokens such as `A0F`, `DKT` or
+ * `A1S`. A patch that writes one of them down applies on the build it was written against and
  * fails, or does the wrong thing, on the next one. The patches here resolve every such name while
- * patching, from anchors the obfuscator keeps: kept class and method names, log and trace
- * literals, enum constant names, debug-dump field names and method shapes. That is what let them
- * survive where FroggoMorphePatches, which wrote about a hundred of these down, did not.
+ * patching, from anchors the obfuscator keeps: kept class and method names, string literals,
+ * Pando field hashes, Kotlin lambda class names and method shapes.
  *
  * <p>What is here today is recorded in `obfuscated-identities.txt`, one `path|name` per line,
  * so that the list can only shrink: a name that turns up and is not in it fails this test, and
@@ -117,7 +116,7 @@ class ObfuscatedIdentityTest {
         /** The Java binary spelling of such a class: `X.1vv`, `X.B89`. */
         val JAVA_BINARY_TYPE = Regex("""(?<![0-9A-Za-z_$])X\.[0-9A-Za-z]{2,5}(?![0-9A-Za-z_$])""")
 
-        /** A member name of the shape Meta's obfuscator gives Facebook's: `"A0K"`, `"B8f"`, `"BQd"`. */
+        /** A member name of the shape Meta's obfuscator gives Threads': `"A0K"`, `"B8f"`, `"BQd"`. */
         val MEMBER_LITERAL = Regex(""""([A-F][0-9A-Za-z]{2})"""")
 
         /** A prefix standing in for such names: `"LX/"`, `"LY/"`. */

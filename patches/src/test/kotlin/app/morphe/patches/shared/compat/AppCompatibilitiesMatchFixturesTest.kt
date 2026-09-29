@@ -21,7 +21,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * The signing certificates and version code the bundle declares have to be the ones on Facebook's
+ * The signing certificates and version code the bundle declares have to be the ones on Threads'
  * own builds. Morphe Manager warns about a picked APK whose certificate differs and treats a
  * version code it was not told about as unsupported, so a wrong value here would warn every user
  * who downloaded the genuine release.
@@ -30,15 +30,15 @@ class AppCompatibilitiesMatchFixturesTest {
 
     @Test
     fun `every retained vendor build is signed by a declared certificate`() {
-        val declared = AppCompatibilities.facebook().single().signatures.orEmpty()
+        val declared = AppCompatibilities.threads().single().signatures.orEmpty()
         assertEquals(
             "declared signatures",
-            setOf(AppCompatibilities.FACEBOOK_SIGNER_SHA256, AppCompatibilities.META_ROTATED_SIGNER_SHA256),
+            setOf(AppCompatibilities.THREADS_SIGNER_SHA256, AppCompatibilities.THREADS_ROTATED_SIGNER_SHA256),
             declared,
         )
         val undeclared = mutableMapOf<String, Set<String>>()
         var checked = 0
-        for (fixture in Fixtures.files { it.extension == "apk" || it.extension == "apkm" }) {
+        for (fixture in Fixtures.files { it.isVendorContainer() }) {
             apksIn(fixture) { name, apk ->
                 val result = ApkVerifier.Builder(apk).build().verify()
                 assertTrue("$name does not verify: ${result.errors}", result.isVerified)
@@ -61,20 +61,23 @@ class AppCompatibilitiesMatchFixturesTest {
 
     @Test
     fun `every declared target carries the version code and floor of its vendor build`() {
-        val targets = AppCompatibilities.facebook().single().targets
+        val targets = AppCompatibilities.threads().single().targets
         assertEquals(
             "declared versions, newest first",
-            listOf(AppCompatibilities.FACEBOOK_TARGET_VERSION, AppCompatibilities.FACEBOOK_PREVIOUS_VERSION),
+            listOf(AppCompatibilities.THREADS_TARGET_VERSION),
             targets.map { it.version },
         )
         var checked = 0
         for (target in targets) {
             val version = checkNotNull(target.version)
             val codes = checkNotNull(target.versionCodes) { "the $version target declares no version codes" }
-            val fixtures = Fixtures.files { it.extension == "apkm" && it.name.contains("-$version-") }
+            val fixtures = Fixtures.files { it.isVendorContainer() && it.name.contains("-$version-") }
             for (fixture in fixtures) {
                 ZipFile(fixture).use { zip ->
-                    val base = checkNotNull(zip.getEntry("base.apk")) { "${fixture.name} holds no base.apk" }
+                    // An .apkm names the base base.apk, an .xapk after the package.
+                    val base = checkNotNull(zip.getEntry("base.apk") ?: zip.getEntry("${AppCompatibilities.THREADS_PACKAGE}.apk")) {
+                        "${fixture.name} holds no base APK"
+                    }
                     val copy = File.createTempFile("fixture-base", ".apk")
                     try {
                         zip.getInputStream(base).use { input -> copy.outputStream().use { input.copyTo(it) } }
@@ -102,9 +105,15 @@ class AppCompatibilitiesMatchFixturesTest {
         assertEquals("one retained fixture for each declared target", targets.size, checked)
     }
 
-    /** Every APK a fixture holds: itself, or each split inside an .apkm, copied out to a temp file. */
+    /**
+     * A Threads build as the vendor or a mirror ships it, an .apkm or an .xapk. A merged .apk in the
+     * same folder was rebuilt from one of these and carries no vendor signature.
+     */
+    private fun File.isVendorContainer(): Boolean =
+        name.startsWith("threads-") && (extension == "apkm" || extension == "xapk")
+
+    /** Every split a fixture holds, each copied out to a temp file. */
     private fun apksIn(fixture: File, check: (String, File) -> Unit) {
-        if (fixture.extension == "apk") return check(fixture.name, fixture)
         ZipFile(fixture).use { zip ->
             val apks = zip.entries().asSequence().filter { it.name.endsWith(".apk") }.toList()
             assertTrue("${fixture.name} holds no APK", apks.isNotEmpty())

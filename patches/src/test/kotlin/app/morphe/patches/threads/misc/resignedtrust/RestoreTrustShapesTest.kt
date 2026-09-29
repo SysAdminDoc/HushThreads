@@ -32,7 +32,7 @@ class RestoreTrustShapesTest {
     private val originalSigners = "Lapp/morphe/extension/hushthreads/misc/ThreadsSignature;->" +
         "originalSigners(Landroid/content/pm/PackageInfo;)Ljava/util/List;"
 
-    /** The signers method: an instance method taking nothing, like `A00()` on both builds. */
+    /** The signers method: an instance method taking nothing, like `A00()` on 449. */
     private fun signersMethod(registers: Int): MutableMethod = MutableMethod(
         ImmutableMethod(
             "Lfixture/Trust;",
@@ -58,9 +58,9 @@ class RestoreTrustShapesTest {
 
     private val Instruction.reference get() = (this as ReferenceInstruction).reference
 
-    /** Both builds give the method six registers: five locals and `this` in v5. */
+    /** 449 gives the method six registers: five locals and `this` in v5. */
     @Test
-    fun `the answer is read through a copy of this and Facebook's path is kept`() {
+    fun `the answer is read through a copy of this and Threads' path is kept`() {
         val method = signersMethod(6)
         method.answerOriginalSigners("packageInfo", "Lfixture/Signers;")
         val body = method.body()
@@ -73,7 +73,7 @@ class RestoreTrustShapesTest {
         assertEquals("packageInfo", (body[1].reference as FieldReference).name)
         assertEquals(originalSigners, (body[2].reference as MethodReference).toString())
         assertEquals(Opcode.IF_EQZ, body[4].opcode)
-        assertEquals("null runs Facebook's own code", 9, method.target(4))
+        assertEquals("null runs Threads' own code", 9, method.target(4))
         assertEquals(Opcode.RETURN_OBJECT, body[8].opcode)
         assertEquals(Opcode.CONST_4, body[9].opcode)
     }
@@ -97,7 +97,7 @@ class RestoreTrustShapesTest {
 
     /**
      * v0 to v2 are borrowed. With fewer than three locals one of them is `this`, which the
-     * injection overwrites before Facebook's own code reads it.
+     * injection overwrites before Threads' own code reads it.
      */
     @Test
     fun `a method with fewer than three locals stops the patch`() {

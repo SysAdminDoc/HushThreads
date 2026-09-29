@@ -2,8 +2,7 @@
  * Copyright 2026 HushThreads contributors
  * https://github.com/SysAdminDoc/HushThreads
  *
- * Built on SysAdminDoc/Hushfacebook (GPL-3.0). Cleaning the link where the app reads the server's
- * permalink answer is the idea piko's link sanitizer uses for X: https://github.com/crimera/piko
+ * Built on SysAdminDoc/Hushfacebook (GPL-3.0).
  */
 package app.morphe.patches.threads.misc.sharelinks
 
