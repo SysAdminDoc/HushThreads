@@ -837,6 +837,24 @@ Require-Match -Text $bugForm -Pattern "(?m)^\s*placeholder:\s*$([regex]::Escape(
 Require-Match -Text $bugForm -Pattern "(?m)^\s*placeholder:\s*Morphe Manager $([regex]::Escape($managerFloor))\s*$" `
     -Description 'bug report form Manager placeholder'
 Write-Host "[release] the bug report form's placeholders say `"$bugFormVersions`" and Morphe Manager $managerFloor"
+# Its patch list is what a reporter ticks, so it names the catalog's patches, every one of them
+# once and nothing else. A patch added or renamed without it would leave reporters no way to say
+# they had it.
+$patchField = [regex]::Match($bugForm, '(?ms)^\s*id:\s*selected_patches\s*$.*?^\s*options:\s*$(.*?)(?=^\s*validations:|^\s*-\s*type:|\z)')
+if (-not $patchField.Success) { throw 'The bug report form has no patch list to pick from (id: selected_patches, with options).' }
+$formPatches = @([regex]::Matches($patchField.Groups[1].Value, '(?m)^\s+-\s+(.+?)\s*$') | ForEach-Object { $_.Groups[1].Value })
+$catalogPatches = @($patches | ForEach-Object { [string]$_.name })
+$unlisted = @($catalogPatches | Where-Object { $formPatches -cnotcontains $_ })
+$unknown = @($formPatches | Where-Object { $catalogPatches -cnotcontains $_ })
+$repeated = @($formPatches | Group-Object -CaseSensitive | Where-Object { $_.Count -gt 1 } | ForEach-Object { $_.Name })
+if ($unlisted.Count -gt 0 -or $unknown.Count -gt 0 -or $repeated.Count -gt 0) {
+    $problems = @()
+    if ($unlisted.Count -gt 0) { $problems += 'it leaves out ' + ($unlisted -join ', ') }
+    if ($unknown.Count -gt 0) { $problems += 'patches-list.json has no ' + ($unknown -join ', ') }
+    if ($repeated.Count -gt 0) { $problems += 'it lists ' + ($repeated -join ', ') + ' more than once' }
+    throw ("The bug report form's patch list doesn't match the catalog: " + ($problems -join '; ') + '.')
+}
+Write-Host "[release] the bug report form's patch list names the catalog's $($catalogPatches.Count) patches"
 
 function Test-ChangelogHere {
     <#
