@@ -299,4 +299,12 @@ public class HushThreadsPauseTest {
         assertEquals(0, HushThreadsPause.parseCount(null));
         assertNull(HushThreadsPause.read(new File(context.getFilesDir(), "never-written")));
     }
+
+    /** Android 9 and 10 keep no exit reasons, so there the handler's mark alone decides. */
+    @Test @Config(sdk = 28)
+    public void android9GoesByTheHandlersMarkAlone() {
+        assertTrue(HushThreadsPause.diedYoungFromACrash(context, "5199 1000 crashed"));
+        assertFalse(HushThreadsPause.diedYoungFromACrash(context, "5199 1000"));
+        assertFalse(HushThreadsPause.diedYoungFromACrash(context, "not a pid"));
+    }
 }

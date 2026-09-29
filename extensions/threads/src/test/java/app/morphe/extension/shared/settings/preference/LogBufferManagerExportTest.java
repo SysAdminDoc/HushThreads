@@ -144,6 +144,28 @@ public class LogBufferManagerExportTest {
     }
 
     /**
+     * Android 9 has no Downloads collection in MediaStore, so the report goes into the app's own
+     * folder on shared storage, which needs no permission there, and the path handed back is where
+     * it went.
+     */
+    @Test @Config(sdk = 28) public void onAndroid9TheReportGoesIntoTheAppsOwnFolder() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        String report = "MORPHE DIAGNOSTIC REPORT\nschema: 1\n";
+
+        String first = LogBufferManager.writeToFile(context, report);
+        String second = LogBufferManager.writeToFile(context, report);
+
+        java.io.File folder = new java.io.File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "Morphe");
+        for (String saved : new String[]{first, second}) {
+            java.io.File file = new java.io.File(saved);
+            assertEquals(folder.getAbsolutePath(), file.getParent());
+            assertTrue(saved, file.getName().startsWith("morphe-diagnostics-") && file.getName().endsWith(".txt"));
+            assertEquals(report, new String(java.nio.file.Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
+        }
+        assertNotEquals(first, second);
+    }
+
+    /**
      * The file's place is a value set into a sentence, so the toast isolates it: a right-to-left
      * sentence then keeps "Download/Morphe/..." in the order it was written.
      */

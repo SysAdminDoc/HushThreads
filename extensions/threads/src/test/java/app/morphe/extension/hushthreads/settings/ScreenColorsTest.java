@@ -291,4 +291,17 @@ public class ScreenColorsTest {
         for (int index = 0; index < list.getChildCount(); index++) rows.add(list.getChildAt(index));
         return rows;
     }
+
+    /**
+     * A dialog's text field takes the accent for its cursor and handles where Android lets code set
+     * them, from Android 10 on. Android 9 has no such call, so painting a field there must not
+     * reach for one.
+     */
+    @Test
+    @Config(sdk = 28)
+    public void aTextFieldIsPaintedOnAndroid9WithoutTheCursorCalls() {
+        android.widget.EditText field = new android.widget.EditText(org.robolectric.RuntimeEnvironment.getApplication());
+        ScreenColors.DEFAULT.paintField(field);
+        assertEquals(ScreenColors.DEFAULT.title, field.getCurrentTextColor());
+    }
 }

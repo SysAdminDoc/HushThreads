@@ -236,6 +236,7 @@ public final class LogBufferManager {
         if (context == null) throw new IOException("Application context unavailable");
         String fileName = "morphe-diagnostics-" + fileTimestamp() + "-"
                 + Long.toHexString(System.nanoTime()) + ".txt";
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return writeToAppFolder(context, fileName, exportText);
         ContentResolver resolver = context.getContentResolver();
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
@@ -260,6 +261,28 @@ public final class LogBufferManager {
             deleteIncomplete(resolver, pendingUri, error);
             throw error;
         }
+    }
+
+    /**
+     * Android 9 has no Downloads collection in MediaStore, and the shared Download folder takes a
+     * storage permission there that Threads may not hold. The report goes into Threads' own folder
+     * on shared storage instead, which a file manager or a computer can open without one.
+     */
+    private static String writeToAppFolder(Context context, String fileName, String exportText) throws IOException {
+        File downloads = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        if (downloads == null) throw new IOException("Shared storage is unavailable");
+        File folder = new File(downloads, "Morphe");
+        if (!folder.isDirectory() && !folder.mkdirs()) throw new IOException("Could not create report folder");
+        File report = new File(folder, fileName);
+        try (OutputStream output = new FileOutputStream(report)) {
+            writeText(output, exportText);
+        } catch (IOException error) {
+            if (!report.delete() && report.exists()) {
+                error.addSuppressed(new IOException("Could not remove incomplete report"));
+            }
+            throw error;
+        }
+        return report.getAbsolutePath();
     }
 
     private static String providerDisplayName(ContentResolver resolver, Uri uri) throws IOException {
@@ -539,6 +562,8 @@ public final class LogBufferManager {
                 app.morphe.extension.shared.diagnostics.DiagnosticCategory.PATCH_ERRORS.value)) {
             return "";
         }
+        // Android 9 and 10 keep no exit reasons.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return "";
         try {
             Context context = Utils.getContext();
             if (context == null) return "";

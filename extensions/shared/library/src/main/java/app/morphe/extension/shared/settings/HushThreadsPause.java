@@ -11,12 +11,14 @@ package app.morphe.extension.shared.settings;
 import android.app.ActivityManager;
 import android.app.ApplicationExitInfo;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 import android.os.SystemClock;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -226,6 +228,8 @@ public final class HushThreadsPause {
             return false;
         }
         boolean markedByHandler = parts.length > 2 && CRASHED.equals(parts[2]);
+        // Android 9 and 10 keep no exit reasons, so there only the handler's mark can say.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return markedByHandler;
         ApplicationExitInfo exit = firstExitSince(context, pid, started);
         if (exit != null) {
             int reason = exit.getReason();
@@ -246,6 +250,7 @@ public final class HushThreadsPause {
      * none. A record older than the start belonged to an earlier process that had the same pid.
      */
     @Nullable
+    @RequiresApi(Build.VERSION_CODES.R)
     private static ApplicationExitInfo firstExitSince(Context context, int pid, long started) {
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         if (manager == null) return null;

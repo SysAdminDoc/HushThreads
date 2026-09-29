@@ -21,6 +21,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
 import android.graphics.drawable.RippleDrawable;
+import android.os.Build;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
@@ -37,6 +38,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import app.morphe.extension.shared.settings.preference.ImmediateAction;
 
@@ -479,6 +481,12 @@ final class ScreenColors {
         field.setPaddingRelative(dp(field, 12), dp(field, 10), dp(field, 12), dp(field, 10));
         field.setTextColor(title);
         field.setHighlightColor(half(accent));
+        // Android 9 has no way to set the cursor or the handles from code, so they keep the teal.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) paintCursorAndHandles(field);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private void paintCursorAndHandles(EditText field) {
         Drawable cursor = field.getTextCursorDrawable();
         if (cursor != null) {
             cursor = cursor.mutate();
