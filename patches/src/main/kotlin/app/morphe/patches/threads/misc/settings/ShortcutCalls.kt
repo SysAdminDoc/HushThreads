@@ -29,7 +29,7 @@ internal const val EXTENSION_ROOT = "Lapp/morphe/extension/"
 /**
  * The ShortcutManager calls that add, replace, rank again or clear an app's dynamic shortcuts, by
  * name, with their parameters and answer. SettingsEntry has a static method of the same name for
- * each, taking the manager first and answering the same. Removing some of Facebook's own can only
+ * each, taking the manager first and answering the same. Removing some of Threads' own can only
  * move the HushThreads shortcut up, so `removeDynamicShortcuts` stays as it is.
  */
 internal val SHORTCUT_CALLS = mapOf(
@@ -95,7 +95,7 @@ private fun Method.makesShortcutCall(): Boolean =
     implementation?.instructions?.any { it.shortcutCall() != null } == true
 
 /**
- * Sends every [SHORTCUT_CALLS] call in Facebook to SettingsEntry, which puts the HushThreads
+ * Sends every [SHORTCUT_CALLS] call in Threads to SettingsEntry, which puts the HushThreads
  * shortcut back in front after each. Answers how many calls it sent. A build that makes none has
  * nothing that could rank its own shortcuts ahead, so none isn't a failure.
  */

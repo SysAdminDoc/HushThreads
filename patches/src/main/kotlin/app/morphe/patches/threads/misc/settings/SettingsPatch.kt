@@ -13,42 +13,32 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
-import app.morphe.patches.threads.coexist.clonedPackagePatch
-import app.morphe.patches.threads.misc.extension.FACEBOOK_APPLICATION
-import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
-import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.shared.compat.AppCompatibilities
+import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.threads.misc.extension.THREADS_APPLICATION
+import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
 import app.morphe.util.superclassChain
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.ClassDef
+import org.w3c.dom.Element
 
 internal const val ENTRY = "$EXTENSION_PACKAGE/settings/SettingsEntry;"
 
-/** The activity the manifest's launcher alias targets. A manifest name is never obfuscated. */
-internal const val MAIN_TAB_ACTIVITY = "Lcom/facebook/katana/activity/FbMainTabActivity;"
+/** The activity Threads' launcher opens. A manifest name is never obfuscated. */
+internal const val MAIN_ACTIVITY = "Lcom/instagram/barcelona/mainactivity/BarcelonaActivity;"
+
+/** [MAIN_ACTIVITY] as the manifest writes it. */
+internal const val MAIN_ACTIVITY_NAME = "com.instagram.barcelona.mainactivity.BarcelonaActivity"
 
 /**
- * Why this APK can't be patched at all, said before the settings patch changes anything, or null
- * when nothing here stands in the way. [hasApplication] says the APK's readable dex carries
- * FacebookApplication, and [mainTab] is the main tab activity as it carries it, or null.
- *
- * Meta's Facebook builds for Android 9 (arm64-v8a) and Android 8 (armeabi-v7a) ship one startup
- * dex, 4,420 classes in 580.0.0.51.74 for Android 9, and pack the rest of the code into a compressed
- * Superpack archive, `assets/secondary-program-dex-jars/store-0.dex.spo`, which the patcher can't
- * read (checked 2026-09-26: 0 of 26 patches apply). The application class is in the startup dex and
- * the main tab activity isn't, so without this the settings patch stopped saying no class of the
- * activity's hierarchy declares onCreate, which named the symptom and not the build.
+ * The activity alias the settings patch adds for Android's App info page. Its name sits in the
+ * extension's package, so it can't meet a component of Threads' own.
  */
-internal fun compressedCodeRefusal(hasApplication: Boolean, mainTab: ClassDef?): String? {
-    if (!hasApplication) return null
-    if (mainTab != null && mainTab.methods.any { it.implementation != null }) return null
-    return "This Facebook build has FacebookApplication but no readable code for FbMainTabActivity, the screen " +
-        "Facebook opens on. That's what a Facebook build for Android 9 or older looks like. Meta packs all but " +
-        "its startup code into a compressed archive (assets/secondary-program-dex-jars/store-0.dex.spo) that " +
-        "the patcher can't read, so none of HushThreads's patches can apply. HushThreads supports Android 11 " +
-        "and newer. Patch the (arm64-v8a) (Android 11+) build of Facebook instead."
-}
+internal const val SETTINGS_ALIAS_NAME = "app.morphe.extension.hushthreads.settings.OpenSettings"
+
+/** The intent Android's App info page sends to "Additional settings in the app". */
+internal const val APPLICATION_PREFERENCES = "android.intent.action.APPLICATION_PREFERENCES"
 
 /**
  * The first class in [type]'s hierarchy, as far as the APK carries it, that declares this
@@ -68,42 +58,73 @@ internal fun BytecodePatchContext.declaredInHierarchy(
     } ?: throw PatchException("No class of $type's hierarchy declares $name(${parameters.joinToString("")})V")
 
 /**
- * Makes the HushThreads screen reachable two ways. Inside Facebook, a long press on the Facebook
- * logo at the top of the home feed opens it. From the home screen, a long-press shortcut on
- * Facebook's launcher icon opens Facebook with an extra, the activity reports it, and the screen
- * opens over the next Facebook activity to resume. Every name used here is a manifest component,
- * a framework override or call, or a class name and trace string Facebook keeps. Nothing is added
- * to the manifest.
+ * Adds an alias of [MAIN_ACTIVITY] that answers [APPLICATION_PREFERENCES], which is what makes
+ * Android's App info page for Threads show "Additional settings in the app". The alias opens
+ * Threads' own launcher activity with that action, and the extension opens the settings from there.
+ * Nothing of Threads' own manifest changes.
+ */
+internal val settingsManifestPatch = resourcePatch {
+    execute {
+        document("AndroidManifest.xml").use { document ->
+            val application = document.getElementsByTagName("application").item(0) as? Element
+                ?: throw PatchException("AndroidManifest.xml has no application element")
+            val activities = document.getElementsByTagName("activity")
+            val main = (0 until activities.length).map { activities.item(it) as Element }
+                .singleOrNull { it.getAttribute("android:name") == MAIN_ACTIVITY_NAME }
+                ?: throw PatchException("AndroidManifest.xml doesn't declare $MAIN_ACTIVITY_NAME")
+            if (main.getAttribute("android:exported") != "true") {
+                throw PatchException("$MAIN_ACTIVITY_NAME isn't exported, so Android's App info page couldn't open it")
+            }
+            val aliases = document.getElementsByTagName("activity-alias")
+            if ((0 until aliases.length).any { (aliases.item(it) as Element).getAttribute("android:name") == SETTINGS_ALIAS_NAME }) {
+                throw PatchException("AndroidManifest.xml already has $SETTINGS_ALIAS_NAME")
+            }
+
+            val alias = document.createElement("activity-alias").apply {
+                setAttribute("android:name", SETTINGS_ALIAS_NAME)
+                setAttribute("android:targetActivity", MAIN_ACTIVITY_NAME)
+                setAttribute("android:exported", "true")
+            }
+            val filter = document.createElement("intent-filter")
+            filter.appendChild(document.createElement("action").apply { setAttribute("android:name", APPLICATION_PREFERENCES) })
+            filter.appendChild(
+                document.createElement("category").apply { setAttribute("android:name", "android.intent.category.DEFAULT") },
+            )
+            alias.appendChild(filter)
+            application.appendChild(alias)
+        }
+    }
+}
+
+/**
+ * Makes the HushThreads screen reachable two ways. From the home screen, a long-press shortcut on
+ * Threads' launcher icon opens Threads with an extra; from Android's App info page for Threads,
+ * "Additional settings in the app" opens it with [APPLICATION_PREFERENCES]. Threads' launcher
+ * activity reports its intent, and the screen opens over the next Threads activity to resume.
+ * Every name used here is a manifest component or a framework override or call.
  */
 @Suppress("unused")
 val settingsPatch = bytecodePatch(
     name = "HushThreads settings",
-    description = "Adds HushThreads settings to Facebook. Long-press the Facebook logo at the top of " +
-        "your feed, or Facebook's launcher icon, to turn features on or off, pause HushThreads, save your " +
-        "switches to a file or load them, and export diagnostics. The licenses are there too.",
+    description = "Adds HushThreads settings to Threads. Long-press Threads' launcher icon, or open " +
+        "Additional settings in the app on Threads' App info page, to turn features on or off, pause " +
+        "HushThreads, save your switches to a file or load them, and export diagnostics. The licenses " +
+        "are there too.",
     default = true,
 ) {
     category("Settings")
-    dependsOn(threadsExtensionPatch)
-    // Every patch depends on this one, so a copy renamed with Clone app works whatever is picked,
-    // and the patches Morphe runs before Clone app bring it in early enough. See ClonedPackage.kt.
-    dependsOn(clonedPackagePatch)
-    compatibleWith(*AppCompatibilities.facebook())
+    dependsOn(threadsExtensionPatch, settingsManifestPatch)
+    compatibleWith(*AppCompatibilities.threads())
 
     execute {
-        // A build whose code the patcher can't read is refused first, naming the build it most
-        // likely is, before anything in it changes.
-        compressedCodeRefusal(classDefByOrNull(FACEBOOK_APPLICATION) != null, classDefByOrNull(MAIN_TAB_ACTIVITY))
-            ?.let { throw PatchException(it) }
-
-        // Before each return of the application's onCreate, after Facebook's own startup: the
-        // application overrides registerActivityLifecycleCallbacks, and the override is only safe
-        // to call once Facebook has set itself up.
-        val applicationOnCreate = declaredInHierarchy(FACEBOOK_APPLICATION, "onCreate")
+        // Before each return of the application's onCreate, after Threads' own startup: the
+        // extension registers activity lifecycle callbacks there, and that's only safe once Threads
+        // has set itself up.
+        val applicationOnCreate = declaredInHierarchy(THREADS_APPLICATION, "onCreate")
         val returns = applicationOnCreate.implementation!!.instructions.withIndex()
             .filter { it.value.opcode == Opcode.RETURN_VOID }
             .map { it.index }
-        if (returns.isEmpty()) throw PatchException("$FACEBOOK_APPLICATION.onCreate never returns")
+        if (returns.isEmpty()) throw PatchException("$THREADS_APPLICATION.onCreate never returns")
         returns.asReversed().forEach { index ->
             applicationOnCreate.addInstruction(
                 index,
@@ -111,24 +132,19 @@ val settingsPatch = bytecodePatch(
             )
         }
 
-        declaredInHierarchy(MAIN_TAB_ACTIVITY, "onCreate", "Landroid/os/Bundle;").addInstruction(
+        declaredInHierarchy(MAIN_ACTIVITY, "onCreate", "Landroid/os/Bundle;").addInstruction(
             0,
             "invoke-static/range { p0 .. p0 }, $ENTRY->onActivityCreate(Landroid/app/Activity;)V",
         )
-        declaredInHierarchy(MAIN_TAB_ACTIVITY, "onNewIntent", "Landroid/content/Intent;").addInstruction(
+        declaredInHierarchy(MAIN_ACTIVITY, "onNewIntent", "Landroid/content/Intent;").addInstruction(
             0,
             "invoke-static/range { p0 .. p1 }, $ENTRY->onNewIntent(Landroid/app/Activity;Landroid/content/Intent;)V",
         )
 
-        // Facebook pushes its own shortcuts at rank 0 whenever it posts some notifications, and the
-        // newest push goes first, so the shortcut above ended up last, where a launcher that shows
-        // only a few cut it off. Each of those calls now goes through the extension, which puts it
-        // back in front afterwards. Framework names only, which the obfuscator keeps.
+        // Threads pushes its own shortcuts at rank 0, and the newest push goes first, so the
+        // shortcut above could end up last, where a launcher that shows only a few cuts it off.
+        // Each of those calls now goes through the extension, which puts it back in front
+        // afterwards. Framework names only, which the obfuscator keeps.
         rerouteShortcutCalls()
-
-        // Some launchers have no shortcut menu at all (#2), so there's a way in from inside
-        // Facebook too: the call that gives the feed's Facebook logo its touch listener goes
-        // through the extension, which gives the logo a long press that opens the screen.
-        hookLogoLongPress()
     }
 }

@@ -17,23 +17,23 @@ import app.morphe.patches.shared.misc.extension.sharedExtensionPatch
 import app.morphe.util.superclassChain
 
 /** The application class the manifest names. A manifest name is never obfuscated. */
-internal const val FACEBOOK_APPLICATION = "Lcom/facebook/katana/app/FacebookApplication;"
+internal const val THREADS_APPLICATION = "Lcom/instagram/barcelona/app/BarcelonaAppShell;"
 
 /**
- * Merges the shared and Facebook extensions and hands them the application context.
+ * Merges the shared and Threads extensions and hands them the application context.
  *
  * <p>The context goes in at the start of the application's `onCreate()`, in whichever class of
- * its hierarchy declares one: every process Facebook starts builds this application, and the
+ * its hierarchy declares one: every process Threads starts builds this application, and the
  * settings, the pause switch and safe mode all read preferences through that context before any
  * hook asks for a switch.
  */
 val threadsExtensionPatch = bytecodePatch {
-    dependsOn(sharedExtensionPatch(extensionName = "facebook", isYouTubeOrYouTubeMusic = false))
+    dependsOn(sharedExtensionPatch(extensionName = "threads", isYouTubeOrYouTubeMusic = false))
 
     execute {
         // The chain starts at the application class itself and stops at the first framework class
         // the APK does not carry.
-        val declaring = superclassChain(FACEBOOK_APPLICATION)
+        val declaring = superclassChain(THREADS_APPLICATION)
             .mapNotNull { type -> mutableClassDefByOrNull(type) }
             .firstNotNullOfOrNull { classDef ->
                 classDef.methods.singleOrNull { method ->
@@ -41,7 +41,7 @@ val threadsExtensionPatch = bytecodePatch {
                         method.returnType == "V" && method.implementation != null
                 }
             } ?: throw PatchException(
-                "Neither $FACEBOOK_APPLICATION nor a superclass in the APK declares onCreate()",
+                "Neither $THREADS_APPLICATION nor a superclass in the APK declares onCreate()",
             )
 
         declaring.addInstruction(

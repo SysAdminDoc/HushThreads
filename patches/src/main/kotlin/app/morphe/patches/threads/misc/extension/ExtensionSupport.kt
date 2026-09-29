@@ -9,18 +9,22 @@
  */
 package app.morphe.patches.threads.misc.extension
 
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.util.ControlFlow
 import app.morphe.util.RegisterLiveness
 import app.morphe.util.returnEarly
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import java.util.BitSet
 
-/** The package of the Facebook extension, as a smali descriptor prefix. */
+/** The package of the Threads extension, as a smali descriptor prefix. */
 internal const val EXTENSION_PACKAGE = "Lapp/morphe/extension/hushthreads"
 
 /** Which patches this build carries. See the class's own comment. */
@@ -29,7 +33,7 @@ internal const val SETTINGS_STATUS = "$EXTENSION_PACKAGE/settings/SettingsStatus
 /**
  * Rewrites `SettingsStatus.[name]()` to answer true, so the extension acts for this patch and the
  * settings screen shows its switch. Call it from the feature patch's execute block; the patch must
- * depend on the Facebook extension patch, which is what merges `SettingsStatus` into the APK.
+ * depend on the Threads extension patch, which is what merges `SettingsStatus` into the APK.
  */
 internal fun BytecodePatchContext.enableStatus(name: String) {
     val method = statusMethod(name)
@@ -51,6 +55,32 @@ private fun BytecodePatchContext.statusMethod(name: String): MutableMethod =
         it.name == name && it.returnType == "Z" && it.parameterTypes.isEmpty()
     } ?: throw PatchException("SettingsStatus has no boolean method $name()")
 
+/**
+ * Gives the extension's static stub [name] in [type] the body [smali], which has [registers]
+ * registers in all, its parameters the last of them. A stub answers nothing in the extension's own
+ * source because what it calls is one of the app's obfuscated names, found when you patch. It keeps
+ * its name, signature and access, so the extension's calls to it run [smali] from then on.
+ */
+internal fun BytecodePatchContext.writeStub(type: String, name: String, registers: Int, smali: String) {
+    val classDef = mutableClassDefBy(type)
+    val stub = classDef.methods.singleOrNull { it.name == name && AccessFlags.STATIC.isSet(it.accessFlags) }
+        ?: throw PatchException("$type has no single static stub named $name")
+    val needed = stub.parameterTypes.sumOf { it.width() }
+    if (registers < needed) throw PatchException("$type->$name takes $needed parameter register(s), more than $registers")
+    val body = ImmutableMethod(
+        stub.definingClass,
+        stub.name,
+        stub.parameters,
+        stub.returnType,
+        stub.accessFlags,
+        stub.annotations,
+        stub.hiddenApiRestrictions,
+        MutableMethodImplementation(registers),
+    ).toMutable().apply { addInstructionsWithLabels(0, smali) }
+    classDef.methods.remove(stub)
+    classDef.methods.add(body)
+}
+
 /** How many registers a parameter of this type takes: two for a long or a double. */
 private fun CharSequence.width(): Int = if (toString() == "J" || toString() == "D") 2 else 1
 
@@ -70,7 +100,7 @@ internal fun Method.parameterRegisterNumber(index: Int): Int =
 
 /**
  * Throws naming [what] unless declared parameter [parameterIndex] is still in its own register at
- * each instruction of [readAt], where a hook reads it. Facebook's code reuses a parameter's
+ * each instruction of [readAt], where a hook reads it. Threads' code reuses a parameter's
  * register once it's done with the parameter, `this` included, so a hook reading one further down
  * could get whatever went there instead, and would still verify when that's an object too. Any
  * write to the register from which one of [readAt] can be reached, along a branch, a switch or an

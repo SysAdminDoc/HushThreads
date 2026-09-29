@@ -1,115 +1,96 @@
 /*
- * Forked from https://github.com/SysAdminDoc/Hushfacebook at c15d4f79 (GPL-3.0),
- * modified for HushThreads (Threads), 2026.
+ * Copyright 2026 HushThreads contributors
+ * https://github.com/SysAdminDoc/HushThreads
  *
- * Copyright 2026 Hushfacebook contributors
- * https://github.com/SysAdminDoc/Hushfacebook
+ * Built on SysAdminDoc/Hushfacebook (GPL-3.0). Cleaning the link where the app reads the server's
+ * permalink answer is the idea piko's link sanitizer uses for X: https://github.com/crimera/piko
  */
 package app.morphe.patches.threads.misc.sharelinks
 
+import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.string
+import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.threads.misc.extension.enableStatus
 import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
 import app.morphe.patches.threads.misc.settings.settingsPatch
-import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.util.addInstructionsAtControlFlowLabel
-import app.morphe.util.singleOrPatchException
-import com.android.tools.smali.dexlib2.AccessFlags
+import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.Method
-import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 private const val SANITIZE =
     "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->sanitizeShared(Ljava/lang/String;)Ljava/lang/String;"
 
 /**
- * Takes Facebook's tracking tags off the links the app hands out when someone shares.
+ * The parser of the server's answer to `media/<id>/permalink/`, the one request behind every link
+ * Threads hands out for a post: Copy link, Share to another app, Send and the share sheet's own
+ * rows. It reads the `permalink` field and stores it in a fresh response object. The method's name
+ * comes from the JSON parser interface it implements, so Redex keeps it, and the two strings say
+ * which of the app's many parsers this is.
+ */
+internal object PermalinkResponseParserFingerprint : Fingerprint(
+    name = "unsafeParseFromJson",
+    returnType = "Ljava/lang/Object;",
+    filters = listOf(
+        string("permalink"),
+        string("XDTPermalinkResponse"),
+    ),
+)
+
+/**
+ * Takes Threads' tracking tags off the links you share.
  *
- * Each method that adds a tag to a shared link has its answer passed through the extension on
- * the way out, at every return. With the switch off, paused, or before the settings are ready, the
- * extension hands the link back as it came, so Facebook's own code runs as it always did. The
- * methods keep doing everything else they do, their logging included. What changes is only the
- * link that leaves.
+ * Threads asks its server for a post's link each time you share it, and the server answers with
+ * `xmt`, a code that ties the link to you, and `slof` added to it. The link goes through the
+ * extension as the app reads it from that answer, before anything stores it, so every place that
+ * shares the link gets the clean one. With the switch off, paused, or before the settings are
+ * ready, the extension hands the link back as it came.
  *
- * Found by reading 580 and 577 (2026-09-25): ExternalShareTracker adds `mibextid` to Copy link and
- * to every share destination, and on some servers `extid`, a random id new on each share. Around
- * it, one appender adds `sfnsn` to WhatsApp shares, one `ref=share` to some stories, one `mibextid`
- * to a group's share link, and the live video dialog `sfnsn`.
+ * Found by reading 449 (2026-09-29): the parser stores the string into the response object's one
+ * String field right after it creates the object.
  */
 @Suppress("unused")
 val sanitizeSharingLinksPatch = bytecodePatch(
     name = "Sanitize sharing links",
-    description = "Takes Facebook's tracking tags, such as mibextid, off the links you share or copy. " +
-        "The post or reel a link opens stays the same. A facebook.com/share/ link is made for one " +
-        "share, so Facebook can still trace it back to you.",
+    description = "Takes Threads' tracking tags, such as xmt, off the links you share or copy. " +
+        "The post a link opens stays the same.",
     default = true,
 ) {
     category("Privacy")
     dependsOn(settingsPatch)
-    compatibleWith(*AppCompatibilities.facebook())
+    compatibleWith(*AppCompatibilities.threads())
     dependsOn(threadsExtensionPatch)
 
     execute {
-        val tracker = mutableClassDefBy(ExternalShareTrackerFingerprint.method.definingClass)
-        val trackerMethods = listOf(
-            // The link a share hands out, with mibextid added for its source and destination.
-            ExternalShareTrackerFingerprint.method,
-            // The same for a /share/ link, and Send in Messenger calls it directly.
-            shareLinkTracker(tracker.methods),
-            // extid: a random id, new on every share, logged beside the link under the sharer.
-            extidTracker(tracker.methods),
+        val method = PermalinkResponseParserFingerprint.method
+        val instructions = method.implementation!!.instructions.toList()
+
+        // The response object is created after its type name is loaded, and the parsed link is the
+        // first String stored into it.
+        val typeName = PermalinkResponseParserFingerprint.instructionMatches[1].index
+        val created = (typeName until instructions.size).firstOrNull { instructions[it].opcode == Opcode.NEW_INSTANCE }
+            ?: throw PatchException("Sanitize sharing links: ${method.definingClass}->${method.name} creates no response")
+        val store = (created until instructions.size).firstOrNull {
+            val instruction = instructions[it]
+            instruction.opcode == Opcode.IPUT_OBJECT &&
+                instruction.getReference<FieldReference>()?.type == "Ljava/lang/String;"
+        } ?: throw PatchException(
+            "Sanitize sharing links: ${method.definingClass}->${method.name} stores no String into its response",
         )
+        val link = (instructions[store] as TwoRegisterInstruction).registerA
 
-        (trackerMethods + listOf(
-            SfnsnAppenderFingerprint.method,
-            RefShareAppenderFingerprint.method,
-            GroupShareLinkFingerprint.method,
-            LiveShareLinkFingerprint.method,
-        )).forEach { it.sanitizeEveryReturn() }
-
-        enableStatus("sanitizeSharingLinks")
-    }
-}
-
-/** ExternalShareTracker's public (session, Integer, String) method that returns a /share/ link. */
-internal fun <T : Method> shareLinkTracker(methods: Iterable<T>): T = methods.filter {
-    it.returnType == "Ljava/lang/String;" && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
-        it.parameterTypes.map(CharSequence::toString) == listOf(FB_USER_SESSION, "Ljava/lang/Integer;", "Ljava/lang/String;")
-}.singleOrPatchException(
-    "Sanitize sharing links: ExternalShareTracker's public (FbUserSession, Integer, String)String method for a /share/ link",
-)
-
-/** ExternalShareTracker's (?, session, String, String, String) method that adds extid to a link. */
-internal fun <T : Method> extidTracker(methods: Iterable<T>): T = methods.filter {
-    val parameters = it.parameterTypes.map(CharSequence::toString)
-    it.returnType == "Ljava/lang/String;" && parameters.size == 5 &&
-        parameters[1] == FB_USER_SESSION && parameters.drop(2).all { type -> type == "Ljava/lang/String;" }
-}.singleOrPatchException(
-    "Sanitize sharing links: ExternalShareTracker's (object, FbUserSession, String, String, String)String method that adds extid",
-)
-
-/**
- * Sends each link this method returns through the extension. The hooks go in from last to first,
- * because an insert moves every later index. Each goes in at the return's own control-flow label,
- * so a branch that jumped to the return runs it too, and the range form of the call takes a
- * register above v15.
- */
-private fun MutableMethod.sanitizeEveryReturn() {
-    val implementation = implementation ?: throw PatchException("$definingClass->$name has no body")
-    val returns = implementation.instructions.withIndex()
-        .filter { it.value.opcode == Opcode.RETURN_OBJECT }
-        .map { it.index to (it.value as OneRegisterInstruction).registerA }
-    if (returns.isEmpty()) throw PatchException("$definingClass->$name returns no link to sanitize")
-
-    returns.asReversed().forEach { (index, register) ->
-        addInstructionsAtControlFlowLabel(
-            index,
+        // At the store's own label, so a branch that jumped to the store runs the call too.
+        method.addInstructionsAtControlFlowLabel(
+            store,
             """
-                invoke-static/range { v$register .. v$register }, $SANITIZE
-                move-result-object v$register
+                invoke-static/range { v$link .. v$link }, $SANITIZE
+                move-result-object v$link
             """,
         )
+
+        enableStatus("sanitizeSharingLinks")
     }
 }

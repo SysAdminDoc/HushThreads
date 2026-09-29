@@ -34,7 +34,7 @@ internal fun <T> handleTargets(patch: String, what: String, targets: List<T>, ha
     val missing = targets.mapNotNull(handle)
     if (missing.size == targets.size) {
         throw PatchException(
-            "$patch: this Facebook build has none of the ${targets.size} $what the patch works on. " +
+            "$patch: this Threads build has none of the ${targets.size} $what the patch works on. " +
                 missing.joinToString("; ", postfix = "."),
         )
     }
@@ -45,6 +45,6 @@ internal fun <T> handleTargets(patch: String, what: String, targets: List<T>, ha
     return handled
 }
 
-/** A class descriptor as Java writes the name: `Lcom/facebook/Foo;` is `com.facebook.Foo`. */
+/** A class descriptor as Java writes the name: `Lcom/instagram/barcelona/Foo;` is `com.instagram.barcelona.Foo`. */
 internal fun javaName(descriptor: String): String =
     descriptor.removePrefix("L").removeSuffix(";").replace('/', '.')
