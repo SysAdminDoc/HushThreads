@@ -12,25 +12,25 @@ body:
 
         - **Check whether it's already reported.** Search the [open and closed bug reports](https://github.com/SysAdminDoc/HushThreads/issues?q=is%3Aissue%20label%3Abug). If yours was closed and it still happens, comment on it and we'll reopen it. GitHub doesn't let the person who reported something reopen it.
         - **Not sure it's a bug?** Ask in [Discussions](https://github.com/SysAdminDoc/HushThreads/discussions) instead.
-        - **Patching stopped with an error?** That usually means Facebook moved something in a new build. Say which Facebook version you picked, and paste the error.
+        - **Patching stopped with an error?** That usually means Threads moved something in a new build. Say which Threads version you picked, and paste the error.
   - type: input
     id: versions
     attributes:
-      label: HushThreads and Facebook versions
-      description: Long-press Facebook's icon and tap HushThreads. Copy the version below its status. If you have the new category pages, open More settings, then About, and copy the Version line.
-      placeholder: Version 0.4.0 for Facebook 580.0.0.51.74
+      label: HushThreads and Threads versions
+      description: Long-press the Threads icon and tap HushThreads, or open Threads' App info page and tap Additional settings in the app. Copy the version line under the HushThreads title. If the screen opens on category pages, open More settings, then About, and copy the Version line.
+      placeholder: Version 0.0.1 for Threads 449.0.0.54.82
     validations:
       required: true
   - type: input
     id: variant
     attributes:
-      label: Which Facebook file did you patch?
-      description: The APKMirror variant, and whether the file you gave the patcher was an .apkm bundle or a single .apk, if you know them. Most bugs on a build that should work come from a different variant.
-      placeholder: arm64-v8a, Android 11+, 240-640dpi (.apkm)
+      label: Which Threads file did you patch?
+      description: Where it came from, its architecture, and whether you gave the patcher an .xapk or .apkm bundle or a single .apk, if you know them. Most bugs on a build that should work come from a different variant.
+      placeholder: arm64-v8a, an .xapk bundle
   - type: dropdown
     id: manager
     attributes:
-      label: What did you patch Facebook with?
+      label: What did you patch Threads with?
       options:
         - Morphe Manager (the Android app)
         - morphe-desktop (on a computer)
@@ -59,16 +59,23 @@ body:
     id: device
     attributes:
       label: Phone and Android version
-      description: Both are in your phone's Settings, under About phone. If this Facebook is a clone, say which kind too, such as one renamed by Morphe's Clone app patch, Dual Apps, Second space or a work profile.
+      description: Both are in your phone's Settings, under About phone. If this Threads is a clone, say which kind too, such as one renamed by Morphe's Clone app patch, Dual Apps, Second space or a work profile.
       placeholder: Samsung Galaxy S25, Android 16
     validations:
       required: true
-  - type: textarea
+  - type: dropdown
     id: selected_patches
     attributes:
-      label: Which patches did you select?
-      description: If you kept the manager's own selection, just say so. Otherwise list what you added or removed.
-      placeholder: The default selection, plus Download any video.
+      label: Which patches were in your build?
+      description: All of them are selected by default. If you kept the manager's own selection, pick them all.
+      multiple: true
+      options:
+        - Disable analytics
+        - Hide ads
+        - HushThreads settings
+        - Remove the advertising ID
+        - Restore screens on re-signed builds
+        - Sanitize sharing links
     validations:
       required: true
   - type: dropdown
@@ -76,15 +83,15 @@ body:
     attributes:
       label: Where did it happen?
       options:
-        - News feed
-        - Stories
-        - Reels or Watch
-        - Links and the in-app browser
-        - Downloads
-        - Profiles or Settings pages
-        - Dark mode
+        - The feed
+        - A post and its replies
+        - Profiles
+        - Search
+        - Activity
+        - Sharing or copying a link
+        - Signing in, or a screen that won't open
         - HushThreads settings
-        - Patching (Morphe Manager)
+        - Patching (Morphe Manager or morphe-desktop)
         - Other
     validations:
       required: true
@@ -99,10 +106,10 @@ body:
     id: reproduction
     attributes:
       label: What did you tap, in order?
-      description: Start from opening Facebook. Include every HushThreads switch you changed before it went wrong, and say whether it still happens after you close Facebook and open it again. For a reel, story or video, say where you opened it, such as the Reels tab, a reel in the news feed, a profile, Watch or a shared link.
+      description: Start from opening Threads. Include every HushThreads switch you changed before it went wrong, and say whether it still happens after you close Threads and open it again. For a post, say where you opened it, such as the For you feed, Following, a profile, search or a shared link.
       placeholder: |
-        1. Opened Facebook
-        2. Scrolled the news feed
+        1. Opened Threads
+        2. Scrolled the For you feed
         3. A sponsored post showed after about twenty posts
     validations:
       required: true
@@ -111,8 +118,8 @@ body:
     attributes:
       label: Diagnostic report
       description: |
-        This answers most of our questions, so please add it if you can. It works with Debug logging off and then still names your build, the patches in it and what each one has counted. For the most detail, long-press Facebook's icon, tap HushThreads, turn on Debug logging, do the thing that goes wrong, then come back, tap Export diagnostic report and pick Save full report. If you have the new category pages, these controls are under More settings, then Pause, backup and diagnostics. That saves a text file in Download/Morphe on your phone. Drag it into this box. If you can't get the file off your phone, pick Copy quick report instead and paste the shorter report here.
-        The report leaves out links, Facebook addresses, long ID numbers, cookies, sign-in tokens and Authorization headers, JSON included. It can't spot a name or message written anywhere else, so read it and remove anything private before you post it.
+        This answers most of our questions, so please add it if you can. It works with Debug logging off and then still names your build, the patches in it and what each one has counted. For the most detail, long-press the Threads icon, tap HushThreads, turn on Debug logging, do the thing that goes wrong, then come back, tap Export diagnostic report and pick Save full report. If the screen opens on category pages, these controls are under More settings, then Pause, backup and diagnostics. That saves a text file in Download/Morphe on your phone. Drag it into this box. If you can't get the file off your phone, pick Copy quick report instead and paste the shorter report here.
+        The report leaves out links, Threads and Instagram addresses, long ID numbers, cookies, sign-in tokens and Authorization headers, JSON included. It can't spot a name or message written anywhere else, so read it and remove anything private before you post it.
   - type: textarea
     id: additional_context
     attributes:

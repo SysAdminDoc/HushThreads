@@ -17,25 +17,24 @@ body:
     attributes:
       label: What should it do?
       description: |
-        Describe what you want, where in Facebook it happens, and what should stay the same.
+        Describe what you want, where in Threads it happens, and what should stay the same.
         Screenshots, a screen recording or links help. Cover names and private messages first.
     validations:
       required: true
   - type: dropdown
     id: affected_surface
     attributes:
-      label: Where in Facebook?
+      label: Where in Threads?
       options:
-        - News feed
-        - Stories
-        - Reels or Watch
-        - Marketplace
-        - Search
-        - Notifications
+        - The feed
+        - Posts and replies
         - Profiles
-        - Links and the in-app browser
-        - Downloads
+        - Search
+        - Activity
+        - Messages
+        - Links and sharing
         - Appearance
+        - Privacy and tracking
         - HushThreads settings
         - Other
     validations:
@@ -44,7 +43,7 @@ body:
     id: current_behavior
     attributes:
       label: What happens today?
-      description: What Facebook does now, and how that differs from what you'd like.
+      description: What Threads does now, and how that differs from what you'd like.
     validations:
       required: true
   - type: textarea
