@@ -32,7 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.regex.Pattern;
 
-import app.morphe.extension.hushthreads.download.ReelDownload;
+import app.morphe.extension.hushthreads.misc.Analytics;
 import app.morphe.extension.shared.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.diagnostics.HookStatus;
@@ -43,7 +43,7 @@ import app.morphe.extension.shared.settings.preference.LogBufferManager;
 import app.morphe.extension.shared.settings.preference.LogBufferManagerExportTest;
 
 /**
- * Issues #16 and #18 came without a report: with nothing logged and no hook missing anything, the
+ * Bug reports used to come without a report: with nothing logged and no hook missing anything, the
  * export said there was nothing to report and told the reader to turn on Debug logging. A report
  * asked for now always carries the facts a maintainer asks for first: the app's package, version
  * code, Android API and profile, ABI, HushThreads's version, whether it's paused, which patches
@@ -107,7 +107,7 @@ public class SupportReportTest {
         assertTrue("no HushThreads version: " + report, report.contains("\nmorphe: "));
         assertTrue("Debug logging's state is missing: " + report, report.contains("\ndebug_logging: off\n"));
         assertTrue("no patch list: " + report, report.contains("\n[PATCHES]\n"));
-        assertTrue(report, report.contains("\nDownload any reel: on (hushthreads_download_reels=on)\n"));
+        assertTrue(report, report.contains("\nHide ads: on (hushthreads_hide_ads=on)\n"));
         assertFalse("events without Debug logging: " + report, report.contains("[SELECTED EVENTS]"));
     }
 
@@ -121,17 +121,17 @@ public class SupportReportTest {
     }
 
     /**
-     * #18's case: the Reels viewer drew the sidebar the button can't go in, three times, and
-     * nothing was logged. The report says so without Debug logging.
+     * A hook that ran says how often and what it did, with nothing logged: here Threads built three
+     * analytics upload addresses and each was replaced. The report says so without Debug logging.
      */
     @Test
-    public void aMissingButtonRunSaysWhichSidebarItWas() throws Exception {
-        for (int i = 0; i < 3; i++) ReelDownload.otherSidebarBuilt();
+    public void aHookThatRanSaysWhatItCounted() throws Exception {
+        for (int i = 0; i < 3; i++) Analytics.endpoint("https://graph.threads.net/logging_client_events");
 
         for (String report : bothExports()) {
             assertBuildFacts(report);
-            assertTrue(report, report.contains("\n[HOOK STATUS]\nDownload any reel: invoked 0, 0 found, 0 missing. "
-                    + "Counted: FbShorts sidebar, which gets no Download 3\n"));
+            assertTrue(report, report.contains("\n[HOOK STATUS]\nDisable analytics: invoked 3, 0 found, 0 missing. "
+                    + "Counted: upload address replaced 3\n"));
         }
     }
 
@@ -140,7 +140,7 @@ public class SupportReportTest {
         PauseForTests.pause(HushThreadsPause.Reason.SWITCH);
         for (String report : bothExports()) {
             assertTrue(report, report.contains("\nhushthreads: paused (switch)"));
-            assertTrue(report, report.contains("\nDownload any reel: disabled while paused (saved hushthreads_download_reels=on)\n"));
+            assertTrue(report, report.contains("\nHide ads: disabled while paused (saved hushthreads_hide_ads=on)\n"));
         }
     }
 }

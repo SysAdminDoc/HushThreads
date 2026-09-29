@@ -8,7 +8,6 @@
 package app.morphe.extension.hushthreads.settings;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -58,10 +57,9 @@ public class PatchFamilyTest {
     public void restore() {
         PatchFamily.inBuildForTests = null;
         PauseForTests.resume();
-        Settings.HIDE_PROMOTED_POSTS.resetToDefault();
-        Settings.HIDE_SPONSORED_POSTS.resetToDefault();
-        Settings.HIDE_REEL_FOLLOW_BUTTON.resetToDefault();
-        Settings.HIDE_MENU_ALSO_FROM_META.resetToDefault();
+        Settings.HIDE_ADS.resetToDefault();
+        Settings.SANITIZE_SHARING_LINKS.resetToDefault();
+        Settings.DISABLE_ANALYTICS.resetToDefault();
         HookStatus.clear();
     }
 
@@ -82,62 +80,9 @@ public class PatchFamilyTest {
             String earlier = owners.put(setting, "the settings entry");
             assertNull(setting.key + " belongs to " + earlier + " and to the settings entry", earlier);
         }
-        for (BooleanSetting setting : PatchFamily.DOWNLOAD_SWITCHES) {
-            String earlier = owners.put(setting, "the download patches");
-            assertNull(setting.key + " belongs to " + earlier + " and to the download patches", earlier);
-        }
         assertEquals(new HashSet<>(PausedHooksTest.settingsSwitches()), owners.keySet());
         assertTrue("the release check is the settings entry's own",
                 PatchFamily.ENTRY_SWITCHES.contains(Settings.CHECK_FOR_RELEASES));
-        assertTrue("saves other apps can open are every download's",
-                PatchFamily.DOWNLOAD_SWITCHES.contains(Settings.DOWNLOAD_COMPATIBLE));
-        assertEquals(EnumSet.of(PatchFamily.STORY_DOWNLOAD, PatchFamily.REEL_DOWNLOAD, PatchFamily.VIDEO_DOWNLOAD),
-                PatchFamily.DOWNLOADS);
-    }
-
-    /**
-     * The switches every download shares get one line of their own when a download patch is in:
-     * what each is set to, and never that downloads are off, since they shape a save rather than
-     * run a hook. A build with no download patch has no such line.
-     */
-    @Test
-    public void theReportSaysWhatTheSharedDownloadSwitchesAreSetTo() {
-        try {
-            List<String> lines = PatchFamily.reportLines(EnumSet.of(PatchFamily.STORY_DOWNLOAD), false);
-            assertEquals("Download any story: on (hushthreads_download_stories=on)", lines.get(0));
-            assertEquals("Every download patch: hushthreads_download_compatible=off", lines.get(1));
-            assertTrue(lines.get(2), lines.get(2).startsWith("not in this build: "));
-
-            Settings.DOWNLOAD_COMPATIBLE.save(true);
-            assertEquals("Every download patch: hushthreads_download_compatible=on",
-                    PatchFamily.reportLines(EnumSet.of(PatchFamily.VIDEO_DOWNLOAD), false).get(1));
-            assertEquals("Every download patch: off while paused (saved hushthreads_download_compatible=on)",
-                    PatchFamily.reportLines(EnumSet.of(PatchFamily.REEL_DOWNLOAD), true).get(1));
-
-            for (String line : PatchFamily.reportLines(EnumSet.of(PatchFamily.SPONSORED_POSTS), false)) {
-                assertFalse(line, line.contains("hushthreads_download_compatible"));
-            }
-        } finally {
-            Settings.DOWNLOAD_COMPATIBLE.resetToDefault();
-        }
-    }
-
-    @Test
-    public void marketplaceExtrasDoNotClaimTheDisabledModeIsOn() {
-        try {
-            Settings.MARKETPLACE_ONLY.save(false);
-            Settings.MARKETPLACE_QUIET_NOTIFICATIONS.save(true);
-            Settings.MARKETPLACE_SKIP_FEED_PREFETCH.save(true);
-            String line = PatchFamily.reportLines(EnumSet.of(PatchFamily.MARKETPLACE_ONLY), false).get(0);
-            assertTrue(line, line.startsWith("Marketplace only: disabled by its switch ("));
-            Settings.MARKETPLACE_ONLY.save(true);
-            assertTrue(PatchFamily.reportLines(EnumSet.of(PatchFamily.MARKETPLACE_ONLY), false).get(0)
-                    .startsWith("Marketplace only: on ("));
-        } finally {
-            Settings.MARKETPLACE_ONLY.resetToDefault();
-            Settings.MARKETPLACE_QUIET_NOTIFICATIONS.resetToDefault();
-            Settings.MARKETPLACE_SKIP_FEED_PREFETCH.resetToDefault();
-        }
     }
 
     @Test
@@ -172,23 +117,6 @@ public class PatchFamilyTest {
     }
 
     @Test
-    public void marketplaceIsIncludedByDefaultWithItsSettingsAndNotificationHooks() throws Exception {
-        JSONArray patches = new JSONObject(new String(Files.readAllBytes(patchesList().toPath()), StandardCharsets.UTF_8))
-                .getJSONArray("patches");
-        JSONObject mode = null;
-        for (int i = 0; i < patches.length(); i++) {
-            if ("Marketplace only".equals(patches.getJSONObject(i).getString("name"))) mode = patches.getJSONObject(i);
-        }
-        assertNotNull(mode);
-        assertTrue(mode.getBoolean("use"));
-        JSONArray required = mode.getJSONArray("dependencies");
-        Set<String> dependencies = new HashSet<>();
-        for (int i = 0; i < required.length(); i++) dependencies.add(required.getString(i));
-        assertTrue(dependencies.containsAll(Arrays.asList("HushThreads settings", "HushThreads in the Menu",
-                "Open on a chosen tab", "Block promotional notifications")));
-    }
-
-    @Test
     public void aPatchWithNoSwitchSaysWhatOfItStaysIn() {
         for (PatchFamily family : PatchFamily.values()) {
             if (family.switches.isEmpty()) {
@@ -200,29 +128,20 @@ public class PatchFamilyTest {
     @Test
     public void theStaysRowNamesWhatPauseCantReach() {
         assertNull("a build of switches alone has nothing that stays in",
-                PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.SPONSORED_POSTS, PatchFamily.EXTERNAL_BROWSER)));
+                PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.HIDE_ADS,
+                        PatchFamily.SANITIZE_SHARING_LINKS, PatchFamily.DISABLE_ANALYTICS)));
         // Each item names the patch Morphe Manager lists it under, so the reader knows which one
         // to leave out.
-        assertEquals("The block on downloading ads in the background (" + L10n.isolate("Block background ad prefetch")
+        assertEquals("The removed advertising ID permission (" + L10n.isolate("Remove the advertising ID")
                         + "). It was set when you patched, so Pause can't turn it off. To rule it out, patch again "
                         + "and leave out that patch.",
-                PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.AD_PREFETCH)));
-        // Every download asks its switch before it goes in, so a pause takes them out whole.
-        assertNull(PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.REEL_DOWNLOAD, PatchFamily.STORY_DOWNLOAD,
-                PatchFamily.VIDEO_DOWNLOAD)));
-        // Alone, a family's text is followed by "It was set", so a text naming several parts still
-        // has to be one thing. 4a7bba9 made the Reels one plural and this sentence stopped reading.
-        assertEquals("The part of the Reels ad block patched into the app (" + L10n.isolate("Hide sponsored reels")
-                        + "). It was set when you patched, so Pause can't turn it off. To rule it out, patch again "
-                        + "and leave out that patch.",
-                PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.SPONSORED_REELS)));
-        assertEquals("The part of the Reels ad block patched into the app (" + L10n.isolate("Hide sponsored reels")
-                        + ") and the block on reports of ad screenshots and app installs ("
-                        + L10n.isolate("Block ad telemetry") + "). They were set "
-                        + "when you patched, so Pause can't turn them off. To rule one out, patch again and leave out "
-                        + "the patch in brackets after it.",
-                PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.SPONSORED_REELS, PatchFamily.AD_TELEMETRY,
-                        PatchFamily.SPONSORED_POSTS, PatchFamily.STORY_DOWNLOAD)));
+                PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.REMOVE_AD_ID)));
+        assertEquals("The removed advertising ID permission (" + L10n.isolate("Remove the advertising ID")
+                        + ") and the re-signed build fix (" + L10n.isolate("Restore screens on re-signed builds")
+                        + "). They were set when you patched, so Pause can't turn them off. To rule one out, patch "
+                        + "again and leave out the patch in brackets after it.",
+                PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.REMOVE_AD_ID, PatchFamily.RESTORE_TRUST,
+                        PatchFamily.HIDE_ADS)));
 
         String everything = PatchFamily.staysWhilePausedSummary(EnumSet.allOf(PatchFamily.class));
         for (PatchFamily family : PatchFamily.values()) {
@@ -236,67 +155,26 @@ public class PatchFamilyTest {
 
     @Test
     public void theReportSaysWhatASwitchRunsAndWhatStaysIn() {
-        Set<PatchFamily> build = EnumSet.of(PatchFamily.SPONSORED_POSTS, PatchFamily.SPONSORED_REELS,
-                PatchFamily.AD_PREFETCH);
-        Settings.HIDE_PROMOTED_POSTS.save(false);
+        Set<PatchFamily> build = EnumSet.of(PatchFamily.HIDE_ADS, PatchFamily.SANITIZE_SHARING_LINKS,
+                PatchFamily.REMOVE_AD_ID);
+        Settings.SANITIZE_SHARING_LINKS.save(false);
 
         List<String> running = PatchFamily.reportLines(build, false);
         assertEquals(Arrays.asList(
-                "Hide sponsored posts: on (hushthreads_hide_sponsored_posts=on, hushthreads_hide_promoted_posts=off)",
-                "Hide sponsored reels: on (hushthreads_hide_sponsored_reels=on); stays in while paused: "
-                        + "the part of the Reels ad block patched into the app",
-                "Block background ad prefetch: no switch, stays in while paused: the block on downloading ads in "
-                        + "the background",
-                "not in this build: Hide suggested and promoted posts, Hide Stories tray, Hide Reels in the feed, "
-                        + "Block background-return feed refresh, Hide AI-detected posts, Hide posts by words, "
-                        + "Hide sponsored stories, Hide suggested stories, Stop Story auto-advance, View stories anonymously, Hide sponsored search results, "
-                        + "Hide sponsored profile posts, Hide sponsored Marketplace listings, Clean up Reels, Don't send reel watch history, Turn off double tap to like, Keep the reel speed, Hold a reel for 2x, Default comment order, "
-                        + "Tag suggestions only after @, Tap to play, Resume long videos, Default playback quality, "
-                        + "Use the system font, Use the phone's emoji, Open links in "
-                        + "external browser, Sanitize sharing links, Stop update prompts, Download any story, Download any reel, "
-                        + "Download any video, Open on a chosen tab, Marketplace only, Hide the Reels tab, Hide the Get Messenger card, Open Messenger from the top bar, Hide Menu promotions, Hide Meta AI in search, Block promotional notifications, Block ad telemetry, Disable Audience Network, AMOLED black theme, Material You theme, "
-                        + "Restore screens on re-signed builds, Install beside Meta's apps, HushThreads in the Menu"),
+                "Hide ads: on (hushthreads_hide_ads=on)",
+                "Sanitize sharing links: disabled by its switch (hushthreads_sanitize_sharing_links=off)",
+                "Remove the advertising ID: no switch, stays in while paused: the removed advertising ID permission",
+                "not in this build: Disable analytics, Restore screens on re-signed builds"),
                 running);
-        // Clean up Reels has three switches, and the report names each one.
-        Settings.HIDE_REEL_FOLLOW_BUTTON.save(false);
-        assertEquals("Clean up Reels: on (hushthreads_hide_reel_chips=on, hushthreads_hide_reel_follow_button=off, "
-                        + "hushthreads_hide_reel_social_footer=on)",
-                PatchFamily.reportLines(EnumSet.of(PatchFamily.REEL_DECLUTTER), false).get(0));
-        // The reel button has a switch now, so the report says what it's set to.
-        assertEquals("Download any reel: on (hushthreads_download_reels=on)",
-                PatchFamily.reportLines(EnumSet.of(PatchFamily.REEL_DOWNLOAD), false).get(0));
-        // So has the video menu's item, and a pause takes it out whole.
-        assertEquals("Download any video: on (hushthreads_download_videos=on)",
-                PatchFamily.reportLines(EnumSet.of(PatchFamily.VIDEO_DOWNLOAD), false).get(0));
-        assertEquals("Download any video: disabled while paused (saved hushthreads_download_videos=on)",
-                PatchFamily.reportLines(EnumSet.of(PatchFamily.VIDEO_DOWNLOAD), true).get(0));
-        // The Menu's two groups have a switch each, and the report names both.
-        Settings.HIDE_MENU_ALSO_FROM_META.save(false);
-        assertEquals("Hide Menu promotions: on (hushthreads_hide_menu_upgrades=on, "
-                        + "hushthreads_hide_menu_also_from_meta=off)",
-                PatchFamily.reportLines(EnumSet.of(PatchFamily.MENU_PROMOTIONS), false).get(0));
-        // Every notification switch starts off, so the patch reads off until one of them is turned on.
-        assertEquals("Block promotional notifications: disabled by its switch ("
-                        + "hushthreads_block_trending_video_notifications=off, hushthreads_block_memory_notifications=off, "
-                        + "hushthreads_block_birthday_notifications=off, hushthreads_block_highlight_notifications=off, "
-                        + "hushthreads_block_people_you_may_know_notifications=off, "
-                        + "hushthreads_block_nearby_notifications=off)",
-                PatchFamily.reportLines(EnumSet.of(PatchFamily.PROMO_NOTIFICATIONS), false).get(0));
+        assertEquals("Restore screens on re-signed builds: no switch, stays in while paused: the re-signed build fix",
+                PatchFamily.reportLines(EnumSet.of(PatchFamily.RESTORE_TRUST), false).get(0));
 
         List<String> paused = PatchFamily.reportLines(build, true);
-        assertEquals("Hide sponsored posts: disabled while paused (saved "
-                + "hushthreads_hide_sponsored_posts=on, hushthreads_hide_promoted_posts=off)", paused.get(0));
-        assertEquals("Hide sponsored reels: disabled while paused (saved "
-                + "hushthreads_hide_sponsored_reels=on); stays in while paused: the part of the Reels ad "
-                + "block patched into the app",
+        assertEquals("Hide ads: disabled while paused (saved hushthreads_hide_ads=on)", paused.get(0));
+        assertEquals("Sanitize sharing links: disabled while paused (saved hushthreads_sanitize_sharing_links=off)",
                 paused.get(1));
         assertEquals("a patch with no switch reads the same paused", running.get(2), paused.get(2));
         assertEquals(running.get(3), paused.get(3));
-
-        // Both of a family's switches off is the family off; one of them on keeps it on above.
-        Settings.HIDE_SPONSORED_POSTS.save(false);
-        assertEquals("Hide sponsored posts: disabled by its switch (hushthreads_hide_sponsored_posts=off, "
-                + "hushthreads_hide_promoted_posts=off)", PatchFamily.reportLines(build, false).get(0));
     }
 
     /**
@@ -307,13 +185,14 @@ public class PatchFamilyTest {
     public void aPausedExportMarksOnlyTheFamiliesASwitchRuns() {
         HookStatus.clear();
         PatchFamily.registerDiagnostics();
-        HookStatus.invoked(FamilyNames.SPONSORED_POSTS);
-        HookStatus.invoked(FamilyNames.AMOLED_THEME);
+        HookStatus.invoked(FamilyNames.HIDE_ADS);
+        HookStatus.invoked(FamilyNames.RESTORE_TRUST);
 
         List<String> lines = HookStatus.report(" (paused)");
         assertTrue(String.join("\n", lines),
-                lines.contains("Hide sponsored posts: invoked 1, 0 found, 0 missing (paused)"));
-        assertTrue(String.join("\n", lines), lines.contains("AMOLED black theme: invoked 1, 0 found, 0 missing"));
+                lines.contains("Hide ads: invoked 1, 0 found, 0 missing (paused)"));
+        assertTrue(String.join("\n", lines),
+                lines.contains("Restore screens on re-signed builds: invoked 1, 0 found, 0 missing"));
     }
 
     /** The section goes through the redactor like every other one, and has to come out whole. */

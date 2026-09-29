@@ -10,7 +10,7 @@ package app.morphe.extension.shared.settings;
 /**
  * Breaks a switch's reads for a test in another package, which stands in for anything that can
  * throw inside a hook once it has counted the call. {@link Setting} keeps its value protected, and
- * the hooks that read a switch live in the Facebook packages.
+ * the hooks that read a switch live in the Threads packages.
  */
 public final class SettingReadsForTests {
     private SettingReadsForTests() {

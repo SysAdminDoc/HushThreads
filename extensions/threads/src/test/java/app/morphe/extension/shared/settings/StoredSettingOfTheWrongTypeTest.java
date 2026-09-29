@@ -29,7 +29,7 @@ import app.morphe.extension.shared.settings.preference.LogBufferManager;
  * A stored value of the wrong type under one of BaseSettings' own switches. Reading it reports the
  * conflict from inside BaseSettings' class setup, and Logger asked two switches that weren't
  * assigned yet, before its guard: the NullPointerException left the setup, and setContext threw
- * out of Facebook's start. Nothing writes such a value today; a hand-edited or restored
+ * out of Threads' start. Nothing writes such a value today; a hand-edited or restored
  * preferences file could.
  *
  * <p>This is the only class at sdk 32, so it runs in a sandbox of its own where nothing has loaded

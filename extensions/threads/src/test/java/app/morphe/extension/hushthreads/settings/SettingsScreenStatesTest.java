@@ -53,7 +53,6 @@ public class SettingsScreenStatesTest {
     @After
     public void restore() {
         PatchFamily.inBuildForTests = null;
-        ScreenColors.shown = null;
         HushThreadsPreferenceFragment.failNextInitialization = null;
         PauseForTests.resume();
         BaseSettings.PAUSED.resetToDefault();
@@ -90,9 +89,9 @@ public class SettingsScreenStatesTest {
         }
     }
 
-    /** Uncaught, the exception from a tap on the source row closed Facebook. */
+    /** Uncaught, the exception from a tap on the source row would close Threads. */
     @Test
-    public void aSourceLinkNoAppOpensLeavesATipAndFacebookRunning() {
+    public void aSourceLinkNoAppOpensLeavesATipAndThreadsRunning() {
         try (ActivityController<NoBrowserAround> controller = Robolectric.buildActivity(NoBrowserAround.class).setup()) {
             Preference source = titled(open(controller.get()).getPreferenceScreen(), L10n.t("Source code and issues"));
             assertNotNull(source);
@@ -117,11 +116,11 @@ public class SettingsScreenStatesTest {
 
             pause.setChecked(true);
             ShadowLooper.idleMainLooper();
-            assertTrue(summary(card), summary(card).endsWith(L10n.t("HushThreads pauses when Facebook restarts.")));
+            assertTrue(summary(card), summary(card).endsWith(L10n.t("HushThreads pauses when Threads restarts.")));
 
             pause.setChecked(false);
             ShadowLooper.idleMainLooper();
-            assertFalse(summary(card), summary(card).contains(L10n.t("HushThreads pauses when Facebook restarts.")));
+            assertFalse(summary(card), summary(card).contains(L10n.t("HushThreads pauses when Threads restarts.")));
         }
     }
 
@@ -138,51 +137,11 @@ public class SettingsScreenStatesTest {
 
             card.getOnPreferenceClickListener().onPreferenceClick(card);
             ShadowLooper.idleMainLooper();
-            assertEquals(L10n.t("HushThreads turns back on when Facebook restarts."), summary(card));
+            assertEquals(L10n.t("HushThreads turns back on when Threads restarts."), summary(card));
 
             ((SwitchPreference) page.findPreference(BaseSettings.PAUSED.key)).setChecked(true);
             ShadowLooper.idleMainLooper();
             assertTrue(summary(card), summary(card).endsWith(L10n.t("Tap to turn it back on.")));
-        }
-    }
-
-    /**
-     * Unset, Android's own Cancel came in the activity's language, here English, next to Save in
-     * Facebook's, here German.
-     */
-    @Test
-    @Config(qualifiers = "de")
-    public void theSaveFolderDialogCancelsInFacebooksLanguage() {
-        assertEquals("Abbrechen", L10n.t("Cancel"));
-        try (ActivityController<SettingsL10nTest.ActivityInEnglish> controller =
-                     Robolectric.buildActivity(SettingsL10nTest.ActivityInEnglish.class).setup()) {
-            assertEquals(L10n.t("Cancel"), String.valueOf(
-                    HushThreadsPreferenceFragment.folderRow(controller.get()).getNegativeButtonText()));
-        }
-    }
-
-    /** The video file name's dialog, next to the folder's, had the same English Cancel beside Speichern. */
-    @Test
-    @Config(qualifiers = "de")
-    public void theFileNameDialogCancelsInFacebooksLanguage() {
-        assertEquals("Abbrechen", L10n.t("Cancel"));
-        try (ActivityController<SettingsL10nTest.ActivityInEnglish> controller =
-                     Robolectric.buildActivity(SettingsL10nTest.ActivityInEnglish.class).setup()) {
-            HushThreadsPreferenceFragment.FileNameRow row = HushThreadsPreferenceFragment.fileNameRow(controller.get());
-            assertEquals(L10n.t("Save"), String.valueOf(row.getPositiveButtonText()));
-            assertEquals(L10n.t("Cancel"), String.valueOf(row.getNegativeButtonText()));
-        }
-    }
-
-    /** The quality list's only button is DialogPreference's Cancel, and it came in the activity's language too. */
-    @Test
-    @Config(qualifiers = "de")
-    public void theQualityListCancelsInFacebooksLanguage() {
-        assertEquals("Abbrechen", L10n.t("Cancel"));
-        try (ActivityController<SettingsL10nTest.ActivityInEnglish> controller =
-                     Robolectric.buildActivity(SettingsL10nTest.ActivityInEnglish.class).setup()) {
-            assertEquals(L10n.t("Cancel"), String.valueOf(
-                    HushThreadsPreferenceFragment.qualityRow(controller.get()).getNegativeButtonText()));
         }
     }
 
@@ -214,22 +173,21 @@ public class SettingsScreenStatesTest {
     }
 
     /**
-     * The page colours its list from what initialize() stored, and a page that failed before that
-     * kept an earlier screen's colours, or none: black under a light Material You error page.
+     * A page that failed to build is still drawn on the screen's black, whatever the phone's own
+     * theme, so its light text stays readable on a phone set to light mode.
      */
     @Test
-    public void aFailedLightMaterialYouPageIsDrawnOnItsOwnBackground() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.MATERIAL_YOU_THEME);
+    public void aFailedPageIsDrawnOnTheScreensBlackOnALightPhone() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
         RuntimeEnvironment.setQualifiers("+notnight");
         HushThreadsPreferenceFragment.failNextInitialization = new IllegalStateException("settings failed to load");
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             HushThreadsPreferenceFragment page = open(controller.get());
             ListView list = page.getView().findViewById(android.R.id.list);
-            ScreenColors light = ScreenColors.forScreen(controller.get());
-            assertNotNull(light);
-            assertTrue(light.light);
-
-            assertEquals(Integer.toHexString(light.background),
+            assertEquals("the recovery page has a message and two actions", 3,
+                    page.getPreferenceScreen().getPreferenceCount());
+            assertEquals("ff000000", Integer.toHexString(ScreenColors.DEFAULT.background));
+            assertEquals(Integer.toHexString(ScreenColors.DEFAULT.background),
                     Integer.toHexString(((ColorDrawable) list.getBackground()).getColor()));
         }
     }

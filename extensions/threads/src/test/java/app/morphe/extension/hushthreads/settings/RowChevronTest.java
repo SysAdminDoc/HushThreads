@@ -68,11 +68,7 @@ public class RowChevronTest {
 
     /** Every row on the screen whose tap opens a dialog, a file picker, the browser, Android's settings or another page. */
     private static final Set<String> OPENS_SOMETHING = new LinkedHashSet<>(Arrays.asList(
-            "Jump to a section", "Reels in the feed", "Reels that play by themselves", "The Reels tab",
-            "Everything except Marketplace",
-            "Tab to open on", "Words to hide", "Words that keep a post", "Comment order", "Playback quality", "Font file", "Download quality", "Save folder",
-            "Video file name", "Supported links",
-            "Export settings", "Import settings",
+            "Jump to a section", "Supported links", "Export settings", "Import settings",
             "Export diagnostic report", "Source code and issues", "Licenses"));
 
     /** Built by the first show(), after a test has set the text size it wants. */
@@ -87,9 +83,7 @@ public class RowChevronTest {
     public void restore() {
         if (controller != null) controller.close();
         PatchFamily.inBuildForTests = null;
-        ScreenColors.shown = null;
         PauseForTests.resume();
-        Settings.FONT_SOURCE.resetToDefault();
         RuntimeEnvironment.setFontScale(1f);
     }
 
@@ -121,20 +115,18 @@ public class RowChevronTest {
         }
         assertEquals(OPENS_SOMETHING, wearing);
         assertTrue("Licenses and Version still look alike", wearing.contains("Licenses") && !wearing.contains("Version"));
-        assertTrue("only " + switches + " switch rows", switches > 10);
+        // Hide ads, the two privacy switches, the release check, Pause and Debug logging.
+        assertTrue("only " + switches + " switch rows", switches >= 6);
     }
 
     /**
-     * Four rows act the moment they're tapped: the paused card turns HushThreads back on for the
-     * next start, Clear diagnostic data clears it, Check now asks GitHub and says how that went in
-     * its own summary, and Use your phone's font takes the picked font away. A chevron there would
-     * promise something opens.
+     * Three rows act the moment they're tapped: the paused card turns HushThreads back on for the
+     * next start, Clear diagnostic data clears it, and Check now asks GitHub and says how that went
+     * in its own summary. A chevron there would promise something opens.
      */
     @Test
     public void thePausedCardAndClearActAtOnceAndWearNone() {
         PauseForTests.pause(HushThreadsPause.Reason.SWITCH);
-        // The way back to the phone's font is on the page while a font file is picked.
-        Settings.FONT_SOURCE.save("Inter.ttf");
         List<View> rows = rows(show());
         View card = rows.get(0);
         assertTrue(item(card).isSelectable());
@@ -144,8 +136,6 @@ public class RowChevronTest {
         View checkNow = rowTitled(rows, "Check now");
         assertNotNull(item(checkNow).getOnPreferenceClickListener());
         assertNull("Check now wears a chevron", chevronOf(checkNow));
-        assertNull("Use your phone's font wears a chevron", chevronOf(rowTitled(rows, "Use your phone's font")));
-        assertNull("Return to regular Facebook wears a chevron", chevronOf(rowTitled(rows, "Return to regular Facebook")));
         assertNotNull("Licenses lost its chevron while paused", chevronOf(rowTitled(rows, "Licenses")));
     }
 
@@ -203,7 +193,7 @@ public class RowChevronTest {
     public void aRowOutOfReachDimsItsChevron() {
         SettingsDialog dialog = show();
         Preference importRow = SettingsL10nTest.pageOf(dialog).findPreference("action_import_settings");
-        ScreenColors colors = ScreenColors.shown == null ? ScreenColors.DEFAULT : ScreenColors.shown;
+        ScreenColors colors = ScreenColors.DEFAULT;
 
         importRow.setEnabled(false);
         ImageView chevron = chevronOf(rowTitled(rows(dialog), "Import settings"));

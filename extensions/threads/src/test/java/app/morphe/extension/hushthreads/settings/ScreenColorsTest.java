@@ -8,22 +8,17 @@
 package app.morphe.extension.hushthreads.settings;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -45,17 +40,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import app.morphe.extension.hushthreads.download.DownloadQuality;
-import app.morphe.extension.hushthreads.theme.PalettesForTests;
-import app.morphe.extension.hushthreads.theme.TonePalette;
 import app.morphe.extension.shared.SettingsContextRule;
 
 /**
- * WCAG 2.2 AA for what HushThreads draws itself with the Material You theme in the build: the
- * settings screen, its dialogs and its switches, in the dark and light setting, for the fixed
- * palette, the framework's own and wallpapers of three other hues. Text needs 4.5:1 against what
- * it sits on, a switch 3:1 against the page (success criteria 1.4.3 and 1.4.11). Tones fix
- * lightness, so the ratios barely move from one wallpaper to the next.
+ * WCAG 2.2 AA for what HushThreads draws itself: the settings screen, its dialogs and its
+ * switches, on the black page. Text needs 4.5:1 against what it sits on, a switch 3:1 against the
+ * page (success criteria 1.4.3 and 1.4.11).
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
@@ -71,14 +61,22 @@ public class ScreenColorsTest {
     @After
     public void restore() {
         PatchFamily.inBuildForTests = null;
-        ScreenColors.shown = null;
-        Settings.FONT_SOURCE.resetToDefault();
+    }
+
+    /** WCAG's relative luminance of an opaque sRGB colour, 0 for black to 1 for white. */
+    static double luminance(int color) {
+        double[] channels = new double[3];
+        for (int shift = 16, i = 0; i < 3; shift -= 8, i++) {
+            double value = ((color >> shift) & 0xFF) / 255.0;
+            channels[i] = value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+        }
+        return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
     }
 
     /** The WCAG contrast ratio of two opaque colours, 1 to 21. */
     static double contrast(int one, int two) {
-        double a = TonePalette.luminance(one) + 0.05;
-        double b = TonePalette.luminance(two) + 0.05;
+        double a = luminance(one) + 0.05;
+        double b = luminance(two) + 0.05;
         return Math.max(a, b) / Math.min(a, b);
     }
 
@@ -93,7 +91,7 @@ public class ScreenColorsTest {
         text.put("dialog title on the dialog", new int[]{c.title, c.dialog});
         text.put("dialog message on the dialog", new int[]{c.summary, c.dialog});
         // A dialog's choice cards are outlined cards in the card tone (ChoiceCards), so their text
-        // is read against that. This pair used to name the page's tone, which no card is painted in.
+        // is read against that.
         text.put("dialog choice's name on its card", new int[]{c.title, c.card});
         text.put("dialog choice's detail on its card", new int[]{c.summary, c.card});
         text.put("primary action text on its fill", new int[]{c.onAccent, c.accent});
@@ -123,131 +121,62 @@ public class ScreenColorsTest {
         }
     }
 
-    private static Map<String, TonePalette> palettes() {
-        Map<String, TonePalette> palettes = new LinkedHashMap<>();
-        palettes.put("fixed palette (Android 11)", TonePalette.fallback());
-        palettes.put("red wallpaper", PalettesForTests.palette(PalettesForTests.RED));
-        palettes.put("yellow wallpaper", PalettesForTests.palette(PalettesForTests.YELLOW));
-        palettes.put("green wallpaper", PalettesForTests.palette(PalettesForTests.GREEN));
-        return palettes;
-    }
-
-    @Test
-    public void everyPairMeetsAaInDarkAndLight() {
-        for (Map.Entry<String, TonePalette> palette : palettes().entrySet()) {
-            for (boolean light : new boolean[]{false, true}) {
-                ScreenColors colors = ScreenColors.of(palette.getValue(), light);
-                String name = palette.getKey() + (light ? ", light" : ", dark");
-                assertMeets(name, pairs(colors), TEXT);
-                assertMeets(name, controls(colors), NON_TEXT);
-            }
-        }
-    }
-
-    /**
-     * The black page, which every build without the Material You theme shows. Nothing held it to
-     * AA, and its dialogs' Cancel read at 3.4:1, accent blue on the dialog's grey.
-     */
+    /** The black page. Its dialogs' Cancel once read at 3.4:1, accent blue on the dialog's grey. */
     @Test
     public void theBlackPageMeetsAa() {
         assertMeets("black page", pairs(ScreenColors.DEFAULT), TEXT);
         assertMeets("black page", controls(ScreenColors.DEFAULT), NON_TEXT);
     }
 
-    /** The framework's own wallpaper palette, as a phone on Android 12 and newer reads it. */
-    @Test
-    @Config(sdk = 34)
-    public void theFrameworksPaletteMeetsAaInDarkAndLight() {
-        TonePalette phone = TonePalette.of(RuntimeEnvironment.getApplication());
-        assertTrue(phone.dynamic);
-        for (boolean light : new boolean[]{false, true}) {
-            ScreenColors colors = ScreenColors.of(phone, light);
-            assertMeets("framework palette" + (light ? ", light" : ", dark"), pairs(colors), TEXT);
-            assertMeets("framework palette" + (light ? ", light" : ", dark"), controls(colors), NON_TEXT);
-        }
-    }
-
     /** What the ratios actually are, so a reader of a failure elsewhere knows the margin. */
     @Test
-    public void theFixedPalettesRatios() {
-        ScreenColors dark = ScreenColors.of(TonePalette.fallback(), false);
-        ScreenColors light = ScreenColors.of(TonePalette.fallback(), true);
-        assertEquals(13.35, contrast(dark.title, dark.background), 0.01);
-        assertEquals(10.11, contrast(dark.summary, dark.background), 0.01);
-        assertEquals(10.10, contrast(dark.heading, dark.background), 0.01);
-        assertEquals(16.73, contrast(light.title, light.background), 0.01);
-        assertEquals(9.12, contrast(light.summary, light.background), 0.01);
-        assertEquals(6.32, contrast(light.heading, light.background), 0.01);
+    public void theBlackPagesRatios() {
+        ScreenColors page = ScreenColors.DEFAULT;
+        assertEquals(19.24, contrast(page.title, page.background), 0.01);
+        assertEquals(9.50, contrast(page.summary, page.background), 0.01);
+        assertEquals(8.58, contrast(page.heading, page.background), 0.01);
+        assertEquals(4.85, contrast(page.onAccent, page.accent), 0.01);
+        assertEquals(3.34, contrast(page.offThumb(), page.switchOff), 0.01);
     }
 
     /**
-     * The negative control: a low-contrast pair has to fail the same check. Grey tone 60 on tone 50
+     * The negative control: a low-contrast pair has to fail the same check. Grey 40% on grey 50%
      * is legible to nobody.
      */
     @Test
     public void aLowContrastPairFails() {
-        TonePalette palette = TonePalette.fallback();
         Map<String, int[]> weak = new LinkedHashMap<>();
-        weak.put("tone 60 on tone 50", new int[]{palette.tone(TonePalette.NEUTRAL, 60), palette.tone(TonePalette.NEUTRAL, 50)});
+        weak.put("#666666 on #808080", new int[]{0xFF666666, 0xFF808080});
         try {
             assertMeets("control", weak, TEXT);
         } catch (AssertionError expected) {
-            assertTrue(expected.getMessage(), expected.getMessage().contains("tone 60 on tone 50"));
+            assertTrue(expected.getMessage(), expected.getMessage().contains("#666666 on #808080"));
             // A pair that clears 3:1 and not 4.5:1 passes as a control and fails as text.
             Map<String, int[]> between = new LinkedHashMap<>();
-            between.put("neutral 60 on white", new int[]{palette.tone(TonePalette.NEUTRAL, 60), Color.WHITE});
+            between.put("#808080 on white", new int[]{0xFF808080, Color.WHITE});
             assertMeets("control", between, NON_TEXT);
             try {
                 assertMeets("control", between, TEXT);
             } catch (AssertionError alsoExpected) {
                 return;
             }
-            fail("neutral tone 60 on white passed as text at "
-                    + contrast(palette.tone(TonePalette.NEUTRAL, 60), Color.WHITE));
+            fail("#808080 on white passed as text at " + contrast(0xFF808080, Color.WHITE));
         }
-        fail("a pair at " + contrast(weak.values().iterator().next()[0], weak.values().iterator().next()[1]) + ":1 passed");
+        fail("a pair at " + contrast(0xFF666666, 0xFF808080) + ":1 passed");
     }
 
-    /** Without the theme in the build the screen stays what it was: black, with the dark Material theme. */
+    /**
+     * The screen is black, built on the dark Material theme, and every row it draws takes the
+     * page's colours: titles and summaries that read on it, and switches in the accent.
+     */
     @Test
-    public void withoutTheThemeTheScreenStaysBlack() {
-        PatchFamily.inBuildForTests = EnumSet.complementOf(EnumSet.of(PatchFamily.MATERIAL_YOU_THEME));
-        Context context = RuntimeEnvironment.getApplication();
-        assertNull(ScreenColors.forScreen(context));
-        assertEquals(android.R.style.Theme_Material_NoActionBar, ScreenColors.themeFor(context));
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            SettingsDialog dialog = show(controller.get());
-            assertNull(ScreenColors.shown);
-            assertEquals(Color.BLACK, ((ColorDrawable) dialog.getView().getBackground()).getColor());
-        }
-    }
-
-    @Test
-    public void withTheThemeALightPhoneGetsALightScreen() {
-        assertScreenPainted(true);
-    }
-
-    @Test
-    @Config(qualifiers = "night")
-    public void withTheThemeADarkPhoneGetsADarkScreen() {
-        assertScreenPainted(false);
-    }
-
-    private void assertScreenPainted(boolean light) {
+    public void theScreenIsBlackAndEveryRowTakesItsColours() {
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
-        // A picked font puts the way back to the phone's font on the page, so its row is painted too.
-        Settings.FONT_SOURCE.save("Inter.ttf");
+        assertEquals(android.R.style.Theme_Material_NoActionBar, ScreenColors.THEME);
+        ScreenColors colors = ScreenColors.DEFAULT;
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             SettingsDialog dialog = show(controller.get());
-            ScreenColors colors = ScreenColors.shown;
-            assertNotNull("the page has no palette colours", colors);
-            assertEquals(light, colors.light);
-            assertEquals(ScreenColors.of(TonePalette.fallback(), light).background, colors.background);
-            assertEquals(colors.background, ((ColorDrawable) dialog.getView().getBackground()).getColor());
-            // Below Android 15 the window draws its own bars; the theme's grey and black under a
-            // light page's dark icons can't be read, so the page's colour goes there.
-            assertEquals(colors.background, dialog.getDialog().getWindow().getStatusBarColor());
-            assertEquals(colors.background, dialog.getDialog().getWindow().getNavigationBarColor());
+            assertEquals(Color.BLACK, ((ColorDrawable) dialog.getView().getBackground()).getColor());
 
             int titles = 0;
             int switches = 0;
@@ -258,8 +187,6 @@ public class ScreenColorsTest {
                 int enabledColor = drawn | 0xFF000000;
                 assertTrue("\"" + title.getText() + "\" is " + Integer.toHexString(drawn),
                         enabledColor == colors.title || enabledColor == colors.heading);
-                // Disabled Marketplace options use the existing 38% Material tint. The old
-                // assertion assumed every row on a newly opened page could be tapped.
                 assertEquals(title.getText().toString(),
                         title.isEnabled() || !title.getTextColors().isStateful() ? 255 : 0x61, Color.alpha(drawn));
                 assertTrue(contrast(enabledColor, colors.background) >= TEXT);
@@ -281,9 +208,9 @@ public class ScreenColorsTest {
                     switches++;
                 }
             }
-            assertTrue("no row titles were painted", titles > 10);
-            assertTrue("no switch was painted", switches > 3);
-            assertFalse(colors.light != light);
+            assertTrue("only " + titles + " row titles were painted", titles > 10);
+            // Hide ads, the two privacy switches, the release check, Pause and Debug logging.
+            assertTrue("only " + switches + " switches were painted", switches >= 6);
         }
     }
 
@@ -338,91 +265,6 @@ public class ScreenColorsTest {
         }
     }
 
-    /** The save folder's outlined field and the filled primary action use the same accent. */
-    @Test
-    public void theFolderDialogsFieldTakesTheAccent() {
-        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            SettingsDialog dialog = show(controller.get());
-            HushThreadsPreferenceFragment page = (HushThreadsPreferenceFragment)
-                    dialog.getChildFragmentManager().findFragmentById(SettingsDialog.CONTAINER_ID);
-            HushThreadsPreferenceFragment.FolderRow row =
-                    (HushThreadsPreferenceFragment.FolderRow) page.findPreference(Settings.SAVE_FOLDER.key);
-            assertNotNull("no save folder row", row);
-            row.showDialog(null);
-            ShadowLooper.idleMainLooper();
-            try {
-                ScreenColors colors = ScreenColors.shown;
-                assertNotNull(colors);
-                EditText field = row.getEditText();
-                assertNull("the old underline tint remains", field.getBackgroundTintList());
-                assertTrue("the field has no outlined surface", field.getBackground() instanceof GradientDrawable);
-                assertEquals(colors.dialog, ((GradientDrawable) field.getBackground()).getColor().getDefaultColor());
-                assertEquals(ScreenColors.half(colors.accent), field.getHighlightColor());
-                assertTrue(contrast(colors.accent, colors.dialog) >= NON_TEXT);
-                Button primary = ((android.app.AlertDialog) row.getDialog())
-                        .getButton(android.app.AlertDialog.BUTTON_POSITIVE);
-                assertEquals(colors.onAccent, primary.getCurrentTextColor());
-                assertTrue(primary.getBackground() instanceof RippleDrawable);
-                assertEquals(colors.accent, ((GradientDrawable) ((RippleDrawable) primary.getBackground())
-                        .getDrawable(0)).getColor().getDefaultColor());
-                // The message on show is the preference layout's own, below a GONE one of AlertDialog's.
-                List<TextView> shownMessages = new ArrayList<>();
-                collectMessages(row.getDialog().getWindow().getDecorView(), shownMessages);
-                assertFalse("no message on show in the dialog", shownMessages.isEmpty());
-                for (TextView message : shownMessages) {
-                    assertEquals("\"" + message.getText() + "\" keeps the theme's colour", colors.summary, message.getCurrentTextColor());
-                    assertTrue(contrast(message.getCurrentTextColor(), colors.dialog) >= TEXT);
-                }
-                assertEquals(colors.summary, field.getCurrentHintTextColor());
-                assertTrue(contrast(field.getCurrentHintTextColor(), colors.dialog) >= TEXT);
-            } finally {
-                row.getDialog().dismiss();
-            }
-        }
-    }
-
-    /**
-     * The download quality's list. Its title and its Cancel button take the screen's colours, as
-     * every other dialog here does, and each choice reads on the dialog.
-     */
-    @Test
-    public void theQualityListTakesTheScreensColours() {
-        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            SettingsDialog dialog = show(controller.get());
-            HushThreadsPreferenceFragment page = (HushThreadsPreferenceFragment)
-                    dialog.getChildFragmentManager().findFragmentById(SettingsDialog.CONTAINER_ID);
-            HushThreadsPreferenceFragment.QualityRow row =
-                    (HushThreadsPreferenceFragment.QualityRow) page.findPreference(Settings.DOWNLOAD_QUALITY.key);
-            assertNotNull("no download quality row", row);
-            row.showDialog(null);
-            ShadowLooper.idleMainLooper();
-            try {
-                ScreenColors colors = ScreenColors.shown;
-                assertNotNull(colors);
-                android.app.AlertDialog list = (android.app.AlertDialog) row.getDialog();
-                int titleId = list.getContext().getResources().getIdentifier("alertTitle", "id", "android");
-                TextView title = list.findViewById(titleId);
-                assertNotNull("the list has no title", title);
-                assertEquals("Download quality", String.valueOf(title.getText()));
-                assertEquals(colors.title, title.getCurrentTextColor());
-                assertEquals(colors.accent, list.getButton(android.app.AlertDialog.BUTTON_NEGATIVE).getCurrentTextColor());
-                assertEquals(DownloadQuality.values().length, list.getListView().getAdapter().getCount());
-            } finally {
-                row.getDialog().dismiss();
-            }
-        }
-    }
-
-    private static void collectMessages(View view, List<TextView> shown) {
-        if (view instanceof TextView && view.getId() == android.R.id.message && view.isShown()) shown.add((TextView) view);
-        if (view instanceof android.view.ViewGroup) {
-            android.view.ViewGroup group = (android.view.ViewGroup) view;
-            for (int index = 0; index < group.getChildCount(); index++) collectMessages(group.getChildAt(index), shown);
-        }
-    }
-
     private static SettingsDialog show(Activity activity) {
         SettingsDialog dialog = new SettingsDialog();
         dialog.show(activity.getFragmentManager(), "hushthreads_settings");
@@ -436,12 +278,12 @@ public class ScreenColorsTest {
     /** Every row the list draws, laid out tall enough that none is left off. */
     private static List<View> rows(SettingsDialog dialog) {
         ListView list = dialog.getView().findViewById(android.R.id.list);
+        assertNotNull("no list in the dialog", list);
         HushThreadsPreferenceFragment page = (HushThreadsPreferenceFragment) dialog.getChildFragmentManager()
                 .findFragmentById(SettingsDialog.CONTAINER_ID);
         // Verify every preference row independently of the category shell.
         list.setAdapter(page.getPreferenceScreen().getRootAdapter());
         list.setOnItemClickListener(page.getPreferenceScreen());
-        assertNotNull("no list in the dialog", list);
         list.measure(View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(40000, View.MeasureSpec.EXACTLY));
         list.layout(0, 0, 1080, 40000);

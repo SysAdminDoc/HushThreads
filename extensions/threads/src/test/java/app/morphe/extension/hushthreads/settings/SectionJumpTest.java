@@ -34,8 +34,8 @@ import java.util.List;
 import app.morphe.extension.shared.SettingsContextRule;
 
 /**
- * The settings page is long enough that reaching Downloads took several screens of swiping on a
- * phone. A row at the top lists the sections, a tap on one scrolls its heading to the top, and Back
+ * At a large text size the settings page runs past one screen, and the sections near its end take
+ * swiping to reach. A row at the top lists the sections, a tap on one scrolls its heading to the top, and Back
  * goes back once to where the list was before closing the page as it always did.
  */
 @RunWith(RobolectricTestRunner.class)
@@ -55,7 +55,6 @@ public class SectionJumpTest {
     public void restore() {
         if (controller != null) controller.close();
         PatchFamily.inBuildForTests = null;
-        ScreenColors.shown = null;
     }
 
     @Test
@@ -75,7 +74,7 @@ public class SectionJumpTest {
         for (Preference section : page.sections()) expected.add(section.getTitle().toString());
         assertEquals(new java.util.HashSet<>(expected), new java.util.HashSet<>(titles));
         assertEquals(expected.size(), titles.size());
-        assertTrue(titles.contains("Downloads"));
+        assertTrue(titles.contains("Updates"));
         assertTrue(titles.contains("Links"));
     }
 
@@ -86,11 +85,11 @@ public class SectionJumpTest {
         ListView list = laidOut(dialog);
         assertEquals(0, list.getFirstVisiblePosition());
 
-        Preference downloads = sectionTitled(page, "Downloads");
-        assertTrue(page.jumpTo(downloads));
+        Preference privacy = sectionTitled(page, "Privacy");
+        assertTrue(page.jumpTo(privacy));
         relayout(list);
-        assertEquals(((android.preference.PreferenceCategory) downloads).getPreferenceCount(), list.getCount());
-        assertEquals(downloads, ((Preference) list.getItemAtPosition(0)).getParent());
+        assertEquals(((android.preference.PreferenceCategory) privacy).getPreferenceCount(), list.getCount());
+        assertEquals(privacy, ((Preference) list.getItemAtPosition(0)).getParent());
 
         dialog.getDialog().onBackPressed();
         relayout(list);
