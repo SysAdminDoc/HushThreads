@@ -49,14 +49,14 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Ranks the methods of a new Facebook build by how likely each one is to be a given method of an
+ * Ranks the methods of a new Threads build by how likely each one is to be a given method of an
  * older build, under the names Redex gave it this time.
  *
- * <p>Facebook renames almost every class and method on every weekly build, so a patch finds its
+ * <p>Threads renames most of its classes and methods on every weekly build, so a patch finds its
  * target by kept names, log literals and method shapes. When one of those anchors moves, the patch
  * fails at patch time, and somebody has to find where the method went. This does the looking. It
  * captures what survives a rebuild about the old method: its strings, its literals with the version
- * bytes Facebook changes masked, the references it makes with the obfuscated names taken out, a
+ * bytes Meta changes masked, the references it makes with the obfuscated names taken out, a
  * sketch of its opcodes, its prototype, its class and who calls it. Then it scores every method of
  * the new build against that, each shared token weighed by how rare it is there.
  *
@@ -418,9 +418,9 @@ public final class FingerprintCandidates {
 
     /**
      * The tokens a literal contributes, or none. A resource id is left out: 86% of them moved between
-     * 577 and 580. A MobileConfig id never matched exactly (0 of 851), because it carries the config's
-     * version, but 95% matched once that is masked: 0x0081_0537_018523_49 on 577 is
-     * 0x0081_0532_018523_49 on 580. The second family, as 0x0101_098e_0022_5045, moves its version and
+     * the Facebook sibling's 577 and 580. A MobileConfig id never matched exactly there (0 of 851),
+     * because it carries the config's version, but 95% matched once that is masked:
+     * 0x0081_0537_018523_49 on 577 is 0x0081_0532_018523_49 on 580. The second family, as 0x0101_098e_0022_5045, moves its version and
      * its slot and keeps its type and id.
      */
     static void literalTokens(long value, boolean wide, Collection<String> out) {
@@ -585,8 +585,8 @@ public final class FingerprintCandidates {
 
         /**
          * The tokens held to the new build's methods: strings, literals, references, and the name
-         * when Redex kept it. Each weighs what its rarity says: addNewEdgeToCollection is one method
-         * in 580, run is eleven thousand.
+         * when Redex kept it. Each weighs what its rarity says: in the Facebook sibling's 580,
+         * addNewEdgeToCollection is one method and run is eleven thousand.
          */
         List<String> bodyTokens() {
             List<String> out = new ArrayList<>(strings.size() + literals.size() + references.size() + 1);
