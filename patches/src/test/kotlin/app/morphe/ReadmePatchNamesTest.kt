@@ -134,7 +134,8 @@ class ReadmePatchNamesTest {
         val rows = readmePatchRows()
         val listed = rows.map { it.name }.toSet()
         val shipped = shippedPatchDescriptions()
-        assertTrue("the scan found no patches", factories > 10)
+        // HushThreads ships six patches today, so fewer than five means the scan broke.
+        assertTrue("the scan found no patches", factories >= 5)
         assertEquals("the README has a duplicate patch row", rows.size, listed.size)
 
         assertEquals(

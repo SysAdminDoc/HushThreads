@@ -38,7 +38,7 @@ class PatchCategoriesTest {
     @Test
     fun `every shipped patch has one category from the taxonomy`() {
         val patches = shippedPatches()
-        assertTrue("the catalog holds no patches", patches.size > 10)
+        assertTrue("the catalog holds no patches", patches.size >= 5)
         val missing = patches.filter { patch ->
             val category = patch.get("category")
             category == null || category.isJsonNull || category.asString.isBlank()

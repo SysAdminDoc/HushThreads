@@ -37,7 +37,7 @@ class SourceNoticeTest {
     )
 
     /** Below this the scan has stopped finding the tree and the case proves nothing. */
-    private val fewestCredibleSources = 25
+    private val fewestCredibleSources = 15
 
     @Test
     fun everyPatchSourceSaysWhereItCameFrom() {

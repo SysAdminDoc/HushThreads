@@ -138,14 +138,14 @@ class CatalogDependencyTest {
     @Test
     fun `the catalog still records dependencies to check`() {
         val patches = catalogPatches()
-        // 0.1.0 catalogues 13 patches, and every one of them depends on the settings patch.
-        assertTrue("the catalog has almost no patches in it: ${patches.size}", patches.size >= 10)
+        // 0.0.1 catalogues six patches, and every one of them but the settings patch depends on it.
+        assertTrue("the catalog has almost no patches in it: ${patches.size}", patches.size >= 5)
         val withDependencies = patches.count {
             (it.getAsJsonArray("dependencies")?.size() ?: 0) > 0
         }
         assertTrue(
             "no row in the catalog records a dependency, so the cases above prove nothing",
-            withDependencies >= 10,
+            withDependencies >= 5,
         )
     }
 }

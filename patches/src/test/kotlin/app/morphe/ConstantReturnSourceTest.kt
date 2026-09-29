@@ -38,7 +38,7 @@ import org.junit.Test
  */
 class ConstantReturnSourceTest {
     /** Below this the scan has stopped finding the tree and the case proves nothing. */
-    private val fewestCredibleSources = 25
+    private val fewestCredibleSources = 15
 
     /** `addInstructions` and `addInstructionsWithLabels`, at index 0, with a block string. */
     private val tripleQuoted = Regex(
