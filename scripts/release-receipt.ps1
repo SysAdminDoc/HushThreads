@@ -796,11 +796,19 @@ function Invoke-RepoGit {
     }
     # Windows PowerShell 5.1 turns a native command's stderr into a terminating error under
     # Stop even when it is redirected. Relax for the call and restore afterwards.
+    # git writes a file's bytes as they are, and PowerShell decodes a native command's output with
+    # the console's code page, which is 437 in the console Windows opens for a hidden or scheduled
+    # run. A UTF-8 byte order mark then came back as three characters nothing trims, and the
+    # allowlist read at a commit refused its own first line. The call reads UTF-8 and puts the
+    # console's encoding back after.
     $preference = $ErrorActionPreference
+    $consoleEncoding = [Console]::OutputEncoding
     try {
         $ErrorActionPreference = 'Continue'
+        [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
         return & git -C $Root @Arguments 2>$null
     } finally {
+        [Console]::OutputEncoding = $consoleEncoding
         $ErrorActionPreference = $preference
         foreach ($name in $saved.Keys) { Set-Item -LiteralPath ('Env:\' + $name) -Value $saved[$name] }
     }
