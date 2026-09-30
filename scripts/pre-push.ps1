@@ -554,6 +554,27 @@ try {
         $_ -eq '.github/ISSUE_TEMPLATE/bug_report.yml'
     }).Count -gt 0
 
+    # Before the first release there are no release facts to hold a push to: no patches-bundle.json
+    # for Manager to read and no release tag, and the check starts by requiring the index. Without
+    # this every README or CHANGELOG push stopped until the release that creates them, and that
+    # push carries the index, so it gets the full check. Once a v* tag exists this never applies
+    # again, so deleting the index later can't switch the check off.
+    if ($touchesRelease -and -not $script:rewritesIndex) {
+        $released = @(Invoke-HookGit @('-C', $Root, 'tag', '--list', 'v*')).Count -gt 0
+        $indexed = if ($PSBoundParameters.ContainsKey('ChangedPaths') -or $script:pushedCommits.Count -eq 0) {
+            Test-Path -LiteralPath (Join-Path $Root 'patches-bundle.json') -PathType Leaf
+        } else {
+            @($script:pushedCommits | Where-Object {
+                @(Invoke-HookGit @('-C', $Root, 'ls-tree', '--name-only', $_, '--', 'patches-bundle.json')).Count -gt 0
+            }).Count -gt 0
+        }
+        if (-not $released -and -not $indexed) {
+            Write-Step ('a published file changed, but nothing has been released yet (no patches-bundle.json ' +
+                'and no release tag), so there are no release facts to check')
+            $touchesRelease = $false
+        }
+    }
+
     # Every gate below checks the tip of each pushed ref, and checks it in place only when it is HEAD
     # and nothing in the working tree differs from it. Everything else goes to a clean worktree of the
     # commit. Uncommitted work that isn't in the push can fail it (another agent's did, twice on

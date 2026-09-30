@@ -2192,6 +2192,9 @@ try {
         ("Set-Content -LiteralPath '$factsMarker' -Value " +
             "`"lag=`$AllowPublishedIndexLag skip=`$SkipDescriptionTestCount verify=`$VerifyPublishedAsset artifact=`$ArtifactPath hosted=`$ArtifactIsHosted`""),
         'exit 0')
+    # A released checkout holds the index. The cases that take it away are marked below.
+    $stubIndex = Join-Path $hookRoot 'patches-bundle.json'
+    Set-Content -LiteralPath $stubIndex -Encoding UTF8 -Value '{}'
     Set-Content -LiteralPath (Join-Path $hookRoot 'scripts/test-script-contracts.ps1') -Encoding UTF8 -Value @(
         'param([string]$Root)',
         "Set-Content -LiteralPath '$contractsMarker' -Value 'ran'",
@@ -2255,6 +2258,31 @@ try {
         'A push that changed only the release receipt ran no release check.'
     Assert-True ((Get-Content -LiteralPath $factsMarker -Raw) -like 'lag=True*') `
         'A receipt-only push took the strict published-index path.'
+
+    # Before the first release: no index and no v* tag means no release facts, so a README push
+    # says so and runs no release check. A tag alone brings the check back, and so does an index
+    # alone, which the case above already had.
+    Remove-Item -LiteralPath $stubIndex -Force
+    try {
+        Remove-Item -LiteralPath $factsMarker -Force -ErrorAction SilentlyContinue
+        $global:LASTEXITCODE = 0
+        $unreleased = @(& $prePushScript -Root $hookRoot -ChangedPaths @('README.md') 6>&1 | ForEach-Object { "$_" }) -join "`n"
+        Assert-True ($LASTEXITCODE -eq 0 -and -not (Test-Path -LiteralPath $factsMarker)) `
+            'A README push before the first release ran the release check, which needs an index that does not exist yet.'
+        Assert-True ($unreleased -like '*nothing has been released yet*') `
+            "A README push before the first release did not say why it skipped the release check: $unreleased"
+        & git -C $hookRoot commit --allow-empty --quiet -m 'release base'
+        & git -C $hookRoot tag v0.0.1
+        try {
+            Invoke-Hook -Paths @('README.md')
+            Assert-True (Test-Path -LiteralPath $factsMarker) `
+                'A README push after a release tag, with the index gone, ran no release check.'
+        } finally {
+            & git -C $hookRoot tag -d v0.0.1 | Out-Null
+        }
+    } finally {
+        Set-Content -LiteralPath $stubIndex -Encoding UTF8 -Value '{}'
+    }
 
     Invoke-Hook -Paths @('scripts/manifest-delta-allowlist.txt')
     Assert-True (Test-Path -LiteralPath $factsMarker) `
@@ -3065,6 +3093,9 @@ try {
             }
             & git -C $gateRepo add scripts/validate-release-facts.ps1
             $factsBase = Save-GateReadme 'base'
+            # Released, so a README push has release facts to check. With no tag and no index
+            # the hook would call it unreleased and check nothing, which the routing cases cover.
+            & git -C $gateRepo tag v0.0.1 $factsBase
             $factsGood = Save-GateReadme 'good'
 
             # An uncommitted README that would fail the check doesn't fail a push without it.
