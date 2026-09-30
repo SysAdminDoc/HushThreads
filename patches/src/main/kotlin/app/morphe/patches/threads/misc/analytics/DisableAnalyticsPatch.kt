@@ -89,8 +89,11 @@ val disableAnalyticsPatch = bytecodePatch(
 
         handleTargets(PATCH, "kinds of analytics address", AddressSite.entries) { site ->
             when (site) {
-                AddressSite.PIGEON -> PigeonUrlFingerprint.methodOrNull?.let { it.wrapEveryReturn(); null }
-                    ?: "no static (String, boolean) method builds the Pigeon logger's address"
+                // Not `?.let { ...; null } ?: message`: a found method's null would reach the message.
+                AddressSite.PIGEON -> PigeonUrlFingerprint.methodOrNull.let { method ->
+                    if (method == null) "no static (String, boolean) method builds the Pigeon logger's address"
+                    else { method.wrapEveryReturn(); null }
+                }
                 AddressSite.DEFAULT -> if (wrapDefaultAddressAnswers() > 0) null
                     else "no method answers $LOGGING_URL as it is"
                 AddressSite.MQTT -> MqttSettingsFingerprint.methodOrNull.let { method ->

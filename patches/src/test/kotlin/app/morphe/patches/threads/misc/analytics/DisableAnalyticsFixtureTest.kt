@@ -9,6 +9,7 @@ import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.threads.misc.extension.PatchLogCapture
 import app.morphe.patches.threads.misc.extension.SETTINGS_STATUS
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -64,7 +65,10 @@ class DisableAnalyticsFixtureTest {
             )
 
             val context = PatchContexts.of(ExtensionDex.classes() + classes)
-            disableAnalyticsPatch.execute(context)
+            // Every kind of site is on the declared build, so the patch has nothing to warn about.
+            // A found site once still read as missing, and this is where that shows.
+            val warnings = PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) }
+            assertEquals("$where: the patch log", emptyList<String>(), warnings)
 
             fun after(method: Method): List<Instruction> = context.mutableClassDefBy(method.definingClass).methods
                 .single { it.name == method.name && it.params() == method.params() && it.returnType == method.returnType }
