@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.0.2 (2026-09-29)
 
-HushThreads v0.0.2. Nothing has been released yet.
+The first release, with 6 patches for Threads 449.0.0.54.82.
 
 ### Changed
 

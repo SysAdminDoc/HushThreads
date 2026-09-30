@@ -39,7 +39,7 @@ Threads and Instagram share a lot of code, and HushThreads leans on that. We ran
 
 ## Where HushThreads is listed
 
-Nowhere yet. The repository is private until the first release, so none of the Morphe indexes (the community directory, Awesome Morphe, the Morphe Patch Tracker, Jman's bundle index and the Morphe Archive) can list it.
+Nowhere yet. The repository went public with the first release on 2026-09-29, and none of the Morphe indexes (the community directory, Awesome Morphe, the Morphe Patch Tracker, Jman's bundle index and the Morphe Archive) had picked it up by then.
 
 ## What's next
 
