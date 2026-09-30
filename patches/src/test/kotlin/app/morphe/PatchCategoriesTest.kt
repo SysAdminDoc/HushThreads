@@ -23,9 +23,12 @@ import org.junit.Test
  * category, a misspelt one, or a catalog generated before the declarations landed all fail.
  */
 class PatchCategoriesTest {
-    /** One name per group, and no more than fits on a phone screen without scrolling. */
+    /**
+     * One name per group, and no more than fits on a phone screen without scrolling. Hushfacebook's
+     * Feed, Downloads and Interface come back when a Threads patch needs one.
+     */
     private val taxonomy = setOf(
-        "Ads", "Feed", "Privacy", "Downloads", "Interface", "Fixes", "Settings",
+        "Ads", "Privacy", "Fixes", "Settings",
     )
 
     private fun shippedPatches() = run {

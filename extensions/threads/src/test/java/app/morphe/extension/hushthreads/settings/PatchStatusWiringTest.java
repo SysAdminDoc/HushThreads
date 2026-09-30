@@ -45,7 +45,10 @@ import app.morphe.extension.shared.SettingsContextRule;
 public class PatchStatusWiringTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
-    private static final Pattern NAME = Pattern.compile("(?m)^\\s*name\\s*=\\s*\"([^\"]+)\"");
+    /** A patch declaration's opening, up to the bracket its arguments start at. */
+    private static final Pattern DECLARATION = Pattern.compile("\\b(?:bytecodePatch|resourcePatch|rawResourcePatch)\\s*\\(");
+    /** The name argument, as a literal or as a constant of the same file. */
+    private static final Pattern NAME = Pattern.compile("\\bname\\s*=\\s*(?:\"([^\"]+)\"|([A-Za-z_][A-Za-z0-9_]*))");
     private static final Pattern STATUS = Pattern.compile("enableStatus\\(\"([^\"]+)\"\\)");
 
     @Test
@@ -81,13 +84,16 @@ public class PatchStatusWiringTest {
         try (Stream<Path> walk = Files.walk(sources)) {
             walk.filter(p -> p.toString().endsWith("Patch.kt")).forEach(files::add);
         }
-        assertTrue("no patch sources under " + sources, files.size() > 10);
+        assertTrue("fewer patch sources under " + sources + " than families: " + files,
+                files.size() >= PatchFamily.values().length);
 
         for (Path file : files) {
             String text = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
-            Matcher names = NAME.matcher(text);
-            if (!names.find()) continue;
-            String name = names.group(1);
+            List<String> names = declaredNames(text);
+            assertTrue(file + " declares " + names.size() + " named patches, so its switches can't be told apart",
+                    names.size() <= 1);
+            if (names.isEmpty()) continue;
+            String name = names.get(0);
             List<String> statuses = new ArrayList<>();
             Matcher status = STATUS.matcher(text);
             while (status.find()) {
@@ -96,6 +102,50 @@ public class PatchStatusWiringTest {
             if (!statuses.isEmpty()) result.put(name, statuses);
         }
         return result;
+    }
+
+    /**
+     * The name each patch declaration in {@code text} passes, read from inside the call's own
+     * brackets so a fingerprint's {@code name =} can't stand in for it. A name given as a constant
+     * is looked up in the same file's {@code const val}.
+     */
+    private static List<String> declaredNames(String text) {
+        List<String> names = new ArrayList<>();
+        Matcher declaration = DECLARATION.matcher(text);
+        while (declaration.find()) {
+            String arguments = bracketed(text, declaration.end() - 1);
+            Matcher name = NAME.matcher(arguments);
+            if (!name.find()) continue;
+            if (name.group(1) != null) {
+                names.add(name.group(1));
+                continue;
+            }
+            Matcher constant = Pattern.compile("\\bconst\\s+val\\s+" + Pattern.quote(name.group(2)) + "\\s*=\\s*\"([^\"]+)\"")
+                    .matcher(text);
+            assertTrue("a patch is named by " + name.group(2) + ", which is no const val of the same file", constant.find());
+            names.add(constant.group(1));
+        }
+        return names;
+    }
+
+    /** The text inside the bracket that opens at {@code open}, skipping brackets inside string literals. */
+    private static String bracketed(String text, int open) {
+        int depth = 0;
+        boolean inString = false;
+        for (int i = open; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (inString) {
+                if (c == '\\') i++;
+                else if (c == '"') inString = false;
+            } else if (c == '"') {
+                inString = true;
+            } else if (c == '(') {
+                depth++;
+            } else if (c == ')' && --depth == 0) {
+                return text.substring(open + 1, i);
+            }
+        }
+        throw new AssertionError("no closing bracket for the declaration at " + open);
     }
 
     /** The checkout's root, found from wherever Gradle runs the test by its patches-list.json. */

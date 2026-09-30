@@ -44,7 +44,14 @@ class ReadmePatchNamesTest {
             val open = factory.range.last
             val close = closingBracket(source, open)
             if (close < 0) continue
-            NAME.find(source.substring(open, close))?.let { names.add(it.groupValues[1]) }
+            NAME.find(source.substring(open, close))?.let { match ->
+                // A name passed as a constant is the same file's `const val`. One that isn't found
+                // stays out, so the factory counts as nameless and the test says so.
+                val name = match.groups[1]?.value
+                    ?: Regex("""\bconst\s+val\s+${Regex.escape(match.groupValues[2])}\s*=\s*"([^"]+)"""")
+                        .find(source)?.groupValues?.get(1)
+                name?.let(names::add)
+            }
         }
         return names to factories
     }
@@ -206,6 +213,12 @@ class ReadmePatchNamesTest {
                     name = "Do a thing",
                 ) { }
             """.trimIndent(),
+            "the name held in a constant" to """
+                private const val PATCH = "Do a thing"
+                val a = bytecodePatch(
+                    name = PATCH,
+                ) { }
+            """.trimIndent(),
         )
 
         shapes.forEach { (shape, source) ->
@@ -227,11 +240,16 @@ class ReadmePatchNamesTest {
         )
         assertEquals(1, factories)
         assertEquals(listOf("Do a thing"), names)
+
+        // A constant the file doesn't define leaves the factory nameless, which the test reports.
+        val (unresolved, counted) = namesIn("val a = bytecodePatch(name = ELSEWHERE) { }")
+        assertEquals(1, counted)
+        assertEquals(emptyList<String>(), unresolved)
     }
 
     private companion object {
         val FACTORY = Regex("""\b(?:bytecodePatch|resourcePatch|rawResourcePatch)\s*\(""")
-        val NAME = Regex("""(?:^|[(,\s])name\s*=\s*"([^"]+)"""")
+        val NAME = Regex("""(?:^|[(,\s])name\s*=\s*(?:"([^"]+)"|([A-Za-z_][A-Za-z0-9_]*))""")
 
         // The table rows are the only lines that open with a pipe and a backticked name. The
         // credits further down name patches in prose, which is not a claim about the table.
