@@ -25,6 +25,14 @@ public class ShadowFeedAds {
         }
     };
 
+    /** A post Threads' own check throws on. */
+    public static final Object BROKEN = new Object() {
+        @Override
+        public String toString() {
+            return "post the check throws on";
+        }
+    };
+
     @Implementation
     protected static Object itemMedia(Object item) {
         return item;
@@ -32,6 +40,7 @@ public class ShadowFeedAds {
 
     @Implementation
     protected static boolean isAd(Object media) {
+        if (media == BROKEN) throw new IllegalStateException("the check broke on this post");
         return media == AD;
     }
 }
