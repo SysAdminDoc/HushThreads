@@ -66,7 +66,9 @@ Long-press the Threads icon and tap HushThreads. You can also open Threads' App 
 
 ## Signing in
 
-A Threads account is an Instagram account, so on a patched Threads you sign in with your Instagram username and password. Threads also offers to continue as the Instagram account already on your phone. That button asks Instagram for the account, and Instagram checks which key the asking app was signed with, so it may not work on a Threads signed with your key. This page will say what happens once it's been tried on a phone.
+A Threads account is an Instagram account. On a patched Threads, tap Log in with Instagram and sign in with your Instagram username and password. That's been tried on a phone and it works.
+
+Threads also offers to continue as the Instagram account already on your phone, and that doesn't work on a patched Threads yet. Next to an Instagram patched with the same key, Threads doesn't offer it at all and opens the username and password form instead. Next to the stock Instagram it hasn't been tried. Instagram checks which key the asking app was signed with, though, so expect the same there.
 
 ## Your Threads account
 
