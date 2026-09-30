@@ -1,12 +1,14 @@
+![HushThreads. Keep the thread. Cut the noise.](assets/readme-hero.png)
+
 <p align="center">
-  <a href="https://github.com/SysAdminDoc/HushThreads/releases"><img src="https://img.shields.io/badge/version-0.0.1-000000" alt="Version 0.0.1"></a>
+  <a href="https://github.com/SysAdminDoc/HushThreads/releases"><img src="https://img.shields.io/badge/version-0.0.2-000000" alt="Version 0.0.2"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Threads-449.0.0.54.82-000000" alt="Threads 449.0.0.54.82">
   <img src="https://img.shields.io/badge/for-Morphe%20Manager%201.32.0%2B-8A2BE2" alt="For Morphe Manager 1.32.0 or newer">
 </p>
 
-# HushThreads
+# <img src="assets/icon.png" width="36" alt=""> HushThreads
 
 HushThreads is a Morphe patch bundle for Android that takes the ads out of Threads, cleans the links you share and cuts down what the app reports back to Meta.
 
@@ -26,7 +28,7 @@ This project has no connection to Meta or to the Morphe project. Neither endorse
 ## Install
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.32.0 or newer.
-2. Build the bundle (see below) and copy `patches-0.0.1.mpp` to your phone. In Morphe Manager, add it as a patch source from a local file.
+2. Build the bundle (see below) and copy `patches-0.0.2.mpp` to your phone. In Morphe Manager, add it as a patch source from a local file.
 3. Get Threads 449.0.0.54.82 (`com.instagram.barcelona`) for arm64-v8a, version code 511908382 (120-640dpi, Android 9+). That's the build these patches are checked against. Morphe Manager warns about other builds of the same version.
 4. In Morphe Manager, pick that file, keep the default patch selection or change it, and patch.
 

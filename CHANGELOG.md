@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-HushThreads 0.0.1, the first build. Nothing has been released yet.
+HushThreads v0.0.2. Nothing has been released yet.
+
+### Changed
+
+- The README has a new HushThreads logo and a banner that matches the Hush family's blue and navy look.
 
 ### Added
 
