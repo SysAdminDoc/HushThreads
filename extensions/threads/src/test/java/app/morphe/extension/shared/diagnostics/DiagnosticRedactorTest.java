@@ -134,7 +134,7 @@ public class DiagnosticRedactorTest {
      */
     @Test public void aHandleGluedToALetterOutsideAsciiGoesAfterTheNameItHolds() {
         assertEquals("é[handle omitted]=[omitted]", DiagnosticRedactor.redact("é@token=x1"));
-        assertEquals("josé@[host omitted]", DiagnosticRedactor.redact("josé@facebook.com/dana.q.1987"));
+        assertEquals("josé@[host omitted]", DiagnosticRedactor.redact("josé@threads.com/dana.q.1987"));
         assertEquals("ユーザー[handle omitted] をブロック", DiagnosticRedactor.redact("ユーザー@dana_q をブロック"));
         assertEquals("[handle omitted] said hi to [handle omitted]",
                 DiagnosticRedactor.redact("@dana.q said hi to @dana_q2"));
@@ -142,68 +142,87 @@ public class DiagnosticRedactorTest {
 
     /**
      * An ASCII @ with nothing in front of it also goes first, before the credential and id rules,
-     * so @token, @access_token, @c_user and @user_id took the name for a handle and left the value
+     * so @token, @access_token, @sessionid and @user_id took the name for a handle and left the value
      * behind: [handle omitted]=secret. An ordinary handle naming nothing the redactor knows still
      * goes first as before, credential or not.
      */
     @Test public void aHandleNamingACredentialOrIdGoesAfterTheNameItHolds() {
         assertEquals("[handle omitted]=[omitted]", DiagnosticRedactor.redact("@token=asciiHandleH13"));
         assertEquals("[handle omitted]=[omitted]", DiagnosticRedactor.redact("@access_token=EAABasciiHandleH14"));
-        assertEquals("[handle omitted]=[omitted]", DiagnosticRedactor.redact("@c_user=asciiHandleH15"));
+        assertEquals("[handle omitted]=[omitted]", DiagnosticRedactor.redact("@sessionid=asciiHandleH15"));
         assertEquals("[handle omitted]=[omitted]", DiagnosticRedactor.redact("@user_id=asciiHandleH16"));
         assertEquals("thanks [handle omitted] for the tip",
                 DiagnosticRedactor.redact("thanks @dana.q for the tip"));
-        assertEquals("mentioned [handle omitted]", DiagnosticRedactor.redact("mentioned @facebook"));
+        assertEquals("mentioned [handle omitted]", DiagnosticRedactor.redact("mentioned @threads"));
     }
 
-    @Test public void theStoryReferenceLineKeepsThePseudonymAndDropsThePostId() {
+    @Test public void thePostReferenceLineKeepsThePseudonymAndDropsThePostId() {
         String line = DiagnosticRedactor.redact(
-                "Hidden story: author 3f9a2c1b0e7d story_fbid=1022345678901234567");
+                "Hidden ad: author 3f9a2c1b0e7d media_id=3456789012345678901");
 
         assertTrue("the pseudonym is what makes two lines comparable: " + line,
                 line.contains("author 3f9a2c1b0e7d"));
-        assertFalse("the story id names what was read: " + line,
-                line.contains("1022345678901234567"));
+        assertFalse("the post id names what was read: " + line,
+                line.contains("3456789012345678901"));
     }
 
-    @Test public void facebookHostsAndSessionCookiesGo() {
+    @Test public void threadsHostsAndSessionCookiesGo() {
         String line = DiagnosticRedactor.redact(
-                "GET scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/1.jpg from b-graph.facebook.com"
-                        + " cookie c_user=100012345678901; xs=12%3Aabc datr=Zx9");
+                "GET scontent-iad3-1.cdninstagram.com/v/t51.2885-15/1.jpg and scontent.xx.fbcdn.net/v/t39.30808-6/2.jpg"
+                        + " from i.instagram.com/api/v1/text_feed/ cookie ds_user_id=100012345678901;"
+                        + " sessionid=100012345678901%3AsessQ1%3A12; csrftoken=csrfQ2 mid=midQ3; ig_did=igDidQ4");
 
-        assertFalse("a CDN address survived: " + line, line.contains("fbcdn.net"));
-        assertFalse("the graph host survived: " + line, line.contains("b-graph"));
+        assertTrue("the line should still read as a request: " + line, line.startsWith("GET "));
+        assertFalse("Instagram's CDN address survived: " + line, line.contains("cdninstagram.com"));
+        assertFalse("Meta's CDN address survived: " + line, line.contains("fbcdn.net"));
+        assertFalse("the API host survived: " + line, line.contains("text_feed"));
         assertFalse("the account id cookie survived: " + line, line.contains("100012345678901"));
-        assertFalse("the session cookie survived: " + line, line.contains("12%3Aabc"));
-        assertFalse("the browser id cookie survived: " + line, line.contains("Zx9"));
+        assertFalse("the session cookie survived: " + line, line.contains("sessQ1"));
+        assertFalse("the request token cookie survived: " + line, line.contains("csrfQ2"));
+        assertFalse("the machine id cookie survived: " + line, line.contains("midQ3"));
+        assertFalse("the device id cookie survived: " + line, line.contains("igDidQ4"));
     }
 
     /**
-     * A Facebook address with no scheme and no subdomain. The host rule asked for a subdomain, so
-     * "facebook.com/dana.q.1987" reached the report as written while the same address with "www."
+     * rur and mid are too short to look for inside a word, so they only count as a whole name. A
+     * setting or word that starts or ends the same way keeps its value, and the cookies themselves
+     * don't.
+     */
+    @Test public void rurAndMidCountOnlyAsAWholeName() {
+        String cookies = DiagnosticRedactor.redact("rur=rurWholeQ5; mid=midWholeQ6");
+        assertFalse("the rur cookie survived: " + cookies, cookies.contains("rurWholeQ5"));
+        assertFalse("the mid cookie survived: " + cookies, cookies.contains("midWholeQ6"));
+
+        String ordinary = "pyramid=3 midnight=on amid: 2 rurality=4 mid_roll=off";
+        assertEquals(ordinary, DiagnosticRedactor.redact(ordinary));
+    }
+
+    /**
+     * A Threads address with no scheme and no subdomain. The host rule asked for a subdomain, so
+     * "threads.com/@dana.q.1987" reached the report as written while the same address with "www."
      * in front of it was caught.
      */
-    @Test public void aFacebookHostGoesWithOrWithoutASubdomain() {
+    @Test public void aThreadsHostGoesWithOrWithoutASubdomain() {
         assertEquals("opened [host omitted] and [host omitted]", DiagnosticRedactor.redact(
-                "opened facebook.com/dana.q.1987 and www.facebook.com/dana.q.1987"));
+                "opened threads.com/@dana.q.1987 and www.threads.com/@dana.q.1987"));
         assertEquals("[host omitted] then [host omitted]",
-                DiagnosticRedactor.redact("fb.watch/abc123XYZ then fb.me/1a2b3c"));
-        assertEquals("[host omitted] then [host omitted] and [host omitted]",
-                DiagnosticRedactor.redact("facebook.com:443/profile.php then m.facebook.com and messenger.com/t/2"));
+                DiagnosticRedactor.redact("threads.net/@dana.q.1987/post/C8abc then instagram.com/dana.q.1987"));
+        assertEquals("[host omitted] then [host omitted] and [host omitted]", DiagnosticRedactor.redact(
+                "threads.com:443/@dana then i.instagram.com and scontent.cdninstagram.com/v/t51/1.jpg"));
         assertEquals("cookie domain=.[host omitted]; path=/",
-                DiagnosticRedactor.redact("cookie domain=.facebook.com; path=/"));
+                DiagnosticRedactor.redact("cookie domain=.instagram.com; path=/"));
     }
 
     /**
-     * What only looks like a Facebook address: the package and class names a report prints, and
+     * What only looks like a Threads address: the package and class names a report prints, and
      * names that start the same way and go on. They're what a maintainer reads a report for.
      */
-    @Test public void aNameThatOnlyLooksLikeAFacebookHostStays() {
+    @Test public void aNameThatOnlyLooksLikeAThreadsHostStays() {
         String[] lines = {
-                "app: com.facebook.katana 580.0.0.51.74 (475019344)",
-                "at com.facebook.common.util.TriState.valueOf(TriState.java:12)",
-                "at com.facebook.messenger.app.Thread.run(Thread.java:1012)",
-                "notfacebook.com/page and facebook.community/page",
+                "app: com.instagram.barcelona 449.0.0.54.82 (511908382)",
+                "at com.instagram.barcelona.mainactivity.BarcelonaActivity.onCreate(BarcelonaActivity.java:12)",
+                "at com.instagram.android.app.Thread.run(Thread.java:1012)",
+                "notthreads.com/page and threads.community/page and myinstagram.company",
                 "HushThreads: hid 3 rows from the feed",
         };
         for (String line : lines) assertEquals(line, DiagnosticRedactor.redact(line));
@@ -251,10 +270,10 @@ public class DiagnosticRedactorTest {
     private static final String[] RUN_TOGETHER_NAMES = {
             "authentication", "Authentication", "X-Authentication", "Authentication-Info", "authenticator",
             "authkey", "AUTHKEY", "authcode", "mfa_authcode", "authdata", "authinfo", "authhash", "authn", "authz",
-            "basicauth", "preauth", "reauth", "userauth", "proxyauth", "twofactorauth", "fbauth",
-            "FBAuth", "XAuth", "HTTPAuth", "FBUID", "DEVICEGUID",
-            "ssid", "SSID", "fbsid", "asid", "SAPISID", "APISID", "HSID", "LSID", "__Secure-3PSID",
-            "fbuid", "cuid", "fbiid", "deviceguid",
+            "basicauth", "preauth", "reauth", "userauth", "proxyauth", "twofactorauth", "igauth",
+            "IGAuth", "XAuth", "HTTPAuth", "IGUID", "DEVICEGUID",
+            "ssid", "SSID", "igsid", "asid", "SAPISID", "APISID", "HSID", "LSID", "__Secure-3PSID",
+            "iguid", "cuid", "igiid", "deviceguid",
     };
 
     /** A no-break space, the long s and the Kelvin sign, built from code points so no editor swaps them. */
@@ -276,13 +295,13 @@ public class DiagnosticRedactorTest {
             {"\"PassWord\" : \"p\\\"ss w0rdF7\"", "w0rdF7"},
             {"ACCESS-TOKEN=EAABcasingG8.", "EAABcasingG8"},
             {"accessToken => 'arrowTokenH9'", "arrowTokenH9"},
-            {"fb_dtsg%3AdtsgEncodedI10%26next", "dtsgEncodedI10"},
-            {"Cookie: c_user=100012345678901; xs=12%3AxsCookieJ11; fr=frCookieJ12; sb=sbCookieJ13; datr=datrCookieJ14",
-                    "100012345678901", "xsCookieJ11", "frCookieJ12", "sbCookieJ13", "datrCookieJ14"},
-            {"set-cookie: fr=frSetCookieK15; expires=Sat, 26-Dec-2026 12:00:00 GMT; Max-Age=7776000; secure",
-                    "frSetCookieK15"},
-            {"{\"cookies\":[{\"name\":\"xs\",\"value\":\"xsListL16\"},{\"name\":\"fr\",\"value\":\"frListL17\"}]}",
-                    "xsListL16", "frListL17"},
+            {"csrftoken%3AcsrfEncodedI10%26next", "csrfEncodedI10"},
+            {"Cookie: ds_user_id=100012345678901; sessionid=100012345678901%3AsessCookieJ11%3A12; csrftoken=csrfCookieJ12; mid=midCookieJ13; ig_did=igDidCookieJ14",
+                    "100012345678901", "sessCookieJ11", "csrfCookieJ12", "midCookieJ13", "igDidCookieJ14"},
+            {"set-cookie: rur=rurSetCookieK15; expires=Sat, 26-Dec-2026 12:00:00 GMT; Max-Age=31536000; secure",
+                    "rurSetCookieK15"},
+            {"{\"cookies\":[{\"name\":\"sessionid\",\"value\":\"sessListL16\"},{\"name\":\"mid\",\"value\":\"midListL17\"}]}",
+                    "sessListL16", "midListL17"},
             {"Authorization: Bearer EAABbearerM18", "EAABbearerM18"},
             {"authorization: Basic dXNlcjpiYXNpY1NlY3JldE4xOQ==", "dXNlcjpiYXNpY1NlY3JldE4xOQ=="},
             {"AUTHORIZATION: Bearer\n    EAABfoldedO20", "EAABfoldedO20"},
@@ -293,7 +312,7 @@ public class DiagnosticRedactorTest {
             {"{\"authorization\":\"Bearer\\nEAABjsonBreakT25\"}", "EAABjsonBreakT25"},
             // What a review found still leaking, one row each.
             {"{\"name\":\"Authorization\",\"value\":\"Basic dXNlcjpsZWFrQmFzaWMx\"}", "dXNlcjpsZWFrQmFzaWMx"},
-            {"{\"name\":\"xs\",\"value\":\"12%3AxsPairLeak\"}", "xsPairLeak"},
+            {"{\"name\":\"rur\",\"value\":\"CLN%2CrurPairLeak\"}", "rurPairLeak"},
             {"Authorization -> Basic dXNlcjpsZWFrQXJyb3c=", "dXNlcjpsZWFrQXJyb3c="},
             {"retried with Basic dXNlcjpiYXJlQmFzaWM5", "dXNlcjpiYXJlQmFzaWM5"},
             {"{\"auth\":{\"a\":{\"b\":{\"c\":{\"access\":\"leakDeep4\"}}}}}", "leakDeep4"},
@@ -303,7 +322,7 @@ public class DiagnosticRedactorTest {
             {"{\"api_key\":\"apiKeyLeak7\"}", "apiKeyLeak7"},
             {"{\"pwd\":\"pwdLeak8\"}", "pwdLeak8"},
             {"advertising_id=adIdLeak9", "adIdLeak9"},
-            {"X-FB-Device-ID: deviceIdLeak10", "deviceIdLeak10"},
+            {"X-IG-Device-ID: deviceIdLeak10", "deviceIdLeak10"},
             {"{\"token \": \"spaceKeyLeak\"}", "spaceKeyLeak"},
             {"Authorization: Bearer EAABfirstHalf\nsecondHalfLeak", "EAABfirstHalf", "secondHalfLeak"},
             {"password=p@ss;w0rdSemiLeak", "w0rdSemiLeak"},
@@ -333,9 +352,9 @@ public class DiagnosticRedactorTest {
             // hold one of them with no edge.
             {"sid=sidLeakA1", "sidLeakA1"},
             {"{\"uid\":\"uidLeakA2\"}", "uidLeakA2"},
-            {"x-fb-iid: iidLeakA3", "iidLeakA3"},
+            {"x-ig-iid: iidLeakA3", "iidLeakA3"},
             {"auth=authLeakA4", "authLeakA4"},
-            {"fb_sid=fbSidLeakA5", "fbSidLeakA5"},
+            {"ig_sid=igSidLeakA5", "igSidLeakA5"},
             {"user-uid: userUidLeakA6", "userUidLeakA6"},
             {"auth_token=authTokenLeakA7", "authTokenLeakA7"},
             {"X-AUTH: xAuthLeakA8", "xAuthLeakA8"},
@@ -346,9 +365,10 @@ public class DiagnosticRedactorTest {
             {"x_authorization: xAuthorizationLeakA13", "xAuthorizationLeakA13"},
             {"session_id=sessionIdLeakA14", "sessionIdLeakA14"},
             {"access_token=accessTokenLeakA16", "accessTokenLeakA16"},
-            {"c_user=cUserLeakA17", "cUserLeakA17"},
-            {"fb_dtsg=dtsgLeakA18", "dtsgLeakA18"},
-            {"x-fb-device-id: deviceIdLeakA19", "deviceIdLeakA19"},
+            {"ds_user_id=dsUserLeakA17", "dsUserLeakA17"},
+            {"ig_did=igDidLeakA18", "igDidLeakA18"},
+            {"x-ig-device-id: deviceIdLeakA19", "deviceIdLeakA19"},
+            {"X-IG-Android-ID: android-androidIdLeakA32", "androidIdLeakA32"},
             {"{\"authorization\":{\"scheme\":\"x\",\"secret\":\"authObjLeakA20\"}}", "authObjLeakA20"},
             {"{\"auth\":{\"hint\":\"a\",\"value\":\"authObjLeakA21\"}}", "authObjLeakA21"},
             {"SID=upperSidLeakA22", "upperSidLeakA22"},
@@ -373,8 +393,8 @@ public class DiagnosticRedactorTest {
             {"çuser_id=nonAsciiUserW8", "nonAsciiUserW8"},
             {"猫access_token: {\"a\":\"nonAsciiBlockW9\"}", "nonAsciiBlockW9"},
             {"éhttps://example.com/nonAsciiUrlW10", "nonAsciiUrlW10"},
-            {"éupload.facebook.com/nonAsciiHostW11", "nonAsciiHostW11"},
-            {"at edge.facebook.comé", "edge.facebook"},
+            {"éi.instagram.com/nonAsciiHostW11", "nonAsciiHostW11"},
+            {"at graph.instagram.comé", "graph.instagram"},
             {"é@nonAsciiHandleW12", "nonAsciiHandleW12"},
             // An e followed by a combining double acute, which the JDK's \b also took for part of the word.
             {"e̋token=combiningMarkW13", "combiningMarkW13"},
@@ -390,11 +410,11 @@ public class DiagnosticRedactorTest {
             // An @ glued to a character outside ASCII in front of a name, a host or a CDN address.
             {"é@token=gluedTokenH1", "gluedTokenH1"},
             {"é@access_token=EAABgluedH2", "EAABgluedH2"},
-            {"é@c_user=gluedCUserH3", "gluedCUserH3"},
+            {"é@sessionid=gluedSessionH3", "gluedSessionH3"},
             {"я@user_id=gluedUserIdH4", "gluedUserIdH4"},
-            {"josé@facebook.com/gluedPathH5", "gluedPathH5"},
-            {"Ошибка@fbcdn.net/v/t1/1.jpg?oh=00_gluedOhH6&oe=gluedOeH7", "gluedOhH6", "gluedOeH7"},
-            {"日@xs=gluedXsH8", "gluedXsH8"},
+            {"josé@threads.com/gluedPathH5", "gluedPathH5"},
+            {"Ошибка@scontent.cdninstagram.com/v/t51/1.jpg?oh=00_gluedOhH6&oe=gluedOeH7", "gluedOhH6", "gluedOeH7"},
+            {"日@mid=gluedMidH8", "gluedMidH8"},
             {"٣@sid=gluedDigitH9", "gluedDigitH9"},
             {new String(Character.toChars(0x20000)) + "@token=gluedSupplementaryH10", "gluedSupplementaryH10"},
             {LONG_S + "@token=gluedLongSH11", "gluedLongSH11"},
@@ -402,7 +422,7 @@ public class DiagnosticRedactorTest {
             // An @ with nothing in front of it, in front of a name the redactor knows.
             {"@token=asciiHandleH13", "asciiHandleH13"},
             {"@access_token=asciiHandleH14", "asciiHandleH14"},
-            {"@c_user=asciiHandleH15", "asciiHandleH15"},
+            {"@sessionid=asciiHandleH15", "asciiHandleH15"},
             {"@user_id=asciiHandleH16", "asciiHandleH16"},
     });
 
@@ -518,7 +538,7 @@ public class DiagnosticRedactorTest {
         assertEquals("failed with Authorization=[omitted]\n\tat app.Foo.bar(Foo.java:1)",
                 DiagnosticRedactor.redact(emptyBearer));
 
-        String suppressed = "java.io.IOException: Cookie: xs=1\n"
+        String suppressed = "java.io.IOException: Cookie: sessionid=1\n"
                 + "\tSuppressed: java.io.IOException: close failed\n\t\tat app.Foo.close(Foo.java:9)";
         assertEquals("java.io.IOException: Cookie=[omitted]\n"
                 + "\tSuppressed: java.io.IOException: close failed\n\t\tat app.Foo.close(Foo.java:9)",
@@ -535,14 +555,14 @@ public class DiagnosticRedactorTest {
 
     /** Shapes the rules already handled, kept that way. */
     @Test public void shapesThatAlreadyWorkedStayWorking() {
-        assertEquals("Install beside Meta's apps: invoked 3, 1 found, 0 missing",
-                DiagnosticRedactor.redact("Install beside Meta's apps: invoked 3, 1 found, 0 missing"));
+        assertEquals("Hide ads: invoked 3, 1 found, 0 missing",
+                DiagnosticRedactor.redact("Hide ads: invoked 3, 1 found, 0 missing"));
         assertEquals("{ \"access_token=[omitted] }", DiagnosticRedactor.redact("{ \"access_token\" : \"EAABspaced12\" }"));
         assertEquals("access_token=[omitted]&next=1", DiagnosticRedactor.redact("access_token=EAABquery123&next=1"));
         assertEquals("Authorization=[omitted]", DiagnosticRedactor.redact("Authorization:Bearer EAABnospace12"));
         assertEquals("sent Bearer [omitted]", DiagnosticRedactor.redact("sent Bearer%20EAABpercent12"));
-        assertEquals("app: com.facebook.katana 580.0.0.51.74 (475019344) at 1790000000000",
-                DiagnosticRedactor.redact("app: com.facebook.katana 580.0.0.51.74 (475019344) at 1790000000000"));
+        assertEquals("app: com.instagram.barcelona 449.0.0.54.82 (511908382) at 1790000000000",
+                DiagnosticRedactor.redact("app: com.instagram.barcelona 449.0.0.54.82 (511908382) at 1790000000000"));
     }
 
     /**
@@ -552,15 +572,15 @@ public class DiagnosticRedactorTest {
      */
     @Test public void buildDataTimestampsAndStackFramesStay() {
         String[] lines = {
-                "app: com.facebook.katana 580.0.0.51.74 (475019344)",
+                "app: com.instagram.barcelona 449.0.0.54.82 (511908382)",
                 "abi: app arm64, process 64-bit, device arm64-v8a,armeabi-v7a",
                 "morphe: 0.3.4",
                 "generated_utc: 2026-09-28T12:00:00.000Z",
-                "downloads | 2026-09-28T12:00:01.234Z | main | ReelDownload | INFO | reel download tapped",
-                "\tat app.morphe.extension.hushthreads.download.Downloader.connect(Downloader.java:120)",
-                "\tat com.facebook.auth.login.AuthStateMachine.run(AuthStateMachine.java:44)",
+                "feed | 2026-09-28T12:00:01.234Z | main | FeedAds | INFO | hid 2 ads from the feed",
+                "\tat app.morphe.extension.hushthreads.settings.ReleaseTransport.get(ReleaseTransport.java:120)",
+                "\tat com.example.auth.login.AuthStateMachine.run(AuthStateMachine.java:44)",
                 "Caused by: java.net.SocketTimeoutException: timeout=30000 attempts=3",
-                "hide_paid_partnership=on, download_quality=best",
+                "hide_paid_partnership=on, check_for_releases=on",
                 "Basic settings opened",
         };
         for (String line : lines) assertEquals(line, DiagnosticRedactor.redact(line));
@@ -615,11 +635,11 @@ public class DiagnosticRedactorTest {
     /** An Authorization value ends at its line, so the stack trace printed after it stays. */
     @Test public void aStackTraceAfterAnAuthorizationLineStays() {
         String trace = "java.io.IOException: 401 for Authorization: Bearer EAABtraceU26\n"
-                + "\tat app.morphe.extension.hushthreads.download.Downloader.connect(Downloader.java:120)\n"
+                + "\tat app.morphe.extension.hushthreads.settings.ReleaseTransport.get(ReleaseTransport.java:120)\n"
                 + "\tat java.lang.Thread.run(Thread.java:1012)";
 
         assertEquals("java.io.IOException: 401 for Authorization=[omitted]\n"
-                + "\tat app.morphe.extension.hushthreads.download.Downloader.connect(Downloader.java:120)\n"
+                + "\tat app.morphe.extension.hushthreads.settings.ReleaseTransport.get(ReleaseTransport.java:120)\n"
                 + "\tat java.lang.Thread.run(Thread.java:1012)", DiagnosticRedactor.redact(trace));
     }
 
@@ -631,7 +651,9 @@ public class DiagnosticRedactorTest {
      */
     @Test public void noRuleUsesAWordEdgeTheTwoEnginesDrawApart() throws IOException {
         File root = new File("").getAbsoluteFile();
-        while (!new File(root, "provenance.json").isFile()) root = root.getParentFile();
+        while (!new File(root, "settings.gradle.kts").isFile() || !new File(root, "gradlew").isFile()) {
+            root = root.getParentFile();
+        }
         String source = new String(Files.readAllBytes(new File(root, "extensions/shared/library/src/main/java/"
                 + "app/morphe/extension/shared/diagnostics/DiagnosticRedactor.java").toPath()), StandardCharsets.UTF_8);
         Matcher word = Pattern.compile(".*\\\\\\\\[bBwW].*").matcher(source);
@@ -646,7 +668,9 @@ public class DiagnosticRedactorTest {
      */
     @Test public void noRuleUsesASpaceOrDigitClassTheTwoEnginesReadApart() throws IOException {
         File root = new File("").getAbsoluteFile();
-        while (!new File(root, "provenance.json").isFile()) root = root.getParentFile();
+        while (!new File(root, "settings.gradle.kts").isFile() || !new File(root, "gradlew").isFile()) {
+            root = root.getParentFile();
+        }
         String source = new String(Files.readAllBytes(new File(root, "extensions/shared/library/src/main/java/"
                 + "app/morphe/extension/shared/diagnostics/DiagnosticRedactor.java").toPath()), StandardCharsets.UTF_8);
         Matcher shorthand = Pattern.compile(".*\\\\\\\\[sSdD].*").matcher(source);

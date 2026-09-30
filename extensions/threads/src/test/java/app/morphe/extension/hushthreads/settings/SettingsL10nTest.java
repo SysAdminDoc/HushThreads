@@ -71,6 +71,9 @@ public class SettingsL10nTest {
         // Another class may have left a bundle's own sentences set; this one reads the catalog's.
         LogBufferManager.clearedMessage = null;
         LogBufferManager.nothingToClearMessage = null;
+        LogBufferManager.restoredMessage = null;
+        LogBufferManager.nothingToRestoreMessage = null;
+        LogBufferManager.restoreFailedMessage = null;
         LogBufferManager.copiedMessage = null;
     }
 
@@ -167,12 +170,12 @@ public class SettingsL10nTest {
             }
             assertEquals(language[0] + " still shows English: " + english, 0, english.size());
             assertTrue(language[0] + " doesn't show its own title for the first switch",
-                    shown.contains(table.get("Hide sponsored posts")));
+                    shown.contains(table.get("Hide ads")));
         }
     }
 
     /**
-     * Facebook sets its own language on the application, and its activities can carry another.
+     * Threads can set its own language on the application, and its activities can carry another.
      * The screen, its dialogs and their buttons all follow the application: with it in German
      * and the activity in English nothing the table translates is left English, and the other
      * way round nothing German shows. Built from the activity, the Back label, the export
@@ -180,7 +183,7 @@ public class SettingsL10nTest {
      */
     @Test
     @Config(qualifiers = "de")
-    public void anActivityInAnotherLanguageLeavesTheWholeScreenInFacebooksLanguage() throws Exception {
+    public void anActivityInAnotherLanguageLeavesTheWholeScreenInThreadsLanguage() throws Exception {
         Map<String, String> german = TranslationsForTests.of("de");
         List<String> english = new ArrayList<>();
         for (String text : everythingShown(ActivityInEnglish.class)) {
@@ -244,8 +247,8 @@ public class SettingsL10nTest {
             RuntimeEnvironment.setQualifiers("+" + language[0]);
             Map<String, String> table = language[1] == null ? null : TranslationsForTests.of(language[1]);
 
-            String single = PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.AD_PREFETCH));
-            String item = row(table, PatchFamily.AD_PREFETCH.staysWhilePaused);
+            String single = PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.REMOVE_AD_ID));
+            String item = row(table, PatchFamily.REMOVE_AD_ID.staysWhilePaused);
             assertNotNull(single);
             assertTrue(language[0] + " doesn't start with a capital: " + single,
                     Character.isUpperCase(single.codePointAt(0)));
@@ -271,20 +274,20 @@ public class SettingsL10nTest {
 
     /**
      * Each stays item is followed by its patch's name in brackets, so an item that was the name
-     * read it twice: "the AMOLED black theme (AMOLED black theme)". In English and in each shipped
-     * language the name shows once, in the brackets, and the item says what stays in with words of
-     * its own. Every word of the name in another order repeats it just the same: "the ad telemetry
-     * block (Block ad telemetry)".
+     * would read it twice: "the Remove the advertising ID patch (Remove the advertising ID)". In
+     * English and in each shipped language the name shows once, in the brackets, and the item says
+     * what stays in with words of its own. Every word of the name in another order repeats it just
+     * the same: "the sharing links sanitize step (Sanitize sharing links)".
      */
     @Test
     public void noStaysItemRepeatsItsPatchNameInAnyLanguage() {
         // The check has to be able to say yes, to the name itself and to its words reordered.
-        assertTrue(repeatsItsName("The AMOLED black theme (" + L10n.isolate("AMOLED black theme") + ").",
-                "AMOLED black theme"));
-        assertTrue(repeatsItsName("The ad telemetry block (" + L10n.isolate("Block ad telemetry") + ").",
-                "Block ad telemetry"));
-        assertFalse(repeatsItsName("The Audience Network block (" + L10n.isolate("Disable Audience Network") + ").",
-                "Disable Audience Network"));
+        assertTrue(repeatsItsName("The Remove the advertising ID patch (" + L10n.isolate("Remove the advertising ID")
+                + ").", "Remove the advertising ID"));
+        assertTrue(repeatsItsName("The sharing links sanitize step (" + L10n.isolate("Sanitize sharing links") + ").",
+                "Sanitize sharing links"));
+        assertFalse(repeatsItsName("The removed advertising ID permission (" + L10n.isolate("Remove the advertising ID")
+                + ").", "Remove the advertising ID"));
 
         List<String> repeats = new ArrayList<>();
         for (String language : new String[]{"en", "de", "es", "in-rID", "pt-rBR", "tr"}) {
@@ -362,8 +365,6 @@ public class SettingsL10nTest {
             notice.dismiss();
 
             addSettingsFileText(activity, rows, shown);
-            addDownloadSettingsText(shown);
-            addTypedNameToasts(rows, shown);
             addReleaseCheckText(shown);
 
             // What the diagnostics rows say in a toast, with nothing to export or clear. The quick
@@ -425,7 +426,7 @@ public class SettingsL10nTest {
         answer(activity, pick(activity, find(rows, "action_export_settings")), written);
         addToast(shown);
 
-        String key = Settings.HIDE_SPONSORED_POSTS.key;
+        String key = Settings.HIDE_ADS.key;
         String changesOne = "{\"format\":\"hushthreads-settings\",\"schema\":1,\"settings\":{\"" + key
                 + "\":false,\"a_later_switch\":true}}";
         AlertDialog preview = importPreview(activity, rows, changesOne);
@@ -439,7 +440,7 @@ public class SettingsL10nTest {
         preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
         settle();
         addToast(shown);
-        Settings.HIDE_SPONSORED_POSTS.resetToDefault();
+        Settings.HIDE_ADS.resetToDefault();
 
         String changesNothing = "{\"format\":\"hushthreads-settings\",\"schema\":1,\"settings\":{\"" + key + "\":true}}";
         AlertDialog unchanged = importPreview(activity, rows, changesNothing);
@@ -451,6 +452,9 @@ public class SettingsL10nTest {
         for (SettingsBackup.Reason reason : SettingsBackup.Reason.values()) {
             shown.add(SettingsBackupPreference.refusal(reason));
         }
+        // The toast after an import, for none and for several switches changed.
+        shown.add(SettingsBackupPreference.importedMessage(0));
+        shown.add(SettingsBackupPreference.importedMessage(2));
 
         // A phone with nothing to answer the picker.
         org.robolectric.shadows.ShadowApplication application =
@@ -467,49 +471,13 @@ public class SettingsL10nTest {
     }
 
     /**
-     * What the download settings say for every value, not only the one saved now: the quality
-     * row's summary, the sentence an import's preview gives for each quality, and the toast after
-     * an import that moves only the download settings.
-     */
-    private static void addDownloadSettingsText(Set<String> shown) {
-        for (app.morphe.extension.hushthreads.download.DownloadQuality quality
-                : app.morphe.extension.hushthreads.download.DownloadQuality.values()) {
-            shown.add(HushThreadsPreferenceFragment.qualityLabel(quality));
-            shown.add(HushThreadsPreferenceFragment.qualitySummary(quality));
-            shown.add(SettingsBackupPreference.qualitySentence(quality));
-            shown.add(SettingsBackupPreference.importedMessage(0, null, quality, null));
-            shown.add(SettingsBackupPreference.importedMessage(2, "Clips", quality, "Clip {date}"));
-        }
-        shown.add(HushThreadsPreferenceFragment.fileNameSummary("Reel {video_id}"));
-        shown.add(SettingsBackupPreference.fileNameSentence("Reel {video_id}"));
-        shown.add(SettingsBackupPreference.importedMessage(0, null, null, "Reel {video_id}"));
-    }
-
-    /**
-     * The toast the folder and file name rows raise when what's typed isn't a clean name, and they
-     * keep the one the saves will use instead.
-     */
-    private static void addTypedNameToasts(List<Preference> rows, Set<String> shown) {
-        String[][] typed = {{Settings.SAVE_FOLDER.key, "../Clips"}, {Settings.FILENAME_TEMPLATE.key, "Clip"}};
-        for (String[] row : typed) {
-            Preference preference = find(rows, row[0]);
-            assertFalse(row[0] + " kept " + row[1], preference.getOnPreferenceChangeListener()
-                    .onPreferenceChange(preference, row[1]));
-            ShadowLooper.idleMainLooper();
-            addToast(shown);
-        }
-        Settings.SAVE_FOLDER.resetToDefault();
-        Settings.FILENAME_TEMPLATE.resetToDefault();
-    }
-
-    /**
      * What the release check can say, not only what it says now: the status card's line for a newer
-     * release and for another Facebook target, and the Check now row on its way and for every way a
+     * release and for another Threads target, and the Check now row on its way and for every way a
      * try can end.
      */
     private static void addReleaseCheckText(Set<String> shown) {
-        shown.add(ReleaseCheck.statusLine("0.2.0", "582.0.0.40.70", "0.1.8", "580.0.0.51.74"));
-        shown.add(ReleaseCheck.statusLine("0.1.8", "580.0.0.51.74", "0.1.8", "577.0.0.50.72"));
+        shown.add(ReleaseCheck.statusLine("0.2.0", "451.0.0.40.70", "0.1.8", "449.0.0.54.82"));
+        shown.add(ReleaseCheck.statusLine("0.1.8", "449.0.0.54.82", "0.1.8", "447.0.0.50.72"));
         shown.add(ReleaseCheck.checkingSummary());
         shown.add(ReleaseCheck.idleSummary());
         for (ReleaseCheck.Result result : ReleaseCheck.Result.values()) {
@@ -594,7 +562,7 @@ public class SettingsL10nTest {
                 android.preference.DialogPreference dialog = (android.preference.DialogPreference) preference;
                 if (dialog.getDialogTitle() != null) shown.add(String.valueOf(dialog.getDialogTitle()));
                 if (dialog.getDialogMessage() != null) shown.add(String.valueOf(dialog.getDialogMessage()));
-                // Left unset, Android fills Cancel in the activity's language, not Facebook's.
+                // Left unset, Android fills Cancel in the activity's language, not Threads'.
                 if (dialog.getNegativeButtonText() != null) shown.add(String.valueOf(dialog.getNegativeButtonText()));
             }
             if (preference instanceof android.preference.EditTextPreference) {

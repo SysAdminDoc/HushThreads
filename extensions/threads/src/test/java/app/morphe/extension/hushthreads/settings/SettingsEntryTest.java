@@ -67,11 +67,11 @@ public class SettingsEntryTest {
     }
 
     /**
-     * Facebook sets its own language after the application starts, so the label published then
-     * is in the phone's. On a German phone with Facebook in English it stayed German next to an
-     * English screen. The next Facebook screen to resume labels it again in Facebook's language.
+     * Threads sets its own language after the application starts, so the label published then
+     * is in the phone's. On a German phone with Threads in English it stayed German next to an
+     * English screen. The next Threads screen to resume labels it again in Threads' language.
      */
-    @Test public void theShortcutIsLabelledAgainOnceFacebookHasSetItsLanguage() throws Exception {
+    @Test public void theShortcutIsLabelledAgainOnceThreadsHasSetItsLanguage() throws Exception {
         android.content.Context context = RuntimeEnvironment.getApplication();
         android.content.pm.ShortcutManager manager = context.getSystemService(android.content.pm.ShortcutManager.class);
         SettingsEntry.publishShortcutNow(context);
@@ -94,53 +94,53 @@ public class SettingsEntryTest {
     }
 
     /**
-     * Facebook pushes its own shortcuts at rank 0, and the platform ranks the newest push first, so
+     * Threads pushes its own shortcuts at rank 0, and the platform ranks the newest push first, so
      * the HushThreads one ended up last. A launcher that shows three or four of them, or two next
-     * to a notification, cut it off (#2). Facebook's push still goes through, and then the
-     * HushThreads shortcut goes back in front.
+     * to a notification, cut it off. Threads' push still goes through, and then the HushThreads
+     * shortcut goes back in front.
      */
-    @Test public void facebooksOwnPushLeavesTheHushThreadsShortcutFirst() throws Exception {
+    @Test public void threadsOwnPushLeavesTheHushThreadsShortcutFirst() throws Exception {
         android.content.Context context = RuntimeEnvironment.getApplication();
         android.content.pm.ShortcutManager manager = context.getSystemService(android.content.pm.ShortcutManager.class);
         SettingsEntry.publishShortcutNow(context);
         demote(context, manager, 3, "HushThreads settings");
 
-        SettingsEntry.pushDynamicShortcut(manager, facebookShortcut(context, "notifications"));
+        SettingsEntry.pushDynamicShortcut(manager, threadsShortcut(context, "compose"));
         app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
 
-        assertNotNull("Facebook's own push was lost", shortcut(manager, "notifications"));
-        org.junit.Assert.assertEquals("the HushThreads shortcut stayed behind Facebook's",
+        assertNotNull("Threads' own push was lost", shortcut(manager, "compose"));
+        org.junit.Assert.assertEquals("the HushThreads shortcut stayed behind Threads' own",
                 0, shortcut(manager, SettingsEntry.SHORTCUT_ID).getRank());
     }
 
-    /** An update of Facebook's shortcuts can rank them again too, and its answer is Facebook's. */
-    @Test public void facebooksUpdateKeepsItsAnswerAndTheHushThreadsShortcutFirst() throws Exception {
+    /** An update of Threads' shortcuts can rank them again too, and its answer is Threads' own. */
+    @Test public void threadsUpdateKeepsItsAnswerAndTheHushThreadsShortcutFirst() throws Exception {
         android.content.Context context = RuntimeEnvironment.getApplication();
         android.content.pm.ShortcutManager manager = context.getSystemService(android.content.pm.ShortcutManager.class);
         SettingsEntry.publishShortcutNow(context);
-        manager.pushDynamicShortcut(facebookShortcut(context, "friends"));
+        manager.pushDynamicShortcut(threadsShortcut(context, "search"));
         demote(context, manager, 1, "HushThreads settings");
 
         boolean updated = SettingsEntry.updateShortcuts(manager,
-                java.util.Collections.singletonList(facebookShortcut(context, "friends")));
+                java.util.Collections.singletonList(threadsShortcut(context, "search")));
         app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
 
-        assertTrue("Facebook's update answered false", updated);
+        assertTrue("Threads' update answered false", updated);
         org.junit.Assert.assertEquals(0, shortcut(manager, SettingsEntry.SHORTCUT_ID).getRank());
     }
 
     /** A call that replaces every dynamic shortcut took the HushThreads one with it. */
-    @Test public void facebookReplacingItsShortcutsPublishesTheHushThreadsOneAgain() throws Exception {
+    @Test public void threadsReplacingItsShortcutsPublishesTheHushThreadsOneAgain() throws Exception {
         android.content.Context context = RuntimeEnvironment.getApplication();
         android.content.pm.ShortcutManager manager = context.getSystemService(android.content.pm.ShortcutManager.class);
         SettingsEntry.publishShortcutNow(context);
 
         boolean set = SettingsEntry.setDynamicShortcuts(manager,
-                java.util.Collections.singletonList(facebookShortcut(context, "reels")));
+                java.util.Collections.singletonList(threadsShortcut(context, "activity")));
         app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
 
-        assertTrue("Facebook's replacement answered false", set);
-        assertNotNull("Facebook's own shortcut was lost", shortcut(manager, "reels"));
+        assertTrue("Threads' replacement answered false", set);
+        assertNotNull("Threads' own shortcut was lost", shortcut(manager, "activity"));
         android.content.pm.ShortcutInfo ours = shortcut(manager, SettingsEntry.SHORTCUT_ID);
         assertNotNull("the HushThreads shortcut stayed gone", ours);
         org.junit.Assert.assertEquals(0, ours.getRank());
@@ -161,9 +161,9 @@ public class SettingsEntryTest {
     }
 
     /**
-     * The process Facebook pushes from may not have Facebook's language yet, so moving the shortcut
+     * The process Threads pushes from may not have Threads' language yet, so moving the shortcut
      * back keeps the label it has. Relabelled in the phone's language there, it flipped between
-     * the two languages each time Facebook pushed.
+     * the two languages each time Threads pushed.
      */
     @Test public void movingTheShortcutBackKeepsItsLabel() {
         android.content.Context context = RuntimeEnvironment.getApplication();
@@ -177,7 +177,7 @@ public class SettingsEntryTest {
         org.junit.Assert.assertEquals(0, shortcut(manager, SettingsEntry.SHORTCUT_ID).getRank());
     }
 
-    /** What the platform leaves after Facebook's pushes rank ahead of the HushThreads shortcut. */
+    /** What the platform leaves after Threads' pushes rank ahead of the HushThreads shortcut. */
     private static void demote(android.content.Context context, android.content.pm.ShortcutManager manager,
                                int rank, String label) {
         manager.pushDynamicShortcut(new android.content.pm.ShortcutInfo.Builder(context, SettingsEntry.SHORTCUT_ID)
@@ -189,7 +189,7 @@ public class SettingsEntryTest {
         org.junit.Assert.assertEquals(rank, shortcut(manager, SettingsEntry.SHORTCUT_ID).getRank());
     }
 
-    private static android.content.pm.ShortcutInfo facebookShortcut(android.content.Context context, String id) {
+    private static android.content.pm.ShortcutInfo threadsShortcut(android.content.Context context, String id) {
         return new android.content.pm.ShortcutInfo.Builder(context, id)
                 .setShortLabel(id)
                 .setIntent(new Intent(Intent.ACTION_VIEW))
@@ -205,7 +205,62 @@ public class SettingsEntryTest {
     }
 
     /**
-     * Signed out, the shortcut's screen lands on the login screen, and Facebook replaces that with
+     * The shortcut starts Threads' own launcher activity by name, with the extra that asks for the
+     * screen. A component Threads doesn't have would leave the shortcut greyed out on the launcher.
+     */
+    @Test public void theShortcutStartsThreadsLauncherActivity() {
+        android.content.Context context = RuntimeEnvironment.getApplication();
+        android.content.pm.ShortcutManager manager = context.getSystemService(android.content.pm.ShortcutManager.class);
+        SettingsEntry.publishShortcutNow(context);
+
+        Intent intent = shortcut(manager, SettingsEntry.SHORTCUT_ID).getIntent();
+        assertNotNull("the shortcut carries no intent", intent);
+        org.junit.Assert.assertEquals(new android.content.ComponentName(context.getPackageName(),
+                "com.instagram.barcelona.mainactivity.BarcelonaActivity"), intent.getComponent());
+        assertTrue("the shortcut doesn't ask for the screen",
+                intent.getBooleanExtra(SettingsEntry.EXTRA_OPEN_SETTINGS, false));
+    }
+
+    /**
+     * "Additional settings in the app" on Android's App info page starts the launcher activity with
+     * ACTION_APPLICATION_PREFERENCES, and the screen opens over it. The action is spent, so a
+     * recreated activity doesn't ask again and Threads goes on as if started from its icon.
+     */
+    @Test public void appInfosAdditionalSettingsOpensTheScreen() {
+        Intent fromAppInfo = new Intent(Intent.ACTION_APPLICATION_PREFERENCES);
+        ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class, fromAppInfo).create();
+        SettingsEntry.onActivityCreate(activity.get());
+        activity.start().resume();
+        ShadowLooper.idleMainLooper();
+
+        assertNotNull("App info's request didn't open the screen", dialogOver(activity.get()));
+        org.junit.Assert.assertEquals(Intent.ACTION_MAIN, activity.get().getIntent().getAction());
+    }
+
+    /**
+     * With Threads already running, App info's request reaches the activity through onNewIntent,
+     * and the screen opens when it resumes. A plain launch from the icon opens nothing.
+     */
+    @Test public void appInfosRequestOpensTheScreenOverARunningThreads() {
+        ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class,
+                new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)).create();
+        SettingsEntry.onActivityCreate(activity.get());
+        activity.start().resume();
+        ShadowLooper.idleMainLooper();
+        assertNull("a launch from the icon opened the screen", dialogOver(activity.get()));
+
+        activity.pause();
+        Intent fromAppInfo = new Intent(Intent.ACTION_APPLICATION_PREFERENCES);
+        SettingsEntry.onNewIntent(activity.get(), fromAppInfo);
+        activity.resume();
+        ShadowLooper.idleMainLooper();
+
+        assertNotNull("App info's request didn't open the screen", dialogOver(activity.get()));
+        org.junit.Assert.assertEquals(Intent.ACTION_MAIN, fromAppInfo.getAction());
+    }
+
+    /**
+     * Signed out, the shortcut's screen lands on the login screen, and Threads replaces that with
      * its logged-out screen a moment later. Android resumes the replacement before it destroys the
      * login screen, so the replacement is already in front when the request comes back, and it
      * never resumes again to pick it up. On a phone that left the request pending until it expired.
@@ -229,7 +284,7 @@ public class SettingsEntryTest {
 
     /**
      * The three ways a person leaves the screen (the title bar's arrow, the Back key and Back on the
-     * recovery page) have to tell the entry so, or the screen follows its host to the next Facebook
+     * recovery page) have to tell the entry so, or the screen follows its host to the next Threads
      * screen as if nobody had closed it. The request is still inside its window here, so a close
      * the entry didn't hear about would reopen it.
      */

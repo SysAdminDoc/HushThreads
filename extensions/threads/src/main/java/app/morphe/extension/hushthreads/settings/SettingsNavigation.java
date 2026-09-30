@@ -85,28 +85,16 @@ final class SettingsNavigation extends BaseAdapter {
         source = screen.getRootAdapter();
         Context context = screen.getContext();
         // Stable English route IDs survive a locale change; the displayed names are localized.
-        section("Opening Facebook", L10n.t("Opening Facebook"), L10n.t("Marketplace mode and your start tab"), SettingsIcons.OPENING, true);
-        section("News feed", L10n.t("News feed"), L10n.t("Ads, suggestions and word filters"), SettingsIcons.FEED, true);
-        section("Stories", L10n.t("Stories"), L10n.t("Suggestions, saving, auto-advance and viewing anonymously"), SettingsIcons.STORIES, true);
-        section("Reels and Watch", L10n.t("Reels and Watch"), L10n.t("Cleaner reels and video controls"), SettingsIcons.REELS, true);
-        section("Playback", L10n.t("Playback"), L10n.t("Tap to play, quality and resume"), SettingsIcons.PLAYBACK, true);
-        section("Downloads", L10n.t("Downloads"), L10n.t("Quality, format and file names"), SettingsIcons.DOWNLOADS, true);
-        section("Comments", L10n.t("Comments"), null, SettingsIcons.COMMENTS, false);
-        section("Writing", L10n.t("Writing"), null, SettingsIcons.WRITING, false);
-        section("Chats", L10n.t("Chats"), null, SettingsIcons.CHATS, false);
-        section("Menu", L10n.t("Menu"), null, SettingsIcons.MENU, false);
-        section("Search", L10n.t("Search"), null, SettingsIcons.SEARCH, false);
-        section("Marketplace", L10n.t("Marketplace"), null, SettingsIcons.MARKETPLACE, false);
-        section("Notifications", L10n.t("Notifications"), null, SettingsIcons.NOTIFICATIONS, false);
+        section("Feed", L10n.t("Feed"), L10n.t("Sponsored posts in For you and Following"), SettingsIcons.FEED, true);
+        section("Privacy", L10n.t("Privacy"), L10n.t("Tracking in shared links and analytics uploads"), SettingsIcons.BLOCK, true);
         section("Links", L10n.t("Links"), null, SettingsIcons.LINKS, false);
         section("Updates", L10n.t("Updates"), null, SettingsIcons.UPDATES, false);
-        section("Appearance", L10n.t("Appearance"), null, SettingsIcons.APPEARANCE, false);
         section("Set when you patched", L10n.t("Set when you patched"), null, SettingsIcons.PATCHED, false);
         section("Pause, backup and diagnostics", L10n.t("Pause, backup and diagnostics"), null, SettingsIcons.TOOLS, false);
         section("About", L10n.t("About"), null, SettingsIcons.ABOUT, false);
         browse = new HushThreadsPreferenceFragment.Heading(context);
         browse.setTitle(L10n.t("Browse settings"));
-        more = link(context, L10n.t("More settings"), L10n.t("Additional Facebook preferences"), SettingsIcons.SETTINGS);
+        more = link(context, L10n.t("More settings"), L10n.t("Links, updates, backup and more"), SettingsIcons.SETTINGS);
         more.setOnPreferenceClickListener(ignored -> { navigate(MORE); return true; });
         empty = new HushThreadsPreferenceFragment.Row(context);
         empty.setTitle(L10n.t("No matching settings"));
@@ -322,12 +310,12 @@ final class SettingsNavigation extends BaseAdapter {
             pageStatus.setSummary(paused == nextPaused
                     ? L10n.t("Until you resume, every switch but Debug logging acts as if it were off. "
                     + "Changes made when you patched stay in.")
-                    : paused ? L10n.t("HushThreads turns back on when Facebook restarts.")
-                    : L10n.t("HushThreads pauses when Facebook restarts."));
+                    : paused ? L10n.t("HushThreads turns back on when Threads restarts.")
+                    : L10n.t("HushThreads pauses when Threads restarts."));
             pageStatus.setIcon(SettingsIcons.icon(context, paused ? SettingsIcons.PAUSE : SettingsIcons.PATCHED,
                     paused ? palette().summary : palette().heading));
         } else if (showsRestartOwed()) {
-            pageStatus.setTitle(L10n.t("A change here applies after Facebook restarts."));
+            pageStatus.setTitle(L10n.t("A change here applies after Threads restarts."));
             pageStatus.setSummary(null);
             pageStatus.setIcon(SettingsIcons.icon(context, SettingsIcons.UPDATES, palette().heading));
         } else {
@@ -408,7 +396,7 @@ final class SettingsNavigation extends BaseAdapter {
         } else if (paused && nextPaused && HushThreadsPause.reason() == HushThreadsPause.Reason.SWITCH
                 && !markerLeft()) {
             // A marker Resume couldn't remove keeps the card's own line, which says what to do.
-            summary.setText(L10n.t("Your choices are saved. Tap Resume, then restart Facebook."));
+            summary.setText(L10n.t("Your choices are saved. Tap Resume, then restart Threads."));
         }
         bindAction(row, paused, nextPaused);
     }
@@ -474,7 +462,7 @@ final class SettingsNavigation extends BaseAdapter {
         return sections;
     }
 
-    private static ScreenColors palette() { return ScreenColors.shown == null ? ScreenColors.DEFAULT : ScreenColors.shown; }
+    private static ScreenColors palette() { return ScreenColors.DEFAULT; }
 
     private static final class Section {
         final String id;

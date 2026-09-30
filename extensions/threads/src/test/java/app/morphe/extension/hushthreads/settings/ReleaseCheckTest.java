@@ -82,11 +82,11 @@ public class ReleaseCheckTest {
     private static final long HOUR = TimeUnit.HOURS.toMillis(1);
     private static final long DAY = TimeUnit.DAYS.toMillis(1);
 
-    /** The 0.1.8 release's notes on GitHub, as they are. */
-    private static final String NOTES_0_1_8 = "HushThreads 0.1.8 fixes the known issue from 0.1.7: Clean up Reels now "
-            + "takes the Follow button off reels on the Reels tab.\n\nChecked on a signed-in test phone (Galaxy S22, "
-            + "Android 16) before release.\n\nAll 22 patches applied without force to Facebook 580.0.0.51.74 and "
-            + "577.0.0.50.72, with no manifest changes. Local checks passed: 471 extension tests, 171 patch tests and "
+    /** Release notes in the shape the 0.1.8 release's took on GitHub. */
+    private static final String NOTES_0_1_8 = "HushThreads 0.1.8 fixes the known issue from 0.1.7: Hide ads now "
+            + "finds sponsored posts in the Following feed too.\n\nChecked on a signed-in test phone (Galaxy S22, "
+            + "Android 16) before release.\n\nAll 6 patches applied without force to Threads 449.0.0.54.82 and "
+            + "447.0.0.50.72, with no manifest changes. Local checks passed: 471 extension tests, 171 patch tests and "
             + "both Android lints.\n\nRequires Morphe Manager 1.32.0 or newer.\n";
 
     private static final String NEWER = "HushThreads " + L10n.isolate("0.2.0") + " is out. Update it in Morphe Manager.";
@@ -101,7 +101,7 @@ public class ReleaseCheckTest {
         github = new FakeGitHub();
         ReleaseCheck.transport = github;
         ReleaseCheck.versionForTests = "0.1.8";
-        ReleaseCheck.facebookForTests = "580.0.0.51.74";
+        ReleaseCheck.threadsForTests = "449.0.0.54.82";
     }
 
     @After
@@ -110,10 +110,9 @@ public class ReleaseCheckTest {
         ReleaseCheck.transport = original;
         ReleaseCheck.deadlineMs = originalDeadline;
         ReleaseCheck.versionForTests = null;
-        ReleaseCheck.facebookForTests = null;
+        ReleaseCheck.threadsForTests = null;
         Settings.CHECK_FOR_RELEASES.resetToDefault();
         PatchFamily.inBuildForTests = null;
-        ScreenColors.shown = null;
         PauseForTests.resume();
         ShadowToast.reset();
     }
@@ -125,24 +124,24 @@ public class ReleaseCheckTest {
     // ---- What an answer says -------------------------------------------------------------------
 
     @Test
-    public void aNewerReleaseIsNamedOnTheCardWithTheFacebookItTargets() {
-        github.then(Reply.release("v0.2.0", "HushThreads v0.2.0 targets Facebook 582.0.0.40.70 "
-                + "(com.facebook.katana), and 580.0.0.51.74 still works.\n\nMore notes."));
+    public void aNewerReleaseIsNamedOnTheCardWithTheThreadsItTargets() {
+        github.then(Reply.release("v0.2.0", "HushThreads v0.2.0 targets Threads 451.0.0.40.70 "
+                + "(com.instagram.barcelona), and 449.0.0.54.82 still works.\n\nMore notes."));
         ReleaseCheck.run(NOW);
 
         assertEquals(NOW, (long) Stored.CHECKED_AT.get());
         assertEquals("OK", Stored.RESULT.get());
         assertEquals("0.2.0", Stored.NEWEST.get());
-        assertEquals("582.0.0.40.70", Stored.TARGET.get());
-        assertEquals(NEWER + " It targets Facebook " + L10n.isolate("582.0.0.40.70") + ".", ReleaseCheck.statusLine());
+        assertEquals("451.0.0.40.70", Stored.TARGET.get());
+        assertEquals(NEWER + " It targets Threads " + L10n.isolate("451.0.0.40.70") + ".", ReleaseCheck.statusLine());
         assertEquals(NEWER, ReleaseCheck.checkNowSummary());
 
-        // Once HushThreads is 0.2.0 the line goes, with no new try, and only the other Facebook stays.
+        // Once HushThreads is 0.2.0 the line goes, with no new try, and only the other Threads stays.
         ReleaseCheck.versionForTests = "0.2.0";
-        assertEquals("HushThreads " + L10n.isolate("0.2.0") + " targets Facebook " + L10n.isolate("582.0.0.40.70") + ".",
+        assertEquals("HushThreads " + L10n.isolate("0.2.0") + " targets Threads " + L10n.isolate("451.0.0.40.70") + ".",
                 ReleaseCheck.statusLine());
         assertEquals("You have the newest HushThreads release.", ReleaseCheck.checkNowSummary());
-        ReleaseCheck.facebookForTests = "582.0.0.40.70";
+        ReleaseCheck.threadsForTests = "451.0.0.40.70";
         assertNull(ReleaseCheck.statusLine());
         assertEquals(1, github.asked.size());
     }
@@ -153,7 +152,7 @@ public class ReleaseCheckTest {
         ReleaseCheck.run(NOW);
 
         assertEquals("0.1.8", Stored.NEWEST.get());
-        assertEquals("the notes' first target sentence, its newest version", "580.0.0.51.74", Stored.TARGET.get());
+        assertEquals("the notes' first target sentence, its newest version", "449.0.0.54.82", Stored.TARGET.get());
         assertNull(ReleaseCheck.statusLine());
         assertEquals("You have the newest HushThreads release.", ReleaseCheck.checkNowSummary());
     }
@@ -169,21 +168,21 @@ public class ReleaseCheckTest {
     }
 
     @Test
-    public void aTargetOtherThanTheRunningFacebookIsNamed() {
-        ReleaseCheck.facebookForTests = "577.0.0.50.72";
+    public void aTargetOtherThanTheRunningThreadsIsNamed() {
+        ReleaseCheck.threadsForTests = "447.0.0.50.72";
         github.then(Reply.release("v0.1.8", NOTES_0_1_8));
         ReleaseCheck.run(NOW);
 
-        assertEquals("HushThreads " + L10n.isolate("0.1.8") + " targets Facebook " + L10n.isolate("580.0.0.51.74") + ".",
+        assertEquals("HushThreads " + L10n.isolate("0.1.8") + " targets Threads " + L10n.isolate("449.0.0.54.82") + ".",
                 ReleaseCheck.statusLine());
-        // Notes that name no Facebook build say nothing about one.
+        // Notes that name no Threads build say nothing about one.
         ReleaseCheckForTests.forget();
         github.then(Reply.release("v0.1.8", "Bug fixes."));
         ReleaseCheck.run(NOW);
         assertEquals("", Stored.TARGET.get());
         assertNull(ReleaseCheck.statusLine());
-        // And a Facebook version this can't read isn't taken for another one.
-        ReleaseCheck.facebookForTests = "Unknown";
+        // And a Threads version this can't read isn't taken for another one.
+        ReleaseCheck.threadsForTests = "Unknown";
         github.then(Reply.release("v0.1.8", NOTES_0_1_8));
         ReleaseCheck.run(NOW + DAY);
         assertNull(ReleaseCheck.statusLine());
@@ -348,11 +347,11 @@ public class ReleaseCheckTest {
         // a day later it asks again.
         Settings.CHECK_FOR_RELEASES.save(true);
         int asked = github.asked.size();
-        ReleaseCheck.onFacebookStart(NOW + HOUR);
+        ReleaseCheck.onThreadsStart(NOW + HOUR);
         ReleaseCheckForTests.settle();
         assertEquals("a failed try was tried again within the day", asked, github.asked.size());
         github.then(Reply.release("v0.1.8", NOTES_0_1_8));
-        ReleaseCheck.onFacebookStart(NOW + DAY);
+        ReleaseCheck.onThreadsStart(NOW + DAY);
         ReleaseCheckForTests.settle();
         assertEquals(asked + 1, github.asked.size());
         assertEquals("OK", Stored.RESULT.get());
@@ -383,7 +382,7 @@ public class ReleaseCheckTest {
         // The limited try at NOW keeps the next start from asking for a day.
         Settings.CHECK_FOR_RELEASES.save(true);
         int asked = github.asked.size();
-        ReleaseCheck.onFacebookStart(NOW + 23 * HOUR);
+        ReleaseCheck.onThreadsStart(NOW + 23 * HOUR);
         ReleaseCheckForTests.settle();
         assertEquals(asked, github.asked.size());
     }
@@ -449,37 +448,37 @@ public class ReleaseCheckTest {
     @Test
     public void offByDefaultAndThenAtMostOnceADayOnAStart() {
         assertFalse(Settings.CHECK_FOR_RELEASES.defaultValue);
-        ReleaseCheck.onFacebookStart(NOW);
+        ReleaseCheck.onThreadsStart(NOW);
         ReleaseCheckForTests.settle();
         assertTrue("a start asked with the switch off", github.asked.isEmpty());
         assertEquals(0L, (long) Stored.CHECKED_AT.get());
 
         Settings.CHECK_FOR_RELEASES.save(true);
         github.then(Reply.release("v0.1.8", NOTES_0_1_8));
-        ReleaseCheck.onFacebookStart(NOW);
+        ReleaseCheck.onThreadsStart(NOW);
         ReleaseCheckForTests.settle();
         assertEquals(1, github.asked.size());
 
-        ReleaseCheck.onFacebookStart(NOW + HOUR);
-        ReleaseCheck.onFacebookStart(NOW + DAY - 1);
+        ReleaseCheck.onThreadsStart(NOW + HOUR);
+        ReleaseCheck.onThreadsStart(NOW + DAY - 1);
         ReleaseCheckForTests.settle();
         assertEquals("asked again within the day", 1, github.asked.size());
 
         // Paused, the switch answers off: nothing asked, a day later or not.
         PauseForTests.pause(HushThreadsPause.Reason.SWITCH);
-        ReleaseCheck.onFacebookStart(NOW + 2 * DAY);
+        ReleaseCheck.onThreadsStart(NOW + 2 * DAY);
         ReleaseCheckForTests.settle();
         assertEquals(1, github.asked.size());
         PauseForTests.resume();
 
         // Before the settings are ready, nothing is read and nothing asked.
-        SettingsContextRule.withoutContext(() -> ReleaseCheck.onFacebookStart(NOW + 3 * DAY));
+        SettingsContextRule.withoutContext(() -> ReleaseCheck.onThreadsStart(NOW + 3 * DAY));
         ReleaseCheckForTests.settle();
         assertEquals(1, github.asked.size());
 
         // A clock set back past the last try doesn't hold every check off until it comes round.
         github.then(Reply.release("v0.1.8", NOTES_0_1_8));
-        ReleaseCheck.onFacebookStart(NOW - 30 * DAY);
+        ReleaseCheck.onThreadsStart(NOW - 30 * DAY);
         ReleaseCheckForTests.settle();
         assertEquals(2, github.asked.size());
     }
@@ -491,7 +490,7 @@ public class ReleaseCheckTest {
         github.then(Reply.failing(new IOException("Connection reset")));
         ReleaseCheck.run(NOW);
 
-        // A Facebook closed during that request would have found NOW kept at its next start.
+        // A Threads closed during that request would have found NOW kept at its next start.
         assertEquals(NOW, keptWhenAsked.get());
         assertFalse(ReleaseCheck.due(NOW + HOUR, Stored.CHECKED_AT.get()));
         assertTrue(ReleaseCheck.due(NOW + DAY, Stored.CHECKED_AT.get()));
@@ -582,14 +581,15 @@ public class ReleaseCheckTest {
             assertEquals("Check now sits under its switch", toggle + 1, checkNow);
             assertTrue("the release check is drawn below the Pause row", checkNow < pause);
             assertEquals(ReleaseCheck.idleSummary(), String.valueOf(rows.get(checkNow).getSummary()));
-            assertEquals(-1, indexOf(rows, Settings.STOP_UPDATE_PROMPTS.key));
         }
 
-        // With Stop update prompts in the build, Facebook's own prompts come first under Updates.
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.UPDATE_PROMPTS);
+        // With every patch in, the release check still sits above the Pause row.
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             List<Preference> rows = rows(open(controller));
-            assertEquals(indexOf(rows, Settings.STOP_UPDATE_PROMPTS.key) + 1, indexOf(rows, Settings.CHECK_FOR_RELEASES.key));
+            int checkNow = indexOf(rows, HushThreadsPreferenceFragment.CHECK_NOW);
+            assertEquals(indexOf(rows, Settings.CHECK_FOR_RELEASES.key) + 1, checkNow);
+            assertTrue(checkNow < indexOf(rows, BaseSettings.PAUSED.key));
         }
     }
 
@@ -603,7 +603,7 @@ public class ReleaseCheckTest {
                 throw new AssertionError(interrupted);
             }
         };
-        github.then(Reply.release("v0.2.0", NOTES_0_1_8.replace("580.0.0.51.74 and 577.0.0.50.72", "580.0.0.51.74")));
+        github.then(Reply.release("v0.2.0", NOTES_0_1_8.replace("449.0.0.54.82 and 447.0.0.50.72", "449.0.0.54.82")));
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             HushThreadsPreferenceFragment page = open(controller);
             Preference card = rows(page).get(0);
@@ -664,13 +664,13 @@ public class ReleaseCheckTest {
         Settings.CHECK_FOR_RELEASES.save(true);
         assertEquals(Collections.singletonList("switch: hushthreads_check_releases=on"), ReleaseCheck.reportLines(false));
 
-        github.then(Reply.release("v0.2.0", "This release targets Facebook 582.0.0.40.70."));
+        github.then(Reply.release("v0.2.0", "This release targets Threads 451.0.0.40.70."));
         ReleaseCheck.run(NOW);
         List<String> lines = ReleaseCheck.reportLines(false);
         assertEquals(Arrays.asList(
                 "switch: hushthreads_check_releases=on",
                 "last try: 2026-09-21 14:13 UTC, result: ok",
-                "latest release: 0.2.0, targets Facebook 582.0.0.40.70"), lines);
+                "latest release: 0.2.0, targets Threads 451.0.0.40.70"), lines);
         assertEquals("switch: disabled while paused (saved hushthreads_check_releases=on)",
                 ReleaseCheck.reportLines(true).get(0));
 
@@ -689,25 +689,25 @@ public class ReleaseCheckTest {
     @Test
     public void targetsAreReadTheWaysReleaseNotesSayThem() {
         // The bundle index's description, the GitHub release's notes and the changelog.
-        assertEquals("580.0.0.51.74", ReleaseCheck.targetIn("HushThreads v0.1.8 targets Facebook 580.0.0.51.74 "
-                + "(com.facebook.katana), and 577.0.0.50.72 still works.\n\nClean up Reels now takes the Follow button off."));
-        assertEquals("580.0.0.51.74", ReleaseCheck.targetIn(NOTES_0_1_8));
-        assertEquals("580.0.0.51.74", ReleaseCheck.targetIn("* **Facebook:** The 22 patches target Facebook "
-                + "580.0.0.51.74 and 577.0.0.50.72. Morphe Manager 1.32.0 or newer is required."));
-        assertEquals("580.0.0.51.74", ReleaseCheck.targetIn("- All 13 patches applied to Facebook 580.0.0.51.74 and "
-                + "577.0.0.50.72 without forced compatibility mode or manifest changes."));
+        assertEquals("449.0.0.54.82", ReleaseCheck.targetIn("HushThreads v0.1.8 targets Threads 449.0.0.54.82 "
+                + "(com.instagram.barcelona), and 447.0.0.50.72 still works.\n\nHide ads now covers the Following feed."));
+        assertEquals("449.0.0.54.82", ReleaseCheck.targetIn(NOTES_0_1_8));
+        assertEquals("449.0.0.54.82", ReleaseCheck.targetIn("* **Threads:** The 6 patches target Threads "
+                + "449.0.0.54.82 and 447.0.0.50.72. Morphe Manager 1.32.0 or newer is required."));
+        assertEquals("449.0.0.54.82", ReleaseCheck.targetIn("- All 13 patches applied to Threads 449.0.0.54.82 and "
+                + "447.0.0.50.72 without forced compatibility mode or manifest changes."));
         // The newest version the sentence names, whichever comes first.
-        assertEquals("580.0.0.51.74", ReleaseCheck.targetIn("It targets Facebook 577.0.0.50.72 and 580.0.0.51.74."));
+        assertEquals("449.0.0.54.82", ReleaseCheck.targetIn("It targets Threads 447.0.0.50.72 and 449.0.0.54.82."));
         // The first sentence that says so counts.
-        assertEquals("582.0.0.40.70", ReleaseCheck.targetIn("This targets Facebook 582.0.0.40.70. It no longer "
-                + "targets Facebook 583.0.0.1.1, oddly."));
+        assertEquals("451.0.0.40.70", ReleaseCheck.targetIn("This targets Threads 451.0.0.40.70. It no longer "
+                + "targets Threads 452.0.0.1.1, oddly."));
 
         assertNull(ReleaseCheck.targetIn(""));
-        assertNull(ReleaseCheck.targetIn("Facebook 580.0.0.51.74 broke the reel button."));
-        assertNull(ReleaseCheck.targetIn("It targets Facebook users who post reels."));
+        assertNull(ReleaseCheck.targetIn("Threads 449.0.0.54.82 broke the quote button."));
+        assertNull(ReleaseCheck.targetIn("It targets Threads users who post videos."));
         assertNull("a version in the next sentence isn't a target",
-                ReleaseCheck.targetIn("This release targets Facebook. 582.0.0.40.70 is out too."));
-        assertNull("a version code isn't a version", ReleaseCheck.targetIn("It targets Facebook (vc 475019344)."));
+                ReleaseCheck.targetIn("This release targets Threads. 451.0.0.40.70 is out too."));
+        assertNull("a version code isn't a version", ReleaseCheck.targetIn("It targets Threads (vc 475019344)."));
         assertNull(ReleaseCheck.targetIn("Checked on a Galaxy S22 with Android 16."));
     }
 
@@ -721,7 +721,7 @@ public class ReleaseCheckTest {
         assertTrue("a pre-release comes before its release", ReleaseCheck.compare("0.2.0-dev", "0.2.0") < 0);
         assertTrue(ReleaseCheck.compare("0.2.0", "0.2.0-dev") > 0);
         assertTrue(ReleaseCheck.compare("0.2.0-dev", "0.1.8") > 0);
-        assertTrue(ReleaseCheck.compare("580.0.0.51.74", "577.0.0.50.72") > 0);
+        assertTrue(ReleaseCheck.compare("449.0.0.54.82", "447.0.0.50.72") > 0);
         assertNull(ReleaseCheck.compare("", "0.1.8"));
         assertNull(ReleaseCheck.compare("Unknown", "0.1.8"));
         assertNull(ReleaseCheck.compare(null, "0.1.8"));
@@ -738,8 +738,8 @@ public class ReleaseCheckTest {
     // ---- Cookies -------------------------------------------------------------------------------
 
     /**
-     * Facebook 580 makes a java.net.CookieManager the process's default, and HttpURLConnection puts
-     * what the default offers on every request, so the transport asks it first.
+     * Meta's apps can make a java.net.CookieManager the process's default, and HttpURLConnection
+     * puts what the default offers on every request, so the transport asks it first.
      */
     @Test
     public void aRequestCarriesNoCookieWhateverThePhoneKeeps() throws Exception {
@@ -759,15 +759,15 @@ public class ReleaseCheckTest {
         assertTrue(manager.getCookieStore().get(api).isEmpty());
         assertTrue(manager.get(api, Collections.<String, List<String>>emptyMap()).get("Cookie").isEmpty());
 
-        // Facebook's own cookies stay where they are.
-        URI facebook = URI.create("https://www.facebook.com/");
-        HttpCookie session = new HttpCookie("c_user", "1");
-        session.setDomain(".facebook.com");
+        // Threads' own cookies stay where they are.
+        URI threads = URI.create("https://www.threads.com/");
+        HttpCookie session = new HttpCookie("ds_user_id", "1");
+        session.setDomain(".threads.com");
         session.setPath("/");
         session.setVersion(0);
-        manager.getCookieStore().add(facebook, session);
+        manager.getCookieStore().add(threads, session);
         assertNull(ReleaseTransport.cookieRefusal(manager, api));
-        assertEquals(1, manager.getCookieStore().get(facebook).size());
+        assertEquals(1, manager.getCookieStore().get(threads).size());
 
         // A handler that would still add one stops the request, and one that adds none doesn't.
         assertNotNull(ReleaseTransport.cookieRefusal(handler(Collections.singletonMap("Cookie",

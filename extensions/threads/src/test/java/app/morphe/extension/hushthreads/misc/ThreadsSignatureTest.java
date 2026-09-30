@@ -32,13 +32,18 @@ import app.morphe.extension.shared.diagnostics.HookStatus;
 
 /**
  * Which packages Restore screens on re-signed builds answers for: the running app itself, under
- * Facebook's name or a clone's, and nothing else. Facebook reads these packages from
+ * Threads' name or a clone's, and nothing else. Threads reads these packages from
  * PackageManager, which fills in their ApplicationInfo.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
 public class ThreadsSignatureTest {
     private static final int OTHER_UID = Process.myUid() + 1;
+
+    private static final String THREADS = "com.instagram.barcelona";
+
+    /** Threads' original Meta certificate: APK v3.0, and the first of its v3.1 lineage. */
+    private static final String THREADS_SHA256 = "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432";
 
     @Before
     @After
@@ -71,93 +76,90 @@ public class ThreadsSignatureTest {
         List<Signature> signers = ThreadsSignature.originalSigners(info);
         assertNotNull(info.packageName + " kept its re-signed signers", signers);
         assertEquals(1, signers.size());
-        // Facebook's original certificate, whose SHA-1 the class states.
-        byte[] sha1 = MessageDigest.getInstance("SHA-1").digest(signers.get(0).toByteArray());
+        byte[] sha256 = MessageDigest.getInstance("SHA-256").digest(signers.get(0).toByteArray());
         StringBuilder hex = new StringBuilder();
-        for (byte b : sha1) hex.append(String.format("%02x", b));
-        assertEquals("8a3c4b26", hex.substring(0, 8));
-        assertEquals("fa2b9", hex.substring(hex.length() - 5));
+        for (byte b : sha256) hex.append(String.format("%02x", b));
+        assertEquals(THREADS_SHA256, hex.toString());
     }
 
     private static void keepsItsOwn(PackageInfo info) {
-        assertNull((info == null ? "null" : info.packageName) + " got Facebook's certificate",
+        assertNull((info == null ? "null" : info.packageName) + " got Threads' certificate",
                 ThreadsSignature.originalSigners(info));
     }
 
     @Test
-    public void facebookItselfGetsItsOriginalCertificate() throws Exception {
-        answers(self("com.facebook.katana"));
+    public void threadsItselfGetsItsOriginalCertificate() throws Exception {
+        answers(self(THREADS));
         assertEquals(FamilyNames.RESTORE_TRUST + ": invoked 1, 0 found, 0 missing", statusLine());
     }
 
-    /** Morphe's Clone app patch renames the package; the app is still this one (#16). */
+    /** Morphe's Clone app patch renames the package; the app is still this one. */
     @Test
     public void aRenamedCloneOfThisAppGetsItToo() throws Exception {
-        answers(self("com.facebook.katana.morphe"));
-        answers(self("com.facebook.katana.hush"));
+        answers(self(THREADS + ".morphe"));
+        answers(self(THREADS + ".hush"));
     }
 
     /**
-     * Stock Facebook installed beside a clone has Facebook's name but its own uid. Its signers are
-     * what the phone says they are, as are Messenger's and those of any name that only looks like it.
+     * Stock Threads installed beside a clone has Threads' name but its own uid. Its signers are
+     * what the phone says they are, as are Instagram's and those of any name that only looks like it.
      */
     @Test
     public void anotherAppKeepsItsOwnSigners() {
-        keepsItsOwn(installed("com.facebook.katana", OTHER_UID));
-        keepsItsOwn(installed("com.facebook.orca", OTHER_UID));
-        keepsItsOwn(installed("com.facebook.katanax", OTHER_UID));
-        keepsItsOwn(installed("com.facebook.katana.evil", OTHER_UID));
-        keepsItsOwn(installed("com.facebook.katana.morphe", OTHER_UID));
+        keepsItsOwn(installed(THREADS, OTHER_UID));
+        keepsItsOwn(installed("com.instagram.android", OTHER_UID));
+        keepsItsOwn(installed("com.instagram.barcelonax", OTHER_UID));
+        keepsItsOwn(installed("com.instagram.barcelona.evil", OTHER_UID));
+        keepsItsOwn(installed(THREADS + ".morphe", OTHER_UID));
         assertNull("counted a package it didn't answer for", statusLine());
     }
 
     /** A package whose name disagrees with its own ApplicationInfo isn't known to be this app. */
     @Test
     public void aNameThatIsntItsApplicationsKeepsItsOwnSigners() {
-        PackageInfo info = self("com.facebook.katana");
-        info.packageName = "com.facebook.orca";
+        PackageInfo info = self(THREADS);
+        info.packageName = "com.instagram.android";
         keepsItsOwn(info);
     }
 
     @Test
     public void missingFactsKeepTheSystemsAnswer() {
         keepsItsOwn(null);
-        PackageInfo noName = self("com.facebook.katana");
+        PackageInfo noName = self(THREADS);
         noName.packageName = null;
         keepsItsOwn(noName);
         assertNull(statusLine());
     }
 
     /**
-     * An isolated process, like the in-app browser's renderers or a service started from Facebook's
+     * An isolated process, like the in-app browser's renderers or a service started from Threads'
      * app zygote, runs under a uid of its own rather than the app's. There only the name is known,
-     * and the answer stays the one builds before the clone fix gave. A clone can't be told apart
-     * there, which is no worse than before.
+     * so only Threads' own name is answered. A clone can't be told apart there.
      */
     @Test
-    public void inAnIsolatedProcessOnlyFacebooksNameIsAnswered() throws Exception {
+    public void inAnIsolatedProcessOnlyThreadsNameIsAnswered() throws Exception {
         int app = Process.myUid();
         try {
             ShadowProcess.setUid(99001);
-            answers(installed("com.facebook.katana", app));
-            keepsItsOwn(installed("com.facebook.katana.morphe", app));
-            keepsItsOwn(installed("com.facebook.orca", OTHER_UID));
-            keepsItsOwn(installed("com.facebook.katanax", app));
+            answers(installed(THREADS, app));
+            keepsItsOwn(installed(THREADS + ".morphe", app));
+            keepsItsOwn(installed("com.instagram.android", OTHER_UID));
+            keepsItsOwn(installed("com.instagram.barcelonax", app));
         } finally {
             ShadowProcess.setUid(app);
         }
     }
 
     /**
-     * PackageManager always fills in ApplicationInfo. Without it only the name is known, and the
-     * answer stays the one builds before the clone fix gave: Facebook's own name and nothing else.
+     * PackageManager always fills in ApplicationInfo. Without it only the name is known, and only
+     * Threads' own name is answered.
      */
     @Test
-    public void withoutApplicationInfoOnlyFacebooksNameIsAnswered() throws Exception {
-        PackageInfo facebook = new PackageInfo();
-        facebook.packageName = "com.facebook.katana";
-        answers(facebook);
-        for (String name : new String[] {"com.facebook.katana.morphe", "com.facebook.orca", "com.facebook.katanax"}) {
+    public void withoutApplicationInfoOnlyThreadsNameIsAnswered() throws Exception {
+        PackageInfo threads = new PackageInfo();
+        threads.packageName = THREADS;
+        answers(threads);
+        for (String name : new String[] {THREADS + ".morphe", "com.instagram.android", "com.instagram.barcelonax"}) {
             PackageInfo other = new PackageInfo();
             other.packageName = name;
             keepsItsOwn(other);

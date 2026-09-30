@@ -11,12 +11,14 @@ package app.morphe.extension.shared.settings;
 import android.app.ActivityManager;
 import android.app.ApplicationExitInfo;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 import android.os.SystemClock;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,11 +37,11 @@ import app.morphe.extension.shared.Utils;
  * Pause HushThreads, and the safe mode that turns it on without being asked.
  *
  * <p>Whether a process runs paused is decided once, at the first context, before any hook reads
- * a setting. Paused, every setting that changes Facebook answers its unpatched value
+ * a setting. Paused, every setting that changes Threads answers its unpatched value
  * ({@link Setting#get()}); saved values stay as they are and come back on the next start.
  *
  * <p>Three things pause a process: the Pause switch, safe mode, and a file named
- * {@value #MARKER_FILE_NAME} in Facebook's own folder under {@code Android/data}, for a phone that
+ * {@value #MARKER_FILE_NAME} in Threads' own folder under {@code Android/data}, for a phone that
  * can't reach the settings at all. Safe mode turns on after three starts in a row that crashed
  * within a minute. A start is recorded when the process begins and cleared once it has run for a
  * minute, so a record that is still there at the next start belonged to a process that died
@@ -88,7 +90,7 @@ public final class HushThreadsPause {
             filesDir = context.getFilesDir();
             if (Utils.isMainProcess()) countLastStart(context);
         } catch (RuntimeException failure) {
-            // Never let the safety net be what stops Facebook from starting.
+            // Never let the safety net be what stops Threads from starting.
             Logger.printException(() -> "HushThreads pause: could not read the last start", failure);
         }
         Runnable probe = whileDecidingForTests;
@@ -226,6 +228,8 @@ public final class HushThreadsPause {
             return false;
         }
         boolean markedByHandler = parts.length > 2 && CRASHED.equals(parts[2]);
+        // Android 9 and 10 keep no exit reasons, so there only the handler's mark can say.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return markedByHandler;
         ApplicationExitInfo exit = firstExitSince(context, pid, started);
         if (exit != null) {
             int reason = exit.getReason();
@@ -246,6 +250,7 @@ public final class HushThreadsPause {
      * none. A record older than the start belonged to an earlier process that had the same pid.
      */
     @Nullable
+    @RequiresApi(Build.VERSION_CODES.R)
     private static ApplicationExitInfo firstExitSince(Context context, int pid, long started) {
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         if (manager == null) return null;

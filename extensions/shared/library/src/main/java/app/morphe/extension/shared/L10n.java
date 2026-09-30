@@ -25,17 +25,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * HushThreads's own text in the language Facebook shows: the one picked in Facebook's own
- * settings, or the phone's when none was picked. It's read from the application's configuration,
- * so every string on a screen comes out in one language whichever context builds it.
+ * HushThreads's own text in the language Threads shows: the one picked for Threads, or the
+ * phone's when none was picked. It's read from the application's configuration, so every string
+ * on a screen comes out in one language whichever context builds it.
  *
  * <p>The English string in the code is the lookup key. The translations are generated into
  * {@link L10nTranslations} from extensions/shared/library/src/main/l10n by scripts/gen-l10n.py,
- * so they travel in the extension's own code. HushThreads adds no resources to Facebook, and a
- * string resource would have to be merged into Facebook's resource table to be read.
+ * so they travel in the extension's own code. HushThreads adds no resources to Threads, and a
+ * string resource would have to be merged into Threads' resource table to be read.
  *
  * <p>A language with no table, or a string nobody translated yet, falls back to the English
- * text, so nothing here can leave a label empty. Nothing here changes Facebook's own language
+ * text, so nothing here can leave a label empty. Nothing here changes Threads' own language
  * either: the phone's languages are read, never set.
  *
  * <p>Android's two pseudo-locales work here as they do for resources. en-XA draws every string
@@ -275,7 +275,7 @@ public final class L10n {
         return locale(context());
     }
 
-    /** The first language Facebook runs in, or the default when there is no context to ask. */
+    /** The first language Threads runs in, or the default when there is no context to ask. */
     public static Locale locale(Context context) {
         return locales(context).get(0);
     }
@@ -330,8 +330,8 @@ public final class L10n {
     }
 
     /**
-     * The languages Facebook runs in, from the application's configuration whichever context
-     * asks, or the default when there is no context to ask. Facebook sets its own language on
+     * The languages Threads runs in, from the application's configuration whichever context
+     * asks, or the default when there is no context to ask. Threads can set its own language on
      * the application once it has started, and an activity's or a dialog's context can carry
      * another one. Read from each caller's own context, a Back label built from the activity
      * and a title built from the application came out in two languages on one screen.

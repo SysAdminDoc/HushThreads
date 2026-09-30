@@ -38,12 +38,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The settings dialog as Facebook hosts it: a dialog fragment over an activity that isn't ours,
+ * The settings dialog as Threads hosts it: a dialog fragment over an activity that isn't ours,
  * with the preference page in the dialog's child manager.
  *
  * <p>The recovery page's Retry used to commit through the activity's manager, which can't see the
  * dialog's container; its Back finished the activity when the activity's back stack was empty,
- * which inside Facebook is Facebook itself; and a new container id on every view creation left a
+ * which inside Threads is Threads itself; and a new container id on every view creation left a
  * page restored after rotation with no container to go back into.
  */
 @RunWith(RobolectricTestRunner.class)

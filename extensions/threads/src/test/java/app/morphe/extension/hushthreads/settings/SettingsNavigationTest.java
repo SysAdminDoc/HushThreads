@@ -63,7 +63,6 @@ public class SettingsNavigationTest {
 
     @Before public void open() {
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
-        PatchFamily.inBuildForTests.remove(PatchFamily.MATERIAL_YOU_THEME);
         PauseForTests.resume();
         controller = Robolectric.buildActivity(Activity.class).setup().visible();
         dialog = SettingsL10nTest.show(controller.get());
@@ -73,34 +72,38 @@ public class SettingsNavigationTest {
     @After public void close() {
         controller.close();
         PatchFamily.inBuildForTests = null;
-        Settings.TAP_TO_PLAY.resetToDefault();
-        Settings.DOWNLOAD_COMPATIBLE.resetToDefault();
+        Settings.HIDE_ADS.resetToDefault();
+        Settings.SANITIZE_SHARING_LINKS.resetToDefault();
         BaseSettings.PAUSED.resetToDefault();
+        app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.remove(
+                Settings.HIDE_ADS.key);
         PauseForTests.resume();
     }
 
     @Test public void homeAndEveryCategoryAreReachableWithoutRemovingTheModel() {
         assertNotNull(page.navigation);
-        assertEquals(9, list().getCount());
-        assertEquals(19, page.sections().size());
+        // The status card, Browse settings, Feed, Privacy and More settings.
+        assertEquals(5, list().getCount());
+        assertEquals(7, page.sections().size());
         int total = page.getPreferenceScreen().getRootAdapter().getCount();
         for (Preference section : page.sections()) {
             assertTrue(page.navigation.open(section));
             assertEquals(((PreferenceCategory) section).getPreferenceCount(), list().getCount());
             assertEquals(total, page.getPreferenceScreen().getRootAdapter().getCount());
-            assertNotNull(page.findPreference(Settings.TAP_TO_PLAY.key));
+            assertNotNull(page.findPreference(Settings.HIDE_ADS.key));
             assertTrue(page.navigation.back());
             while (page.navigation.back()) { }
         }
-        assertEquals(9, list().getCount());
+        assertEquals(5, list().getCount());
     }
 
     @Test public void categoryClickChangesOnlyTheSettingWhoseRowWasTapped() {
-        assertTrue(page.navigation.open(page.findPreference(Settings.TAP_TO_PLAY.key)));
-        assertTrue(Settings.TAP_TO_PLAY.savedValue());
-        tap(Settings.TAP_TO_PLAY.key);
-        assertFalse(Settings.TAP_TO_PLAY.savedValue());
-        assertFalse(Settings.DOWNLOAD_COMPATIBLE.savedValue());
+        assertTrue(page.navigation.open(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key)));
+        assertTrue(Settings.SANITIZE_SHARING_LINKS.savedValue());
+        tap(Settings.SANITIZE_SHARING_LINKS.key);
+        assertFalse(Settings.SANITIZE_SHARING_LINKS.savedValue());
+        assertTrue(Settings.DISABLE_ANALYTICS.savedValue());
+        assertTrue(Settings.HIDE_ADS.savedValue());
     }
 
     @Test public void overviewPauseAndUndoUpdateTheSavedSwitchAndRestartNotice() {
@@ -113,7 +116,7 @@ public class SettingsNavigationTest {
         layout(dialog.getView());
         assertTrue(BaseSettings.PAUSED.savedValue());
         assertTrue(((Preference) list().getItemAtPosition(0)).getSummary().toString()
-                .contains("pauses when Facebook restarts"));
+                .contains("pauses when Threads restarts"));
         action = statusAction();
         assertEquals("Undo", action.getText().toString());
         action.performClick();
@@ -121,7 +124,7 @@ public class SettingsNavigationTest {
         layout(dialog.getView());
         assertFalse(BaseSettings.PAUSED.savedValue());
         assertEquals("Pause", statusAction().getText().toString());
-        assertFalse(Settings.DOWNLOAD_COMPATIBLE.savedValue());
+        assertTrue(Settings.HIDE_ADS.savedValue());
     }
 
     /** A Resume the store can't keep leaves the pause on screen, in storage and in the switch, and says so. */
@@ -194,15 +197,15 @@ public class SettingsNavigationTest {
         int homePosition = list().getFirstVisiblePosition();
         int homeOffset = list().getChildAt(0).getTop();
 
-        page.navigation.navigate("News feed");
+        page.navigation.navigate("Feed");
         layout(dialog.getView(), 1200);
         Preference line = (Preference) list().getItemAtPosition(0);
         assertEquals("HushThreads is paused", String.valueOf(line.getTitle()));
         assertEquals(PAUSED_LINE, String.valueOf(line.getSummary()));
         assertFalse("the line reads as a button of its own", list().getAdapter().isEnabled(0));
         assertTrue("a saved choice was changed to look paused",
-                ((SwitchPreference) page.findPreference(Settings.HIDE_SPONSORED_POSTS.key)).isChecked());
-        assertTrue(Settings.HIDE_SPONSORED_POSTS.savedValue());
+                ((SwitchPreference) page.findPreference(Settings.HIDE_ADS.key)).isChecked());
+        assertTrue(Settings.HIDE_ADS.savedValue());
 
         list().scrollListBy(40);
         layout(dialog.getView(), 1200);
@@ -215,9 +218,9 @@ public class SettingsNavigationTest {
         ShadowLooper.idleMainLooper();
         layout(dialog.getView(), 1200);
         assertFalse(BaseSettings.PAUSED.savedValue());
-        assertEquals("HushThreads turns back on when Facebook restarts.",
+        assertEquals("HushThreads turns back on when Threads restarts.",
                 String.valueOf(((Preference) list().getItemAtPosition(0)).getSummary()));
-        assertTrue("Resume left the page", contains(Settings.HIDE_SPONSORED_POSTS.key));
+        assertTrue("Resume left the page", contains(Settings.HIDE_ADS.key));
         assertEquals(position, list().getFirstVisiblePosition());
         assertEquals(offset, list().getChildAt(0).getTop());
 
@@ -243,10 +246,10 @@ public class SettingsNavigationTest {
         BaseSettings.PAUSED.save(true);
         PauseForTests.pause(HushThreadsPause.Reason.CRASH_LOOP);
         recreate();
-        findSearch(dialog.getView()).setText("Tap to play");
+        findSearch(dialog.getView()).setText("Hide ads");
         ShadowLooper.idleMainLooper();
         assertEquals(PAUSED_LINE, String.valueOf(((Preference) list().getItemAtPosition(0)).getSummary()));
-        assertTrue(contains(Settings.TAP_TO_PLAY.key));
+        assertTrue(contains(Settings.HIDE_ADS.key));
         page.navigation.back();
         for (String quiet : new String[]{"About", "Set when you patched"}) {
             page.navigation.navigate(quiet);
@@ -265,7 +268,7 @@ public class SettingsNavigationTest {
         layout(dialog.getView());
         Preference line = (Preference) list().getItemAtPosition(0);
         assertEquals("HushThreads is on", String.valueOf(line.getTitle()));
-        assertEquals("HushThreads pauses when Facebook restarts.", String.valueOf(line.getSummary()));
+        assertEquals("HushThreads pauses when Threads restarts.", String.valueOf(line.getSummary()));
         pageAction().performClick();
         ShadowLooper.idleMainLooper();
         layout(dialog.getView());
@@ -274,16 +277,16 @@ public class SettingsNavigationTest {
 
         page.navigation.back();
         app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.add(
-                Settings.MARKETPLACE_ONLY.key);
-        page.navigation.navigate("Opening Facebook");
+                Settings.HIDE_ADS.key);
+        page.navigation.navigate("Feed");
         layout(dialog.getView());
         line = (Preference) list().getItemAtPosition(0);
-        assertEquals("A change here applies after Facebook restarts.", String.valueOf(line.getTitle()));
+        assertEquals("A change here applies after Threads restarts.", String.valueOf(line.getTitle()));
         android.view.ViewGroup frame = list().getChildAt(0).findViewById(android.R.id.widget_frame);
         assertTrue("a restart line offered an action", frame == null || frame.getChildCount() == 0);
         page.navigation.back();
-        page.navigation.navigate("Playback");
-        assertEquals("a restart owed elsewhere was said here", categoryCount("Playback"), list().getCount());
+        page.navigation.navigate("Privacy");
+        assertEquals("a restart owed elsewhere was said here", categoryCount("Privacy"), list().getCount());
     }
 
     /** The paused line on real pages, dark and light, for a look before the phone does. */
@@ -292,31 +295,15 @@ public class SettingsNavigationTest {
         BaseSettings.PAUSED.save(true);
         PauseForTests.pause(HushThreadsPause.Reason.SWITCH);
         recreate();
-        page.navigation.navigate("News feed");
-        capture("paused-news-feed");
+        page.navigation.navigate("Feed");
+        capture("paused-feed");
         assertUncutText(dialog.getView());
         pageAction().performClick();
         ShadowLooper.idleMainLooper();
-        capture("paused-news-feed-resume-pending");
+        capture("paused-feed-resume-pending");
         page.navigation.back();
-        findSearch(dialog.getView()).setText("video");
+        findSearch(dialog.getView()).setText("links");
         capture("paused-search");
-    }
-
-    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    @Config(qualifiers = "w390dp-h844dp-notnight-xhdpi")
-    public void renderPausedPageInTheLightTheme() throws Exception {
-        controller.close();
-        PatchFamily.inBuildForTests.add(PatchFamily.MATERIAL_YOU_THEME);
-        BaseSettings.PAUSED.save(true);
-        PauseForTests.pause(HushThreadsPause.Reason.SWITCH);
-        controller = Robolectric.buildActivity(Activity.class).setup().visible();
-        dialog = SettingsL10nTest.show(controller.get());
-        page = page(dialog);
-        assertTrue(ScreenColors.shown.light);
-        page.navigation.navigate("Playback");
-        capture("light-paused-playback");
-        assertUncutText(dialog.getView());
     }
 
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -327,10 +314,10 @@ public class SettingsNavigationTest {
         org.robolectric.RuntimeEnvironment.setFontScale(2f);
         try {
             recreate();
-            page.navigation.navigate("Playback");
+            page.navigation.navigate("Privacy");
             layout(dialog.getView());
             assertUncutText(dialog.getView());
-            capture("large-rtl-paused-playback");
+            capture("large-rtl-paused-privacy");
         } finally {
             org.robolectric.RuntimeEnvironment.setFontScale(1f);
         }
@@ -356,7 +343,7 @@ public class SettingsNavigationTest {
         recreate();
         layout(dialog.getView());
         TextView summary = list().getChildAt(0).findViewById(android.R.id.summary);
-        assertEquals("Your choices are saved. Tap Resume, then restart Facebook.", String.valueOf(summary.getText()));
+        assertEquals("Your choices are saved. Tap Resume, then restart Threads.", String.valueOf(summary.getText()));
     }
 
     /**
@@ -406,41 +393,21 @@ public class SettingsNavigationTest {
         return (android.widget.Button) frame.getChildAt(0);
     }
 
-    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    @Config(qualifiers = "w384dp-h824dp-night-450dpi")
-    public void qualityDialogShowsAllSixChoicesWithoutClippingTheLastRow() {
-        HushThreadsPreferenceFragment.QualityRow quality = (HushThreadsPreferenceFragment.QualityRow)
-                page.findPreference(Settings.DOWNLOAD_QUALITY.key);
-        quality.showDialog(null);
-        try {
-            layout(dialog.getView());
-            ShadowLooper.idleMainLooper();
-            ListView choices = ((AlertDialog) quality.getDialog()).getListView();
-            assertEquals(6, choices.getCount());
-            assertEquals(5, choices.getLastVisiblePosition());
-            View last = choices.getChildAt(choices.getChildCount() - 1);
-            assertTrue("Last quality choice extends beyond the visible list",
-                    last.getBottom() <= choices.getHeight() - choices.getPaddingBottom());
-        } finally {
-            quality.getDialog().dismiss();
-        }
-    }
-
     @Test public void searchUsesRealControlsAndClearReturnsHome() {
         EditText search = findSearch(dialog.getView());
         assertNotNull(search);
-        search.setText("other apps");
+        search.setText("shared links");
         ShadowLooper.idleMainLooper();
-        assertTrue(contains(Settings.DOWNLOAD_COMPATIBLE.key));
-        tap(Settings.DOWNLOAD_COMPATIBLE.key);
-        assertTrue(Settings.DOWNLOAD_COMPATIBLE.savedValue());
+        assertTrue(contains(Settings.SANITIZE_SHARING_LINKS.key));
+        tap(Settings.SANITIZE_SHARING_LINKS.key);
+        assertFalse(Settings.SANITIZE_SHARING_LINKS.savedValue());
         search.setText("noSuchSetting987654");
         assertEquals(1, list().getCount());
         assertFalse(list().getAdapter().isEnabled(0));
         assertEquals("No matching settings", ((Preference) list().getItemAtPosition(0)).getTitle());
         assertTrue(page.navigation.back());
         assertEquals("", search.getText().toString());
-        assertEquals(9, list().getCount());
+        assertEquals(5, list().getCount());
     }
 
     /**
@@ -452,7 +419,7 @@ public class SettingsNavigationTest {
         TextView before = resultCount(dialog.getView());
         assertTrue(before == null || before.getVisibility() == View.GONE);
         java.util.List<String> spoken = new java.util.ArrayList<>();
-        search.setText("t");
+        search.setText("h");
         TextView count = resultCount(dialog.getView());
         assertNotNull("a live region for the result count", count);
         count.addTextChangedListener(new android.text.TextWatcher() {
@@ -460,9 +427,9 @@ public class SettingsNavigationTest {
             @Override public void onTextChanged(CharSequence s, int start, int before, int after) { spoken.add(s.toString()); }
             @Override public void afterTextChanged(android.text.Editable s) { }
         });
-        search.setText("ta");
-        search.setText("tap to");
-        search.setText("tap to play");
+        search.setText("hi");
+        search.setText("hide");
+        search.setText("hide ads");
         ShadowLooper.idleMainLooper(2, java.util.concurrent.TimeUnit.SECONDS);
         int rows = 0;
         for (int i = 0; i < list().getCount(); i++) if (!(list().getItemAtPosition(i) instanceof PreferenceCategory)) rows++;
@@ -488,11 +455,11 @@ public class SettingsNavigationTest {
         org.robolectric.Shadows.shadowOf(a11y).setEnabled(true);
         org.robolectric.Shadows.shadowOf(a11y).setTouchExplorationEnabled(true);
         layout(dialog.getView());
-        page.navigation.navigate("Playback");
+        page.navigation.navigate("Privacy");
         layout(dialog.getView());
         page.navigation.back();
         layout(dialog.getView());
-        assertEquals("Playback", focusedTitle(a11y));
+        assertEquals("Privacy", focusedTitle(a11y));
         page.navigation.navigate("more");
         layout(dialog.getView());
         page.navigation.navigate("About");
@@ -528,119 +495,53 @@ public class SettingsNavigationTest {
         return null;
     }
 
-    /**
-     * Discussion #17 asked how to block Reels. The words people type reach the map, each line whose
-     * patch is in opens its setting's page on that setting's row, and nothing saved changes.
-     */
-    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    public void blockReelsFindsTheMapAndEachLinkOpensItsSettingWithoutChangingOne() throws Exception {
-        Map<String, Object> before = savedValues();
-        findSearch(dialog.getView()).setText("block reels");
-        capture("search-block-reels");
-        assertTrue(titles().toString(), titles().containsAll(Arrays.asList("How to block Reels", "Reels in the feed",
-                "Reels that play by themselves", "The Reels tab", "Everything except Marketplace")));
-        findSearch(dialog.getView()).setText("reels");
-        assertTrue(titles().toString(), titles().contains("How to block Reels"));
-        page.navigation.back();
-
-        String[][] links = {
-                {Settings.HIDE_FEED_REELS.key, "News feed"},
-                {Settings.TAP_TO_PLAY.key, "Playback"},
-                {Settings.HIDE_REELS_TAB.key, "Reels and Watch"},
-                {Settings.MARKETPLACE_ONLY.key, "Opening Facebook"}};
-        for (String[] link : links) {
-            page.navigation.navigate("Reels and Watch");
-            tap("action_show_" + link[0]);
-            layout(dialog.getView(), 1200);
-            int row = position(link[0]);
-            assertTrue(link[0] + " wasn't opened", row >= 0);
-            assertEquals(link[1], String.valueOf(((Preference) list().getItemAtPosition(row)).getParent().getTitle()));
-            assertTrue(link[0] + " is off screen at " + row + " of " + list().getFirstVisiblePosition() + ".."
-                            + list().getLastVisiblePosition(),
-                    row >= list().getFirstVisiblePosition() && row <= list().getLastVisiblePosition());
-            while (page.navigation.back()) { }
-        }
-        assertEquals(before, savedValues());
-    }
-
-    /** Without its patch a line names the patch to add, can't be tapped and says nothing is installed. */
-    @Test public void aMapLineWithoutItsPatchNamesThePatchAndGoesNowhere() {
-        controller.close();
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SPONSORED_POSTS);
-        controller = Robolectric.buildActivity(Activity.class).setup().visible();
-        dialog = SettingsL10nTest.show(controller.get());
-        page = page(dialog);
-        Map<String, Object> before = savedValues();
-        page.navigation.navigate("Reels and Watch");
-        assertEquals(Arrays.asList("How to block Reels", "Reels in the feed", "Reels that play by themselves",
-                "The Reels tab", "Everything except Marketplace"), titles());
-        String[][] missing = {
-                {"Reels in the feed", "Hide Reels in the feed"},
-                {"Reels that play by themselves", "Tap to play"},
-                {"Everything except Marketplace", "Marketplace only"}};
-        for (String[] line : missing) {
-            int row = titles().indexOf(line[0]);
-            assertFalse(line[0] + " can be tapped", list().getAdapter().isEnabled(row));
-            assertEquals("Not in this build. To block this, choose the " + L10n.isolate(line[1])
-                    + " patch in Morphe Manager and patch again.",
-                    String.valueOf(((Preference) list().getItemAtPosition(row)).getSummary()));
-        }
-        // Without Hide the Reels tab, the tab's line is Facebook's own setting, and it names the patch.
-        int tab = titles().indexOf("The Reels tab");
-        assertFalse("The Reels tab can be tapped", list().getAdapter().isEnabled(tab));
-        assertEquals("Facebook's own setting blocks it. Open Settings, Tab bar, Customize the bar and choose Hide next "
-                        + "to Reels, which some accounts call Video. If neither is listed, choose the "
-                        + L10n.isolate("Hide the Reels tab") + " patch in Morphe Manager and patch again.",
-                String.valueOf(((Preference) list().getItemAtPosition(tab)).getSummary()));
-        assertNull(page.findPreference(Settings.HIDE_FEED_REELS.key));
-        assertNull(page.findPreference(Settings.HIDE_REELS_TAB.key));
-        assertEquals(before, savedValues());
-    }
-
     @Test public void recreationKeepsTheCategoryAndSearchQuery() {
-        page.navigation.open(page.findPreference(Settings.TAP_TO_PLAY.key));
+        page.navigation.open(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key));
         recreate();
-        assertTrue(contains(Settings.TAP_TO_PLAY.key));
-        // Playback: Tap to play, Resume long videos, Default playback quality and its Playback quality list.
-        assertEquals(4, list().getCount());
+        assertTrue(contains(Settings.SANITIZE_SHARING_LINKS.key));
+        // Privacy: Remove tracking from shared links and Stop analytics uploads.
+        assertEquals(2, list().getCount());
         page.navigation.back();
-        findSearch(dialog.getView()).setText("other apps");
+        findSearch(dialog.getView()).setText("shared links");
         recreate();
-        assertEquals("other apps", findSearch(dialog.getView()).getText().toString());
-        assertTrue(contains(Settings.DOWNLOAD_COMPATIBLE.key));
+        assertEquals("shared links", findSearch(dialog.getView()).getText().toString());
+        assertTrue(contains(Settings.SANITIZE_SHARING_LINKS.key));
     }
 
     @Test public void bothBackPathsReturnToTheIndexBeforeClosingTheDialog() {
-        page.navigation.open(page.findPreference(Settings.TAP_TO_PLAY.key));
+        page.navigation.open(page.findPreference(Settings.HIDE_ADS.key));
         SettingsL10nTest.backOf(dialog).performClick();
         assertTrue(dialog.getDialog().isShowing());
-        assertEquals(9, list().getCount());
+        assertEquals(5, list().getCount());
         page.navigation.navigate("About");
         dialog.getDialog().onBackPressed();
-        assertEquals(13, list().getCount());
+        // More settings: Links, Updates, Set when you patched, Pause, backup and diagnostics, and About.
+        assertEquals(5, list().getCount());
         dialog.getDialog().onBackPressed();
-        assertEquals(9, list().getCount());
+        assertEquals(5, list().getCount());
         dialog.getDialog().onBackPressed();
         ShadowLooper.idleMainLooper();
         assertFalse(controller.get().isFinishing());
     }
 
+    // A window as short as the layouts below, 400 px, so the window's own layout leaves both the
+    // overview and More settings taller than the list and neither snaps back to the top.
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    @Config(qualifiers = "w390dp-h600dp-night-xhdpi")
+    @Config(qualifiers = "w390dp-h200dp-night-xhdpi")
     public void aNewPageStartsAtTheTopAfterThePreviousPageWasScrolled() {
         Object root = org.robolectric.util.ReflectionHelpers.callInstanceMethod(
                 dialog.getDialog().getWindow().getDecorView(), "getViewRootImpl");
         org.robolectric.util.ReflectionHelpers.callInstanceMethod(root, "ensureTouchMode",
                 org.robolectric.util.ReflectionHelpers.ClassParameter.from(boolean.class, true));
         try {
-            layout(dialog.getView(), 1200);
+            layout(dialog.getView(), 400);
             assertTrue(list().isInTouchMode());
             list().scrollListBy(120);
             int homePosition = list().getFirstVisiblePosition();
             int homeOffset = list().getChildAt(0).getTop();
             assertTrue(homePosition > 0 || homeOffset < 0);
             page.navigation.navigate("more");
-            layout(dialog.getView(), 1200);
+            layout(dialog.getView(), 400);
             assertEquals(0, list().getFirstVisiblePosition());
             assertEquals(list().getPaddingTop(), list().getChildAt(0).getTop());
             list().scrollListBy(100);
@@ -650,15 +551,15 @@ public class SettingsNavigationTest {
             page.navigation.navigate("Pause, backup and diagnostics");
             // Preference updates can arrive after navigation but before the next layout.
             ((android.widget.BaseAdapter) page.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
-            layout(dialog.getView(), 1200);
+            layout(dialog.getView(), 400);
             assertEquals(0, list().getFirstVisiblePosition());
             assertEquals(list().getPaddingTop(), list().getChildAt(0).getTop());
             assertTrue(page.navigation.back());
-            layout(dialog.getView(), 1200);
+            layout(dialog.getView(), 400);
             assertEquals(morePosition, list().getFirstVisiblePosition());
             assertEquals(moreOffset, list().getChildAt(0).getTop());
             assertTrue(page.navigation.back());
-            layout(dialog.getView(), 1200);
+            layout(dialog.getView(), 400);
             assertEquals(homePosition, list().getFirstVisiblePosition());
             assertEquals(homeOffset, list().getChildAt(0).getTop());
         } finally {
@@ -671,18 +572,17 @@ public class SettingsNavigationTest {
         layout(dialog.getView());
         View heading = list().getChildAt(1);
         assertTrue(heading.createAccessibilityNodeInfo().isHeading());
-        View opening = list().getChildAt(2);
-        assertEquals(android.widget.Button.class.getName(), opening.createAccessibilityNodeInfo().getClassName());
-        assertTrue(opening.performAccessibilityAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK, null));
-        assertEquals("Marketplace only", ((Preference) list().getItemAtPosition(0)).getTitle());
+        View feed = list().getChildAt(2);
+        assertEquals(android.widget.Button.class.getName(), feed.createAccessibilityNodeInfo().getClassName());
+        assertTrue(feed.performAccessibilityAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK, null));
+        assertEquals("Hide ads", ((Preference) list().getItemAtPosition(0)).getTitle());
         page.navigation.back();
-        findSearch(dialog.getView()).setText("Tap to play");
+        findSearch(dialog.getView()).setText("Hide ads");
         layout(dialog.getView());
-        // The Reels map's autoplay line names the switch too, so it's found by its key, not its place.
-        View toggle = list().getChildAt(position(Settings.TAP_TO_PLAY.key) - list().getFirstVisiblePosition());
+        View toggle = list().getChildAt(position(Settings.HIDE_ADS.key) - list().getFirstVisiblePosition());
         assertEquals(android.widget.Switch.class.getName(), toggle.createAccessibilityNodeInfo().getClassName());
         assertTrue(toggle.performAccessibilityAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK, null));
-        assertFalse(Settings.TAP_TO_PLAY.savedValue());
+        assertFalse(Settings.HIDE_ADS.savedValue());
     }
 
     /** All pages are rendered with the same viewport as the design reference. */
@@ -696,33 +596,20 @@ public class SettingsNavigationTest {
         page.navigation.navigate("more");
         capture("more-settings");
         page.navigation.back();
-        findSearch(dialog.getView()).setText("video");
+        findSearch(dialog.getView()).setText("links");
         ShadowLooper.idleMainLooper(1, java.util.concurrent.TimeUnit.SECONDS);
         capture("search-results");
         findSearch(dialog.getView()).setText("noSuchSetting987654");
         ShadowLooper.idleMainLooper(1, java.util.concurrent.TimeUnit.SECONDS);
         capture("search-empty");
         page.navigation.back();
-        page.navigation.navigate("Downloads");
-        HushThreadsPreferenceFragment.QualityRow quality = (HushThreadsPreferenceFragment.QualityRow) page.findPreference(Settings.DOWNLOAD_QUALITY.key);
-        quality.showDialog(null);
-        captureDialog("dialog-quality", (AlertDialog) quality.getDialog());
-        quality.getDialog().dismiss();
-        HushThreadsPreferenceFragment.FolderRow folder = (HushThreadsPreferenceFragment.FolderRow) page.findPreference(Settings.SAVE_FOLDER.key);
-        folder.showDialog(null);
-        captureDialog("dialog-folder", (AlertDialog) folder.getDialog());
-        folder.getDialog().dismiss();
-        HushThreadsPreferenceFragment.FileNameRow name = (HushThreadsPreferenceFragment.FileNameRow) page.findPreference(Settings.FILENAME_TEMPLATE.key);
-        name.showDialog(null);
-        captureDialog("dialog-file-name", (AlertDialog) name.getDialog());
-        name.getDialog().dismiss();
         page.navigation.navigate("Pause, backup and diagnostics");
         Preference export = page.findPreference("action_export_diagnostic_report");
         export.getOnPreferenceClickListener().onPreferenceClick(export);
         AlertDialog report = (AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
         captureDialog("dialog-report", report);
         report.dismiss();
-        page.pendingImport = SettingsBackup.parse("{\"format\":\"hushthreads-settings\",\"schema\":1,\"settings\":{\"hushthreads_tap_to_play\":false}}").toBundle();
+        page.pendingImport = SettingsBackup.parse("{\"format\":\"hushthreads-settings\",\"schema\":1,\"settings\":{\"hushthreads_hide_ads\":false}}").toBundle();
         SettingsBackupPreference.onPageResumed(page);
         captureDialog("dialog-import", page.importPreview);
         page.importPreview.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
@@ -733,16 +620,6 @@ public class SettingsNavigationTest {
         AlertDialog notice = (AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
         captureDialog("dialog-licenses", notice);
         notice.dismiss();
-    }
-
-    @Test public void fileNameExampleUsesTheSameFormatterAndCancelKeepsTheSavedTemplate() {
-        HushThreadsPreferenceFragment.FileNameRow name = (HushThreadsPreferenceFragment.FileNameRow) page.findPreference(Settings.FILENAME_TEMPLATE.key);
-        String before = Settings.FILENAME_TEMPLATE.savedValue();
-        name.showDialog(null);
-        name.getEditText().setText("Example_{video_id}");
-        assertEquals("Example_123456.mp4", HushThreadsPreferenceFragment.FileNameRow.previewName("Example_{video_id}", new java.util.Date(0)));
-        ((AlertDialog) name.getDialog()).getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
-        assertEquals(before, Settings.FILENAME_TEMPLATE.savedValue());
     }
 
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -764,16 +641,16 @@ public class SettingsNavigationTest {
     }
 
     /**
-     * Brazilian Portuguese runs longer than English (PR #15's wording). Every page still wraps its
+     * Brazilian Portuguese runs longer than English. Every page still wraps its
      * whole text at twice the text size, and the table is the one on screen.
      */
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
     @Config(qualifiers = "pt-rBR-w390dp-h844dp-night-xhdpi")
     public void brazilianPortuguesePagesKeepTheirCompleteText() throws Exception {
-        assertEquals("Feed de not\u00edcias", String.valueOf(page.sections().get(1).getTitle()));
+        assertEquals("Privacidade", String.valueOf(page.sections().get(1).getTitle()));
         capture("pt-br-overview");
-        page.navigation.navigate("News feed");
-        capture("pt-br-news-feed");
+        page.navigation.navigate("Privacy");
+        capture("pt-br-privacy");
         org.robolectric.RuntimeEnvironment.setFontScale(2f);
         try {
             recreate();
@@ -782,30 +659,15 @@ public class SettingsNavigationTest {
                 layout(dialog.getView());
                 assertUncutText(dialog.getView());
             }
-            page.navigation.navigate("News feed");
-            capture("pt-br-large-news-feed");
-            page.navigation.navigate("Reels and Watch");
-            capture("pt-br-large-reels");
+            page.navigation.navigate("Privacy");
+            capture("pt-br-large-privacy");
+            page.navigation.navigate("Links");
+            capture("pt-br-large-links");
             page.navigation.navigate("Pause, backup and diagnostics");
             capture("pt-br-large-pause");
         } finally {
             org.robolectric.RuntimeEnvironment.setFontScale(1f);
         }
-    }
-
-    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    @Config(qualifiers = "w390dp-h844dp-notnight-xhdpi")
-    public void lightThemeUsesTheSameNavigationAndReadableRows() throws Exception {
-        controller.close();
-        PatchFamily.inBuildForTests.add(PatchFamily.MATERIAL_YOU_THEME);
-        controller = Robolectric.buildActivity(Activity.class).setup().visible();
-        dialog = SettingsL10nTest.show(controller.get());
-        page = page(dialog);
-        assertTrue(ScreenColors.shown.light);
-        capture("light-overview");
-        page.navigation.navigate("Downloads");
-        capture("light-downloads");
-        assertUncutText(dialog.getView());
     }
 
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)

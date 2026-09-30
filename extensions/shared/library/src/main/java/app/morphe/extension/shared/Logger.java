@@ -66,8 +66,8 @@ public class Logger {
     /**
      * Error toasts already shown in this process, so one broken hook cannot repeat itself.
      *
-     * <p>An error on a path the feed runs fires once per video. The queue then holds a minute of
-     * identical toasts, each covering the video underneath it, long after the reader has read the
+     * <p>An error on a path the feed runs fires once per post. The queue then holds a minute of
+     * identical toasts, each covering the post underneath it, long after the reader has read the
      * first one. Bounded so a stream of genuinely different failures cannot grow it without end;
      * every occurrence still reaches the log and the diagnostic report either way.
      */
@@ -225,7 +225,7 @@ public class Logger {
      * <p>A switch can be unreadable then. A stored value of the wrong type is reported from inside
      * BaseSettings' own class setup, before the switches declared after it are assigned, and read
      * unguarded, the NullPointerException left that setup. BaseSettings then stayed broken for the
-     * rest of the process, and setContext threw out of Facebook's start. An unreadable switch
+     * rest of the process, and setContext threw out of Threads' start. An unreadable switch
      * counts as off, and the line itself is logged all the same.
      */
     private static boolean settingsSayYes(BooleanSupplier switches) {
@@ -248,8 +248,8 @@ public class Logger {
      * <p>Only while diagnostic logging is on. These messages are written for whoever is fixing
      * the code: they carry the class that failed and the exception's own text, in English, past
      * every translation this bundle ships. A reader who has not turned diagnostic logging on
-     * cannot act on "PlaybackQuality: Could not read the playback quality model", and on a path
-     * the feed runs they were getting it once per video.
+     * cannot act on "FeedAds: Could not read the feed page", and on a path the feed runs they
+     * would get it once per post.
      *
      * <p>Nothing is lost by keeping it out of their way. Every one of these still reaches
      * logcat, the diagnostic buffer and the exported report, which is what the bug report form
@@ -351,17 +351,8 @@ public class Logger {
 
     private static DiagnosticCategory legacyCategory(String source, LogLevel level) {
         if (level == LogLevel.ERROR) return DiagnosticCategory.PATCH_ERRORS;
-        if (source.startsWith("FollowDiagnostics")) return DiagnosticCategory.FOLLOW;
-        if (source.startsWith("Downloads") || source.startsWith("Sticker")) {
-            return DiagnosticCategory.DOWNLOADS;
-        }
-        if (source.startsWith("FeatureGateLab")) return DiagnosticCategory.FEATURE_GATE_LAB;
-        if (source.startsWith("Feed") || source.startsWith("Navigation")
-                || source.startsWith("BottomNavigation")) {
-            return DiagnosticCategory.FEED_AND_NAVIGATION;
-        }
-        if (source.startsWith("FacebookActivityHook") || source.contains("Preference")
-                || source.startsWith("Settings")) {
+        if (source.startsWith("Feed")) return DiagnosticCategory.FEED;
+        if (source.contains("Preference") || source.startsWith("Settings")) {
             return DiagnosticCategory.SETTINGS;
         }
         return DiagnosticCategory.OTHER;

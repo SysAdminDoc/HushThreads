@@ -52,6 +52,13 @@ public class ClearLogBufferPreferenceTest {
     @After public void tearDown() {
         emptyEverythingAndDropUndo();
         BaseSettings.DEBUG_LOG_FILTERS.resetToDefault();
+        // The sentences are static, so a later test class in the same sandbox would read these
+        // in place of the catalog's.
+        LogBufferManager.clearedMessage = null;
+        LogBufferManager.nothingToClearMessage = null;
+        LogBufferManager.restoredMessage = null;
+        LogBufferManager.nothingToRestoreMessage = null;
+        LogBufferManager.restoreFailedMessage = null;
         ShadowToast.reset();
     }
 

@@ -22,6 +22,7 @@ import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.os.Build;
 import android.os.OperationCanceledException;
 import android.preference.Preference;
 import android.view.View;
@@ -35,16 +36,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-import app.morphe.extension.hushthreads.comments.CommentOrder;
-import app.morphe.extension.hushthreads.download.DownloadQuality;
-import app.morphe.extension.hushthreads.feed.PostWords;
-import app.morphe.extension.hushthreads.media.PlaybackQuality;
-import app.morphe.extension.hushthreads.navigation.StartTab;
 import app.morphe.extension.shared.L10n;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -55,7 +50,7 @@ import app.morphe.extension.shared.settings.preference.LogBufferManager;
  * Export settings and Import settings.
  *
  * <p>Both open Android's file picker from the settings page. The picker is an activity of its
- * own, so Android may rebuild Facebook's activity behind it, and the settings dialog and its page
+ * own, so Android may rebuild Threads' activity behind it, and the settings dialog and its page
  * with it. The result still reaches the page: Android hands it to the fragment the request came
  * from by the name the framework gave it, and a rebuilt page is given the same one. So nothing
  * about a request is kept on the page. Its code says which it was, and the file's address comes
@@ -63,7 +58,7 @@ import app.morphe.extension.shared.settings.preference.LogBufferManager;
  *
  * <p>An import reads the file first and shows how many switches it changes. Nothing is written
  * until the person says so, and then everything is written in one commit. The preview is kept in
- * the page's saved state, so a rotation or a trip away from Facebook brings it back.
+ * the page's saved state, so a rotation or a trip away from Threads brings it back.
  *
  * <p>The app holding a file opens, reads and writes it on a worker. The screen waits for it
  * {@link #timeoutMs} at most, then gives the rows back, cancels the open and closes the file.
@@ -341,10 +336,7 @@ public class SettingsBackupPreference extends Preference {
         shown.dismiss();
     }
 
-    /**
-     * How many switches the waiting file changes, what it does to the other settings, and what's
-     * in it that this build doesn't know.
-     */
+    /** How many switches the waiting file changes, and what's in it that this build doesn't know. */
     static void showPreview(HushThreadsPreferenceFragment page) {
         if (page.importPreview != null) return;
         SettingsBackup.Snapshot snapshot = SettingsBackup.Snapshot.fromBundle(page.pendingImport);
@@ -353,21 +345,10 @@ public class SettingsBackupPreference extends Preference {
             page.pendingImport = null;
             return;
         }
-        int changes = snapshot.changes().size();
         int switches = snapshot.switchChanges();
-        String message;
-        if (changes == 0) {
-            message = L10n.t("Your switches already match that file, so nothing will change.");
-        } else {
-            List<String> parts = new ArrayList<>();
-            if (switches > 0) {
-                parts.add(L10n.quantity(switches, "%1$d switch will change.", "%1$d switches will change.", switches));
-            }
-            parts.addAll(valueSentences(snapshot.folderChange(), snapshot.qualityChange(), snapshot.fileNameChange(),
-                    snapshot.startChange(), snapshot.orderChange(), snapshot.hiddenChange(), snapshot.keptChange(),
-                    snapshot.playbackChange()));
-            message = String.join("\n\n", parts);
-        }
+        String message = switches == 0
+                ? L10n.t("Your switches already match that file, so nothing will change.")
+                : L10n.quantity(switches, "%1$d switch will change.", "%1$d switches will change.", switches);
         if (snapshot.unknown > 0) {
             message += "\n\n" + L10n.quantity(snapshot.unknown,
                     "%1$d item in that file isn't a setting this version of HushThreads knows, so it'll be left out.",
@@ -378,7 +359,7 @@ public class SettingsBackupPreference extends Preference {
                 .setTitle(L10n.t("Import settings"))
                 .setMessage(message)
                 .setOnCancelListener(dialog -> answered(page));
-        if (changes == 0) {
+        if (switches == 0) {
             builder.setPositiveButton(L10n.t("OK"), (dialog, which) -> answered(page));
         } else {
             builder.setPositiveButton(L10n.t("Import"), (dialog, which) -> {
@@ -390,103 +371,6 @@ public class SettingsBackupPreference extends Preference {
         }
         page.importPreview = builder.show();
         ScreenColors.dialog(page.importPreview);
-    }
-
-    /** The sentence that says where saves go after an import, for the folder name [folder]. */
-    static String folderSentence(String folder) {
-        return L10n.f("Saves will go to a folder named %1$s.", L10n.isolate(folder));
-    }
-
-    /**
-     * The sentence that says what quality videos save at after an import. Worded like the row's
-     * summary (HushThreadsPreferenceFragment.qualitySummary): below the cap first, above it only
-     * when a video has nothing that low.
-     */
-    static String qualitySentence(DownloadQuality quality) {
-        switch (quality) {
-            case BEST:
-                return L10n.t("Videos will save at the best quality.");
-            case SMALLEST:
-                return L10n.t("Videos will save at their lowest quality, for the smallest files.");
-            default:
-                return L10n.f("Videos will save at %1$s or the closest quality below it. A video with nothing "
-                        + "that low will save at the closest quality above.", L10n.isolate(quality.ceilingLabel()));
-        }
-    }
-
-    /** The sentence that says what saved videos are named after an import, for [template]. */
-    static String fileNameSentence(String template) {
-        return L10n.f("Saved videos will be named %1$s.", L10n.isolate(template));
-    }
-
-    /** The sentence that says which tab Facebook opens on after an import. */
-    static String startTabSentence(StartTab tab) {
-        return L10n.f("Facebook will open on %1$s.", HushThreadsPreferenceFragment.tabLabel(tab));
-    }
-
-    /** The sentence that says in what order comments open after an import. */
-    static String commentOrderSentence(CommentOrder order) {
-        if (order == CommentOrder.FACEBOOK) return L10n.t("Comments will open in the order Facebook picks.");
-        return L10n.f("Comments will open with %1$s picked in their sort menu.",
-                HushThreadsPreferenceFragment.commentOrderLabel(order));
-    }
-
-    /** The sentence that says what quality videos play at after an import. */
-    static String playbackQualitySentence(PlaybackQuality quality) {
-        if (quality == PlaybackQuality.AUTO) return L10n.t("Facebook will pick the quality videos play at.");
-        return L10n.f("Playback quality will be set to %1$s.", HushThreadsPreferenceFragment.playbackQualityLabel(quality));
-    }
-
-    /**
-     * The sentence that says what a word list holds after an import: how many phrases, never
-     * which. [hides] picks the list of words to hide, otherwise the keep list.
-     */
-    static String wordsSentence(String list, boolean hides) {
-        int phrases = PostWords.count(list);
-        if (hides) {
-            if (phrases == 0) return L10n.t("Your list of words to hide will be empty.");
-            return L10n.quantity(phrases, "Your list of words to hide will hold %1$d word or phrase.",
-                    "Your list of words to hide will hold %1$d words or phrases.", phrases);
-        }
-        if (phrases == 0) return L10n.t("Your list of words that keep a post will be empty.");
-        return L10n.quantity(phrases, "Your list of words that keep a post will hold %1$d word or phrase.",
-                "Your list of words that keep a post will hold %1$d words or phrases.", phrases);
-    }
-
-    /** A sentence for each setting that isn't a switch an import changes, with no word list among them. */
-    static List<String> valueSentences(@Nullable String folder, @Nullable DownloadQuality quality,
-                                       @Nullable String fileName, @Nullable StartTab start,
-                                       @Nullable CommentOrder order) {
-        return valueSentences(folder, quality, fileName, start, order, null, null);
-    }
-
-    /** A sentence for each setting that isn't a switch an import changes, the playback quality aside. */
-    static List<String> valueSentences(@Nullable String folder, @Nullable DownloadQuality quality,
-                                       @Nullable String fileName, @Nullable StartTab start,
-                                       @Nullable CommentOrder order, @Nullable String hidden,
-                                       @Nullable String kept) {
-        return valueSentences(folder, quality, fileName, start, order, hidden, kept, null);
-    }
-
-    /**
-     * A sentence for each setting that isn't a switch an import changes, in the order the screen
-     * shows them: the tab Facebook opens on, the word filter's lists, the order comments open in,
-     * the quality videos play at, then the download settings.
-     */
-    static List<String> valueSentences(@Nullable String folder, @Nullable DownloadQuality quality,
-                                       @Nullable String fileName, @Nullable StartTab start,
-                                       @Nullable CommentOrder order, @Nullable String hidden,
-                                       @Nullable String kept, @Nullable PlaybackQuality playback) {
-        List<String> sentences = new ArrayList<>();
-        if (start != null) sentences.add(startTabSentence(start));
-        if (hidden != null) sentences.add(wordsSentence(hidden, true));
-        if (kept != null) sentences.add(wordsSentence(kept, false));
-        if (order != null) sentences.add(commentOrderSentence(order));
-        if (playback != null) sentences.add(playbackQualitySentence(playback));
-        if (quality != null) sentences.add(qualitySentence(quality));
-        if (folder != null) sentences.add(folderSentence(folder));
-        if (fileName != null) sentences.add(fileNameSentence(fileName));
-        return sentences;
     }
 
     private static void answered(HushThreadsPreferenceFragment page) {
@@ -504,9 +388,7 @@ public class SettingsBackupPreference extends Preference {
         boolean accepted = false;
         try {
             // Counted before the write, which makes every change match the store.
-            String done = importedMessage(snapshot.switchChanges(), snapshot.folderChange(), snapshot.qualityChange(),
-                    snapshot.fileNameChange(), snapshot.startChange(), snapshot.orderChange(), snapshot.hiddenChange(),
-                    snapshot.keptChange(), snapshot.playbackChange());
+            String done = importedMessage(snapshot.switchChanges());
             accepted = Utils.runOnBackgroundThread(() -> {
                 try {
                     SettingsBackup.apply(snapshot);
@@ -538,47 +420,10 @@ public class SettingsBackupPreference extends Preference {
         }
     }
 
-    /** The toast after an import that changed no start tab. */
-    static String importedMessage(int switches, @Nullable String folder, @Nullable DownloadQuality quality,
-                                  @Nullable String fileName) {
-        return importedMessage(switches, folder, quality, fileName, null);
-    }
-
-    /** The toast after an import that changed no comment order. */
-    static String importedMessage(int switches, @Nullable String folder, @Nullable DownloadQuality quality,
-                                  @Nullable String fileName, @Nullable StartTab start) {
-        return importedMessage(switches, folder, quality, fileName, start, null);
-    }
-
-    /** The toast after an import that changed no word list. */
-    static String importedMessage(int switches, @Nullable String folder, @Nullable DownloadQuality quality,
-                                  @Nullable String fileName, @Nullable StartTab start, @Nullable CommentOrder order) {
-        return importedMessage(switches, folder, quality, fileName, start, order, null, null);
-    }
-
-    /** The toast after an import that changed no playback quality. */
-    static String importedMessage(int switches, @Nullable String folder, @Nullable DownloadQuality quality,
-                                  @Nullable String fileName, @Nullable StartTab start, @Nullable CommentOrder order,
-                                  @Nullable String hidden, @Nullable String kept) {
-        return importedMessage(switches, folder, quality, fileName, start, order, hidden, kept, null);
-    }
-
-    /**
-     * What the toast after an import says: how many switches changed, then a sentence for each
-     * other setting that did. A folder alone keeps the one sentence it always had.
-     */
-    static String importedMessage(int switches, @Nullable String folder, @Nullable DownloadQuality quality,
-                                  @Nullable String fileName, @Nullable StartTab start, @Nullable CommentOrder order,
-                                  @Nullable String hidden, @Nullable String kept, @Nullable PlaybackQuality playback) {
-        if (switches == 0 && folder != null && quality == null && fileName == null && start == null && order == null
-                && hidden == null && kept == null && playback == null) {
-            return L10n.f("Settings imported. Saves will go to a folder named %1$s.", L10n.isolate(folder));
-        }
-        List<String> parts = new ArrayList<>();
-        parts.add(switches == 0 ? L10n.t("Settings imported.") : L10n.quantity(switches,
-                "Settings imported. %1$d switch changed.", "Settings imported. %1$d switches changed.", switches));
-        parts.addAll(valueSentences(folder, quality, fileName, start, order, hidden, kept, playback));
-        return String.join(" ", parts);
+    /** What the toast after an import says: how many switches changed. */
+    static String importedMessage(int switches) {
+        return switches == 0 ? L10n.t("Settings imported.") : L10n.quantity(switches,
+                "Settings imported. %1$d switch changed.", "Settings imported. %1$d switches changed.", switches);
     }
 
     @Nullable
@@ -699,7 +544,8 @@ public class SettingsBackupPreference extends Preference {
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
-        // A screen reader hears the row as unavailable, and this says why.
-        view.setStateDescription(busyLine);
+        // A screen reader hears the row as unavailable, and this says why. Older versions read the
+        // summary, which shows the same line.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) view.setStateDescription(busyLine);
     }
 }
