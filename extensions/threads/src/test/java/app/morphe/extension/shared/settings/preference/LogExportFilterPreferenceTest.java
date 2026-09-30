@@ -55,7 +55,7 @@ public class LogExportFilterPreferenceTest {
             assertFalse(picker.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled());
 
             // Choosing one kind makes it something again, and that is what is saved.
-            kinds.performItemClick(kinds.getAdapter().getView(3, null, kinds), 3, 3);
+            kinds.performItemClick(kinds.getAdapter().getView(1, null, kinds), 1, 1);
             assertTrue(picker.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled());
             picker.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             // The dialog hands the click to its listener through the main looper.

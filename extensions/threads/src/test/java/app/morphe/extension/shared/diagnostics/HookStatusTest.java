@@ -24,7 +24,7 @@ import java.util.List;
 import app.morphe.extension.shared.SettingsContextRule;
 
 /**
- * The hook state a report carries per family: how often Facebook reached a hook, what its
+ * The hook state a report carries per family: how often Threads reached a hook, what its
  * lookups found, and which lookups found nothing or more than one candidate.
  */
 @RunWith(RobolectricTestRunner.class)
@@ -40,16 +40,16 @@ public class HookStatusTest {
 
     @Test
     public void aLineCountsRunsFindsAmbiguitiesAndMisses() {
-        HookStatus.invoked("Reels");
-        HookStatus.invoked("Reels");
-        HookStatus.invoked("Reels");
-        HookStatus.bound("Reels", "section item list");
-        HookStatus.ambiguous("Reels", "field", "X.abc", "source", 2);
-        HookStatus.missingMember("Reels", "field", "X.def", "items");
+        HookStatus.invoked("Hide ads");
+        HookStatus.invoked("Hide ads");
+        HookStatus.invoked("Hide ads");
+        HookStatus.bound("Hide ads", "section item list");
+        HookStatus.ambiguous("Hide ads", "field", "FeedUnit", "source", 2);
+        HookStatus.missingMember("Hide ads", "field", "FeedPage", "items");
 
         // The miss that 'missing' counts is the one named, though the ambiguous lookup came first.
         assertEquals(Arrays.asList(
-                "Reels: invoked 3, 1 found, 1 ambiguous, 1 missing. First missing: field X.def#items"),
+                "Hide ads: invoked 3, 1 found, 1 ambiguous, 1 missing. First missing: field FeedPage#items"),
                 HookStatus.report());
         assertTrue("an ambiguous lookup is a finding a report has to carry", HookStatus.anyMissing());
     }
@@ -57,11 +57,11 @@ public class HookStatusTest {
     /** With nothing missing, the lookup the line names is an ambiguous one, and it says so. */
     @Test
     public void aFamilyWhoseOnlyFindingIsAmbiguousDoesNotCallItMissing() {
-        HookStatus.invoked("Download any reel");
-        HookStatus.ambiguous("Download any reel", "field", "X.params", "com.facebook.video.engine.api.VideoDataSource", 2);
+        HookStatus.invoked("Hide ads");
+        HookStatus.ambiguous("Hide ads", "field", "FeedItem.media", "java.util.List", 2);
 
-        assertEquals(Arrays.asList("Download any reel: invoked 1, 0 found, 1 ambiguous, 0 missing. First ambiguous: "
-                        + "a single field X.params#com.facebook.video.engine.api.VideoDataSource (found 2)"),
+        assertEquals(Arrays.asList("Hide ads: invoked 1, 0 found, 1 ambiguous, 0 missing. First ambiguous: "
+                        + "a single field FeedItem.media#java.util.List (found 2)"),
                 HookStatus.report());
     }
 
@@ -75,13 +75,13 @@ public class HookStatusTest {
 
     @Test
     public void anAmbiguityIsRecordedOnceAndKeptApartFromAMiss() {
-        for (int i = 0; i < 5; i++) HookStatus.ambiguous("Reels", "field", "X.abc", "source", 2);
-        HookStatus.missingMember("Reels", "field", "X.abc", "source");
+        for (int i = 0; i < 5; i++) HookStatus.ambiguous("Hide ads", "field", "FeedUnit", "source", 2);
+        HookStatus.missingMember("Hide ads", "field", "FeedUnit", "source");
 
-        List<String> details = HookStatus.missing("Reels");
+        List<String> details = HookStatus.missing("Hide ads");
         assertEquals(details.toString(), 2, details.size());
-        assertEquals("a single field X.abc#source (found 2)", details.get(0));
-        assertEquals("field X.abc#source", details.get(1));
+        assertEquals("a single field FeedUnit#source (found 2)", details.get(0));
+        assertEquals("field FeedUnit#source", details.get(1));
     }
 
     @Test
@@ -98,27 +98,27 @@ public class HookStatusTest {
     /**
      * What a hook decided, counted under a fixed name, goes on its family's line in the order it
      * was first counted. A family whose only runs are decisions still gets a line, which is what a
-     * reel sidebar built without its button needs: the tap counter never runs there.
+     * hook that only swaps an address needs: nothing else in it counts a run.
      */
     @Test
     public void countedDecisionsAreNamedOnTheFamilyLine() {
-        HookStatus.counted("Download any reel", "UDD sidebar with Download");
-        HookStatus.counted("Download any reel", "FbShorts sidebar");
-        HookStatus.counted("Download any reel", "UDD sidebar with Download");
+        HookStatus.counted("Disable analytics", "upload address replaced");
+        HookStatus.counted("Disable analytics", "MQTT analytics address replaced");
+        HookStatus.counted("Disable analytics", "upload address replaced");
 
-        assertEquals(Arrays.asList("Download any reel: invoked 0, 0 found, 0 missing. "
-                        + "Counted: UDD sidebar with Download 2, FbShorts sidebar 1"),
+        assertEquals(Arrays.asList("Disable analytics: invoked 0, 0 found, 0 missing. "
+                        + "Counted: upload address replaced 2, MQTT analytics address replaced 1"),
                 HookStatus.report());
         assertEquals("a count is no finding", false, HookStatus.anyMissing());
-        assertEquals(Arrays.asList("Download any reel: invoked 0, 0 found, 0 missing. "
-                        + "Counted: UDD sidebar with Download 2, FbShorts sidebar 1 (paused)"),
+        assertEquals(Arrays.asList("Disable analytics: invoked 0, 0 found, 0 missing. "
+                        + "Counted: upload address replaced 2, MQTT analytics address replaced 1 (paused)"),
                 HookStatus.report(" (paused)"));
     }
 
     /** A family keeps sixteen names at most, so a caller that passes varying text can't grow the report. */
     @Test
     public void aFamilyCountsSixteenNamesAtMost() {
-        for (int i = 0; i < 40; i++) HookStatus.counted("Reels", "kind " + i);
+        for (int i = 0; i < 40; i++) HookStatus.counted("Hide ads", "kind " + i);
         String line = HookStatus.report().get(0);
         assertTrue(line, line.contains("kind 15 1"));
         assertTrue(line, !line.contains("kind 16"));
@@ -126,14 +126,14 @@ public class HookStatusTest {
 
     @Test
     public void countsTakenBeforeAClearComeBackAddedToTheOnesSince() {
-        HookStatus.counted("Reels", "shown");
-        HookStatus.counted("Reels", "shown");
+        HookStatus.counted("Hide ads", "shown");
+        HookStatus.counted("Hide ads", "shown");
         HookStatus.Snapshot before = HookStatus.snapshotAndClear();
-        HookStatus.counted("Reels", "off");
-        HookStatus.counted("Reels", "shown");
+        HookStatus.counted("Hide ads", "off");
+        HookStatus.counted("Hide ads", "shown");
 
         HookStatus.restore(before);
-        assertEquals(Arrays.asList("Reels: invoked 0, 0 found, 0 missing. Counted: shown 3, off 1"),
+        assertEquals(Arrays.asList("Hide ads: invoked 0, 0 found, 0 missing. Counted: shown 3, off 1"),
                 HookStatus.report());
     }
 
@@ -141,7 +141,7 @@ public class HookStatusTest {
     @Test
     public void countingADecisionNeverThrows() {
         HookStatus.counted(null, "shown");
-        HookStatus.counted("Reels", null);
+        HookStatus.counted("Hide ads", null);
         assertEquals(Arrays.asList(), HookStatus.report());
     }
 

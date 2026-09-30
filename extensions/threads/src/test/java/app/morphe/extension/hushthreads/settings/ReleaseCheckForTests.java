@@ -19,7 +19,7 @@ final class ReleaseCheckForTests {
     }
 
     /**
-     * A Facebook start, a day after the last try so one is due: true when it asked GitHub. The
+     * A Threads start, a day after the last try so one is due: true when it asked GitHub. The
      * GitHub is a fake that answers with the running release, and it's taken away again after.
      */
     static boolean aStartAsksGitHub() {
@@ -28,7 +28,7 @@ final class ReleaseCheckForTests {
         ReleaseCheck.transport = github;
         try {
             long last = ReleaseCheck.Stored.CHECKED_AT.savedValue();
-            ReleaseCheck.onFacebookStart(Math.max(System.currentTimeMillis(), last) + TimeUnit.DAYS.toMillis(2));
+            ReleaseCheck.onThreadsStart(Math.max(System.currentTimeMillis(), last) + TimeUnit.DAYS.toMillis(2));
             settle();
             return !github.asked.isEmpty();
         } finally {

@@ -8,9 +8,7 @@
 package app.morphe.extension.hushthreads.settings;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.res.ColorStateList;
-import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -23,6 +21,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
 import android.graphics.drawable.RippleDrawable;
+import android.os.Build;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
@@ -39,26 +38,16 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
-import app.morphe.extension.hushthreads.theme.TonePalette;
 import app.morphe.extension.shared.settings.preference.ImmediateAction;
 
 /**
- * The colours of the HushThreads screen, its rows and its dialogs when the Material You theme is
- * in this build. The screen then follows the phone's dark or light setting, in the tones of the
- * wallpaper palette (Android 12 and newer) or of the fixed palette Android 11 gets.
- *
- * <p>A tone is a lightness, so the contrast of each pair below is the same for any wallpaper. The
- * pairs are Material 3's: the page is the neutral at tone 10 in dark and 99 in light, text is the
- * neutral at 90 or 10, secondary text the neutral variant at 80 or 30, and section titles, switches
- * and dialog buttons the accent at 80 or 40. Every pair meets WCAG 2.2 AA with room to spare,
- * which ScreenColorsTest works out.
- *
- * <p>Without the theme in the build, {@link #forScreen} answers null and the screen keeps the black
- * page and dark Material rows it always had.
+ * The colours of the HushThreads screen, its rows and its dialogs: a black page with dark Material
+ * rows, whatever the host activity's theme is. Every pair meets WCAG 2.2 AA, which ScreenColorsTest
+ * works out.
  */
 final class ScreenColors {
-    final boolean light;
     /** The page, behind the title bar and every row. */
     final int background;
     /** A dialog's surface. */
@@ -79,13 +68,13 @@ final class ScreenColors {
     /** Text on the filled primary dialog action. */
     final int onAccent;
 
-    /** The colours the screen on show was built with, or null for the black page. */
-    @Nullable
-    static volatile ScreenColors shown;
+    /** The one palette the screen is drawn in. */
     static final ScreenColors DEFAULT = new ScreenColors();
 
+    /** The framework theme rows and dialogs are built with, so what this class doesn't paint still reads. */
+    static final int THEME = android.R.style.Theme_Material_NoActionBar;
+
     private ScreenColors() {
-        light = false;
         background = Color.BLACK;
         dialog = 0xFF11151D;
         title = 0xFFF3F5F9;
@@ -98,45 +87,12 @@ final class ScreenColors {
         onAccent = Color.WHITE;
     }
 
-    private ScreenColors(TonePalette palette, boolean light) {
-        this.light = light;
-        if (light) {
-            background = palette.tone(TonePalette.NEUTRAL, 99);
-            dialog = palette.tone(TonePalette.NEUTRAL, 95);
-            title = palette.tone(TonePalette.NEUTRAL, 10);
-            summary = palette.tone(TonePalette.NEUTRAL_VARIANT, 30);
-            heading = palette.tone(TonePalette.ACCENT, 40);
-            accent = palette.tone(TonePalette.ACCENT, 40);
-            switchOff = palette.tone(TonePalette.NEUTRAL_VARIANT, 50);
-            card = palette.tone(TonePalette.NEUTRAL, 95);
-            outline = palette.tone(TonePalette.NEUTRAL_VARIANT, 80);
-            onAccent = Color.WHITE;
-        } else {
-            background = palette.tone(TonePalette.NEUTRAL, 10);
-            dialog = palette.tone(TonePalette.NEUTRAL, 20);
-            title = palette.tone(TonePalette.NEUTRAL, 90);
-            summary = palette.tone(TonePalette.NEUTRAL_VARIANT, 80);
-            heading = palette.tone(TonePalette.ACCENT, 80);
-            accent = palette.tone(TonePalette.ACCENT, 80);
-            switchOff = palette.tone(TonePalette.NEUTRAL_VARIANT, 60);
-            card = palette.tone(TonePalette.NEUTRAL, 20);
-            outline = palette.tone(TonePalette.NEUTRAL_VARIANT, 30);
-            onAccent = background;
-        }
-    }
-
     /**
-     * The thumb of a switch that's off, read against its track. On a dark wallpaper palette the
-     * title's light tone sat at 2.46:1 on the neutral track, under the 3:1 a control's state
-     * needs; the dark tone that fills the on thumb reads above 5:1 there. The black page's white
-     * and the light page's dark title already clear 3:1.
+     * The thumb of a switch that's off, read against its track: the white that fills the on thumb
+     * clears the 3:1 a control's state needs there.
      */
     int offThumb() {
-        return light ? title : onAccent;
-    }
-
-    static ScreenColors of(TonePalette palette, boolean light) {
-        return new ScreenColors(palette, light);
+        return onAccent;
     }
 
     /**
@@ -151,33 +107,10 @@ final class ScreenColors {
 
     /**
      * The text of a dialog's outlined actions, such as Cancel. The black page's accent reads at
-     * 3.4:1 on its dialog, under the 4.5:1 text needs, so these take the heading colour. The
-     * Material You palettes draw both in one tone, so only the black page changes.
+     * 3.4:1 on its dialog, under the 4.5:1 text needs, so these take the heading colour.
      */
     int secondaryActionText() {
         return heading;
-    }
-
-    /**
-     * The colours for a screen shown in this context: the phone's palette, dark or light as the
-     * context's configuration says. Null when the Material You theme isn't in this build.
-     */
-    @Nullable
-    static ScreenColors forScreen(Context context) {
-        if (!PatchFamily.MATERIAL_YOU_THEME.inBuild()) return null;
-        int night = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        return new ScreenColors(TonePalette.of(context), night != Configuration.UI_MODE_NIGHT_YES);
-    }
-
-    /** The framework theme rows and dialogs are built with, so what this class doesn't paint still reads. */
-    int theme() {
-        return light ? android.R.style.Theme_Material_Light_NoActionBar : android.R.style.Theme_Material_NoActionBar;
-    }
-
-    /** {@link #theme()} of {@link #forScreen}, or the dark Material theme the black page has always had. */
-    static int themeFor(Context context) {
-        ScreenColors colors = forScreen(context);
-        return colors == null ? android.R.style.Theme_Material_NoActionBar : colors.theme();
     }
 
     /** A row's title and summary, its switch if it has one, and its chevron if a tap opens something. */
@@ -326,7 +259,7 @@ final class ScreenColors {
     }
 
     /**
-     * A chevron drawn in code, since Facebook's APK has no resource for one. It points the way
+     * A chevron drawn in code, since Threads' APK has no resource for one. It points the way
      * the row reads, so it mirrors in a right-to-left layout, and it dims with its row.
      */
     static final class Chevron extends Drawable {
@@ -440,8 +373,7 @@ final class ScreenColors {
     }
 
     static void recoveryMessage(View row) {
-        ScreenColors palette = forScreen(row.getContext());
-        if (palette == null) palette = DEFAULT;
+        ScreenColors palette = DEFAULT;
         HushThreadsPreferenceFragment.showAllText(row);
         TextView title = row.findViewById(android.R.id.title);
         TextView summary = row.findViewById(android.R.id.summary);
@@ -535,8 +467,8 @@ final class ScreenColors {
     }
 
     /**
-     * A dialog's text field. The framework theme draws its underline, cursor and selection in
-     * Facebook's teal, whatever the wallpaper, so they take the accent the buttons have.
+     * A dialog's text field. The framework theme draws its underline, cursor and selection in its
+     * own teal, so they take the accent the buttons have.
      */
     void paintField(EditText field) {
         field.setHintTextColor(summary);
@@ -549,6 +481,12 @@ final class ScreenColors {
         field.setPaddingRelative(dp(field, 12), dp(field, 10), dp(field, 12), dp(field, 10));
         field.setTextColor(title);
         field.setHighlightColor(half(accent));
+        // Android 9 has no way to set the cursor or the handles from code, so they keep the teal.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) paintCursorAndHandles(field);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private void paintCursorAndHandles(EditText field) {
         Drawable cursor = field.getTextCursorDrawable();
         if (cursor != null) {
             cursor = cursor.mutate();
@@ -583,28 +521,24 @@ final class ScreenColors {
         }
     }
 
-    /** Paints a row with the colours on show, if there are any. */
+    /** Paints a row in the screen's colours. */
     static void row(View row, Preference preference) {
-        ScreenColors colors = shown;
-        (colors == null ? DEFAULT : colors).paintRow(row, preference);
+        DEFAULT.paintRow(row, preference);
     }
 
-    /** Paints a section title with the colours on show, if there are any. */
+    /** Paints a section title in the screen's colours. */
     static void heading(View row) {
-        ScreenColors colors = shown;
-        (colors == null ? DEFAULT : colors).paintHeading(row);
+        DEFAULT.paintHeading(row);
     }
 
     /** Paints both recovery actions even if the ordinary settings page failed to initialize. */
     static void recoveryAction(View row, boolean primary) {
-        ScreenColors colors = forScreen(row.getContext());
-        (colors == null ? DEFAULT : colors).paintRecoveryAction(row, primary);
+        DEFAULT.paintRecoveryAction(row, primary);
     }
 
-    /** Paints a dialog with the colours on show, if there are any. */
+    /** Paints a dialog in the screen's colours. */
     static void dialog(@Nullable AlertDialog dialog) {
-        ScreenColors colors = shown;
-        (colors == null ? DEFAULT : colors).paint(dialog);
+        DEFAULT.paint(dialog);
     }
 
     private static int dp(View view, int value) {

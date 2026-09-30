@@ -9,7 +9,7 @@ package app.morphe.extension.shared.settings;
 
 /**
  * Pauses and resumes the process for a test in another package. {@link HushThreadsPause} keeps
- * its test hooks package-private, and the hooks a pause has to reach live in the Facebook packages.
+ * its test hooks package-private, and the hooks a pause has to reach live in the Threads packages.
  */
 public final class PauseForTests {
     private PauseForTests() {

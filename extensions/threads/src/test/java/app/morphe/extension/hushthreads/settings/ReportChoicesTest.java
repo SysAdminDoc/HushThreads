@@ -73,7 +73,6 @@ public class ReportChoicesTest {
     public void restore() {
         if (controller != null) controller.close();
         PatchFamily.inBuildForTests = null;
-        ScreenColors.shown = null;
         RuntimeEnvironment.setFontScale(1f);
         LogBufferManager.clearLogBuffer();
         ShadowToast.reset();

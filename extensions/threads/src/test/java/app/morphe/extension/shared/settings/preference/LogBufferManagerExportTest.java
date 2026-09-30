@@ -52,7 +52,7 @@ public class LogBufferManagerExportTest {
         app.morphe.extension.shared.settings.BaseSettings.DEBUG_LOG_FILTERS.save("all");
         app.morphe.extension.shared.diagnostics.HookStatus.clear();
         LogBufferManager.clearLogBuffer();
-        app.morphe.extension.shared.diagnostics.HookStatus.missingViewId("comments", "jlk");
+        app.morphe.extension.shared.diagnostics.HookStatus.missingViewId("Hide ads", "jlk");
 
         String report = LogBufferManager.buildExportText();
         assertNotEquals("nothing was reported at all", "", report);
@@ -77,7 +77,7 @@ public class LogBufferManagerExportTest {
                 .setDescription("MemoryLimiter:AnonSwap")
                 .build();
 
-        // Facebook runs several processes, and the most recent record is routinely a background
+        // Threads runs several processes, and the most recent record is routinely a background
         // helper the system reaped. Reporting that as why the app went away is worse than saying
         // nothing, so the newer of the two here must be passed over.
         android.app.ApplicationExitInfo helper = org.robolectric.shadows.ShadowActivityManager
@@ -110,7 +110,7 @@ public class LogBufferManagerExportTest {
     }
 
     /**
-     * Facebook runs on Android 11 and newer, where the report goes through MediaStore into
+     * On Android 10 and newer, the report goes through MediaStore into
      * Download/Morphe. The path handed back is the name MediaStore gave the file, which differs
      * from the one asked for when a file of that name is already there.
      */
@@ -144,6 +144,28 @@ public class LogBufferManagerExportTest {
     }
 
     /**
+     * Android 9 has no Downloads collection in MediaStore, so the report goes into the app's own
+     * folder on shared storage, which needs no permission there, and the path handed back is where
+     * it went.
+     */
+    @Test @Config(sdk = 28) public void onAndroid9TheReportGoesIntoTheAppsOwnFolder() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        String report = "MORPHE DIAGNOSTIC REPORT\nschema: 1\n";
+
+        String first = LogBufferManager.writeToFile(context, report);
+        String second = LogBufferManager.writeToFile(context, report);
+
+        java.io.File folder = new java.io.File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "Morphe");
+        for (String saved : new String[]{first, second}) {
+            java.io.File file = new java.io.File(saved);
+            assertEquals(folder.getAbsolutePath(), file.getParent());
+            assertTrue(saved, file.getName().startsWith("morphe-diagnostics-") && file.getName().endsWith(".txt"));
+            assertEquals(report, new String(java.nio.file.Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
+        }
+        assertNotEquals(first, second);
+    }
+
+    /**
      * The file's place is a value set into a sentence, so the toast isolates it: a right-to-left
      * sentence then keeps "Download/Morphe/..." in the order it was written.
      */
@@ -155,7 +177,7 @@ public class LogBufferManagerExportTest {
         app.morphe.extension.shared.settings.BaseSettings.DEBUG_LOG_FILTERS.save("all");
         app.morphe.extension.shared.diagnostics.HookStatus.clear();
         LogBufferManager.clearLogBuffer();
-        app.morphe.extension.shared.diagnostics.HookStatus.missingViewId("comments", "jlk");
+        app.morphe.extension.shared.diagnostics.HookStatus.missingViewId("Hide ads", "jlk");
         org.robolectric.shadows.ShadowToast.reset();
 
         LogBufferManager.exportToFile();
@@ -188,12 +210,12 @@ public class LogBufferManagerExportTest {
         java.util.List<String> lines = new java.util.ArrayList<>();
         StringBuilder crash = new StringBuilder("complete: true\njava.io.IOException: 401\n");
         for (String[] row : corpus) {
-            LogBufferManager.appendEvent(app.morphe.extension.shared.diagnostics.DiagnosticCategory.DOWNLOADS,
+            LogBufferManager.appendEvent(app.morphe.extension.shared.diagnostics.DiagnosticCategory.FEED,
                     "Probe", "INFO", row[0]);
             lines.add(row[0]);
             crash.append(row[0]).append('\n');
         }
-        String frame = "\tat app.morphe.extension.hushthreads.download.Downloader.connect(Downloader.java:120)";
+        String frame = "\tat app.morphe.extension.hushthreads.settings.ReleaseTransport.open(ReleaseTransport.java:120)";
         crash.append(frame).append('\n');
         LogBufferManager.persistCrashReport(context, crash.toString());
         LogBufferManager.registerReportSection(new LogBufferManager.ReportSection() {
@@ -237,7 +259,7 @@ public class LogBufferManagerExportTest {
                         java.util.regex.Pattern.compile("\ngenerated_utc: \\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z\n")
                                 .matcher(text).find());
                 assertTrue(where + " lost the event times: " + text,
-                        java.util.regex.Pattern.compile("\ndownloads \\| \\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z \\| ")
+                        java.util.regex.Pattern.compile("\nfeed \\| \\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z \\| ")
                                 .matcher(text).find());
                 assertTrue(where + " lost the stack frame: " + text, text.contains(frame + "\n"));
                 assertTrue(where + " lost the crash heading: " + text, text.contains("[LATEST JAVA CRASH]"));

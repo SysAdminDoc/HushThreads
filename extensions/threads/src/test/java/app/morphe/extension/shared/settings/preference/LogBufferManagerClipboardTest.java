@@ -254,7 +254,7 @@ public class LogBufferManagerClipboardTest {
             }
         });
         LogBufferManager.appendEvent(DiagnosticCategory.OTHER, "Probe", "INFO",
-                "opened www.facebook.com/dana.q.1987");
+                "opened www.threads.com/@dana.q.1987");
         ClipboardManager clipboard = clipboardHolding("before");
 
         LogBufferManager.exportToClipboard();

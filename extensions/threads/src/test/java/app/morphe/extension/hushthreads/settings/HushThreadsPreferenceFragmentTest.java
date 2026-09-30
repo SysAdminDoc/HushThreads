@@ -10,7 +10,6 @@ package app.morphe.extension.hushthreads.settings;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
@@ -19,15 +18,10 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.SwitchPreference;
-import android.widget.TextView;
 
-import app.morphe.extension.hushthreads.comments.CommentOrder;
-import app.morphe.extension.hushthreads.download.DownloadQuality;
-import app.morphe.extension.hushthreads.feed.PostWordsForTests;
-import app.morphe.extension.hushthreads.media.PlaybackQuality;
-import app.morphe.extension.hushthreads.navigation.StartTab;
 import app.morphe.extension.shared.L10n;
 import app.morphe.extension.shared.SettingsContextRule;
 import app.morphe.extension.shared.settings.BaseSettings;
@@ -36,7 +30,6 @@ import app.morphe.extension.shared.settings.HushThreadsPause;
 import app.morphe.extension.shared.settings.PauseForTests;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,21 +41,24 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAlertDialog;
 import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.shadows.ShadowToast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * The settings screen as it draws inside Facebook: a black page whose rows must be readable.
+ * The settings screen as it draws inside Threads: a black page whose rows must be readable, and a
+ * row for each patch this build carries and none for the rest.
  *
- * <p>On a phone on 2026-09-24 every row title was near-black on black, because the rows took
- * Facebook's light activity theme, and the two diagnostics rows had no text at all.
+ * <p>On a phone on 2026-09-24 every row title was near-black on black, because the rows took the
+ * host's light activity theme, and the two diagnostics rows had no text at all.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
@@ -70,27 +66,29 @@ import java.util.regex.Pattern;
 public class HushThreadsPreferenceFragmentTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
-    /** Wording that tells the reader a paused Facebook is an unpatched one, which it isn't. */
+    /** Wording that tells the reader a paused Threads is an unpatched one, which it isn't. */
     private static final Pattern UNPATCHED = Pattern.compile("(?i)unpatched|n't patched|not patched|as if it weren");
 
-    /** The count of hidden posts is the process's, and other test classes in this JVM hide posts too. */
-    @Before
-    public void forgetHiddenPosts() {
-        PostWordsForTests.forget();
+    /** The row each patch adds, by the title it shows. */
+    private static final Map<PatchFamily, String> ROW_TITLES = new LinkedHashMap<>();
+
+    static {
+        ROW_TITLES.put(PatchFamily.HIDE_ADS, "Hide ads");
+        ROW_TITLES.put(PatchFamily.SANITIZE_SHARING_LINKS, "Remove tracking from shared links");
+        ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop analytics uploads");
+        ROW_TITLES.put(PatchFamily.REMOVE_AD_ID, "Advertising ID removed");
+        ROW_TITLES.put(PatchFamily.RESTORE_TRUST, "Re-signed build fix");
     }
+
+    /** The sections every build has, in the order they're drawn. */
+    private static final List<String> EVERY_BUILD = Arrays.asList(
+            "Links", "Updates", "Pause, backup and diagnostics", "About");
 
     @After
     public void restore() {
-        PostWordsForTests.forget();
         PatchFamily.inBuildForTests = null;
-        ScreenColors.shown = null;
         PauseForTests.resume();
         BaseSettings.SAFE_MODE.resetToDefault();
-        Settings.SAVE_FOLDER.resetToDefault();
-        Settings.DOWNLOAD_QUALITY.resetToDefault();
-        Settings.FILENAME_TEMPLATE.resetToDefault();
-        Settings.HIDDEN_WORDS.resetToDefault();
-        Settings.KEPT_WORDS.resetToDefault();
     }
 
     @Test
@@ -105,7 +103,7 @@ public class HushThreadsPreferenceFragmentTest {
      * has. This one draws the screen with every patch in.
      */
     @Test
-    public void withEveryPatchInEveryRowIsReadableAndNoneCallsAPausedFacebookUnpatched() {
+    public void withEveryPatchInEveryRowIsReadableAndNoneCallsAPausedThreadsUnpatched() {
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             List<Preference> rows = rowsOf(controller);
@@ -115,15 +113,13 @@ public class HushThreadsPreferenceFragmentTest {
             for (PatchFamily family : PatchFamily.values()) {
                 for (BooleanSetting setting : family.switches) switchKeys.add(setting.key);
             }
-            // The settings entry's own switches are Pause's to turn off too, and so are the ones
-            // the downloads share.
+            // The settings entry's own switches are Pause's to turn off too.
             for (BooleanSetting setting : PatchFamily.ENTRY_SWITCHES) switchKeys.add(setting.key);
-            for (BooleanSetting setting : PatchFamily.DOWNLOAD_SWITCHES) switchKeys.add(setting.key);
             Set<String> shown = new HashSet<>();
             Preference stays = null;
             for (Preference row : rows) {
                 String text = row.getTitle() + " " + row.getSummary();
-                assertFalse("\"" + text + "\" says a paused Facebook is unpatched", UNPATCHED.matcher(text).find());
+                assertFalse("\"" + text + "\" says a paused Threads is unpatched", UNPATCHED.matcher(text).find());
                 if (row instanceof SwitchPreference && switchKeys.contains(row.getKey())) shown.add(row.getKey());
                 if (HushThreadsPreferenceFragment.STAYS_WHILE_PAUSED.contentEquals(row.getTitle())) stays = row;
             }
@@ -144,75 +140,88 @@ public class HushThreadsPreferenceFragmentTest {
         }
     }
 
-    private static int indexOfKey(List<Preference> rows, String key) {
-        for (int i = 0; i < rows.size(); i++) {
-            if (key.equals(rows.get(i).getKey())) return i;
-        }
-        return -1;
-    }
-
     /**
-     * Facebook builds the feed's adapters once per feed view and the tray is one of them, so the
-     * switch can't act before a restart (an S22 check on 2026-09-26 pulled to refresh and got no
-     * tray back). The row says so, after what the tray is.
+     * Each patch's row is on the screen only when the patch is in the build: alone, with every
+     * other patch, and not at all. A section with nothing of its build to show isn't drawn, and the
+     * sections every build needs always are.
      */
     @Test
-    public void theStoriesTrayRowSaysTheSwitchWaitsForARestart() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.STORIES_TRAY);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            List<Preference> rows = rowsOf(controller);
-            int tray = indexOfKey(rows, Settings.HIDE_STORIES_TRAY.key);
-            assertTrue("the Stories tray row is missing", tray >= 0);
-            assertEquals("The row of stories at the top of the feed, Create story included. "
-                    + "The switch takes effect when Facebook restarts.", String.valueOf(rows.get(tray).getSummary()));
+    public void theFeatureRowsAreThePatchesInThisBuild() {
+        List<Set<PatchFamily>> builds = new ArrayList<>();
+        builds.add(EnumSet.noneOf(PatchFamily.class));
+        for (PatchFamily family : PatchFamily.values()) builds.add(EnumSet.of(family));
+        builds.add(EnumSet.allOf(PatchFamily.class));
+        assertEquals("every patch needs its row here", EnumSet.allOf(PatchFamily.class), ROW_TITLES.keySet());
+
+        List<String> wrong = new ArrayList<>();
+        for (Set<PatchFamily> build : builds) {
+            PatchFamily.inBuildForTests = build;
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushThreadsPreferenceFragment page = pageOf(controller);
+                List<Preference> rows = new ArrayList<>();
+                collect(page.getPreferenceScreen(), rows);
+                Set<String> titles = new HashSet<>();
+                for (Preference row : rows) titles.add(String.valueOf(row.getTitle()));
+                for (Map.Entry<PatchFamily, String> row : ROW_TITLES.entrySet()) {
+                    if (build.contains(row.getKey()) != titles.contains(row.getValue())) {
+                        wrong.add(build + ": " + row.getValue() + (build.contains(row.getKey()) ? " is missing" : " is shown"));
+                    }
+                }
+                for (PatchFamily family : PatchFamily.values()) {
+                    for (BooleanSetting setting : family.switches) {
+                        boolean drawn = page.findPreference(setting.key) != null;
+                        if (drawn != build.contains(family)) wrong.add(build + ": " + setting.key + (drawn ? " is drawn" : " isn't drawn"));
+                    }
+                }
+
+                List<String> sections = sections(page);
+                List<String> expected = new ArrayList<>();
+                if (build.contains(PatchFamily.HIDE_ADS)) expected.add("Feed");
+                if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS) || build.contains(PatchFamily.DISABLE_ANALYTICS)) {
+                    expected.add("Privacy");
+                }
+                expected.addAll(EVERY_BUILD.subList(0, 2));
+                if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)) {
+                    expected.add("Set when you patched");
+                }
+                expected.addAll(EVERY_BUILD.subList(2, EVERY_BUILD.size()));
+                if (!expected.equals(sections)) wrong.add(build + ": sections " + sections);
+            }
         }
+        assertEquals(Collections.emptyList(), wrong);
     }
 
-    /**
-     * The sponsored and AI reel filters take ads and flagged reels out of each batch of reels as it
-     * arrives, so reels already loaded stay as they were until the next batch. Both rows say when a
-     * change starts, right after what the switch hides.
-     */
+    /** The five patches' rows say what each does, in Threads' own words. */
     @Test
-    public void theReelFilterRowsSayAChangeStartsWithTheNextBatch() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SPONSORED_REELS, PatchFamily.AI_DETECTED_POSTS);
+    public void eachPatchsRowSaysWhatItDoes() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            List<Preference> rows = rowsOf(controller);
-            int sponsored = indexOfKey(rows, Settings.HIDE_SPONSORED_REELS.key);
-            int ai = indexOfKey(rows, Settings.HIDE_AI_DETECTED_REELS.key);
-            assertTrue("the sponsored reels row is missing", sponsored >= 0);
-            assertTrue("the AI reels row is missing", ai >= 0);
-            assertTrue(String.valueOf(rows.get(sponsored).getSummary()), String.valueOf(rows.get(sponsored).getSummary())
-                    .startsWith("Ads inside Reels, starting with the next batch Facebook loads. "));
-            assertTrue(String.valueOf(rows.get(ai).getSummary()), String.valueOf(rows.get(ai).getSummary())
-                    .startsWith("Reels and Watch videos that Facebook's own detection marks as made with AI, "
-                            + "starting with the next batch Facebook loads. "));
-        }
-    }
-
-    /**
-     * The creator AI label switch sits right below Hide AI-detected posts in News feed, which it adds
-     * to, and says it hides both kinds of labelled post.
-     */
-    @Test
-    public void theAiLabelRowSitsRightBelowTheDetectionRow() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.AI_DETECTED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            List<Preference> rows = rowsOf(controller);
-            int detected = indexOfKey(rows, Settings.HIDE_AI_DETECTED_POSTS.key);
-            int labelled = indexOfKey(rows, Settings.HIDE_AI_LABELLED_POSTS.key);
-            assertTrue("the AI-detected posts row is missing", detected >= 0);
-            assertEquals("the AI label row isn't right below the detection row", detected + 1, labelled);
-            assertEquals("Also hide posts labelled as AI", String.valueOf(rows.get(labelled).getTitle()));
-            assertTrue(String.valueOf(rows.get(labelled).getSummary()), String.valueOf(rows.get(labelled).getSummary())
-                    .contains("with this on, both kinds go."));
+            HushThreadsPreferenceFragment page = pageOf(controller);
+            assertEquals("Hide ads", String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getTitle()));
+            assertEquals("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
+                    String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getSummary()));
+            assertEquals("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the "
+                    + "link stays as it was.", String.valueOf(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key).getSummary()));
+            assertEquals("The usage and event logs Threads sends to Meta go to an address that doesn't answer. Your feed, "
+                    + "posts and replies work as before.", String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
+            // The switches are the screen's, all three on as they ship.
+            for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.SANITIZE_SHARING_LINKS,
+                    Settings.DISABLE_ANALYTICS)) {
+                assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
+            }
+            List<Preference> rows = new ArrayList<>();
+            collect(page.getPreferenceScreen(), rows);
+            for (Preference row : rows) {
+                String text = row.getTitle() + " " + row.getSummary();
+                assertFalse("\"" + text + "\" names Facebook", text.contains("Facebook"));
+            }
         }
     }
 
     @Test
     public void thePausedCardSaysWhatStaysInForEveryReason() {
         for (HushThreadsPause.Reason why : HushThreadsPause.Reason.values()) {
-            String summary = HushThreadsPreferenceFragment.pausedSummary(why, "com.facebook.katana");
+            String summary = HushThreadsPreferenceFragment.pausedSummary(why, "com.instagram.barcelona");
             assertFalse(why + ": " + summary, UNPATCHED.matcher(summary).find());
             assertTrue(why + ": " + summary, summary.contains("what was set when you patched stays in"));
             // Debug logging is kept as saved while paused, so the card can't say every switch is off.
@@ -233,170 +242,44 @@ public class HushThreadsPreferenceFragmentTest {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             Preference card = rowsOf(controller).get(0);
             assertEquals("HushThreads is paused", String.valueOf(card.getTitle()));
-            assertEquals(HushThreadsPreferenceFragment.pausedSummary(HushThreadsPause.Reason.CRASH_LOOP, RuntimeEnvironment.getApplication().getPackageName())
+            assertEquals(HushThreadsPreferenceFragment.pausedSummary(HushThreadsPause.Reason.CRASH_LOOP, pkg)
                     + " Tap to turn it back on.", String.valueOf(card.getSummary()));
         }
     }
 
     /**
      * A version is a value set into a sentence, so both rows that show one isolate it: in a
-     * right-to-left sentence "580.0.0.51.74" then keeps the order it was written in.
+     * right-to-left sentence "449.0.0.54.82" then keeps the order it was written in.
      */
     @Test
     public void theVersionRowsIsolateTheVersions() {
         android.content.Context context = RuntimeEnvironment.getApplication();
-        org.robolectric.Shadows.shadowOf(context.getPackageManager())
-                .getInternalMutablePackageInfo(context.getPackageName()).versionName = "580.0.0.51.74";
-        String facebook = app.morphe.extension.shared.Utils.getAppVersionName();
-        assertTrue("no Facebook version to look for", facebook != null && !facebook.isEmpty());
+        Shadows.shadowOf(context.getPackageManager())
+                .getInternalMutablePackageInfo(context.getPackageName()).versionName = "449.0.0.54.82";
+        String threads = app.morphe.extension.shared.Utils.getAppVersionName();
+        assertTrue("no Threads version to look for", threads != null && !threads.isEmpty());
 
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             List<Preference> rows = rowsOf(controller);
             Preference card = rows.get(0);
             assertEquals("HushThreads is on", String.valueOf(card.getTitle()));
-            assertTrue(String.valueOf(card.getSummary()), String.valueOf(card.getSummary()).contains(L10n.isolate(facebook)));
+            assertTrue(String.valueOf(card.getSummary()), String.valueOf(card.getSummary()).contains(L10n.isolate(threads)));
             Preference version = null;
             for (Preference row : rows) {
                 if ("Version".contentEquals(row.getTitle())) version = row;
             }
             assertNotNull("no Version row", version);
-            assertTrue(String.valueOf(version.getSummary()), String.valueOf(version.getSummary()).contains(L10n.isolate(facebook)));
+            assertTrue(String.valueOf(version.getSummary()), String.valueOf(version.getSummary()).contains(L10n.isolate(threads)));
         }
     }
 
     /**
-     * The save folder's row keeps the one clean folder name a save would use, whatever is typed
-     * into it, and says where videos and photos go. It's there with any download in the build.
-     */
-    @Test
-    public void theFolderRowKeepsOneCleanNameAndSaysWhereSavesGo() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.STORY_DOWNLOAD);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            HushThreadsPreferenceFragment.FolderRow folder = null;
-            for (Preference row : rowsOf(controller)) {
-                if (row instanceof HushThreadsPreferenceFragment.FolderRow) folder = (HushThreadsPreferenceFragment.FolderRow) row;
-            }
-            assertNotNull("no folder row with a download in the build", folder);
-            assertEquals(Settings.SAVE_FOLDER.key, folder.getKey());
-            assertEquals("Videos go to " + L10n.isolate("Movies/Facebook") + " and photos to "
-                    + L10n.isolate("Pictures/Facebook") + ".", String.valueOf(folder.getSummary()));
-
-            // What's typed reaches the row's check the way the dialog's OK sends it.
-            Preference.OnPreferenceChangeListener ok = folder.getOnPreferenceChangeListener();
-            assertFalse("a path was kept as typed", ok.onPreferenceChange(folder, "../My/Clips"));
-            ShadowLooper.idleMainLooper();
-            assertEquals("My_Clips", folder.getText());
-            assertEquals("My_Clips", Settings.SAVE_FOLDER.savedValue());
-            assertEquals(HushThreadsPreferenceFragment.folderSummary("My_Clips"), String.valueOf(folder.getSummary()));
-
-            assertTrue("a clean name was changed", ok.onPreferenceChange(folder, "Clips"));
-            folder.setText("Clips");
-            ShadowLooper.idleMainLooper();
-            assertEquals("Clips", Settings.SAVE_FOLDER.savedValue());
-
-            assertFalse("an empty name was kept", ok.onPreferenceChange(folder, "  "));
-            ShadowLooper.idleMainLooper();
-            assertEquals("Facebook", folder.getText());
-            assertEquals("Facebook", Settings.SAVE_FOLDER.savedValue());
-        }
-
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            for (Preference row : rowsOf(controller)) {
-                assertFalse("a folder row with no download in the build",
-                        row instanceof HushThreadsPreferenceFragment.FolderRow);
-            }
-        }
-    }
-
-    /**
-     * The word filter's switch sits in News feed with its two lists under it. Each list keeps what
-     * the filter will read, whatever is typed, and says how many lines were left out, never which.
-     * That's a dialog rather than a toast: Android 12 and later cut a toast to two lines, and the
-     * reasons run past that, most of all at a large text size. The rows are there only with the
-     * patch in the build.
-     */
-    @Test
-    public void theWordRowsKeepCleanListsAndSayHowManyPhrasesTheyHold() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.POST_WORDS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            List<Preference> rows = rowsOf(controller);
-            int switchAt = indexOfKey(rows, Settings.HIDE_POSTS_WITH_WORDS.key);
-            assertTrue("no word filter switch", switchAt >= 0);
-            assertEquals("the hide list isn't under the switch", switchAt + 1, indexOfKey(rows, Settings.HIDDEN_WORDS.key));
-            assertEquals("the keep list isn't under the hide list", switchAt + 2, indexOfKey(rows, Settings.KEPT_WORDS.key));
-            HushThreadsPreferenceFragment.WordsRow hide = (HushThreadsPreferenceFragment.WordsRow) rows.get(switchAt + 1);
-            HushThreadsPreferenceFragment.WordsRow keep = (HushThreadsPreferenceFragment.WordsRow) rows.get(switchAt + 2);
-            assertEquals("Words to hide", String.valueOf(hide.getTitle()));
-            assertEquals("No words yet, so no post is hidden.", String.valueOf(hide.getSummary()));
-            assertEquals("No words yet.", String.valueOf(keep.getSummary()));
-            assertFalse("the list's field is one line", hide.getEditText().getMaxLines() == 1);
-
-            ShadowToast.reset();
-            ShadowAlertDialog.reset();
-            Preference.OnPreferenceChangeListener ok = hide.getOnPreferenceChangeListener();
-            assertFalse("a list with lines out of bounds was kept as typed",
-                    ok.onPreferenceChange(hide, " spoiler \na\nSPOILER\ngiveaway now\n"));
-            ShadowLooper.idleMainLooper();
-            assertEquals("spoiler\ngiveaway now", hide.getText());
-            assertEquals("spoiler\ngiveaway now", Settings.HIDDEN_WORDS.savedValue());
-            assertEquals("2 words or phrases.", String.valueOf(hide.getSummary()));
-            assertLeftOut("Words to hide", "2 lines were left out. A phrase needs 2 to 60 characters, or just one "
-                    + "for an emoji, a Chinese character, a kana or a Hangul syllable. One given twice counts "
-                    + "once, and a list holds 50.");
-
-            ShadowAlertDialog.reset();
-            assertTrue("a clean list was changed", ok.onPreferenceChange(hide, "spoiler"));
-            assertFalse("only spaces around a phrase", ok.onPreferenceChange(hide, "spoiler  "));
-            ShadowLooper.idleMainLooper();
-            assertNull("a list cleaned of spaces alone said something", ShadowAlertDialog.getLatestAlertDialog());
-            assertNull(ShadowToast.getTextOfLatestToast());
-            assertEquals("spoiler", Settings.HIDDEN_WORDS.savedValue());
-
-            assertFalse(keep.getOnPreferenceChangeListener().onPreferenceChange(keep, "my team\nmy team"));
-            ShadowLooper.idleMainLooper();
-            assertEquals("my team", Settings.KEPT_WORDS.savedValue());
-            assertEquals("1 word or phrase.", String.valueOf(keep.getSummary()));
-            assertLeftOut("Words that keep a post", "1 line was left out. A phrase needs 2 to 60 characters, or just "
-                    + "one for an emoji, a Chinese character, a kana or a Hangul syllable. One given twice counts "
-                    + "once, and a list holds 50.");
-        }
-
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            List<Preference> rows = rowsOf(controller);
-            assertEquals(-1, indexOfKey(rows, Settings.HIDDEN_WORDS.key));
-            assertEquals(-1, indexOfKey(rows, Settings.HIDE_POSTS_WITH_WORDS.key));
-        }
-    }
-
-    /**
-     * The dialog that says lines were left out: titled with its list, holding the whole message
-     * with nothing cut, and no toast beside it. OK closes it.
-     */
-    private static void assertLeftOut(String list, String message) {
-        AlertDialog shown = ShadowAlertDialog.getLatestAlertDialog();
-        assertNotNull("nothing said lines were left out", shown);
-        assertTrue(shown.isShowing());
-        assertEquals(list, String.valueOf(Shadows.shadowOf(shown).getTitle()));
-        TextView text = shown.findViewById(android.R.id.message);
-        assertEquals(message, String.valueOf(text.getText()));
-        assertEquals("the message is cut to a number of lines", Integer.MAX_VALUE, text.getMaxLines());
-        assertNull("the message is cut short", text.getEllipsize());
-        assertNull("a toast said it too", ShadowToast.getTextOfLatestToast());
-        shown.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
-        ShadowLooper.idleMainLooper();
-        assertFalse("OK left it open", shown.isShowing());
-    }
-
-    /**
-     * The page's own dialogs are drawn over its activity's window: the list of sections, Licenses
-     * and a word list's note. Open when the page went, on a rotation, Back or Facebook closing,
-     * they outlived that window, which Android reports as a leaked window, and the note went with it.
+     * The page's own dialogs are drawn over its activity's window: the list of sections and
+     * Licenses. Open when the page went, on a rotation, Back or Threads closing, they outlived that
+     * window, which Android reports as a leaked window.
      */
     @Test
     public void thePagesDialogsCloseWhenItsViewGoes() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.POST_WORDS);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             List<Preference> rows = rowsOf(controller);
             List<AlertDialog> open = new ArrayList<>();
@@ -408,17 +291,13 @@ public class HushThreadsPreferenceFragmentTest {
             assertNotNull("no Licenses row", licenses);
             licenses.getOnPreferenceClickListener().onPreferenceClick(licenses);
             open.add(ShadowAlertDialog.getLatestAlertDialog());
-            Preference hide = rows.get(indexOfKey(rows, Settings.HIDDEN_WORDS.key));
-            assertFalse(hide.getOnPreferenceChangeListener().onPreferenceChange(hide, "a\nspoiler"));
-            ShadowLooper.idleMainLooper();
-            open.add(ShadowAlertDialog.getLatestAlertDialog());
 
             List<String> titles = new ArrayList<>();
             for (AlertDialog dialog : open) {
                 assertTrue(dialog.isShowing());
                 titles.add(String.valueOf(Shadows.shadowOf(dialog).getTitle()));
             }
-            assertEquals(Arrays.asList("Jump to a section", "Licenses", "Words to hide"), titles);
+            assertEquals(Arrays.asList("Jump to a section", "Licenses"), titles);
 
             controller.recreate();
             ShadowLooper.idleMainLooper();
@@ -429,537 +308,38 @@ public class HushThreadsPreferenceFragmentTest {
         }
     }
 
-    /**
-     * A Save on a word list can land as the activity goes. The button's click and the edit
-     * dialog's close are posted one after the other, and when the activity's end comes between
-     * them, it closes the dialog itself, which still counts as Save. The list's listener then runs
-     * after the page is gone, and its note that lines were left out came up over a window that
-     * was gone with it.
-     */
-    @Test
-    public void aWordListSavedAsTheActivityGoesShowsNoNoteOverIt() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.POST_WORDS);
-        ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
-        List<Preference> rows = rowsOf(controller);
-        HushThreadsPreferenceFragment.WordsRow hide =
-                (HushThreadsPreferenceFragment.WordsRow) rows.get(indexOfKey(rows, Settings.HIDDEN_WORDS.key));
-        hide.showDialog(null);
-        AlertDialog edit = (AlertDialog) hide.getDialog();
-        hide.getEditText().setText("a\nspoiler");
-        ShadowLooper.idleMainLooper();
-        ShadowAlertDialog.reset();
-
-        edit.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
-        // The click runs, and the close waits behind it.
-        ShadowLooper.shadowMainLooper().runOneTask();
-        assertTrue("the edit dialog closed before the activity went", edit.isShowing());
-        controller.pause().stop().destroy();
-        ShadowLooper.idleMainLooper();
-
-        // Only the list's listener puts the cleaned list in the row.
-        assertEquals("the listener never ran, so this checked nothing", "spoiler", hide.getText());
-        AlertDialog note = ShadowAlertDialog.getLatestAlertDialog();
-        assertTrue("a note came up over a destroyed activity", note == null || !note.isShowing());
-        // The row can show the clean list while the filter still runs the old one: only the
-        // shared preferences listener carries a save into the running Setting.
-        assertEquals("the filter kept the old list", "spoiler", Settings.HIDDEN_WORDS.get());
+    private static int indexOfKey(List<Preference> rows, String key) {
+        for (int i = 0; i < rows.size(); i++) {
+            if (key.equals(rows.get(i).getKey())) return i;
+        }
+        return -1;
     }
 
-    /** The hide list's row counts the posts it hid since Facebook started, and never names one. */
-    @Test
-    public void theHideListSaysHowManyPostsItHid() {
-        assertEquals("1 word or phrase.", HushThreadsPreferenceFragment.wordsSummary("spoiler", true));
-        PostWordsForTests.countHidden(3);
-        assertEquals("1 word or phrase. Hid 3 posts since Facebook started.",
-                HushThreadsPreferenceFragment.wordsSummary("spoiler", true));
-        assertEquals("the keep list hides nothing", "1 word or phrase.",
-                HushThreadsPreferenceFragment.wordsSummary("spoiler", false));
-    }
-
-    /**
-     * The download quality's row offers every quality, says what the chosen one does, and a pick
-     * reaches the setting the way the list's own dialog sends it. It sits above the folder, and
-     * it's there with any download in the build.
-     */
-    @Test
-    public void theQualityRowOffersEveryQualityAndSaysWhatItDoes() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.REEL_DOWNLOAD);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            HushThreadsPreferenceFragment page = new HushThreadsPreferenceFragment();
-            controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
-            List<Preference> rows = new ArrayList<>();
-            collect(page.getPreferenceScreen(), rows);
-            HushThreadsPreferenceFragment.QualityRow quality = null;
-            int qualityAt = -1;
-            int folderAt = -1;
-            for (int i = 0; i < rows.size(); i++) {
-                if (rows.get(i) instanceof HushThreadsPreferenceFragment.QualityRow) {
-                    quality = (HushThreadsPreferenceFragment.QualityRow) rows.get(i);
-                    qualityAt = i;
-                }
-                if (rows.get(i) instanceof HushThreadsPreferenceFragment.FolderRow) folderAt = i;
-            }
-            assertNotNull("no quality row with a download in the build", quality);
-            assertEquals("the quality row isn't next to the folder", folderAt - 1, qualityAt);
-            assertEquals(Settings.DOWNLOAD_QUALITY.key, quality.getKey());
-            assertEquals("Download quality", String.valueOf(quality.getTitle()));
-
-            List<String> entries = new ArrayList<>();
-            for (CharSequence entry : quality.getEntries()) entries.add(String.valueOf(entry));
-            assertEquals(Arrays.asList("Best", L10n.isolate("1080p"), L10n.isolate("720p"), L10n.isolate("480p"),
-                    L10n.isolate("360p"), "Smallest"), entries);
-            List<String> values = new ArrayList<>();
-            for (CharSequence value : quality.getEntryValues()) values.add(String.valueOf(value));
-            List<String> names = new ArrayList<>();
-            for (DownloadQuality each : DownloadQuality.values()) names.add(each.name());
-            assertEquals(names, values);
-
-            assertEquals("BEST", quality.getValue());
-            assertEquals("Each video saves at the best quality the player streams.", String.valueOf(quality.getSummary()));
-
-            // A pick in the list, the way its dialog sends one.
-            quality.setValue("P480");
-            ShadowLooper.idleMainLooper();
-            assertEquals(DownloadQuality.P480, Settings.DOWNLOAD_QUALITY.savedValue());
-            // A cap prefers anything at or under it, so the summary can't promise the nearest
-            // quality: under 720p a video with 1080p and 240p saves at 240p.
-            assertEquals("Each video saves at " + L10n.isolate("480p") + " or the closest quality below it. A video "
-                            + "with nothing that low saves at the closest quality above.",
-                    String.valueOf(quality.getSummary()));
-
-            quality.setValue("SMALLEST");
-            ShadowLooper.idleMainLooper();
-            assertEquals(DownloadQuality.SMALLEST, Settings.DOWNLOAD_QUALITY.savedValue());
-            assertEquals("Each video saves at its lowest quality, for the smallest file.",
-                    String.valueOf(quality.getSummary()));
-
-            // A value set behind the row, as an import does, shows once the page syncs.
-            Settings.DOWNLOAD_QUALITY.save(DownloadQuality.P720);
-            page.refreshSwitches();
-            assertEquals("P720", quality.getValue());
-            assertEquals(HushThreadsPreferenceFragment.qualitySummary(DownloadQuality.P720),
-                    String.valueOf(quality.getSummary()));
-        }
-
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            for (Preference row : rowsOf(controller)) {
-                assertFalse("a quality row with no download in the build",
-                        row instanceof HushThreadsPreferenceFragment.QualityRow);
-            }
-        }
-    }
-
-    /**
-     * Saves other apps can open (issue #11) is a switch every save reads, so it's under Downloads
-     * with any one download patch in, right above the quality it keeps within, and starts off. Its
-     * summary names WhatsApp, the app that turned an AV1 reel down, and a gallery or player that
-     * plays a save without sound, since some can't decode the xHE-AAC sound a Best reel can carry.
-     */
-    @Test
-    public void theCompatibleSwitchSitsAboveTheQualityWithAnyDownloadIn() {
-        for (PatchFamily download : new PatchFamily[]{PatchFamily.STORY_DOWNLOAD, PatchFamily.REEL_DOWNLOAD,
-                PatchFamily.VIDEO_DOWNLOAD}) {
-            PatchFamily.inBuildForTests = EnumSet.of(download);
-            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-                List<Preference> rows = rowsOf(controller);
-                int compatible = indexOfKey(rows, Settings.DOWNLOAD_COMPATIBLE.key);
-                assertTrue(download + ": no row for saves other apps can open", compatible >= 0);
-                Preference row = rows.get(compatible);
-                assertTrue(row instanceof SwitchPreference);
-                assertFalse(((SwitchPreference) row).isChecked());
-                assertEquals(indexOfKey(rows, Settings.DOWNLOAD_QUALITY.key) - 1, compatible);
-                assertEquals("Save videos other apps can open", String.valueOf(row.getTitle()));
-                assertEquals("For WhatsApp, video editors such as CapCut and InShot, or a gallery or player that plays saves "
-                        + "without sound. May lower quality.",
-                        String.valueOf(row.getSummary()));
-            }
-        }
-
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            assertEquals("a compatible-saves row with no download in the build",
-                    -1, indexOfKey(rowsOf(controller), Settings.DOWNLOAD_COMPATIBLE.key));
-        }
-    }
-
-    /**
-     * With Open on a chosen tab in the build, the screen opens with its switch and the list of
-     * tabs, which offers each tab by its name in Facebook, says what the chosen one does, and
-     * reaches the setting the way the list's own dialog sends a pick.
-     */
-    @Test
-    public void theStartTabRowOffersEveryTabAndSaysWhatItDoes() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.START_TAB, PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            HushThreadsPreferenceFragment page = new HushThreadsPreferenceFragment();
-            controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
-            List<Preference> rows = new ArrayList<>();
-            collect(page.getPreferenceScreen(), rows);
-            // Right under the status card and the section jump: the heading, the switch, then the list.
-            assertEquals("Jump to a section", String.valueOf(page.getPreferenceScreen().getPreference(1).getTitle()));
-            assertEquals("Opening Facebook", String.valueOf(page.getPreferenceScreen().getPreference(2).getTitle()));
-            assertEquals(Settings.OPEN_ON_CHOSEN_TAB.key, rows.get(2).getKey());
-            assertEquals("Open on a chosen tab", String.valueOf(rows.get(2).getTitle()));
-            assertTrue(rows.get(3) instanceof HushThreadsPreferenceFragment.StartTabRow);
-            HushThreadsPreferenceFragment.StartTabRow start = (HushThreadsPreferenceFragment.StartTabRow) rows.get(3);
-            assertEquals(Settings.START_TAB.key, start.getKey());
-            assertEquals("Tab to open on", String.valueOf(start.getTitle()));
-
-            List<String> entries = new ArrayList<>();
-            for (CharSequence entry : start.getEntries()) entries.add(String.valueOf(entry));
-            assertEquals(Arrays.asList("Home", "Feeds", "Video", "Friends", "Marketplace", "Notifications", "Menu"),
-                    entries);
-            List<String> values = new ArrayList<>();
-            for (CharSequence value : start.getEntryValues()) values.add(String.valueOf(value));
-            List<String> names = new ArrayList<>();
-            for (StartTab each : StartTab.values()) names.add(each.name());
-            assertEquals(names, values);
-
-            assertEquals("MARKETPLACE", start.getValue());
-            assertEquals("Facebook opens on Marketplace. If your tab bar doesn't have it, Facebook opens on Home.",
-                    String.valueOf(start.getSummary()));
-
-            // A pick in the list, the way its dialog sends one.
-            start.setValue("FRIENDS");
-            ShadowLooper.idleMainLooper();
-            assertEquals(StartTab.FRIENDS, Settings.START_TAB.savedValue());
-            assertEquals("Facebook opens on Friends. If your tab bar doesn't have it, Facebook opens on Home.",
-                    String.valueOf(start.getSummary()));
-
-            // A value set behind the row, as an import does, shows once the page syncs.
-            Settings.START_TAB.save(StartTab.MENU);
-            page.refreshSwitches();
-            assertEquals("MENU", start.getValue());
-            assertEquals(HushThreadsPreferenceFragment.startTabSummary(StartTab.MENU), String.valueOf(start.getSummary()));
-        } finally {
-            Settings.START_TAB.resetToDefault();
-        }
-
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            for (Preference row : rowsOf(controller)) {
-                assertFalse("a start tab row with no Open on a chosen tab in the build",
-                        row instanceof HushThreadsPreferenceFragment.StartTabRow);
-                assertFalse(Settings.OPEN_ON_CHOSEN_TAB.key.equals(row.getKey()));
-            }
-        }
-    }
-
-    /**
-     * With Hide the Reels tab in the build, its switch is under Reels and Watch, and while it's on a
-     * chosen Video tab's row says Facebook opens on Home, since a start never lands on the hidden
-     * tab. Switched off, with no Marketplace only in the build, the row names Video again. The saved
-     * choice stays Video throughout.
-     */
-    @Test
-    public void aChosenReelsTabSaysItOpensHomeWhileHideTheReelsTabIsOn() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.START_TAB, PatchFamily.REELS_TAB);
-        Settings.START_TAB.save(StartTab.VIDEO);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            HushThreadsPreferenceFragment page = new HushThreadsPreferenceFragment();
-            controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
-            SwitchPreference hide = (SwitchPreference) page.findPreference(Settings.HIDE_REELS_TAB.key);
-            assertEquals("Hide the Reels tab", String.valueOf(hide.getTitle()));
-            assertEquals("Reels and Watch", String.valueOf(hide.getParent().getTitle()));
-            assertTrue("picking the patch is the choice", hide.isChecked());
-            Preference start = page.findPreference(Settings.START_TAB.key);
-            assertEquals("Facebook opens on Home while Hide the Reels tab is on, since Video is off the tab bar. "
-                    + "Your choice stays saved.", String.valueOf(start.getSummary()));
-
-            hide.setChecked(false);
-            ShadowLooper.idleMainLooper();
-            assertFalse(Settings.HIDE_REELS_TAB.savedValue());
-            assertEquals("Facebook opens on Video. If your tab bar doesn't have it, Facebook opens on Home.",
-                    String.valueOf(start.getSummary()));
-            assertEquals(StartTab.VIDEO, Settings.START_TAB.savedValue());
-
-            // Any other tab keeps its own summary with the switch on.
-            hide.setChecked(true);
-            ShadowLooper.idleMainLooper();
-            assertEquals(HushThreadsPreferenceFragment.startTabSummary(StartTab.FRIENDS),
-                    "Facebook opens on Friends. If your tab bar doesn't have it, Facebook opens on Home.");
-        } finally {
-            Settings.START_TAB.resetToDefault();
-            Settings.HIDE_REELS_TAB.resetToDefault();
-        }
-
-        // Without the patch, a chosen Video tab is Facebook's to open or not, whatever the stored switch says.
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.START_TAB);
-        assertEquals("Facebook opens on Video. If your tab bar doesn't have it, Facebook opens on Home.",
-                HushThreadsPreferenceFragment.startTabSummary(StartTab.VIDEO));
-    }
-
-    /**
-     * With Default comment order in the build, the screen has a Comments section with its switch and
-     * the list of orders, which offers Facebook's own choice first and each order by the name
-     * Facebook's sort menu gives it, says what the chosen one does, and reaches the setting the way
-     * the list's own dialog sends a pick.
-     */
-    @Test
-    public void theCommentOrderRowOffersFacebooksChoiceAndEachOrder() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DEFAULT_COMMENT_ORDER, PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            HushThreadsPreferenceFragment page = new HushThreadsPreferenceFragment();
-            controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
-            List<Preference> rows = new ArrayList<>();
-            collect(page.getPreferenceScreen(), rows);
-            int toggle = -1;
-            for (int i = 0; i < rows.size(); i++) {
-                if (Settings.DEFAULT_COMMENT_ORDER.key.equals(rows.get(i).getKey())) toggle = i;
-            }
-            assertTrue("no Default comment order switch", toggle >= 0);
-            // Its own section, headed Comments, holds the switch and the list and nothing else.
-            PreferenceGroup section = null;
-            for (int i = 0; i < page.getPreferenceScreen().getPreferenceCount(); i++) {
-                Preference top = page.getPreferenceScreen().getPreference(i);
-                if (top instanceof PreferenceGroup
-                        && ((PreferenceGroup) top).findPreference(Settings.DEFAULT_COMMENT_ORDER.key) != null) {
-                    section = (PreferenceGroup) top;
-                }
-            }
-            assertNotNull(section);
-            assertEquals("Comments", String.valueOf(section.getTitle()));
-            assertEquals(2, section.getPreferenceCount());
-            assertEquals("Default comment order", String.valueOf(rows.get(toggle).getTitle()));
-            assertTrue(rows.get(toggle + 1) instanceof HushThreadsPreferenceFragment.CommentOrderRow);
-            HushThreadsPreferenceFragment.CommentOrderRow order =
-                    (HushThreadsPreferenceFragment.CommentOrderRow) rows.get(toggle + 1);
-            assertEquals(Settings.COMMENT_ORDER.key, order.getKey());
-            assertEquals("Comment order", String.valueOf(order.getTitle()));
-
-            List<String> entries = new ArrayList<>();
-            for (CharSequence entry : order.getEntries()) entries.add(String.valueOf(entry));
-            assertEquals(Arrays.asList("Facebook's choice", "Most relevant", "Newest", "All comments"), entries);
-            List<String> values = new ArrayList<>();
-            for (CharSequence value : order.getEntryValues()) values.add(String.valueOf(value));
-            List<String> names = new ArrayList<>();
-            for (CommentOrder each : CommentOrder.values()) names.add(each.name());
-            assertEquals(names, values);
-
-            assertEquals("FACEBOOK", order.getValue());
-            assertEquals("Comments open in the order Facebook picks, which is usually Most relevant.",
-                    String.valueOf(order.getSummary()));
-
-            // A pick in the list, the way its dialog sends one.
-            order.setValue("ALL_COMMENTS");
-            ShadowLooper.idleMainLooper();
-            assertEquals(CommentOrder.ALL_COMMENTS, Settings.COMMENT_ORDER.savedValue());
-            assertEquals("A post's comments open with All comments picked in their sort menu, where the post offers it.",
-                    String.valueOf(order.getSummary()));
-
-            // A value set behind the row, as an import does, shows once the page syncs.
-            Settings.COMMENT_ORDER.save(CommentOrder.NEWEST);
-            page.refreshSwitches();
-            assertEquals("NEWEST", order.getValue());
-            assertEquals(HushThreadsPreferenceFragment.commentOrderSummary(CommentOrder.NEWEST),
-                    String.valueOf(order.getSummary()));
-        } finally {
-            Settings.COMMENT_ORDER.resetToDefault();
-        }
-
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            for (Preference row : rowsOf(controller)) {
-                assertFalse("a comment order row with no Default comment order in the build",
-                        row instanceof HushThreadsPreferenceFragment.CommentOrderRow);
-                assertFalse(Settings.DEFAULT_COMMENT_ORDER.key.equals(row.getKey()));
-            }
-        }
-    }
-
-    /**
-     * With Default playback quality in the build, the Playback section has its switch and the list
-     * of qualities right below it, which offers Auto first, says what the chosen one does, and
-     * reaches the setting the way the list's own dialog sends a pick. Without the patch there's
-     * neither row.
-     */
-    @Test
-    public void thePlaybackQualityRowOffersAutoAndEachQuality() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.PLAYBACK_QUALITY, PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            HushThreadsPreferenceFragment page = new HushThreadsPreferenceFragment();
-            controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
-            List<Preference> rows = new ArrayList<>();
-            collect(page.getPreferenceScreen(), rows);
-            int toggle = -1;
-            for (int i = 0; i < rows.size(); i++) {
-                if (Settings.DEFAULT_PLAYBACK_QUALITY.key.equals(rows.get(i).getKey())) toggle = i;
-            }
-            assertTrue("no Default playback quality switch", toggle >= 0);
-            PreferenceGroup section = null;
-            for (int i = 0; i < page.getPreferenceScreen().getPreferenceCount(); i++) {
-                Preference top = page.getPreferenceScreen().getPreference(i);
-                if (top instanceof PreferenceGroup
-                        && ((PreferenceGroup) top).findPreference(Settings.DEFAULT_PLAYBACK_QUALITY.key) != null) {
-                    section = (PreferenceGroup) top;
-                }
-            }
-            assertNotNull(section);
-            assertEquals("Playback", String.valueOf(section.getTitle()));
-            assertEquals(2, section.getPreferenceCount());
-            assertEquals("Default playback quality", String.valueOf(rows.get(toggle).getTitle()));
-            assertTrue(rows.get(toggle + 1) instanceof HushThreadsPreferenceFragment.PlaybackQualityRow);
-            HushThreadsPreferenceFragment.PlaybackQualityRow quality =
-                    (HushThreadsPreferenceFragment.PlaybackQualityRow) rows.get(toggle + 1);
-            assertEquals(Settings.PLAYBACK_QUALITY.key, quality.getKey());
-            assertEquals("Playback quality", String.valueOf(quality.getTitle()));
-
-            List<String> entries = new ArrayList<>();
-            for (CharSequence entry : quality.getEntries()) entries.add(String.valueOf(entry));
-            assertEquals(Arrays.asList("Auto", "Data saver", "Up to " + L10n.isolate("480p"),
-                    "Up to " + L10n.isolate("720p"), "Highest"), entries);
-            List<String> values = new ArrayList<>();
-            for (CharSequence value : quality.getEntryValues()) values.add(String.valueOf(value));
-            List<String> names = new ArrayList<>();
-            for (PlaybackQuality each : PlaybackQuality.values()) names.add(each.name());
-            assertEquals(names, values);
-
-            assertEquals("AUTO", quality.getValue());
-            assertEquals("Facebook picks the quality as each video plays, from your connection.",
-                    String.valueOf(quality.getSummary()));
-
-            // A pick in the list, the way its dialog sends one.
-            quality.setValue("DATA_SAVER");
-            ShadowLooper.idleMainLooper();
-            assertEquals(PlaybackQuality.DATA_SAVER, Settings.PLAYBACK_QUALITY.savedValue());
-            assertEquals("Videos play at the lowest quality Facebook offers for each.", String.valueOf(quality.getSummary()));
-
-            // A value set behind the row, as an import does, shows once the page syncs.
-            Settings.PLAYBACK_QUALITY.save(PlaybackQuality.P720);
-            page.refreshSwitches();
-            assertEquals("P720", quality.getValue());
-            assertEquals("Videos play at the best quality up to " + L10n.isolate("720p")
-                    + " that Facebook offers for each, or the closest above.", String.valueOf(quality.getSummary()));
-        } finally {
-            Settings.PLAYBACK_QUALITY.resetToDefault();
-        }
-
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            for (Preference row : rowsOf(controller)) {
-                assertFalse("a playback quality row with no Default playback quality in the build",
-                        row instanceof HushThreadsPreferenceFragment.PlaybackQualityRow);
-                assertFalse(Settings.DEFAULT_PLAYBACK_QUALITY.key.equals(row.getKey()));
-            }
-        }
-    }
-
-    /**
-     * With Tag suggestions only after @ in the build, the screen has a Writing section holding its
-     * one switch, which says what goes and what stays. Without the patch there's no such row.
-     */
-    @Test
-    public void theTagSuggestionRowSitsAloneUnderWriting() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.TAG_SUGGESTIONS, PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            HushThreadsPreferenceFragment page = new HushThreadsPreferenceFragment();
-            controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
-            PreferenceGroup section = null;
-            for (int i = 0; i < page.getPreferenceScreen().getPreferenceCount(); i++) {
-                Preference top = page.getPreferenceScreen().getPreference(i);
-                if (top instanceof PreferenceGroup
-                        && ((PreferenceGroup) top).findPreference(Settings.TAG_SUGGESTIONS_ONLY_AFTER_AT.key) != null) {
-                    section = (PreferenceGroup) top;
-                }
-            }
-            assertNotNull("no Tag suggestions only after @ switch", section);
-            assertEquals("Writing", String.valueOf(section.getTitle()));
-            assertEquals(1, section.getPreferenceCount());
-            Preference toggle = section.getPreference(0);
-            assertTrue(toggle instanceof SwitchPreference);
-            assertEquals("Tag suggestions only after @", String.valueOf(toggle.getTitle()));
-            assertEquals("Type @ before Facebook suggests someone to tag in posts or comments. Your text stays unchanged.",
-                    String.valueOf(toggle.getSummary()));
-        }
-
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            assertEquals("a tag suggestion row with the patch left out", -1,
-                    indexOfKey(rowsOf(controller), Settings.TAG_SUGGESTIONS_ONLY_AFTER_AT.key));
-        }
-    }
-
-    /**
-     * The video file name's row, next to the folder, keeps the one clean template a save would use,
-     * whatever is typed into it, says so in a toast when it changed what was typed, says what videos
-     * and photos are named, and names both tokens in its dialog.
-     */
-    @Test
-    public void theFileNameRowKeepsOneCleanTemplateNextToTheFolder() {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.VIDEO_DOWNLOAD);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            List<Preference> rows = rowsOf(controller);
-            HushThreadsPreferenceFragment.FileNameRow name = null;
-            int nameAt = -1;
-            int folderAt = -1;
-            for (int i = 0; i < rows.size(); i++) {
-                if (rows.get(i) instanceof HushThreadsPreferenceFragment.FileNameRow) {
-                    name = (HushThreadsPreferenceFragment.FileNameRow) rows.get(i);
-                    nameAt = i;
-                }
-                if (rows.get(i) instanceof HushThreadsPreferenceFragment.FolderRow) folderAt = i;
-            }
-            assertNotNull("no file name row with a download in the build", name);
-            assertEquals("the file name row isn't next to the folder", folderAt + 1, nameAt);
-            assertEquals(Settings.FILENAME_TEMPLATE.key, name.getKey());
-            assertEquals("Video file name", String.valueOf(name.getTitle()));
-            assertEquals("Videos are named " + L10n.isolate("FB_VID_{date}") + ". Photos keep Facebook's own "
-                    + L10n.isolate("FB_IMG_") + " names.", String.valueOf(name.getSummary()));
-            String message = String.valueOf(name.getDialogMessage());
-            assertTrue(message, message.contains(L10n.isolate("{date}")) && message.contains(L10n.isolate("{video_id}"))
-                    && message.contains(L10n.isolate("{owner}")) && message.contains(L10n.isolate("{posted}"))
-                    && message.contains(L10n.isolate("FB_VID_{date}")));
-            // The folder's dialog, in the same words: a Save button and a hint that says what goes in.
-            assertEquals("Save", String.valueOf(name.getPositiveButtonText()));
-            assertEquals("File name", String.valueOf(name.getEditText().getHint()));
-
-            Preference.OnPreferenceChangeListener ok = name.getOnPreferenceChangeListener();
-            assertFalse("a path was kept as typed", ok.onPreferenceChange(name, "../Reels/{video_id}"));
-            ShadowLooper.idleMainLooper();
-            assertEquals("Reels_{video_id}", name.getText());
-            assertEquals("Reels_{video_id}", Settings.FILENAME_TEMPLATE.savedValue());
-            assertEquals(HushThreadsPreferenceFragment.fileNameSummary("Reels_{video_id}"), String.valueOf(name.getSummary()));
-            assertEquals("File name set to " + L10n.isolate("Reels_{video_id}") + ".", ShadowToast.getTextOfLatestToast());
-
-            // A name that would be the same for every video gets the date.
-            assertFalse("a name with no token was kept", ok.onPreferenceChange(name, "Clip"));
-            ShadowLooper.idleMainLooper();
-            assertEquals("Clip_{date}", name.getText());
-            assertEquals("Clip_{date}", Settings.FILENAME_TEMPLATE.savedValue());
-            assertEquals("File name set to " + L10n.isolate("Clip_{date}") + ".", ShadowToast.getTextOfLatestToast());
-
-            ShadowToast.reset();
-            assertTrue("a clean template was changed", ok.onPreferenceChange(name, "{date} {video_id}"));
-            name.setText("{date} {video_id}");
-            ShadowLooper.idleMainLooper();
-            assertEquals("{date} {video_id}", Settings.FILENAME_TEMPLATE.savedValue());
-            assertNull("a clean template raised a toast", ShadowToast.getLatestToast());
-
-            assertFalse("an empty template was kept", ok.onPreferenceChange(name, " . "));
-            ShadowLooper.idleMainLooper();
-            assertEquals("FB_VID_{date}", name.getText());
-            assertEquals("FB_VID_{date}", Settings.FILENAME_TEMPLATE.savedValue());
-        }
-
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SPONSORED_POSTS);
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            for (Preference row : rowsOf(controller)) {
-                assertFalse("a file name row with no download in the build",
-                        row instanceof HushThreadsPreferenceFragment.FileNameRow);
-            }
-        }
-    }
-
-    private static List<Preference> rowsOf(ActivityController<Activity> controller) {
+    private static HushThreadsPreferenceFragment pageOf(ActivityController<Activity> controller) {
         HushThreadsPreferenceFragment fragment = new HushThreadsPreferenceFragment();
         controller.get().getFragmentManager().beginTransaction()
                 .add(android.R.id.content, fragment)
                 .commitNow();
+        return fragment;
+    }
+
+    private static List<Preference> rowsOf(ActivityController<Activity> controller) {
         List<Preference> rows = new ArrayList<>();
-        collect(fragment.getPreferenceScreen(), rows);
+        collect(pageOf(controller).getPreferenceScreen(), rows);
         assertFalse("the screen has no rows", rows.isEmpty());
         return rows;
+    }
+
+    /** The titles of the page's sections, in the order they're drawn. */
+    private static List<String> sections(HushThreadsPreferenceFragment page) {
+        List<String> titles = new ArrayList<>();
+        PreferenceGroup screen = page.getPreferenceScreen();
+        for (int i = 0; i < screen.getPreferenceCount(); i++) {
+            if (screen.getPreference(i) instanceof PreferenceCategory) {
+                titles.add(String.valueOf(screen.getPreference(i).getTitle()));
+            }
+        }
+        return titles;
     }
 
     private static void assertReadable(List<Preference> rows) {
@@ -973,18 +353,8 @@ public class HushThreadsPreferenceFragmentTest {
             try {
                 ColorStateList primary = styled.getColorStateList(0);
                 assertTrue("no primary text color for " + title, primary != null);
-                ScreenColors page = ScreenColors.shown;
-                if (page == null) {
-                    assertTrue("\"" + title + "\" is drawn dark on the black page",
-                            Color.luminance(primary.getDefaultColor()) > 0.5f);
-                } else {
-                    // The Material You theme's page is the palette's, dark or light as the phone
-                    // is. The theme's own text, before a row paints it, still has to read on it.
-                    int blended = blend(primary.getDefaultColor(), page.background);
-                    assertTrue("\"" + title + "\" is " + Integer.toHexString(blended) + " on the page's "
-                                    + Integer.toHexString(page.background),
-                            ScreenColorsTest.contrast(blended, page.background) >= ScreenColorsTest.TEXT);
-                }
+                assertTrue("\"" + title + "\" is drawn dark on the black page",
+                        Color.luminance(primary.getDefaultColor()) > 0.5f);
             } finally {
                 styled.recycle();
             }
@@ -1000,17 +370,5 @@ public class HushThreadsPreferenceFragmentTest {
                 rows.add(preference);
             }
         }
-    }
-
-    /** A translucent text colour as it lands on an opaque background. */
-    private static int blend(int color, int background) {
-        int alpha = color >>> 24;
-        int[] out = new int[3];
-        for (int shift = 16, i = 0; i < 3; shift -= 8, i++) {
-            int top = (color >> shift) & 0xFF;
-            int bottom = (background >> shift) & 0xFF;
-            out[i] = (top * alpha + bottom * (255 - alpha) + 127) / 255;
-        }
-        return 0xFF000000 | (out[0] << 16) | (out[1] << 8) | out[2];
     }
 }

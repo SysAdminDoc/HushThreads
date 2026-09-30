@@ -372,7 +372,8 @@ public class L10nCatalogTest {
     /** The repository root, found from wherever Gradle runs the test. */
     static File root() {
         for (File dir = new File("").getAbsoluteFile(); dir != null; dir = dir.getParentFile()) {
-            if (new File(dir, "settings.gradle.kts").isFile() && new File(dir, "provenance.json").isFile()) return dir;
+            // The Gradle wrapper sits beside the root build's settings and nowhere else in the tree.
+            if (new File(dir, "settings.gradle.kts").isFile() && new File(dir, "gradlew").isFile()) return dir;
         }
         throw new AssertionError("no repository root above " + new File("").getAbsolutePath());
     }

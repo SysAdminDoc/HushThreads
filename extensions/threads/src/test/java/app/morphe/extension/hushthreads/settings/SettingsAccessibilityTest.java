@@ -67,7 +67,7 @@ public class SettingsAccessibilityTest {
         PatchFamily.inBuildForTests = null;
         HushThreadsPreferenceFragment.failNextInitialization = null;
         PauseForTests.resume();
-        Settings.HIDE_SPONSORED_POSTS.resetToDefault();
+        Settings.HIDE_ADS.resetToDefault();
         controller.close();
     }
 
@@ -84,7 +84,7 @@ public class SettingsAccessibilityTest {
 
     @Test
     public void aSwitchRowSaysItIsASwitchAndWhetherItIsOn() {
-        View row = rowFor(SettingsL10nTest.show(controller.get()), Settings.HIDE_SPONSORED_POSTS.key);
+        View row = rowFor(SettingsL10nTest.show(controller.get()), Settings.HIDE_ADS.key);
         AccessibilityNodeInfo info = node(row);
         assertEquals(Switch.class.getName(), String.valueOf(info.getClassName()));
         assertTrue(info.isCheckable());
@@ -103,7 +103,7 @@ public class SettingsAccessibilityTest {
      */
     @Test
     public void theClickEventCarriesTheStateTheTapLeft() {
-        View row = rowFor(SettingsL10nTest.show(controller.get()), Settings.HIDE_SPONSORED_POSTS.key);
+        View row = rowFor(SettingsL10nTest.show(controller.get()), Settings.HIDE_ADS.key);
         SwitchPreference toggle = (SwitchPreference) item(row);
         for (boolean on : new boolean[]{true, false, true}) {
             toggle.setChecked(on);
@@ -127,37 +127,17 @@ public class SettingsAccessibilityTest {
         }
     }
 
-    /**
-     * With a font file picked, Font file and the way back to the phone's font are both buttons a
-     * double tap reaches. Without one, the way back isn't on the page at all.
-     */
-    @Test
-    public void withAFontPickedBothFontRowsAreButtons() {
-        Settings.FONT_SOURCE.save("Inter.ttf");
-        try {
-            SettingsDialog dialog = SettingsL10nTest.show(controller.get());
-            for (String key : new String[]{FontFilePreference.CHOOSE_KEY, FontFilePreference.PHONE_FONT_KEY}) {
-                AccessibilityNodeInfo info = node(rowFor(dialog, key));
-                assertEquals(key + " role", Button.class.getName(), String.valueOf(info.getClassName()));
-                assertTrue(key + " can't be double tapped", info.getActionList().contains(
-                        AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK));
-            }
-        } finally {
-            Settings.FONT_SOURCE.resetToDefault();
-        }
-    }
-
     /** A double tap goes through the list as a tap does, and the row then reads the new state. */
     @Test
     public void aDoubleTapTurnsTheSwitchAndTheRowSaysSo() {
         SettingsDialog dialog = SettingsL10nTest.show(controller.get());
-        View row = rowFor(dialog, Settings.HIDE_SPONSORED_POSTS.key);
-        assertTrue(Settings.HIDE_SPONSORED_POSTS.get());
+        View row = rowFor(dialog, Settings.HIDE_ADS.key);
+        assertTrue(Settings.HIDE_ADS.get());
 
         assertTrue("the list took no click", row.performAccessibilityAction(AccessibilityNodeInfo.ACTION_CLICK, null));
         ShadowLooper.idleMainLooper();
-        assertFalse("the double tap didn't turn the switch off", Settings.HIDE_SPONSORED_POSTS.get());
-        assertFalse(node(rowFor(dialog, Settings.HIDE_SPONSORED_POSTS.key)).isChecked());
+        assertFalse("the double tap didn't turn the switch off", Settings.HIDE_ADS.get());
+        assertFalse(node(rowFor(dialog, Settings.HIDE_ADS.key)).isChecked());
     }
 
     @Test

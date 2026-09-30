@@ -14,7 +14,6 @@ import android.app.Application;
 import android.app.FragmentManager;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
@@ -24,36 +23,32 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Icon;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.view.HapticFeedbackConstants;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewConfiguration;
+
+import androidx.annotation.RequiresApi;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import app.morphe.extension.shared.L10n;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
-import app.morphe.extension.hushthreads.download.SaveLeftovers;
-import app.morphe.extension.hushthreads.feed.ReturnRefresh;
-import app.morphe.extension.hushthreads.media.ResumePlayback;
 
 /**
  * How the HushThreads screen is reached.
  *
- * <p>Inside Facebook, a long press on the Facebook logo at the top of the home feed opens it over
- * that screen (see {@link #setLogoTouchListener}).
- *
- * <p>From the home screen, a long-press shortcut on Facebook's launcher icon opens Facebook's
- * launcher entry with {@link #EXTRA_OPEN_SETTINGS}. Every Facebook activity reports its intent
- * here from {@code onCreate} and {@code onNewIntent}, and the next Facebook activity to resume
- * shows the screen as a full screen dialog. Nothing is added to Facebook's manifest, so no resource
- * has to be rebuilt to get here. The shortcut is kept first among Facebook's own, because a
- * launcher shows only the first few, and some launchers have no shortcut menu at all (#2).
+ * <p>From the home screen, a long-press shortcut on Threads' launcher icon opens Threads' launcher
+ * activity with {@link #EXTRA_OPEN_SETTINGS}. From Android's App info page for Threads, "Additional
+ * settings in the app" opens it too: the patch adds an activity alias for
+ * {@link Intent#ACTION_APPLICATION_PREFERENCES} that points at the same launcher activity. Every
+ * Threads activity reports its intent here from {@code onCreate} and {@code onNewIntent}, and the
+ * next Threads activity to resume shows the screen as a full screen dialog. The shortcut is kept
+ * first among Threads' own, because a launcher shows only the first few, and some launchers have no
+ * shortcut menu at all.
  */
 @SuppressWarnings("unused")
 public final class SettingsEntry {
@@ -61,10 +56,10 @@ public final class SettingsEntry {
     static final String SHORTCUT_ID = "hushthreads_settings";
 
     /**
-     * The manifest's launcher alias. It points at {@code FbMainTabActivity}, and naming the alias
-     * rather than its target keeps the shortcut working if the target is ever renamed.
+     * Threads' exported launcher activity. The patch's App info alias points at it too, so both
+     * ways in arrive at the activity Threads itself starts from the icon.
      */
-    private static final String LAUNCHER_ALIAS = "com.facebook.katana.LoginActivity";
+    static final String LAUNCHER_ACTIVITY = "com.instagram.barcelona.mainactivity.BarcelonaActivity";
     private static final String DIALOG_TAG = "hushthreads_settings";
 
     /** A request older than this is dropped rather than opened over some later screen. */
@@ -85,11 +80,10 @@ public final class SettingsEntry {
     }
 
     /**
-     * Injected before each return of the application's {@code onCreate}, after Facebook's own
-     * startup. Watches every Facebook activity, so a pending open lands on whichever one resumes next:
-     * signed out, the launcher hands straight over to the login screen. Also where the release
-     * check, when it's on, asks at most once a day, on a worker, and where what a save cut short
-     * by Android left behind is removed, on a worker too.
+     * Injected before each return of the application's {@code onCreate}, after Threads' own
+     * startup. Watches every Threads activity, so a pending open lands on whichever one resumes
+     * next: signed out, the launcher hands straight over to the login screen. Also where the
+     * release check, when it's on, asks at most once a day, on a worker.
      */
     public static void onApplicationCreate(Context context) {
         try {
@@ -98,13 +92,10 @@ public final class SettingsEntry {
                 ((Application) context).registerActivityLifecycleCallbacks(new OpenWhenResumed());
                 callbacksRegistered = true;
             }
-            ReturnRefresh.register(context);
         } catch (Exception ex) {
             Logger.printException(() -> "Settings entry: could not watch activities", ex);
         }
-        ReleaseCheck.onFacebookStart();
-        SaveLeftovers.sweepAfterStart(context);
-        ResumePlayback.onFacebookStart();
+        ReleaseCheck.onThreadsStart();
         publishShortcut(context);
     }
 
@@ -114,9 +105,9 @@ public final class SettingsEntry {
     }
 
     /**
-     * Labels the shortcut again once Facebook has set its own language. That happens after the
+     * Labels the shortcut again once Threads has set its own language. That happens after the
      * application starts, so a label published then is in the phone's language, and it stayed
-     * that way next to a screen in Facebook's. A string compare while the label still matches.
+     * that way next to a screen in Threads'. A string compare while the label still matches.
      */
     static void relabelIfStale(Context context) {
         try {
@@ -127,8 +118,8 @@ public final class SettingsEntry {
     }
 
     /**
-     * Publishes the launcher shortcut, labels it again when Facebook's language has changed, or
-     * puts it back in front when Facebook's own went ahead of it, on the thread it's called on.
+     * Publishes the launcher shortcut, labels it again when Threads' language has changed, or puts
+     * it back in front when Threads' own went ahead of it, on the thread it's called on.
      * Package-visible for tests.
      */
     static void publishShortcutNow(Context app) {
@@ -139,11 +130,10 @@ public final class SettingsEntry {
             // Set before the attempt, so a shortcut that can't be pushed isn't tried on every screen.
             publishedLabel = longLabel;
             ShortcutInfo existing = ours(manager);
-            // One labelled in another language, or behind Facebook's, is pushed again below.
+            // One labelled in another language, or behind Threads' own, is pushed again below.
             if (existing != null && existing.getRank() == 0
                     && longLabel.contentEquals(existing.getLongLabel())) return;
-            // Evicts the lowest-ranked dynamic shortcut when Facebook's own fill the limit.
-            manager.pushDynamicShortcut(shortcut(app, longLabel));
+            push(manager, shortcut(app, longLabel), existing != null);
             Logger.printInfo(() -> "Settings entry: launcher shortcut published");
         } catch (Exception ex) {
             Logger.printException(() -> "Settings entry: could not publish the shortcut", ex);
@@ -151,10 +141,10 @@ public final class SettingsEntry {
     }
 
     /**
-     * Puts the shortcut back in front of Facebook's own, keeping the label it has, or publishes it
-     * when Facebook's call removed it. The label is kept because the process Facebook pushes from
-     * may not have Facebook's language yet, and the next screen relabels it anyway. Package-visible
-     * for tests.
+     * Puts the shortcut back in front of Threads' own, keeping the label it has, or publishes it
+     * when Threads' call removed it. The label is kept because the process Threads pushes from may
+     * not have Threads' language yet, and the next screen relabels it anyway. Package-visible for
+     * tests.
      */
     static void keepFirstNow(Context app) {
         try {
@@ -168,11 +158,35 @@ public final class SettingsEntry {
             final int rank = existing.getRank();
             if (rank == 0) return;
             CharSequence label = existing.getLongLabel();
-            manager.pushDynamicShortcut(shortcut(app, label != null ? label : L10n.t(app, "HushThreads settings")));
+            push(manager, shortcut(app, label != null ? label : L10n.t(app, "HushThreads settings")), true);
             Logger.printInfo(() -> "Settings entry: launcher shortcut moved back in front from rank " + rank);
         } catch (Exception ex) {
             Logger.printException(() -> "Settings entry: could not put the shortcut back in front", ex);
         }
+    }
+
+    /**
+     * Publishes [shortcut] at the front. From Android 11 a push evicts the lowest-ranked dynamic
+     * shortcut when Threads' own fill the limit. Android 9 and 10 have no push, so an add does the
+     * same: it updates the shortcut in place when [present], and otherwise makes room first by
+     * taking off the last one, as a push would, since an add past the limit throws.
+     */
+    private static void push(ShortcutManager manager, ShortcutInfo shortcut, boolean present) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            manager.pushDynamicShortcut(shortcut);
+            return;
+        }
+        if (!present) {
+            List<ShortcutInfo> shown = manager.getDynamicShortcuts();
+            if (shown.size() >= manager.getMaxShortcutCountPerActivity()) {
+                ShortcutInfo last = null;
+                for (ShortcutInfo candidate : shown) {
+                    if (last == null || candidate.getRank() >= last.getRank()) last = candidate;
+                }
+                if (last != null) manager.removeDynamicShortcuts(Collections.singletonList(last.getId()));
+            }
+        }
+        manager.addDynamicShortcuts(Collections.singletonList(shortcut));
     }
 
     /** The HushThreads shortcut among the dynamic ones, or null. */
@@ -185,7 +199,7 @@ public final class SettingsEntry {
 
     private static ShortcutInfo shortcut(Context app, CharSequence longLabel) {
         Intent intent = new Intent(Intent.ACTION_VIEW)
-                .setComponent(new ComponentName(app.getPackageName(), LAUNCHER_ALIAS))
+                .setComponent(new ComponentName(app.getPackageName(), LAUNCHER_ACTIVITY))
                 .putExtra(EXTRA_OPEN_SETTINGS, true)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return new ShortcutInfo.Builder(app, SHORTCUT_ID)
@@ -198,14 +212,18 @@ public final class SettingsEntry {
                 .build();
     }
 
-    // Facebook's own calls that change its dynamic shortcuts come here instead: the patch sends each
+    // Threads' own calls that change its dynamic shortcuts come here instead: the patch sends each
     // ShortcutManager call of these names to the method of the same name here, the manager first.
-    // Facebook pushes its Notifications, Friends and Reels shortcuts, and one per Messenger chat it
-    // notifies about, each at rank 0, and the platform puts the newest push first. So the
-    // HushThreads shortcut sank to the end of the list, where a launcher showing three or four,
-    // or two beside a notification, cut it off (#2). Facebook's call runs as it did, with the same
-    // answer and the same exceptions, and then the HushThreads shortcut goes back in front.
+    // Threads pushes its own shortcuts at rank 0, and the platform puts the newest push first, so
+    // the HushThreads shortcut sank to the end of the list, where a launcher showing three or four
+    // cut it off. Threads' call runs as it did, with the same answer and the same exceptions, and
+    // then the HushThreads shortcut goes back in front.
 
+    /**
+     * ShortcutManager's push exists from Android 11 only, so Threads' own call, which this stands
+     * in for, never runs on anything older.
+     */
+    @RequiresApi(Build.VERSION_CODES.R)
     public static void pushDynamicShortcut(ShortcutManager manager, ShortcutInfo shortcut) {
         manager.pushDynamicShortcut(shortcut);
         keepFirst();
@@ -236,7 +254,7 @@ public final class SettingsEntry {
     }
 
     /**
-     * Checks the shortcut on a background thread, once however many of Facebook's calls ask. The
+     * Checks the shortcut on a background thread, once however many of Threads' calls ask. The
      * flag drops as the check starts, so a call that lands during it asks for another.
      */
     private static void keepFirst() {
@@ -251,11 +269,11 @@ public final class SettingsEntry {
             if (!queued) keepFirstQueued.set(false);
         } catch (Throwable t) {
             keepFirstQueued.set(false);
-            Logger.printException(() -> "Settings entry: could not check the shortcut after Facebook's", t);
+            Logger.printException(() -> "Settings entry: could not check the shortcut after Threads' own", t);
         }
     }
 
-    /** Injected at the start of every Facebook activity's {@code onCreate}. */
+    /** Injected at the start of every Threads activity's {@code onCreate}. */
     public static void onActivityCreate(Activity activity) {
         try {
             noteIntent(activity.getIntent());
@@ -264,7 +282,7 @@ public final class SettingsEntry {
         }
     }
 
-    /** Injected at the start of every Facebook activity's {@code onNewIntent}. */
+    /** Injected at the start of every Threads activity's {@code onNewIntent}. */
     public static void onNewIntent(Activity activity, Intent intent) {
         try {
             noteIntent(intent);
@@ -273,152 +291,8 @@ public final class SettingsEntry {
         }
     }
 
-    /**
-     * Facebook's call that gives the Facebook logo at the top of the home feed its touch listener
-     * comes here instead. The patch sends the one right after the logo gets its tap, in the method
-     * that builds the logo, with the same registers.
-     *
-     * <p>Facebook passes no listener for a plain logo, and the logo gets one that opens this
-     * screen on a long press. When Facebook passes its own, Facebook reads the logo's gestures
-     * itself (its World Cup mode takes a double tap there, and a long press that opens its game),
-     * so its listener goes on as it was and the long press stays Facebook's.
-     *
-     * <p>No switch reads this, so Pause leaves it working: it's the way back to the switch that
-     * resumes HushThreads. Anything that goes wrong leaves the logo with Facebook's listener.
-     */
-    public static void setLogoTouchListener(View logo, View.OnTouchListener facebooks) {
-        View.OnTouchListener listener = facebooks;
-        if (facebooks == null) {
-            try {
-                listener = new LogoPress();
-                Logger.printInfo(() -> "Settings entry: a long press on the Facebook logo opens the settings");
-            } catch (Throwable failure) {
-                Logger.printException(() -> "Settings entry: could not watch the Facebook logo", failure);
-            }
-        } else {
-            Logger.printInfo(() -> "Settings entry: Facebook reads the logo's long press itself here, so it stays Facebook's");
-        }
-        // Facebook's own call, with Facebook's listener or the one above.
-        logo.setOnTouchListener(listener);
-    }
-
-    /**
-     * Times a press on the Facebook logo. Every touch still reaches the logo as it did, so a tap
-     * is Facebook's. A press held for the phone's long-press time opens this screen, with the
-     * same vibration a long press gives, and the rest of that touch is kept from the logo, so
-     * letting go isn't also a tap.
-     *
-     * <p>It doesn't use the logo's own long-press handling. Facebook gives the logo an
-     * accessibility delegate that puts back the long-press state it saw before the logo had any
-     * listeners, and it does that each time an accessibility service reads the screen: after one
-     * read by TalkBack, a password manager or a UI dump, a long-click listener would stop firing.
-     */
-    static final class LogoPress implements View.OnTouchListener {
-        private final Runnable fire = this::fire;
-        /** The logo while a press on it is being timed. */
-        private View pressed;
-        private float downX;
-        private float downY;
-        /** This touch opened the screen, so the rest of it isn't the logo's. */
-        private boolean opened;
-
-        @Override
-        public boolean onTouch(View logo, MotionEvent event) {
-            try {
-                switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_DOWN:
-                        stop();
-                        opened = false;
-                        // A long press Facebook gave the logo itself stays Facebook's.
-                        if (logo.isLongClickable()) return false;
-                        pressed = logo;
-                        downX = event.getX();
-                        downY = event.getY();
-                        logo.postDelayed(fire, ViewConfiguration.getLongPressTimeout());
-                        return false;
-                    case MotionEvent.ACTION_MOVE:
-                        // The same leeway the logo gives its own press before it lets go.
-                        if (pressed != null && !within(logo, event)) stop();
-                        return opened;
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_CANCEL:
-                        stop();
-                        boolean ours = opened;
-                        opened = false;
-                        return ours;
-                    default:
-                        return opened;
-                }
-            } catch (Throwable failure) {
-                Logger.printException(() -> "Settings entry: could not follow a press on the Facebook logo", failure);
-                return false;
-            }
-        }
-
-        private static boolean within(View logo, MotionEvent event) {
-            float slop = ViewConfiguration.get(logo.getContext()).getScaledTouchSlop();
-            float x = event.getX();
-            float y = event.getY();
-            return x >= -slop && y >= -slop && x < logo.getWidth() + slop && y < logo.getHeight() + slop;
-        }
-
-        private void stop() {
-            View logo = pressed;
-            pressed = null;
-            if (logo != null) logo.removeCallbacks(fire);
-        }
-
-        private void fire() {
-            View logo = pressed;
-            pressed = null;
-            if (logo == null || !logo.isAttachedToWindow()) return;
-            try {
-                // Not asked for, and letting go is Facebook's tap, as it is on a Facebook without this.
-                if (!requestFromLogo(logo)) return;
-                opened = true;
-                logo.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-                // The logo lets go of its press here, so letting go of the screen isn't a tap on it.
-                long now = SystemClock.uptimeMillis();
-                MotionEvent cancel = MotionEvent.obtain(now, now, MotionEvent.ACTION_CANCEL, downX, downY, 0);
-                logo.onTouchEvent(cancel);
-                cancel.recycle();
-            } catch (Throwable failure) {
-                Logger.printException(() -> "Settings entry: the long press on the Facebook logo failed", failure);
-            }
-        }
-    }
-
-    /**
-     * Asks for the screen over the logo's activity, the way the launcher shortcut does, so it
-     * waits for the activity to settle and follows it to the next screen if it goes away.
-     *
-     * @return whether the request was made.
-     */
-    static boolean requestFromLogo(View logo) {
-        Activity activity = activityOf(logo.getContext());
-        if (activity == null) {
-            Logger.printInfo(() -> "Settings entry: the Facebook logo isn't in an activity, so its long press is Facebook's");
-            return false;
-        }
-        requestedAt = SystemClock.elapsedRealtime();
-        openPending = true;
-        Logger.printInfo(() -> "Settings requested by a long press on the Facebook logo");
-        OpenWhenResumed.openWhenSettled(activity);
-        return true;
-    }
-
-    /** The activity a view's context wraps, or null. The depth guards against a wrapper that wraps itself. */
-    private static Activity activityOf(Context context) {
-        for (int depth = 0; context != null && depth < 20; depth++) {
-            if (context instanceof Activity) return (Activity) context;
-            if (!(context instanceof ContextWrapper)) return null;
-            context = ((ContextWrapper) context).getBaseContext();
-        }
-        return null;
-    }
-
     static final class OpenWhenResumed implements Application.ActivityLifecycleCallbacks {
-        /** The Facebook screen in front right now, if any. */
+        /** The Threads screen in front right now, if any. */
         private WeakReference<Activity> resumed;
 
         @Override
@@ -451,7 +325,7 @@ public final class SettingsEntry {
                     + " went away; opening again over the next screen");
             // Android resumes the next screen before it destroys the one it replaced, so that
             // screen is usually in front already and won't resume again to pick the request up.
-            // Signed out, the login screen hands over to Facebook's logged-out screen this way.
+            // Signed out, the launcher activity hands over to Threads' login screen this way.
             Activity current = resumed == null ? null : resumed.get();
             if (current != null && current != activity) openWhenSettled(current);
         }
@@ -467,7 +341,7 @@ public final class SettingsEntry {
                 if (!openPending) return;
                 if (SystemClock.elapsedRealtime() - requestedAt > REQUEST_LIFETIME_MS) {
                     openPending = false;
-                    Logger.printInfo(() -> "Settings request expired before a Facebook screen could show it");
+                    Logger.printInfo(() -> "Settings request expired before a Threads screen could show it");
                     return;
                 }
                 if (open(activity)) openPending = false;
@@ -511,23 +385,40 @@ public final class SettingsEntry {
         host = null;
     }
 
+    /**
+     * Asks for the screen when [intent] came from the launcher shortcut or from App info. Each is
+     * spent as it's read: the extra is taken off, and App info's action becomes the launcher's, so
+     * an activity recreated with the same intent, after a rotation say, doesn't ask again, and
+     * Threads goes on as if it had been started from its icon.
+     */
     private static void noteIntent(Intent intent) {
-        if (intent != null && intent.getBooleanExtra(EXTRA_OPEN_SETTINGS, false)) {
+        if (intent == null) return;
+        if (intent.getBooleanExtra(EXTRA_OPEN_SETTINGS, false)) {
             intent.removeExtra(EXTRA_OPEN_SETTINGS);
-            requestedAt = SystemClock.elapsedRealtime();
-            openPending = true;
-            Logger.printInfo(() -> "Settings requested by the launcher shortcut");
+            request("the launcher shortcut");
+        } else if (Intent.ACTION_APPLICATION_PREFERENCES.equals(intent.getAction())) {
+            intent.setAction(Intent.ACTION_MAIN);
+            request("Android's App info page");
         }
     }
 
-    /** A Facebook-blue disc with an "H", drawn so the shortcut needs no resource in Facebook's APK. */
+    private static void request(String from) {
+        requestedAt = SystemClock.elapsedRealtime();
+        openPending = true;
+        Logger.printInfo(() -> "Settings requested by " + from);
+    }
+
+    /**
+     * A disc in the screen's accent blue with a white "H" on black, drawn so the shortcut needs no
+     * resource in Threads' APK.
+     */
     private static Bitmap shortcutIcon() {
         final int size = 432; // Adaptive icon canvas: 108dp at xxxhdpi.
         Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         canvas.drawColor(Color.BLACK);
         Paint disc = new Paint(Paint.ANTI_ALIAS_FLAG);
-        disc.setColor(0xFF0866FF);
+        disc.setColor(0xFF236BE7);
         canvas.drawCircle(size / 2f, size / 2f, size * 0.30f, disc);
         Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
         text.setColor(Color.WHITE);

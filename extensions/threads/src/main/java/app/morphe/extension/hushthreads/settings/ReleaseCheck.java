@@ -48,19 +48,19 @@ import app.morphe.extension.shared.settings.preference.LogBufferManager;
 /**
  * Asks GitHub whether a newer HushThreads release is out, once the person has turned that on.
  *
- * <p>A sideloaded Facebook gets no update check, and Morphe Manager looks at its sources only when
+ * <p>A sideloaded Threads gets no update check, and Morphe Manager looks at its sources only when
  * it's opened, so a new release reached nobody who didn't go looking. This is the only request the
  * extension makes for itself, so it's off until the person turns on
- * {@link Settings#CHECK_FOR_RELEASES}. Then it runs at most once a day, on a worker, when Facebook
+ * {@link Settings#CHECK_FOR_RELEASES}. Then it runs at most once a day, on a worker, when Threads
  * starts, and the Check now row runs one whenever it's tapped. Paused, or in safe mode, the switch
  * answers off like every other one, and a start asks nothing.
  *
  * <p>The request is one GET of the latest release, over HTTPS to api.github.com and nowhere else:
  * no user name in the address, short timeouts, a cap on the answer, no cookie, and a plain
  * User-Agent naming HushThreads and its version. A redirect is followed only while it stays on
- * that host. Of the answer, only the release's version and the Facebook build its notes say it
+ * that host. Of the answer, only the release's version and the Threads build its notes say it
  * targets are kept. The time of each try is kept before the request goes out, so one that fails,
- * or a Facebook closed in the middle of one, waits its day like any other instead of trying again
+ * or a Threads closed in the middle of one, waits its day like any other instead of trying again
  * at every start.
  *
  * <p>What comes back only ever becomes a line on the settings screen. There's no notification,
@@ -116,7 +116,7 @@ public final class ReleaseCheck {
         REFUSED
     }
 
-    /** What one try found. On OK, the latest version and, when its notes name one, the Facebook build it targets. */
+    /** What one try found. On OK, the latest version and, when its notes name one, the Threads build it targets. */
     static final class Answer {
         final Result result;
         @Nullable
@@ -145,7 +145,7 @@ public final class ReleaseCheck {
         @Override
         public String toString() {
             if (result != Result.OK) return result + " (" + reason + ")";
-            return "newest " + newest + (target == null ? "" : ", targets Facebook " + target);
+            return "newest " + newest + (target == null ? "" : ", targets Threads " + target);
         }
     }
 
@@ -188,8 +188,8 @@ public final class ReleaseCheck {
         static final StringSetting RESULT = new StringSetting("hushthreads_release_result", "", false, false);
         /** The latest release the last successful try found, without its "v". */
         static final StringSetting NEWEST = new StringSetting("hushthreads_release_newest", "", false, false);
-        /** The Facebook build that release's notes say it targets, or empty. */
-        static final StringSetting TARGET = new StringSetting("hushthreads_release_facebook", "", false, false);
+        /** The Threads build that release's notes say it targets, or empty. */
+        static final StringSetting TARGET = new StringSetting("hushthreads_release_threads", "", false, false);
 
         static {
             Setting.keepWhenPaused(CHECKED_AT, RESULT, NEWEST, TARGET);
@@ -206,9 +206,9 @@ public final class ReleaseCheck {
     @Nullable
     static volatile String versionForTests;
 
-    /** The running Facebook's version name, or null to ask the package manager. A test sets it. */
+    /** The running Threads' version name, or null to ask the package manager. A test sets it. */
     @Nullable
-    static volatile String facebookForTests;
+    static volatile String threadsForTests;
 
     private static final AtomicBoolean running = new AtomicBoolean();
 
@@ -221,14 +221,14 @@ public final class ReleaseCheck {
     // ---- When a check runs ---------------------------------------------------------------------
 
     /**
-     * Called once per Facebook start, from SettingsEntry.onApplicationCreate after the context is
+     * Called once per Threads start, from SettingsEntry.onApplicationCreate after the context is
      * set: a check when the switch is on and the last try is a day old.
      */
-    public static void onFacebookStart() {
-        onFacebookStart(System.currentTimeMillis());
+    public static void onThreadsStart() {
+        onThreadsStart(System.currentTimeMillis());
     }
 
-    static void onFacebookStart(long now) {
+    static void onThreadsStart(long now) {
         try {
             // Before the settings are ready a read would load them with no context. Paused, the
             // switch answers off like every other one.
@@ -450,15 +450,15 @@ public final class ReleaseCheck {
     private static final Pattern VERSION = Pattern.compile("[vV]?(\\d{1,9}(?:\\.\\d{1,9})*)(?:-(.+))?");
 
     /**
-     * Where release notes say which Facebook build a release is for. The bundle's index says
-     * "targets Facebook 580.0.0.51.74", the changelog "The 22 patches target Facebook ...", and each
-     * GitHub release "All 22 patches applied without force to Facebook 580.0.0.51.74 and ...".
+     * Where release notes say which Threads build a release is for. The bundle's index says
+     * "targets Threads 449.0.0.54.82", the changelog "The 6 patches target Threads ...", and each
+     * GitHub release "All 6 patches applied without force to Threads 449.0.0.54.82 and ...".
      */
     private static final Pattern TARGET_PHRASE = Pattern.compile(
-            "(?i)\\b(?:targets?|applied\\b[^.\\n]{0,60}?\\bto)\\s+Facebook\\s+(?=\\d)");
+            "(?i)\\b(?:targets?|applied\\b[^.\\n]{0,60}?\\bto)\\s+Threads\\s+(?=\\d)");
 
-    /** A Facebook version: three to six numbers joined by dots, not part of a longer number. */
-    private static final Pattern FACEBOOK_VERSION = Pattern.compile(
+    /** A Threads version: three to six numbers joined by dots, not part of a longer number. */
+    private static final Pattern THREADS_VERSION = Pattern.compile(
             "(?<![\\d.])\\d{1,4}(?:\\.\\d{1,6}){2,5}(?!\\d)");
 
     /** Where a sentence ends: a full stop before a space or the end, or a line break. */
@@ -492,9 +492,9 @@ public final class ReleaseCheck {
     }
 
     /**
-     * The newest Facebook build [notes] say the release targets, or null when they name none. The
-     * first sentence that says so counts, and the newest version it names: "580.0.0.51.74 and
-     * 577.0.0.50.72" is 580.
+     * The newest Threads build [notes] say the release targets, or null when they name none. The
+     * first sentence that says so counts, and the newest version it names: "449.0.0.54.82 and
+     * 448.0.0.40.109" is 449.
      */
     @Nullable
     static String targetIn(String notes) {
@@ -504,7 +504,7 @@ public final class ReleaseCheck {
             int stop = end.find(phrase.end()) ? end.start() : notes.length();
             String sentence = notes.substring(phrase.end(), Math.min(stop, phrase.end() + 200));
             String newest = null;
-            Matcher version = FACEBOOK_VERSION.matcher(sentence);
+            Matcher version = THREADS_VERSION.matcher(sentence);
             while (version.find()) {
                 Integer order = compare(version.group(), newest);
                 if (newest == null || (order != null && order > 0)) newest = version.group();
@@ -545,35 +545,35 @@ public final class ReleaseCheck {
         return forced != null ? forced : Utils.getPatchesReleaseVersion();
     }
 
-    static String runningFacebook() {
-        String forced = facebookForTests;
+    static String runningThreads() {
+        String forced = threadsForTests;
         return forced != null ? forced : Utils.getAppVersionName();
     }
 
     /** The status card's line, from what the last successful try found, or null when there's nothing to say. */
     @Nullable
     static String statusLine() {
-        return statusLine(Stored.NEWEST.get(), Stored.TARGET.get(), runningVersion(), runningFacebook());
+        return statusLine(Stored.NEWEST.get(), Stored.TARGET.get(), runningVersion(), runningThreads());
     }
 
     /**
-     * A newer release than [running], and the Facebook build the latest release targets when it
-     * isn't [facebook], or null when neither holds. Compared when shown, so the line goes once
+     * A newer release than [running], and the Threads build the latest release targets when it
+     * isn't [threads], or null when neither holds. Compared when shown, so the line goes once
      * HushThreads has been updated, with no new try.
      */
     @Nullable
     static String statusLine(@Nullable String newest, @Nullable String target, @Nullable String running,
-                             @Nullable String facebook) {
+                             @Nullable String threads) {
         if (newest == null || newest.isEmpty()) return null;
-        Integer againstFacebook = target == null || target.isEmpty() ? null : compare(target, facebook);
-        boolean otherTarget = againstFacebook != null && againstFacebook != 0;
+        Integer againstThreads = target == null || target.isEmpty() ? null : compare(target, threads);
+        boolean otherTarget = againstThreads != null && againstThreads != 0;
         Integer againstRunning = compare(newest, running);
         if (againstRunning != null && againstRunning > 0) {
             String out = L10n.f("HushThreads %1$s is out. Update it in Morphe Manager.", L10n.isolate(newest));
-            return otherTarget ? out + " " + L10n.f("It targets Facebook %1$s.", L10n.isolate(target)) : out;
+            return otherTarget ? out + " " + L10n.f("It targets Threads %1$s.", L10n.isolate(target)) : out;
         }
         if (!otherTarget) return null;
-        return L10n.f("HushThreads %1$s targets Facebook %2$s.", L10n.isolate(newest), L10n.isolate(target));
+        return L10n.f("HushThreads %1$s targets Threads %2$s.", L10n.isolate(newest), L10n.isolate(target));
     }
 
     /** What the Check now row says: a try on its way, the last one's answer, or what a tap does. */
@@ -649,7 +649,7 @@ public final class ReleaseCheck {
         String newest = Stored.NEWEST.get();
         if (!newest.isEmpty()) {
             String target = Stored.TARGET.get();
-            lines.add("latest release: " + newest + (target.isEmpty() ? "" : ", targets Facebook " + target));
+            lines.add("latest release: " + newest + (target.isEmpty() ? "" : ", targets Threads " + target));
         }
         return lines;
     }

@@ -54,7 +54,7 @@ import java.util.UUID;
 import app.morphe.extension.shared.SettingsContextRule;
 
 /**
- * The Supported links row under Links: what Android says about sending Facebook's web addresses to
+ * The Supported links row under Links: what Android says about sending Threads' web addresses to
  * this app, read for this app only, and the way to Android's own page for them. A re-signed build
  * loses Meta's link verification (Morphe Manager #1028), so the row is in every build.
  */
@@ -85,15 +85,13 @@ public class SupportedLinksTest {
     public void restore() {
         if (controller != null) controller.close();
         PatchFamily.inBuildForTests = null;
-        ScreenColors.shown = null;
-        Settings.OPEN_LINKS_EXTERNALLY.resetToDefault();
         Settings.SANITIZE_SHARING_LINKS.resetToDefault();
     }
 
-    private static Map<String, Integer> hosts(int facebook, int mobile) {
+    private static Map<String, Integer> hosts(int threadsCom, int threadsNet) {
         Map<String, Integer> hosts = new LinkedHashMap<>();
-        hosts.put("www.facebook.com", facebook);
-        hosts.put("m.facebook.com", mobile);
+        hosts.put("www.threads.com", threadsCom);
+        hosts.put("www.threads.net", threadsNet);
         return hosts;
     }
 
@@ -143,7 +141,7 @@ public class SupportedLinksTest {
 
     @Test
     public void everyAddressSelectedByHandOpensHere() throws Exception {
-        assertEquals("Facebook's web addresses are selected for this app in Android's settings, so their links open here.",
+        assertEquals("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 summaryFor(state(true, hosts(SELECTED, SELECTED))));
         // This app's package and no other.
         assertFalse(askedFor.isEmpty());
@@ -152,20 +150,20 @@ public class SupportedLinksTest {
 
     @Test
     public void someAddressesSelected() throws Exception {
-        assertEquals("Only some of Facebook's web addresses are selected for this app, and links to the rest open "
+        assertEquals("Only some of Threads' web addresses are selected for this app, and links to the rest open "
                 + "elsewhere. Tap to select them in Android's settings.", summaryFor(state(true, hosts(SELECTED, NONE))));
     }
 
     @Test
     public void noAddressSelected() throws Exception {
-        assertEquals("None of Facebook's web addresses are selected for this app, so their links open elsewhere. Tap to "
+        assertEquals("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to "
                 + "select them in Android's settings.", summaryFor(state(true, hosts(NONE, NONE))));
     }
 
     /** What a build with Meta's own signature, such as a Root Mount install, gets. */
     @Test
     public void verifiedAddresses() throws Exception {
-        assertEquals("Android verified this app for Facebook's web addresses, so their links open here.",
+        assertEquals("Android verified this app for Threads' web addresses, so their links open here.",
                 summaryFor(state(true, hosts(VERIFIED, VERIFIED))));
     }
 
@@ -202,7 +200,7 @@ public class SupportedLinksTest {
         HushThreadsPreferenceFragment page = show(true);
         answer = state(true, hosts(SELECTED, SELECTED));
         controller.pause().resume();
-        assertEquals("Facebook's web addresses are selected for this app in Android's settings, so their links open here.",
+        assertEquals("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 String.valueOf(page.findPreference(KEY).getSummary()));
     }
 
@@ -242,7 +240,7 @@ public class SupportedLinksTest {
     @Config(sdk = 30)
     public void android11OpensTheAppsPage() throws Exception {
         Preference row = show(false).findPreference(KEY);
-        assertEquals("Android 11 doesn't say which links open here. Tap to open this app's settings, then Open by default.",
+        assertEquals("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
                 String.valueOf(row.getSummary()));
         assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
         Intent started = shadowOf(controller.get()).getNextStartedActivity();
@@ -251,7 +249,7 @@ public class SupportedLinksTest {
         assertEquals("package:" + RuntimeEnvironment.getApplication().getPackageName(), started.getDataString());
     }
 
-    /** With no settings page at all, a tap says so instead of closing Facebook. */
+    /** With no settings page at all, a tap says so instead of closing Threads. */
     @Test
     @Config(sdk = 30)
     public void withNoSettingsPageATapSaysSo() throws Exception {
@@ -260,31 +258,28 @@ public class SupportedLinksTest {
         assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
         ShadowLooper.idleMainLooper();
         assertNull(shadowOf(controller.get()).getNextStartedActivity());
-        assertEquals("Android's settings for this app didn't open. Open App info from Facebook's icon, then Open by default.",
+        assertEquals("Android's settings for this app didn't open. Open App info from Threads' icon, then Open by default.",
                 ShadowToast.getTextOfLatestToast());
     }
 
     /**
-     * The row sits under the two link switches and changes neither: selecting addresses in Android
-     * decides which app gets a link, and the switches decide what Facebook does with one.
+     * The row changes no switch: selecting addresses in Android decides which app gets a link, and
+     * Remove tracking from shared links, under Privacy, decides what Threads does with one it shares.
      */
     @Test
-    public void theLinkSwitchesStayAsTheyAre() throws Exception {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.EXTERNAL_BROWSER, PatchFamily.SANITIZE_SHARING_LINKS);
-        boolean external = !Settings.OPEN_LINKS_EXTERNALLY.defaultValue;
+    public void theLinkSwitchStaysAsItIs() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SANITIZE_SHARING_LINKS);
         boolean sanitize = !Settings.SANITIZE_SHARING_LINKS.defaultValue;
-        Settings.OPEN_LINKS_EXTERNALLY.save(external);
         Settings.SANITIZE_SHARING_LINKS.save(sanitize);
         answer = state(true, hosts(NONE, NONE));
         HushThreadsPreferenceFragment page = show(true);
         Preference row = page.findPreference(KEY);
         PreferenceGroup links = row.getParent();
         assertEquals("Links", String.valueOf(links.getTitle()));
-        assertEquals(Settings.OPEN_LINKS_EXTERNALLY.key, links.getPreference(0).getKey());
-        assertEquals(Settings.SANITIZE_SHARING_LINKS.key, links.getPreference(1).getKey());
-        assertEquals(row, links.getPreference(2));
+        assertEquals(row, links.getPreference(0));
+        PreferenceGroup privacy = page.findPreference(Settings.SANITIZE_SHARING_LINKS.key).getParent();
+        assertEquals("Privacy", String.valueOf(privacy.getTitle()));
         assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
-        assertEquals(external, Settings.OPEN_LINKS_EXTERNALLY.get());
         assertEquals(sanitize, Settings.SANITIZE_SHARING_LINKS.get());
     }
 

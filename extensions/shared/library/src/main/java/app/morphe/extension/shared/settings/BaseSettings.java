@@ -54,7 +54,7 @@ public class BaseSettings {
     public static final StringSetting EXPERIMENTAL_APP_CONFIRMED = new StringSetting("morphe_experimental_app_target_confirmed", "", false, false);
 
     /**
-     * Pause HushThreads: from the next start every hook a setting controls takes Facebook's own
+     * Pause HushThreads: from the next start every hook a setting controls takes Threads' own
      * path, and every saved value stays as it is. Edits made at patch time have no setting to ask
      * and stay in. Left out of backups, so restoring one never pauses a phone by surprise.
      */

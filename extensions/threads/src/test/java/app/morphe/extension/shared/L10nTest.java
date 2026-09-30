@@ -34,14 +34,14 @@ import java.util.Map;
 /**
  * How the catalog picks a language: the phone's list in order, a region falling back to its
  * language, both codes Indonesian goes by, English for everything else, and the pseudo-locales.
- * And that none of it touches the language Facebook itself runs in.
+ * And that none of it touches the language Threads itself runs in.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
 public class L10nTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
-    private static final String KEY = "Hide sponsored posts";
+    private static final String KEY = "Stop analytics uploads";
 
     @Test
     public void everyLanguageTheBundleCarriesHasATableWithTheKey() {
@@ -162,9 +162,9 @@ public class L10nTest {
 
     @Test
     public void aFormatFillsTheTranslationAndFallsBackToTheEnglishWhenItCant() {
-        String german = table("de").get("Saved to %1$s");
+        String german = table("de").get("Full report saved to %1$s");
         assertNotNull(german);
-        assertEquals(String.format(german, "Movies/Facebook"), L10n.f(in(Locale.GERMANY), "Saved to %1$s", "Movies/Facebook"));
+        assertEquals(String.format(german, "Download/HushThreads"), L10n.f(in(Locale.GERMANY), "Full report saved to %1$s", "Download/HushThreads"));
         // Numbers are written the phone's way even in English: a French phone reads 4,2.
         assertEquals("4,2 MB of 9 MB", L10n.f(in(Locale.FRANCE), "%1$s of %2$s",
                 String.format(L10n.locale(in(Locale.FRANCE)), "%.1f MB", 4.2), "9 MB"));
@@ -226,10 +226,10 @@ public class L10nTest {
         String shown = L10n.t(accented, KEY);
         assertTrue(shown, shown.startsWith("[") && shown.endsWith("]"));
         assertTrue("en-XA isn't longer: " + shown, shown.length() > KEY.length() * 4 / 3);
-        assertFalse("en-XA left the letters plain: " + shown, shown.contains("sponsored"));
+        assertFalse("en-XA left the letters plain: " + shown, shown.contains("analytics"));
         // Placeholders come through whole, so the values put in them read as they are.
-        String formatted = L10n.f(accented, "Saved to %1$s", "Movies/Facebook");
-        assertTrue(formatted, formatted.contains("Movies/Facebook"));
+        String formatted = L10n.f(accented, "Full report saved to %1$s", "Download/HushThreads");
+        assertTrue(formatted, formatted.contains("Download/HushThreads"));
         assertEquals(L10n.pseudolocalize(L10n.ACCENTED, "%1$s of %2$s"), L10n.t(accented, "%1$s of %2$s"));
         assertTrue(L10n.t(accented, "%1$s of %2$s").startsWith("[%1$s "));
         // Second in the list, a pseudo-locale is never reached.
@@ -244,27 +244,27 @@ public class L10nTest {
         char mark = (char) 0x200F;
         assertEquals("one override per word: " + shown, 3, count(shown, override));
         assertEquals("it has to open with a right-to-left mark, or the line runs left to right", mark, shown.charAt(0));
-        String formatted = L10n.f(mirrored, "Saved to %1$s", "Movies/Facebook");
-        assertTrue(formatted, formatted.contains("Movies/Facebook"));
-        assertFalse(formatted, formatted.contains(override + "Movies"));
+        String formatted = L10n.f(mirrored, "Full report saved to %1$s", "Download/HushThreads");
+        assertTrue(formatted, formatted.contains("Download/HushThreads"));
+        assertFalse(formatted, formatted.contains(override + "Download"));
     }
 
     @Test
     public void anIsolatedValueIsWrappedInFirstStrongIsolates() {
-        String isolated = L10n.isolate("580.0.0.51.74");
+        String isolated = L10n.isolate("449.0.0.54.82");
         assertEquals((char) 0x2068, isolated.charAt(0));
         assertEquals((char) 0x2069, isolated.charAt(isolated.length() - 1));
-        assertEquals("580.0.0.51.74", isolated.substring(1, isolated.length() - 1));
+        assertEquals("449.0.0.54.82", isolated.substring(1, isolated.length() - 1));
         assertEquals("", L10n.isolate(""));
         assertEquals("", L10n.isolate(null));
     }
 
     /**
-     * The catalog reads the phone's languages and never sets one: Facebook's own screens keep the
-     * language Facebook chose, whatever HushThreads's text comes out in.
+     * The catalog reads the phone's languages and never sets one: Threads' own screens keep the
+     * language Threads chose, whatever HushThreads' text comes out in.
      */
     @Test
-    public void readingTheCatalogLeavesFacebooksLanguageAlone() {
+    public void readingTheCatalogLeavesThreadsLanguageAlone() {
         Context application = RuntimeEnvironment.getApplication();
         Locale defaultBefore = Locale.getDefault();
         LocaleList appBefore = application.getResources().getConfiguration().getLocales();
@@ -273,7 +273,7 @@ public class L10nTest {
                 new Locale("ar", "XB"), new Locale("in", "ID"), Locale.FRANCE}) {
             Context phone = in(locale);
             L10n.t(phone, KEY);
-            L10n.f(phone, "Saved to %1$s", "x");
+            L10n.f(phone, "Full report saved to %1$s", "x");
             L10n.join(phone, Arrays.asList("a", "b", "c"));
             L10n.capitalize(phone, "indir");
             L10n.quantity(phone, 2, "%1$d", "%1$d");
@@ -284,7 +284,7 @@ public class L10nTest {
     }
 
     /**
-     * Facebook sets its own language on the application, and an activity or a dialog can carry
+     * Threads sets its own language on the application, and an activity or a dialog can carry
      * another. Every lookup answers in the application's, whichever of them asks, or a Back label
      * and the title beside it come out in two languages.
      */

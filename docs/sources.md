@@ -43,6 +43,7 @@ Nowhere yet. The repository is private until the first release, so none of the M
 
 ## What's next
 
-- Following as the default feed and hiding suggested threads are the most asked-for features after ads. Neither has a clean anchor yet.
+- Hiding suggested threads is the most asked-for feature after ads, and it doesn't have a clean anchor yet.
+- Following as the default feed is the other one people ask for, but Threads 449 already has it: the feeds menu can set the feed Threads opens on. A patch would only get in its way.
 - When Threads moves its ad code again, MrxSiN's notes and zeldrisho's newest pins are the first two places to look.
 - A custom share domain would start from kareemlukitomo's patch, with a new anchor.

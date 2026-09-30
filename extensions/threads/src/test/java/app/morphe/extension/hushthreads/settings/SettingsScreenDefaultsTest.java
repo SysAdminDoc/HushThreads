@@ -40,9 +40,8 @@ import java.util.Set;
 
 /**
  * Opening the settings screen stores nothing. Each row stored the value it was shown when its key
- * was missing, so one look stored every default, and a later release that changed a default (the
- * AI switch is meant to go on once it's been checked on a real feed) never reached anyone who had
- * opened the screen.
+ * was missing, so one look stored every default, and a later release that changed a default never
+ * reached anyone who had opened the screen.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
@@ -53,8 +52,8 @@ public class SettingsScreenDefaultsTest {
     @After
     public void restore() {
         PatchFamily.inBuildForTests = null;
-        ScreenColors.shown = null;
-        Settings.HIDE_AI_DETECTED_POSTS.resetToDefault();
+        Settings.HIDE_ADS.resetToDefault();
+        Settings.CHECK_FOR_RELEASES.resetToDefault();
     }
 
     private static SharedPreferences store() {
@@ -80,11 +79,11 @@ public class SettingsScreenDefaultsTest {
             Set<String> added = new HashSet<>(store().getAll().keySet());
             added.removeAll(before);
             assertEquals("opening the screen stored " + added, Collections.emptySet(), added);
-            // Saves other apps can open start off, and a later default change has to reach
-            // everyone who only looked (issue #11's switch).
-            assertNotNull("no row for saves other apps can open",
-                    find(fragment.getPreferenceScreen(), Settings.DOWNLOAD_COMPATIBLE.key));
-            assertFalse(added.contains(Settings.DOWNLOAD_COMPATIBLE.key));
+            // The release check starts off, and a later default change has to reach everyone who
+            // only looked.
+            assertNotNull("no row for the release check",
+                    find(fragment.getPreferenceScreen(), Settings.CHECK_FOR_RELEASES.key));
+            assertFalse(added.contains(Settings.CHECK_FOR_RELEASES.key));
         }
     }
 
@@ -92,7 +91,7 @@ public class SettingsScreenDefaultsTest {
     @Test
     public void aSwitchThePersonTurnsIsStored() {
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
-        String key = Settings.HIDE_AI_DETECTED_POSTS.key;
+        String key = Settings.HIDE_ADS.key;
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             SwitchPreference row = find(open(controller).getPreferenceScreen(), key);
             assertNotNull("no row for " + key, row);
@@ -102,7 +101,7 @@ public class SettingsScreenDefaultsTest {
 
             assertTrue("the turned switch wasn't stored", store().contains(key));
             assertEquals(row.isChecked(), store().getBoolean(key, !row.isChecked()));
-            assertEquals(row.isChecked(), Settings.HIDE_AI_DETECTED_POSTS.get());
+            assertEquals(row.isChecked(), Settings.HIDE_ADS.get());
         }
     }
 

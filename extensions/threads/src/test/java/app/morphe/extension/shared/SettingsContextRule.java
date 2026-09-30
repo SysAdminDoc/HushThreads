@@ -76,7 +76,7 @@ public final class SettingsContextRule extends ExternalResource {
     }
 
     /**
-     * Runs [body] the way a hook runs when Facebook calls it before its application's onCreate:
+     * Runs [body] the way a hook runs when Threads calls it before its application's onCreate:
      * with no context set. The context comes back afterwards, whatever [body] does.
      */
     public static void withoutContext(Runnable body) {

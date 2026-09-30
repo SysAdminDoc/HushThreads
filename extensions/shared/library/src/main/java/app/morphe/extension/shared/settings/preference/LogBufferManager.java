@@ -100,26 +100,23 @@ public final class LogBufferManager {
     private static final class ClearSnapshot {
         final List<DiagnosticEvent> events;
         final app.morphe.extension.shared.diagnostics.HookStatus.Snapshot hooks;
-        final app.morphe.extension.shared.diagnostics.FeedFilterCounters.Snapshot feedFilter;
         final String javaCrash;
         final String nativeCrash;
 
         ClearSnapshot(
                 List<DiagnosticEvent> events,
                 app.morphe.extension.shared.diagnostics.HookStatus.Snapshot hooks,
-                app.morphe.extension.shared.diagnostics.FeedFilterCounters.Snapshot feedFilter,
                 String javaCrash,
                 String nativeCrash
         ) {
             this.events = events;
             this.hooks = hooks;
-            this.feedFilter = feedFilter;
             this.javaCrash = javaCrash;
             this.nativeCrash = nativeCrash;
         }
 
         boolean isEmpty() {
-            return events.isEmpty() && hooks.isEmpty() && feedFilter.isEmpty()
+            return events.isEmpty() && hooks.isEmpty()
                     && javaCrash.isEmpty() && nativeCrash.isEmpty();
         }
     }
@@ -239,6 +236,7 @@ public final class LogBufferManager {
         if (context == null) throw new IOException("Application context unavailable");
         String fileName = "morphe-diagnostics-" + fileTimestamp() + "-"
                 + Long.toHexString(System.nanoTime()) + ".txt";
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return writeToAppFolder(context, fileName, exportText);
         ContentResolver resolver = context.getContentResolver();
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
@@ -263,6 +261,28 @@ public final class LogBufferManager {
             deleteIncomplete(resolver, pendingUri, error);
             throw error;
         }
+    }
+
+    /**
+     * Android 9 has no Downloads collection in MediaStore, and the shared Download folder takes a
+     * storage permission there that Threads may not hold. The report goes into Threads' own folder
+     * on shared storage instead, which a file manager or a computer can open without one.
+     */
+    private static String writeToAppFolder(Context context, String fileName, String exportText) throws IOException {
+        File downloads = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        if (downloads == null) throw new IOException("Shared storage is unavailable");
+        File folder = new File(downloads, "Morphe");
+        if (!folder.isDirectory() && !folder.mkdirs()) throw new IOException("Could not create report folder");
+        File report = new File(folder, fileName);
+        try (OutputStream output = new FileOutputStream(report)) {
+            writeText(output, exportText);
+        } catch (IOException error) {
+            if (!report.delete() && report.exists()) {
+                error.addSuppressed(new IOException("Could not remove incomplete report"));
+            }
+            throw error;
+        }
+        return report.getAbsolutePath();
     }
 
     private static String providerDisplayName(ContentResolver resolver, Uri uri) throws IOException {
@@ -297,8 +317,9 @@ public final class LogBufferManager {
     /**
      * A section of the exported report supplied from outside this library.
      *
-     * <p>The Feature Gate Lab lives in the Facebook extension, and this library cannot name it,
-     * so the extension registers what it wants said. A section with no lines is left out.
+     * <p>The patch list and the release check live in the Threads extension, and this library
+     * cannot name them, so the extension registers what it wants said. A section with no lines is
+     * left out.
      */
     public interface ReportSection {
         /** The bracketed heading, without the brackets. */
@@ -417,7 +438,7 @@ public final class LogBufferManager {
         // the reader made in "Included diagnostics" rather than printing regardless. It goes
         // through the redactor for the same reason every other section does: the next name put
         // in it may not be a literal.
-        // Paused, every family below that reads a setting is bound but takes Facebook's own path,
+        // Paused, every family below that reads a setting is bound but takes Threads' own path,
         // and a reader of the table has to be told so or it reads as a healthy build that does
         // nothing. A family that reads no setting keeps working and is left unmarked.
         boolean paused = HushThreadsPause.isPaused();
@@ -444,7 +465,7 @@ public final class LogBufferManager {
         if (paused) {
             report.append("hushthreads: paused (")
                     .append(HushThreadsPause.reason().name().toLowerCase(java.util.Locale.ROOT))
-                    .append("), every hook a setting controls takes Facebook's own path, and what was set "
+                    .append("), every hook a setting controls takes Threads' own path, and what was set "
                             + "when patching stays in\n");
         } else {
             report.append("hushthreads: running\n");
@@ -479,10 +500,6 @@ public final class LogBufferManager {
                     report.append(DiagnosticRedactor.redact(line)).append('\n');
                 }
             }
-        }
-        String feedFilter = feedFilterLines(includeAll, selected);
-        if (!feedFilter.isEmpty()) {
-            report.append("\n[FEED FILTER]\n").append(feedFilter).append('\n');
         }
         String lastExit = lastExitLine(includeAll, selected);
         if (!lastExit.isEmpty()) {
@@ -533,27 +550,6 @@ public final class LogBufferManager {
     }
 
     /**
-     * One line per feed filter route the app has reached, whatever the logging switch says.
-     *
-     * <p>It follows the reader's own choice in "Included diagnostics" like every other section,
-     * under the feed category, and goes through the redactor because the next source name put in
-     * it may not be a literal.
-     */
-    private static String feedFilterLines(boolean includeAll, Set<String> selected) {
-        if (!includeAll && !selected.contains(
-                app.morphe.extension.shared.diagnostics.DiagnosticCategory
-                        .FEED_AND_NAVIGATION.value)) {
-            return "";
-        }
-        StringBuilder lines = new StringBuilder();
-        for (String line : app.morphe.extension.shared.diagnostics.FeedFilterCounters.report()) {
-            if (lines.length() > 0) lines.append('\n');
-            lines.append(DiagnosticRedactor.redact(line));
-        }
-        return lines.toString();
-    }
-
-    /**
      * Why the process went away last time. A Java crash handler sees none of the ways the system
      * ends an app: Android 17 kills one that goes over a RAM-proportional limit and records it as
      * a description like "MemoryLimiter:AnonSwap", and an ANR or a low-memory kill leaves nothing
@@ -566,13 +562,15 @@ public final class LogBufferManager {
                 app.morphe.extension.shared.diagnostics.DiagnosticCategory.PATCH_ERRORS.value)) {
             return "";
         }
+        // Android 9 and 10 keep no exit reasons.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return "";
         try {
             Context context = Utils.getContext();
             if (context == null) return "";
             ActivityManager manager =
                     (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
             if (manager == null) return "";
-            // Pid 0 means any process, and Facebook runs several. The most recent record is
+            // Pid 0 means any process, and Threads runs several. The most recent record is
             // routinely a background helper the system reaped, which says nothing about why the
             // app went away, so the main process is picked out by name.
             String packageName = context.getPackageName();
@@ -746,7 +744,6 @@ public final class LogBufferManager {
             ClearSnapshot removed = new ClearSnapshot(
                     new ArrayList<>(logBuffer),
                     app.morphe.extension.shared.diagnostics.HookStatus.snapshotAndClear(),
-                    app.morphe.extension.shared.diagnostics.FeedFilterCounters.snapshotAndClear(),
                     readCrashReport(context),
                     readNpthCrashReport(context)
             );
@@ -781,7 +778,6 @@ public final class LogBufferManager {
                     restoreCrashReportIfMissing(context, NPTH_CRASH_FILE, saved.nativeCrash);
                     restoreLogBufferData(saved.events);
                     app.morphe.extension.shared.diagnostics.HookStatus.restore(saved.hooks);
-                    app.morphe.extension.shared.diagnostics.FeedFilterCounters.restore(saved.feedFilter);
                     lastClear = null;
                     result = UndoResult.RESTORED;
                 } catch (Exception error) {

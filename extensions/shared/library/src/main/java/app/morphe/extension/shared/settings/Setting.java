@@ -209,11 +209,11 @@ public abstract class Setting<T> {
 
     /**
      * Pause HushThreads, decided once when the process starts (see {@link HushThreadsPause}). While it
-     * is on, every setting that changes Facebook answers the value that leaves Facebook as it ships.
+     * is on, every setting that changes Threads answers the value that leaves Threads as it ships.
      */
     private static volatile boolean pausedForProcess;
 
-    /** HushThreads's own state rather than a change to Facebook: it keeps its value while paused. */
+    /** HushThreads's own state rather than a change to Threads: it keeps its value while paused. */
     private volatile boolean keptWhenPaused;
 
     /** Whether this process runs with HushThreads paused. */
@@ -450,7 +450,7 @@ public abstract class Setting<T> {
 
     /**
      * What the setting says now, which is what every hook reads. While HushThreads is paused, a
-     * setting that changes Facebook answers {@link #pausedValue()}; the saved value is untouched.
+     * setting that changes Threads answers {@link #pausedValue()}; the saved value is untouched.
      */
     @NonNull
     public final T get() {
@@ -459,7 +459,7 @@ public abstract class Setting<T> {
 
     /**
      * The value this setting holds, paused or not. The settings screen, backups and undo read
-     * this: they show and keep what the user chose, not what a paused Facebook is answered.
+     * this: they show and keep what the user chose, not what a paused Threads is answered.
      */
     @NonNull
     public final T savedValue() {

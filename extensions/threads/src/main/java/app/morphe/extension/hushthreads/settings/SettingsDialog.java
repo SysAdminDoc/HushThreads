@@ -13,6 +13,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -24,7 +25,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsets;
-import android.view.WindowInsetsController;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -40,9 +40,7 @@ import app.morphe.extension.shared.Logger;
 
 /**
  * The HushThreads screen: a full screen, black dialog with a title bar and the preference list.
- * It is a framework dialog fragment, so it needs no activity of its own and Back closes it. With the
- * Material You theme in the build, the page follows the phone's dark or light setting in its
- * wallpaper colours instead ({@link ScreenColors}).
+ * It is a framework dialog fragment, so it needs no activity of its own and Back closes it.
  */
 @SuppressWarnings("deprecation") // Framework fragments are what the shared preference code builds on.
 public final class SettingsDialog extends DialogFragment {
@@ -67,15 +65,10 @@ public final class SettingsDialog extends DialogFragment {
     };
     private boolean settingSearch;
 
-    /** The page's colours, or null for the black page. Read when the dialog is created. */
-    @Nullable
-    private ScreenColors colors;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        colors = ScreenColors.forScreen(getContext());
-        setStyle(STYLE_NO_TITLE, colors == null ? android.R.style.Theme_Material_NoActionBar : colors.theme());
+        setStyle(STYLE_NO_TITLE, ScreenColors.THEME);
     }
 
     @Override
@@ -93,19 +86,13 @@ public final class SettingsDialog extends DialogFragment {
         };
         Window window = dialog.getWindow();
         if (window != null) {
-            window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(background()));
+            window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(ScreenColors.DEFAULT.background));
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             // With three-button navigation Android lays a grey scrim under the buttons; the
-            // screen is black edge to edge, so the scrim only shows as a grey band.
-            window.setNavigationBarContrastEnforced(false);
+            // screen is black edge to edge, so the scrim only shows as a grey band. Android 9 has
+            // no scrim to turn off.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.setNavigationBarContrastEnforced(false);
             window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-            // Below Android 15 this window draws its own bars in the framework theme's colours,
-            // grey and black, which a light page's dark icons can't be read on. The page's colour
-            // goes behind them instead. Android 15 and newer draw the page there already.
-            if (colors != null) {
-                window.setStatusBarColor(colors.background);
-                window.setNavigationBarColor(colors.background);
-            }
         }
         return dialog;
     }
@@ -121,7 +108,7 @@ public final class SettingsDialog extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         LinearLayout root = new LinearLayout(getContext());
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(background());
+        root.setBackgroundColor(ScreenColors.DEFAULT.background);
 
         LinearLayout bar = new LinearLayout(getContext());
         bar.setOrientation(LinearLayout.HORIZONTAL);
@@ -131,7 +118,7 @@ public final class SettingsDialog extends DialogFragment {
         bar.setPaddingRelative(dp(4), dp(12), pad, dp(12));
 
         android.widget.ImageButton back = new android.widget.ImageButton(getContext());
-        android.graphics.drawable.Drawable arrow = SettingsIcons.icon(getContext(), SettingsIcons.BACK, foreground());
+        android.graphics.drawable.Drawable arrow = SettingsIcons.icon(getContext(), SettingsIcons.BACK, Color.WHITE);
         arrow.setBounds(0, 0, dp(24), dp(24));
         arrow.setLayoutDirection(rightToLeft() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         back.setImageDrawable(arrow);
@@ -159,7 +146,7 @@ public final class SettingsDialog extends DialogFragment {
         TextView title = new TextView(getContext());
         pageTitle = title;
         title.setText("HushThreads");
-        title.setTextColor(foreground());
+        title.setTextColor(Color.WHITE);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
         title.setPaddingRelative(dp(8), 0, 0, 0);
@@ -174,18 +161,24 @@ public final class SettingsDialog extends DialogFragment {
         root.addView(container, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
-        // Facebook targets a recent API, so its windows are edge to edge: keep the bars off the
+        // Threads targets a recent API, so its windows are edge to edge: keep the bars off the
         // content.
         root.setOnApplyWindowInsetsListener((view, insets) -> {
-            android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
-            view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
+                view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+            } else {
+                // Android 9 and 10 have no inset types, and these are the same bars there.
+                view.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
+                        insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
+            }
             return insets;
         });
         return root;
     }
 
     private void buildSearch(LinearLayout root) {
-        ScreenColors palette = colors == null ? ScreenColors.DEFAULT : colors;
+        ScreenColors palette = ScreenColors.DEFAULT;
         searchBox = new LinearLayout(getContext());
         searchBox.setGravity(Gravity.CENTER_VERTICAL);
         android.graphics.drawable.GradientDrawable surface = new android.graphics.drawable.GradientDrawable();
@@ -283,30 +276,6 @@ public final class SettingsDialog extends DialogFragment {
     private void hideKeyboard() {
         android.view.inputmethod.InputMethodManager keyboard = getContext().getSystemService(android.view.inputmethod.InputMethodManager.class);
         if (keyboard != null) keyboard.hideSoftInputFromWindow(search.getWindowToken(), 0);
-    }
-
-    /**
-     * On a light page, dark status and navigation bar icons, which the window only takes once it
-     * has its decor.
-     */
-    @Override
-    public void onStart() {
-        super.onStart();
-        Dialog dialog = getDialog();
-        Window window = dialog == null ? null : dialog.getWindow();
-        if (colors == null || !colors.light || window == null) return;
-        WindowInsetsController bars = window.getInsetsController();
-        if (bars == null) return;
-        int dark = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
-        bars.setSystemBarsAppearance(dark, dark);
-    }
-
-    private int background() {
-        return colors == null ? Color.BLACK : colors.background;
-    }
-
-    private int foreground() {
-        return colors == null ? Color.WHITE : colors.title;
     }
 
     @Override

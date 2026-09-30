@@ -78,7 +78,7 @@ public class BooleanSetting extends Setting<Boolean> {
         preferences.saveBoolean(key, value);
     }
 
-    /** A switch answers off while HushThreads is paused: every one of them changes Facebook when on. */
+    /** A switch answers off while HushThreads is paused: every one of them changes Threads when on. */
     @NonNull
     @Override
     protected Boolean pausedValue() {
