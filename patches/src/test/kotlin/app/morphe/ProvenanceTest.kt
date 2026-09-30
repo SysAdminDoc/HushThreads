@@ -40,10 +40,10 @@ class ProvenanceTest {
      * The rules a file falls under. A rule naming the file itself wins over the directory rule
      * around it, so a file written here can sit in a folder of ported code and still say so.
      */
-    private fun rulesFor(path: String): List<Rule> {
-        val named = rules.filter { rule -> path in rule.paths }
+    private fun rulesFor(path: String, among: List<Rule> = rules): List<Rule> {
+        val named = among.filter { rule -> path in rule.paths }
         if (named.isNotEmpty()) return named
-        return rules.filter { rule -> rule.paths.any { matchesDirectory(it, path) } }
+        return among.filter { rule -> rule.paths.any { matchesDirectory(it, path) } }
     }
 
     /**
@@ -147,9 +147,11 @@ class ProvenanceTest {
         val fromInWords = "/*\n * From SysAdminDoc/hushfeed, unchanged.\n * https://github.com/SysAdminDoc/HushThreads\n */"
         assertTrue("a fork named in words outside the chain passed", headerProblem("z/A.java", forkedInWords, morphe) != null)
         assertTrue("a copied file named in words passed as written here", headerProblem("y/A.java", fromInWords, original) != null)
-        assertEquals("a rule naming the file wins over its folder's", "original",
-            rulesFor("extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/MediaUrlPolicy.java")
-                .single().origin)
+        // A file written here among copied ones: its own rule names it inside the folder's.
+        val folder = Rule(listOf("w/**"), "ported", listOf("https://github.com/SysAdminDoc/Hushfacebook"))
+        val own = Rule(listOf("w/Own.java"), "original", listOf("https://github.com/SysAdminDoc/HushThreads"))
+        assertEquals("a rule naming the file wins over its folder's", "original", rulesFor("w/Own.java", listOf(folder, own)).single().origin)
+        assertEquals("the folder's rule keeps the rest", "ported", rulesFor("w/Other.java", listOf(folder, own)).single().origin)
 
         // A file written here that says where it came from in any of the ways a header does,
         // with the rule's own repository linked so only the words give it away.
