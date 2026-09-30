@@ -3,10 +3,10 @@
     Exercise the release and gate scripts: patch target and report, receipts, release facts,
     pre-push routing, the changelog, d8 and Java resolution, split bundles and the shared helpers.
 .DESCRIPTION
-    Ported from Hushfeed's suite on 2026-09-25 and held to Facebook's facts: two declared builds,
-    both of Meta's signers, and .apkm split bundles. The pre-push hook runs it for changes under
-    scripts/ or assets/, and for README.md, patches-list.json or patches/build.gradle.kts. A
-    missing suite stops the push.
+    Ported from Hushfeed's suite by way of Hushfacebook and held to Threads' facts: the declared
+    build at its pinned version code, both of Meta's signers for Threads, and .xapk or .apkm split
+    bundles. The pre-push hook runs it for changes under scripts/, and for README.md,
+    patches-list.json or patches/build.gradle.kts. A missing suite stops the push.
 #>
 [CmdletBinding()]
 param([string]$Root)
@@ -47,99 +47,99 @@ function New-NotFoundAnswer {
 
 # --- patch-target.ps1 ------------------------------------------------------------------------
 #
-# Facebook ships a build a week, so the catalog declares the build the bundle was last proved on
-# and keeps the one before it. Both come back newest first, by number and not by text, and every
+# Threads ships a build a week, so the catalog declares the build the bundle was last proved on
+# and can keep the one before it. They come back newest first, by number and not by text, and every
 # patch has to declare the same builds: a build only some patches declare is one the bundle can't
 # fully patch, and the release scripts would take it for a declared target.
 $catalog = Get-Content -LiteralPath (Join-Path $Root 'patches-list.json') -Raw | ConvertFrom-Json
 $target = Get-PatchTarget -PatchList $catalog
-Assert-True ($target.PackageName -eq 'com.facebook.katana') 'The catalog package was not resolved.'
-Assert-True (@($target.PackageVersions).Count -ge 2 -and $target.PackageVersion -eq $target.PackageVersions[0]) `
-    "The catalog's declared Facebook builds were not read: $($target.PackageVersions -join ', ')"
+Assert-True ($target.PackageName -eq 'com.instagram.barcelona') 'The catalog package was not resolved.'
+Assert-True (@($target.PackageVersions).Count -ge 1 -and $target.PackageVersion -eq $target.PackageVersions[0]) `
+    "The catalog's declared Threads builds were not read: $($target.PackageVersions -join ', ')"
 foreach ($patch in @($catalog.patches)) {
-    Assert-True (((@($patch.compatiblePackages.'com.facebook.katana') | Sort-Object) -join ',') -eq
+    Assert-True (((@($patch.compatiblePackages.'com.instagram.barcelona') | Sort-Object) -join ',') -eq
         ((@($target.PackageVersions) | Sort-Object) -join ',')) `
-        "$($patch.name) declares other Facebook builds than the rest of the catalog."
+        "$($patch.name) declares other Threads builds than the rest of the catalog."
 }
-# And the version code each build is pinned to. APKMirror lists several arm64 builds of one Facebook
-# version, each with its own dex, so a name alone doesn't say which of them the patches were proved
-# on. A receipt counted another 580 build (vc 475019283 beside the declared 475019344) as an
-# unforced run of the declared one.
+# And the version code each build is pinned to. One Threads version can come as several arm64
+# builds, each with its own dex, so a name alone doesn't say which of them the patches were proved
+# on. In the Facebook sibling a receipt counted another 580 build (vc 475019283 beside the declared
+# 475019344) as an unforced run of the declared one.
 foreach ($version in @($target.PackageVersions)) {
-    $pinned = @($catalog.patches[0].compatibility | Where-Object { $_.packageName -eq 'com.facebook.katana' } |
+    $pinned = @($catalog.patches[0].compatibility | Where-Object { $_.packageName -eq 'com.instagram.barcelona' } |
         ForEach-Object { @($_.targets) } | Where-Object { $_.version -eq $version } |
         ForEach-Object { $_.versionCodes.PSObject.Properties } | ForEach-Object { [string]$_.Value })
     Assert-True ($pinned.Count -gt 0 -and (@($target.PackageVersionCodes[$version]) -join ',') -eq (($pinned | Sort-Object -Unique) -join ',')) `
-        "The version codes the catalog pins to Facebook $version were not read: $(@($target.PackageVersionCodes[$version]) -join ', ')"
+        "The version codes the catalog pins to Threads $version were not read: $(@($target.PackageVersionCodes[$version]) -join ', ')"
     Assert-True (Test-DeclaredBuild -Target $target -VersionName $version -VersionCode $pinned[0]) `
-        "Facebook $version at its pinned code $($pinned[0]) was not taken for a declared build."
+        "Threads $version at its pinned code $($pinned[0]) was not taken for a declared build."
     Assert-True (-not (Test-DeclaredBuild -Target $target -VersionName $version -VersionCode "$([long]$pinned[0] - 61)")) `
-        "Another build of Facebook $version, version code $([long]$pinned[0] - 61), was taken for the declared one."
+        "Another build of Threads $version, version code $([long]$pinned[0] - 61), was taken for the declared one."
 }
 Assert-True (-not (Test-DeclaredBuild -Target $target -VersionName '1.0.0' -VersionCode '1')) 'An undeclared version was taken for a declared build.'
 
 $threeBuilds = [pscustomobject]@{
     patches = @(
         [pscustomobject]@{ name = 'one'
-            compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('577.0.0.50.72', '99.1.0.0.1', '580.0.0.51.74') } },
+            compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('448.0.0.54.85', '99.1.0.0.1', '449.0.0.54.82') } },
         [pscustomobject]@{ name = 'two'
-            compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('580.0.0.51.74', '99.1.0.0.1', '577.0.0.50.72') } })
+            compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('449.0.0.54.82', '99.1.0.0.1', '448.0.0.54.85') } })
 }
 $three = Get-PatchTarget -PatchList $threeBuilds
-Assert-True (($three.PackageVersions -join ',') -eq '580.0.0.51.74,577.0.0.50.72,99.1.0.0.1' -and
-    $three.PackageVersion -eq '580.0.0.51.74') `
+Assert-True (($three.PackageVersions -join ',') -eq '449.0.0.54.82,448.0.0.54.85,99.1.0.0.1' -and
+    $three.PackageVersion -eq '449.0.0.54.82') `
     "Declared builds were not ordered newest first by number: $($three.PackageVersions -join ', ')"
 
-# Every part of the version, as a number. Facebook's have five and [version] takes four, so the fifth
+# Every part of the version, as a number. Threads' have five and [version] takes four, so the fifth
 # was dropped and builds apart only there sorted as equals, the older one first in both shells.
 $fifthPart = [pscustomobject]@{
     patches = @([pscustomobject]@{ name = 'hotfixes'
-        compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('580.0.0.51.8', '580.0.0.51.10', '580.0.0.51', '580.0.0.51.9') } })
+        compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('449.0.0.54.8', '449.0.0.54.10', '449.0.0.54', '449.0.0.54.9') } })
 }
 $fifth = Get-PatchTarget -PatchList $fifthPart
-Assert-True (($fifth.PackageVersions -join ',') -eq '580.0.0.51.10,580.0.0.51.9,580.0.0.51.8,580.0.0.51' -and
-    $fifth.PackageVersion -eq '580.0.0.51.10') `
+Assert-True (($fifth.PackageVersions -join ',') -eq '449.0.0.54.10,449.0.0.54.9,449.0.0.54.8,449.0.0.54' -and
+    $fifth.PackageVersion -eq '449.0.0.54.10') `
     "Builds apart only in their fifth part were not ordered newest first: $($fifth.PackageVersions -join ', ')"
 $notNumbers = [pscustomobject]@{
     patches = @([pscustomobject]@{ name = 'lettered'
-        compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('580.0.0.51.74', '580.0.0.51.x') } })
+        compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('449.0.0.54.82', '449.0.0.54.x') } })
 }
-Assert-Throws { Get-PatchTarget -PatchList $notNumbers } "*580.0.0.51.x, which isn't a version of dotted numbers*" `
+Assert-Throws { Get-PatchTarget -PatchList $notNumbers } "*449.0.0.54.x, which isn't a version of dotted numbers*" `
     'A declared version that is not dotted numbers was sorted instead of refused.'
 
 $uneven = [pscustomobject]@{
     patches = @(
         [pscustomobject]@{ name = 'both builds'
-            compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('580.0.0.51.74', '577.0.0.50.72') } },
+            compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('449.0.0.54.82', '448.0.0.54.85') } },
         [pscustomobject]@{ name = 'newest only'
-            compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('580.0.0.51.74') } })
+            compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('449.0.0.54.82') } })
 }
 Assert-Throws { Get-PatchTarget -PatchList $uneven } '*newest only*' `
     'A build only some patches declare was accepted as a target of the whole bundle.'
 # The same for the codes: two patches pinning one version to different builds don't declare one.
 function New-PinnedPatch([string]$Name, [int]$Code) {
     [pscustomobject]@{ name = $Name
-        compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('580.0.0.51.74') }
+        compatiblePackages = [pscustomobject]@{ 'com.example.app' = @('449.0.0.54.82') }
         compatibility = @([pscustomobject]@{ packageName = 'com.example.app'
-            targets = @([pscustomobject]@{ version = '580.0.0.51.74'; versionCodes = [pscustomobject]@{ ARM64_V8A = $Code } }) }) }
+            targets = @([pscustomobject]@{ version = '449.0.0.54.82'; versionCodes = [pscustomobject]@{ ARM64_V8A = $Code } }) }) }
 }
-Assert-Throws { Get-PatchTarget -PatchList ([pscustomobject]@{ patches = @((New-PinnedPatch 'pinned' 475019344),
-            (New-PinnedPatch 'another build' 475019283)) }) } '*another build declares 580.0.0.51.74 (475019283)*' `
+Assert-Throws { Get-PatchTarget -PatchList ([pscustomobject]@{ patches = @((New-PinnedPatch 'pinned' 511908382),
+            (New-PinnedPatch 'another build' 511908321)) }) } '*another build declares 449.0.0.54.82 (511908321)*' `
     'Two patches pinning one version to different builds were read as one declared build.'
 # A catalog that pins no code is read by the version name, as before.
 Assert-True ((Test-DeclaredBuild -Target $three -VersionName '99.1.0.0.1' -VersionCode '12345') -and
     @($three.PackageVersionCodes['99.1.0.0.1']).Count -eq 0) 'A build declared without a version code was not matched by its name.'
 
-# Both of Meta's signers, on every patch. Facebook rotated its key with a v3.1 lineage, so a
-# phone on Android 13 or newer reports the new signer and an older one the old signer, and Morphe
-# Manager refuses an APK whose signer the patch doesn't list.
-$metaSigners = @('911d604446084ca7f4760b775bfc160fa8702441240a7258645d7a72c4312d27',
-    'e3f9e1e0cf99d0e56a055ba65e241b3399f7cea524326b0cdd6ec1327ed0fdc1')
+# Both of Meta's signers for Threads, on every patch. Threads carries a rotated key, so a phone
+# reports the old signer or the new one depending on its Android version, and Morphe Manager
+# refuses an APK whose signer the patch doesn't list.
+$metaSigners = @('5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432',
+    '8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500')
 foreach ($patch in @($catalog.patches)) {
-    $declaredSigners = @($patch.compatibility | Where-Object { $_.packageName -eq 'com.facebook.katana' } |
+    $declaredSigners = @($patch.compatibility | Where-Object { $_.packageName -eq 'com.instagram.barcelona' } |
         ForEach-Object { @($_.signatures) } | Sort-Object -Unique)
     Assert-True (($declaredSigners -join ',') -eq ($metaSigners -join ',')) `
-        "$($patch.name) declares Facebook signers $($declaredSigners -join ', '), not both of Meta's."
+        "$($patch.name) declares Threads signers $($declaredSigners -join ', '), not both of Meta's."
 }
 
 $allNames = @($catalog.patches | ForEach-Object { $_.name })
@@ -461,20 +461,19 @@ $unchanged = Get-ManifestDelta -Stock $facts -Patched $facts
 Assert-True (@(ConvertTo-ManifestDeltaEntries -Delta $unchanged).Count -eq 0) `
     'An unchanged manifest produced a delta.'
 
-# The checked-in allowlist approves one change and nothing else: Install beside Meta's apps renames
-# the two permissions Facebook shares with Messenger, Lite, Business Suite and Workplace, which the
-# receipt reads as the two new names asked for and the two old ones no longer asked for.
+# The checked-in allowlist approves two changes and nothing else: HushThreads settings exports an
+# alias of Threads' launcher activity for Android's App info page, and Remove the advertising ID
+# drops the advertising ID permission.
 $checkedInAllowlist = @(Read-ManifestDeltaAllowlist -Path (Join-Path $PSScriptRoot 'manifest-delta-allowlist.txt') |
     Where-Object { $_ })
-$renameEntries = @(
-    'permission-added app.hushthreads.permission.prod.FB_APP_COMMUNICATION',
-    'permission-added app.hushthreads.receiver.permission.ACCESS',
-    'permission-removed com.facebook.permission.prod.FB_APP_COMMUNICATION',
-    'permission-removed com.facebook.receiver.permission.ACCESS')
+$settingsAlias = 'activity-alias:app.morphe.extension.hushthreads.settings.OpenSettings'
+$approvedEntries = @(
+    "exported-added $settingsAlias",
+    'permission-removed com.google.android.gms.permission.AD_ID')
 Assert-True ((@($checkedInAllowlist | Sort-Object -CaseSensitive) -join "`n") -ceq
-        (@($renameEntries | Sort-Object -CaseSensitive) -join "`n")) `
-    ('The checked-in manifest delta allowlist approves something besides the permission rename, or ' +
-     "less than all of it: $($checkedInAllowlist -join ', ')")
+        (@($approvedEntries | Sort-Object -CaseSensitive) -join "`n")) `
+    ('The checked-in manifest delta allowlist approves something besides the settings alias and the ' +
+     "advertising ID removal, or leaves one out: $($checkedInAllowlist -join ', ')")
 
 $allowlistRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("receipt-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $allowlistRoot | Out-Null
@@ -572,8 +571,8 @@ try {
     Assert-True ($manifestFacts.timestamp -eq 1700000000000L) 'The bundle timestamp was not read.'
     Assert-True ($manifestFacts.patcherVersion -eq '1.12.0') 'The bundle patcher stamp was not read.'
 
-    # Two declared builds, the way the Facebook catalog declares the newest release and the one
-    # before it, each pinned to its version code, and a run of each.
+    # Two declared builds, the way a catalog declares the newest release and the one before it
+    # when Threads moves on, each pinned to its version code, and a run of each.
     $declaredBuilds = @('46.7.3', '46.6.1')
     $declaredCodes = @{ '46.7.3' = [string[]]@('2024607030'); '46.6.1' = [string[]]@('2024606010') }
     $template = [ordered]@{
@@ -820,51 +819,46 @@ try {
     Assert-True ($stale.Reason -like '*any more*') `
         "The stale allowlist entry was refused for the wrong reason: $($stale.Reason)"
 
-    # The checked-in allowlist, against receipts that carry the permission rename on both builds.
-    # The rename passes. The rename plus any other change is refused, naming only the other, and a
-    # rename that stopped halfway is refused for the half no patch makes any more.
-    $withRename = {
+    # The checked-in allowlist, against receipts that carry both approved changes on both builds.
+    # They pass. They plus any other change are refused, naming only the other, and a receipt with
+    # one of the two gone is refused for the one no patch makes any more.
+    $withApproved = {
         param($r)
         foreach ($target in $r.targets) {
-            $target.manifestDelta.permissionsAdded = @('app.hushthreads.permission.prod.FB_APP_COMMUNICATION',
-                'app.hushthreads.receiver.permission.ACCESS')
-            $target.manifestDelta.permissionsRemoved = @('com.facebook.permission.prod.FB_APP_COMMUNICATION',
-                'com.facebook.receiver.permission.ACCESS')
+            $target.manifestDelta.exportedComponentsAdded = @($settingsAlias)
+            $target.manifestDelta.permissionsRemoved = @('com.google.android.gms.permission.AD_ID')
         }
     }
-    $renamed = Test-TestReceipt -Receipt (New-TestReceipt -Mutate $withRename) -Approved $checkedInAllowlist
-    Assert-True $renamed.Valid "A receipt carrying the approved permission rename was refused: $($renamed.Reason)"
-    $unrenamed = Test-TestReceipt -Receipt (New-TestReceipt) -Approved $checkedInAllowlist
-    Assert-True (-not $unrenamed.Valid -and $unrenamed.Reason -like '*any more*') `
-        "A receipt without the rename passed the allowlist that approves it: $($unrenamed.Reason)"
+    $approvedReceipt = Test-TestReceipt -Receipt (New-TestReceipt -Mutate $withApproved) -Approved $checkedInAllowlist
+    Assert-True $approvedReceipt.Valid "A receipt carrying the two approved changes was refused: $($approvedReceipt.Reason)"
+    $unapproved = Test-TestReceipt -Receipt (New-TestReceipt) -Approved $checkedInAllowlist
+    Assert-True (-not $unapproved.Valid -and $unapproved.Reason -like '*any more*') `
+        "A receipt without the approved changes passed the allowlist that approves them: $($unapproved.Reason)"
     foreach ($other in @(
             @{ Name = 'another permission asked for'; Entry = 'permission-added android.permission.READ_SMS'
                 Change = { param($t) $t.manifestDelta.permissionsAdded = @($t.manifestDelta.permissionsAdded) + 'android.permission.READ_SMS' } },
-            @{ Name = 'a third renamed permission'; Entry = 'permission-added app.hushthreads.permission.prod.OTHER'
-                Change = { param($t) $t.manifestDelta.permissionsAdded = @($t.manifestDelta.permissionsAdded) + 'app.hushthreads.permission.prod.OTHER' } },
+            @{ Name = 'a second settings alias'; Entry = 'exported-added activity-alias:app.morphe.extension.hushthreads.settings.Other'
+                Change = { param($t) $t.manifestDelta.exportedComponentsAdded = @($t.manifestDelta.exportedComponentsAdded) + 'activity-alias:app.morphe.extension.hushthreads.settings.Other' } },
             @{ Name = 'another permission dropped'; Entry = 'permission-removed android.permission.CAMERA'
                 Change = { param($t) $t.manifestDelta.permissionsRemoved = @($t.manifestDelta.permissionsRemoved) + 'android.permission.CAMERA' } },
-            @{ Name = 'a component exported'; Entry = 'exported-added receiver:com.facebook.device_id.UniqueIdSupplier'
-                Change = { param($t) $t.manifestDelta.exportedComponentsAdded = @('receiver:com.facebook.device_id.UniqueIdSupplier') } },
-            @{ Name = 'a component no longer exported'; Entry = 'exported-removed activity:com.facebook.katana.ProxyAuth'
-                Change = { param($t) $t.manifestDelta.exportedComponentsRemoved = @('activity:com.facebook.katana.ProxyAuth') } })) {
-        $receipt = New-TestReceipt -Mutate { param($r) & $withRename $r; & $other.Change $r.targets[1] }
+            @{ Name = 'a component exported'; Entry = 'exported-added service:com.instagram.barcelona.push.PushService'
+                Change = { param($t) $t.manifestDelta.exportedComponentsAdded = @($t.manifestDelta.exportedComponentsAdded) + 'service:com.instagram.barcelona.push.PushService' } },
+            @{ Name = 'a component no longer exported'; Entry = 'exported-removed activity:com.instagram.barcelona.mainactivity.BarcelonaActivity'
+                Change = { param($t) $t.manifestDelta.exportedComponentsRemoved = @('activity:com.instagram.barcelona.mainactivity.BarcelonaActivity') } })) {
+        $receipt = New-TestReceipt -Mutate { param($r) & $withApproved $r; & $other.Change $r.targets[1] }
         $result = Test-TestReceipt -Receipt $receipt -Approved $checkedInAllowlist
-        Assert-True (-not $result.Valid) "With the permission rename approved, $($other.Name) was accepted."
+        Assert-True (-not $result.Valid) "With the settings alias and the advertising ID removal approved, $($other.Name) was accepted."
         Assert-True ($result.Reason -like "*nobody reviewed: $($other.Entry)") `
-            "With the permission rename approved, $($other.Name) was refused for the wrong reason: $($result.Reason)"
+            "With the settings alias and the advertising ID removal approved, $($other.Name) was refused for the wrong reason: $($result.Reason)"
     }
     $halfway = New-TestReceipt -Mutate {
         param($r)
-        & $withRename $r
-        foreach ($target in $r.targets) {
-            $target.manifestDelta.permissionsAdded = @('app.hushthreads.permission.prod.FB_APP_COMMUNICATION')
-            $target.manifestDelta.permissionsRemoved = @('com.facebook.permission.prod.FB_APP_COMMUNICATION')
-        }
+        & $withApproved $r
+        foreach ($target in $r.targets) { $target.manifestDelta.exportedComponentsAdded = @() }
     }
     $half = Test-TestReceipt -Receipt $halfway -Approved $checkedInAllowlist
-    Assert-True (-not $half.Valid -and $half.Reason -like '*any more*receiver.permission.ACCESS*') `
-        "A rename of one permission of the two passed the allowlist of both: $($half.Reason)"
+    Assert-True (-not $half.Valid -and $half.Reason -like '*any more*OpenSettings*') `
+        "A receipt without the settings alias passed the allowlist that approves it: $($half.Reason)"
 
     # The SBOM a receipt names. Each refusal has to name the SBOM fact that failed rather than trip
     # over the next field, or a check that went missing would pass unseen behind the one after it.
@@ -1540,12 +1534,71 @@ Write-Host '[scripts] advisory gate contracts passed'
 # hand is a second opinion about what the release files look like, and the thing worth catching
 # is a real file drifting from the real catalog. One fact is moved per case.
 
+# HushThreads publishes its first index with its first release, so a checkout from before then has
+# no patches-bundle.json to copy, and its README and CHANGELOG can't yet name a release. The
+# fixtures then start from what that release writes: an index with the catalog's version, patch
+# count and newest build at its pinned code, the Manager floor and the release asset's address; the
+# README's sentence naming the latest release and its Morphe add-source link; and a dated CHANGELOG
+# heading with one bullet Morphe Manager scopes to Threads. Everything else is this checkout's own
+# text. Once the index is committed, the three are copied like every other release file and have
+# to carry those facts themselves.
+$rootIndexPath = Join-Path $Root 'patches-bundle.json'
+$preRelease = -not (Test-Path -LiteralPath $rootIndexPath -PathType Leaf)
+$seedTarget = Get-PatchTarget -PatchList $catalog
+$seedVersion = Get-BundleVersion -Root $Root
+$seedFloor = (Read-CatalogToolchain -Source 'this checkout''s catalog' `
+    -Text (Get-Content -LiteralPath (Join-Path $Root 'gradle/libs.versions.toml') -Raw)).ManagerFloor
+$seedCode = @($seedTarget.PackageVersionCodes[$seedTarget.PackageVersion])[0]
+$seedIndexText = ([ordered]@{
+        created_at = '2026-09-29T00:00:00'
+        description = ("HushThreads v$seedVersion targets Threads $($seedTarget.PackageVersion) ($($seedTarget.PackageName)).`n`n" +
+            "There are $(@($catalog.patches).Count) patches in all.`n`n" +
+            "Validation: 100 runtime tests passed locally. All 50 patch tests passed too. All $(@($catalog.patches).Count) " +
+            "patches applied to Threads $($seedTarget.PackageVersion); resource and injected-code checks passed.`n`n" +
+            "Needs Morphe Manager $seedFloor or newer. Patch the arm64-v8a bundle of Threads $($seedTarget.PackageVersion), " +
+            "build $seedCode. The .mpp is a patch bundle, not a Threads APK. Keep the manager's existing signing key when updating.")
+        download_url = "https://github.com/SysAdminDoc/HushThreads/releases/download/v$seedVersion/patches-$seedVersion.mpp"
+        signature_download_url = ''
+        version = $seedVersion
+    } | ConvertTo-Json)
+function Test-SeededReleaseFile([string]$Relative) {
+    return $preRelease -and $Relative -in @('patches-bundle.json', 'README.md', 'CHANGELOG.md')
+}
+function Get-ReleaseFileText([string]$Relative) {
+    if (-not (Test-SeededReleaseFile $Relative)) { return [System.IO.File]::ReadAllText((Join-Path $Root $Relative)) }
+    switch ($Relative) {
+        'patches-bundle.json' { $seedIndexText }
+        'README.md' {
+            [System.IO.File]::ReadAllText((Join-Path $Root 'README.md')).TrimEnd() + "`n`n" +
+                "The latest release is [v$seedVersion](https://github.com/SysAdminDoc/HushThreads/releases/tag/v$seedVersion), " +
+                "with $(@($catalog.patches).Count) patches. Add it to Morphe Manager from " +
+                "[its add-source page](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads).`n"
+        }
+        'CHANGELOG.md' {
+            ([regex]'(?m)^## ').Replace([System.IO.File]::ReadAllText((Join-Path $Root 'CHANGELOG.md')),
+                ("## $seedVersion (2026-09-29)`n`n* **Threads:** The first release, $(@($catalog.patches).Count) patches " +
+                    "for Threads $($seedTarget.PackageVersion).`n`n## "), 1)
+        }
+    }
+}
+function Copy-ReleaseFile([string]$Relative, [string]$Destination) {
+    if (-not (Test-SeededReleaseFile $Relative)) {
+        Copy-Item -LiteralPath (Join-Path $Root $Relative) -Destination $Destination -Force
+        return
+    }
+    [System.IO.File]::WriteAllText($Destination, (Get-ReleaseFileText $Relative), (New-Object System.Text.UTF8Encoding($false)))
+}
+function Get-ReleaseIndexVersion {
+    $text = if ($preRelease) { $seedIndexText } else { Get-Content -LiteralPath $rootIndexPath -Raw }
+    return "$(($text | ConvertFrom-Json).version)"
+}
+
 $factsScript = Join-Path $PSScriptRoot 'validate-release-facts.ps1'
 $factsRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("hushthreads-facts-" + [guid]::NewGuid().ToString('N'))
 try {
     New-Item -ItemType Directory -Path $factsRoot -Force | Out-Null
     foreach ($relative in @('patches-list.json', 'patches-bundle.json', 'gradle.properties', 'README.md', 'CHANGELOG.md')) {
-        Copy-Item -LiteralPath (Join-Path $Root $relative) -Destination (Join-Path $factsRoot $relative)
+        Copy-ReleaseFile $relative (Join-Path $factsRoot $relative)
     }
     New-Item -ItemType Directory -Path (Join-Path $factsRoot 'gradle') -Force | Out-Null
     Copy-Item -LiteralPath (Join-Path $Root 'gradle/libs.versions.toml') `
@@ -1576,12 +1629,12 @@ try {
     # tree is not a release tree then, and holding it to the lagging index failed the control
     # for a reason that had nothing to do with the check (2026-09-17, 0.40.0 being prepared over
     # the 0.39.0 index). The copied index is written up to the catalog it sits beside, its
-    # version strings, its patch count and the Facebook build it names, so every case below
+    # version strings, its patch count and the Threads build it names, so every case below
     # still moves exactly one fact and is judged on the strict path.
     # A release hold is the same lag with the version standing still: patches join the catalog
     # while the index keeps the published count (2026-09-23, 93 against 0.58.0's 91), so the count
     # is synced even when the version already matches.
-    # The build moves the same way. Facebook ships weekly, the catalog takes the new build before
+    # The build moves the same way. Threads ships weekly, the catalog takes the new build before
     # the release that publishes it, and the index keeps naming the build it was released on
     # until then. Syncing only the version and the count left the description on the old build,
     # so the control failed on every tree the gate accepted in that window (2026-09-25 review).
@@ -1607,7 +1660,7 @@ try {
         # The build the description names first is the one the check reads as the published
         # target, so that is the one moved to the catalog's newest, everywhere it appears.
         $fixtureBuild = (Get-PatchTarget -PatchList $fixtureCatalog).PackageVersion
-        $indexBuild = [regex]::Match([string]$index.description, 'Facebook\s+(\d+(?:\.\d+)+)')
+        $indexBuild = [regex]::Match([string]$index.description, 'Threads\s+(\d+(?:\.\d+)+)')
         if ($indexBuild.Success -and $indexBuild.Groups[1].Value -ne $fixtureBuild) {
             $synced = $synced -replace ('(?<![\d.])' + [regex]::Escape($indexBuild.Groups[1].Value) + '(?!\d)'), $fixtureBuild
         }
@@ -1619,10 +1672,10 @@ try {
     function Sync-FixtureBugForm {
         $fixtureVersion = ((Get-Content -LiteralPath (Join-Path $factsRoot 'gradle.properties')) `
             -match '^version\s*=' | Select-Object -First 1) -replace '^version\s*=\s*', ''
-        $publishedHere = "$((Get-Content -LiteralPath (Join-Path $Root 'patches-bundle.json') -Raw | ConvertFrom-Json).version)"
+        $publishedHere = Get-ReleaseIndexVersion
         if ($publishedHere -eq $fixtureVersion) { return }
         Set-FactsFile $bugFormRelative {
-            param($text) $text -replace ('Version ' + [regex]::Escape($publishedHere) + ' for Facebook'), "Version $fixtureVersion for Facebook"
+            param($text) $text -replace ('Version ' + [regex]::Escape($publishedHere) + ' for Threads'), "Version $fixtureVersion for Threads"
         }
     }
 
@@ -1645,7 +1698,7 @@ try {
 
     function Reset-FactsFile {
         param([string]$Name)
-        Copy-Item -LiteralPath (Join-Path $Root $Name) -Destination (Join-Path $factsRoot $Name) -Force
+        Copy-ReleaseFile $Name (Join-Path $factsRoot $Name)
         if ($Name -eq 'patches-bundle.json') { Sync-FixtureIndex }
         if ($Name -eq $bugFormRelative) { Sync-FixtureBugForm }
         if ($Name -eq 'README.md') { Sync-FixtureReadme }
@@ -1664,8 +1717,8 @@ try {
     $catalogVersion = ((Get-Content -LiteralPath (Join-Path $factsRoot 'gradle.properties')) `
         -match '^version\s*=' | Select-Object -First 1) -replace '^version\s*=\s*', ''
 
-    # The windows the sync above exists for, built the way CONTRIBUTING's "When Facebook updates"
-    # builds them: the catalog and the README move to a newer Facebook build while the index
+    # The windows the sync above exists for, built the way CONTRIBUTING's "When Threads updates"
+    # builds them: the catalog and the README move to a newer Threads build while the index
     # still describes the last release. Prepared, the version is bumped and the CHANGELOG has
     # its entry; held, the version stays. The gate's own lenient run accepts both, and the
     # control built from the same tree has to as well, or every script push in that window stops.
@@ -1684,7 +1737,7 @@ try {
             }
             Set-FactsFile 'CHANGELOG.md' {
                 param($text) ([regex]'(?m)^## ').Replace($text,
-                    "## $nextVersion (2026-09-26)`n`n* **Facebook:** Moves the patches to Facebook $movedBuild.`n`n## ", 1)
+                    "## $nextVersion (2026-09-26)`n`n* **Threads:** Moves the patches to Threads $movedBuild.`n`n## ", 1)
             }
             # The badge moves with the source; the sentence naming the latest release waits for it.
             Set-FactsFile 'README.md' {
@@ -1696,17 +1749,17 @@ try {
         Set-FactsFile 'README.md' { param($text) $text.Replace($newestBuild, $movedBuild) }
         # What the maintainer's tree holds: the published index and form as they were, the form's
         # build moved with the catalog.
-        Copy-Item -LiteralPath (Join-Path $Root 'patches-bundle.json') -Destination (Join-Path $factsRoot 'patches-bundle.json') -Force
+        Copy-ReleaseFile 'patches-bundle.json' (Join-Path $factsRoot 'patches-bundle.json')
         Copy-Item -LiteralPath (Join-Path $Root $bugFormRelative) -Destination (Join-Path $factsRoot $bugFormRelative) -Force
         # And its README sentence naming that published release, which the sync above moved to the
         # source's version. The two only match when this checkout's source is the published one.
-        $publishedHere = "$((Get-Content -LiteralPath (Join-Path $Root 'patches-bundle.json') -Raw | ConvertFrom-Json).version)"
+        $publishedHere = Get-ReleaseIndexVersion
         Set-FactsFile 'README.md' {
             param($text) $text -replace '(latest (?:published )?release is (?:still )?\[?v)\d+(?:\.\d+)+', "`${1}$publishedHere" `
                 -replace '(latest release is \[v[^\]]*\]\([^)\s]*/tag/v)\d+(?:\.\d+)+', "`${1}$publishedHere"
         }
         Set-FactsFile $bugFormRelative {
-            param($text) $text -replace ('(placeholder:\s*Version \S+ for Facebook )' + [regex]::Escape($newestBuild)), "`${1}$movedBuild"
+            param($text) $text -replace ('(placeholder:\s*Version \S+ for Threads )' + [regex]::Escape($newestBuild)), "`${1}$movedBuild"
         }
         $global:LASTEXITCODE = 0
         & $factsScript -Root $factsRoot -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipUrlCheck 6> $null
@@ -1732,7 +1785,7 @@ try {
         Assert-True ($LASTEXITCODE -eq 0 -or $null -eq $LASTEXITCODE) `
             "The release facts check refused the $window tree the gate accepts."
         $syncedDescription = [string](Get-Content -LiteralPath (Join-Path $factsRoot 'patches-bundle.json') -Raw | ConvertFrom-Json).description
-        Assert-True ($syncedDescription -match "Facebook $([regex]::Escape($movedBuild))(?!\d)" -and
+        Assert-True ($syncedDescription -match "Threads $([regex]::Escape($movedBuild))(?!\d)" -and
             $syncedDescription -notmatch [regex]::Escape($newestBuild)) `
             "The $window index was not synced to the catalog's build: $syncedDescription"
         foreach ($name in @('gradle.properties', 'patches-list.json', 'README.md', 'CHANGELOG.md',
@@ -1757,9 +1810,9 @@ try {
             Sync-FixtureIndex
             $syncedDescription = [string](Get-Content -LiteralPath (Join-Path $factsRoot 'patches-bundle.json') -Raw | ConvertFrom-Json).description
             Assert-True ($syncedDescription -match "\bv0\.10\.2\b" -and
-                $syncedDescription -match "Facebook $([regex]::Escape($newestBuild))(?!\d)" -and
-                $syncedDescription -notmatch 'Facebook (?:583|0\.10)\.') `
-                "Syncing an index at 0.10.1 that describes Facebook $describedBuild to 0.10.2 did not move it to the catalog's build: $syncedDescription"
+                $syncedDescription -match "Threads $([regex]::Escape($newestBuild))(?!\d)" -and
+                $syncedDescription -notmatch 'Threads (?:583|0\.10)\.') `
+                "Syncing an index at 0.10.1 that describes Threads $describedBuild to 0.10.2 did not move it to the catalog's build: $syncedDescription"
         } finally {
             Reset-FactsFile 'gradle.properties'
             Reset-FactsFile 'patches-bundle.json'
@@ -1794,7 +1847,7 @@ try {
     # A published index naming a version the catalog does not build. This is the shape v0.28.0
     # shipped in: the index said one thing and the bundle behind it was another.
     Set-FactsFile 'patches-bundle.json' {
-        param($text) $text -replace [regex]::Escape('"' + $catalogVersion + '"'), '"0.0.1"'
+        param($text) $text -replace [regex]::Escape('"' + $catalogVersion + '"'), '"9.9.9"'
     }
     Assert-Throws { Invoke-Facts } '*' 'A published index naming another version was accepted.'
     Reset-FactsFile 'patches-bundle.json'
@@ -1808,7 +1861,7 @@ try {
     Reset-FactsFile 'patches-bundle.json'
 
     # Read one way, all at once: every "N patches" the description says has to be one count and
-    # every "Facebook <build>" one build. The lag check read the first of each and the equality
+    # every "Threads <build>" one build. The lag check read the first of each and the equality
     # check any, so a description quoting the catalog's count once and a stale one elsewhere, or
     # naming another build beside the target, passed the equality check. On both paths now.
     $indexCount = [regex]::Match([string](Get-Content -LiteralPath (Join-Path $factsRoot 'patches-bundle.json') -Raw |
@@ -1818,14 +1871,14 @@ try {
     $factsTarget = (Get-PatchTarget -PatchList (Get-Content -LiteralPath (Join-Path $factsRoot 'patches-list.json') -Raw |
         ConvertFrom-Json)).PackageVersion
     Assert-True ([regex]::Matches((Get-Content -LiteralPath (Join-Path $factsRoot 'patches-bundle.json') -Raw),
-            "Facebook $([regex]::Escape($factsTarget))(?!\d)").Count -ge 2) `
-        "The copied description names Facebook $factsTarget once, so the other-build case would prove nothing."
+            "Threads $([regex]::Escape($factsTarget))(?!\d)").Count -ge 2) `
+        "The copied description names Threads $factsTarget once, so the other-build case would prove nothing."
     foreach ($case in @(
             @{ Name = 'a stale count beside the catalog''s'; Pattern = "*names 3 and $indexCount patches, and it has to name one count*"
                 Edit = { param($text) ([regex]'(?<!\d)\d+ patches\b').Replace($text, '3 patches', 1) } },
-            @{ Name = 'another build beside the target'; Pattern = "*names Facebook $factsTarget and Facebook 9.9.9.9.9, and it has to name one build*"
-                Edit = { param($text) $at = $text.LastIndexOf("Facebook $factsTarget")
-                    $text.Substring(0, $at) + 'Facebook 9.9.9.9.9' + $text.Substring($at + "Facebook $factsTarget".Length) } })) {
+            @{ Name = 'another build beside the target'; Pattern = "*names Threads $factsTarget and Threads 9.9.9.9.9, and it has to name one build*"
+                Edit = { param($text) $at = $text.LastIndexOf("Threads $factsTarget")
+                    $text.Substring(0, $at) + 'Threads 9.9.9.9.9' + $text.Substring($at + "Threads $factsTarget".Length) } })) {
         Set-FactsFile 'patches-bundle.json' $case.Edit
         try {
             Assert-Throws { Invoke-Facts } $case.Pattern "An index description naming $($case.Name) was accepted."
@@ -1938,10 +1991,10 @@ try {
     # The bug form's placeholders, which sat three releases behind the target on Hushfeed before
     # anything read them. One for the version line, one for the manager line.
     Set-FactsFile $bugFormRelative {
-        param($text) $text -replace '(placeholder:\s*Version \S+ for Facebook )\S+', '${1}46.2.3'
+        param($text) $text -replace '(placeholder:\s*Version \S+ for Threads )\S+', '${1}46.2.3'
     }
     Assert-Throws { Invoke-Facts } '*bug report form version placeholder*' `
-        'A bug report form naming an old Facebook build was accepted.'
+        'A bug report form naming an old Threads build was accepted.'
     Reset-FactsFile $bugFormRelative
     Set-FactsFile $bugFormRelative {
         param($text) $text -replace '(placeholder:\s*Morphe Manager )\S+', '${1}1.20.0'
@@ -1949,6 +2002,23 @@ try {
     Assert-Throws { Invoke-Facts } '*bug report form Manager placeholder*' `
         'A bug report form naming a Manager below the floor was accepted.'
     Reset-FactsFile $bugFormRelative
+    # And its patch list, which names the catalog's patches: one left out, one the catalog doesn't
+    # have and one listed twice are each refused by name, and a form with no list at all is refused.
+    $listedPatch = [string]@($catalog.patches)[0].name
+    $listedLine = '(?m)^( +)- ' + [regex]::Escape($listedPatch) + '$'
+    foreach ($listCase in @(
+            @{ Name = 'leaves a patch out'; Pattern = "*bug report form's patch list*leaves out $listedPatch*"
+                Edit = { param($text) $text -replace ($listedLine + '\n'), '' } },
+            @{ Name = 'lists a patch the catalog lacks'; Pattern = "*bug report form's patch list*patches-list.json has no Hide everything*"
+                Edit = { param($text) $text -replace $listedLine, "`${1}- $listedPatch`n`${1}- Hide everything" } },
+            @{ Name = 'lists a patch twice'; Pattern = "*bug report form's patch list*lists $listedPatch more than once*"
+                Edit = { param($text) $text -replace $listedLine, "`${1}- $listedPatch`n`${1}- $listedPatch" } },
+            @{ Name = 'has no patch list'; Pattern = '*bug report form has no patch list*'
+                Edit = { param($text) $text -replace 'id: selected_patches', 'id: chosen_patches' } })) {
+        Set-FactsFile $bugFormRelative $listCase.Edit
+        Assert-Throws { Invoke-Facts } $listCase.Pattern "A bug report form that $($listCase.Name) was accepted."
+        Reset-FactsFile $bugFormRelative
+    }
 
     # The download address, one check at a time in the order the script makes them: the release
     # asset's path, HTTPS, then GitHub. Each is refused by name, because a pattern that accepts
@@ -2278,14 +2348,11 @@ try {
     Assert-True ((Test-Path -LiteralPath $factsMarker) -and (Test-Path -LiteralPath $contractsMarker)) `
         'A push that changed only the catalog did not run both the release check and the script contract tests.'
 
-    # These tests end with the marketing asset check, which holds the artwork and the README's hero
-    # and links. A push of only an icon ran no gate, and one of only the README ran the release
-    # check alone.
-    foreach ($artwork in 'assets/icons/icon-16.png', 'assets/readme-hero.png', 'README.md') {
-        Invoke-Hook -Paths @($artwork)
-        Assert-True (Test-Path -LiteralPath $contractsMarker) `
-            "A push that changed only $artwork did not run the script contract tests, which hold the marketing assets."
-    }
+    # These tests copy the README into the release facts fixture and hold it to the catalog there,
+    # so a push of only the README runs them as well as the release check.
+    Invoke-Hook -Paths @('README.md')
+    Assert-True ((Test-Path -LiteralPath $factsMarker) -and (Test-Path -LiteralPath $contractsMarker)) `
+        'A push that changed only the README did not run both the release check and the script contract tests.'
 
     Invoke-Hook -Paths @('CHANGELOG.md')
     Assert-True (Test-Path -LiteralPath $factsMarker) `
@@ -2439,12 +2506,12 @@ try {
         # underline, not a conflict, and passes.
         Assert-Throws { Push-ListingChange {
                 Set-Content -LiteralPath (Join-Path $listingRepo 'CHANGELOG.md') -Encoding ASCII -Value @(
-                    '## Unreleased', '', '<<<<<<< HEAD', '* **Facebook:** one side.', '||||||| base', '=======',
-                    '* **Facebook:** the other side.', '>>>>>>> 0123abc (the other side)') } } `
+                    '## Unreleased', '', '<<<<<<< HEAD', '* **Threads:** one side.', '||||||| base', '=======',
+                    '* **Threads:** the other side.', '>>>>>>> 0123abc (the other side)') } } `
             '*unresolved merge conflict*CHANGELOG.md:3:<<<<<<< HEAD*' 'A push carrying an unresolved merge conflict went out.'
         $ran = Push-ListingChange {
             Set-Content -LiteralPath (Join-Path $listingRepo 'CHANGELOG.md') -Encoding ASCII -Value @(
-                '## Unreleased', '', '* **Facebook:** one side.', '* **Facebook:** the other side.')
+                '## Unreleased', '', '* **Threads:** one side.', '* **Threads:** the other side.')
             New-Item -ItemType Directory -Path (Join-Path $listingRepo 'docs') -Force | Out-Null
             Set-Content -LiteralPath (Join-Path $listingRepo 'docs/heading.md') -Encoding ASCII -Value @('A heading', '=======', '', 'Text.')
         }
@@ -2975,7 +3042,7 @@ try {
             # the way the real one is, fails on a README that says broken and records where it ran
             # and whether it read test results. Its own commit is never in a pushed range, so no
             # push below touches scripts/. A README push asks for the contract tests too, since they
-            # end with the marketing asset check, so a stub suite that passes is committed with it.
+            # hold the README to the catalog, so a stub suite that passes is committed with it.
             $gateFacts = Join-Path $hookRoot 'gate-facts-ran.txt'
             & git -C $gateRepo checkout --quiet -- extensions/marker.txt
             New-Item -ItemType Directory -Path (Join-Path $gateRepo 'scripts') -Force | Out-Null
@@ -3200,9 +3267,10 @@ Assert-True (Test-ChangelogVersions -Current $goodChangelog -ExpectedVersion '0.
     'A checkout with no earlier tag was refused.'
 
 # The control. The real file, held to the real version, must pass: every case above is this
-# same shape with one heading moved.
+# same shape with one heading moved. Before the first release it carries the dated heading that
+# release adds (Get-ReleaseFileText, above the release facts).
 $realVersion = Get-BundleVersion -Root $Root
-$realChangelog = Get-Content -LiteralPath (Join-Path $Root 'CHANGELOG.md') -Raw
+$realChangelog = Get-ReleaseFileText 'CHANGELOG.md'
 $realTag = "$(& git -C $Root describe --tags --abbrev=0 HEAD 2>$null | Select-Object -First 1)".Trim()
 $realPrevious = if ($realTag) { (& git -C $Root show "${realTag}:CHANGELOG.md" 2>$null) -join "`n" } else { '' }
 $realCheck = if ([string]::IsNullOrWhiteSpace($realPrevious)) {
@@ -3232,12 +3300,12 @@ A sentence about the release.
 
 ### Settings
 
-* **Facebook:** one change.
-* **Facebook:** another change.
+* **Threads:** one change.
+* **Threads:** another change.
 
 ### On the video
 
-* **Facebook:** a third.
+* **Threads:** a third.
 
 ## 0.41.0
 
@@ -3255,9 +3323,9 @@ $undated = Test-ChangelogManagerEntry -Current ($readable -replace '## 0\.42\.0 
 Assert-True (-not $undated.Valid) 'An undated heading, which Manager skips, was accepted.'
 Assert-True ($undated.Reason -like '*no date*') "The undated heading was refused for the wrong reason: $($undated.Reason)"
 
-$unscoped = Test-ChangelogManagerEntry -Current ($readable -replace '\* \*\*Facebook:\*\* another', '* another') `
+$unscoped = Test-ChangelogManagerEntry -Current ($readable -replace '\* \*\*Threads:\*\* another', '* another') `
     -ExpectedVersion '0.42.0'
-Assert-True (-not $unscoped.Valid) 'A bullet Manager does not scope to Facebook was accepted.'
+Assert-True (-not $unscoped.Valid) 'A bullet Manager does not scope to Threads was accepted.'
 Assert-True ($unscoped.Reason -like 'Line 12 *') "The unscoped bullet was refused for the wrong reason: $($unscoped.Reason)"
 
 $wrapped = Test-ChangelogManagerEntry -Current ($readable -replace 'one change\.', "one`n  change.") `
@@ -3268,22 +3336,22 @@ Assert-True ($wrapped.Reason -like '*continues the bullet*') "The wrapped bullet
 $noBullets = Test-ChangelogManagerEntry -Current "## 0.42.0 (2026-09-20)`n`nOnly prose.`n" -ExpectedVersion '0.42.0'
 Assert-True (-not $noBullets.Valid) 'An entry with no scoped bullet, which gets no update badge, was accepted.'
 
-$otherScope = Test-ChangelogManagerEntry -Current ($readable -replace '\*\*Facebook:\*\* a third', '**Instagram:** a third') `
+$otherScope = Test-ChangelogManagerEntry -Current ($readable -replace '\*\*Threads:\*\* a third', '**Instagram:** a third') `
     -ExpectedVersion '0.42.0'
 Assert-True (-not $otherScope.Valid) 'A bullet scoped to another app was accepted.'
 
 # A development-only change is written "* **Tooling:** ...", and a release made from the entries
 # under Unreleased carries them. Manager shows a line only to the app it's scoped to, so it shows
-# these to nobody, which is what they're for: allowed, and not counted as Facebook changes. The
+# these to nobody, which is what they're for: allowed, and not counted as Threads changes. The
 # release check refused every one, so a release had to drop them or relabel them for users.
-$withTooling = Test-ChangelogManagerEntry -Current ($readable -replace '(\* \*\*Facebook:\*\* a third\.)',
+$withTooling = Test-ChangelogManagerEntry -Current ($readable -replace '(\* \*\*Threads:\*\* a third\.)',
     "`$1`n* **Tooling:** a development-only change.") -ExpectedVersion '0.42.0'
 Assert-True ($withTooling.Valid -and $withTooling.Bullets -eq 3) `
     "A Tooling bullet in the released entry was refused or counted: $($withTooling.Reason), $($withTooling.Bullets) bullets"
 $toolingOnly = Test-ChangelogManagerEntry -Current "## 0.42.0 (2026-09-20)`n`n* **Tooling:** only this.`n" -ExpectedVersion '0.42.0'
-Assert-True (-not $toolingOnly.Valid -and $toolingOnly.Reason -like '*no "* **Facebook:** " bullet*') `
+Assert-True (-not $toolingOnly.Valid -and $toolingOnly.Reason -like '*no "* **Threads:** " bullet*') `
     "An entry with Tooling bullets alone, which gets no update badge, was not refused for that: $($toolingOnly.Reason)"
-$wrappedTooling = Test-ChangelogManagerEntry -Current ($readable -replace '(\* \*\*Facebook:\*\* a third\.)',
+$wrappedTooling = Test-ChangelogManagerEntry -Current ($readable -replace '(\* \*\*Threads:\*\* a third\.)',
     "`$1`n* **Tooling:** a development-only`n  change.") -ExpectedVersion '0.42.0'
 Assert-True ($wrappedTooling.Reason -like '*continues the bullet*') `
     "A wrapped Tooling bullet was not held to one line like the others: $($wrappedTooling.Reason)"
@@ -3431,10 +3499,11 @@ try {
     Assert-True ((Resolve-DesktopCli -Root $repoRoot) -eq $newer) `
         'HUSHTHREADS_DESKTOP_JAR was not read.'
 
-    # Split bundles. Facebook ships as an .apkm, and aapt2, apksigner and the resource check each
-    # read one APK: the base, whose manifest and resource table describe the app. A split is
-    # often the larger file, so the base is found by name first and by size only when no entry
-    # carries its name, the way an .xapk names it after the package.
+    # Split bundles. Threads comes as an .xapk or an .apkm, and aapt2, apksigner and the resource
+    # check each read one APK: the base, whose manifest and resource table describe the app. A
+    # split is often the larger file (Threads' arm64 split outweighs its base), so the base is found
+    # by name first: base.apk, then the file an .xapk's manifest.json names, and by size only when
+    # nothing names it, among the files that aren't config or split_ APKs before all of them.
     Add-Type -AssemblyName System.IO.Compression
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     function New-TestBundleArchive {
@@ -3456,9 +3525,9 @@ try {
     Assert-True (Test-SamePath (Get-BaseApk -Apk $plainApk -Destination (Join-Path $commonRoot 'never.apk')) $plainApk) `
         'A plain APK was copied or replaced instead of being read as it is.'
 
-    $apkm = Join-Path $commonRoot 'facebook.apkm'
+    $apkm = Join-Path $commonRoot 'threads.apkm'
     $apkmEntries = [ordered]@{
-        'info.json' = '{"versioncode":"475019344"}'
+        'info.json' = '{"versioncode":"511908382"}'
         'base.apk' = 'base'
         'split_config.arm64_v8a.apk' = ('native code ' * 64)
     }
@@ -3475,7 +3544,7 @@ try {
     Push-Location -LiteralPath $commonRoot
     try {
         [Environment]::CurrentDirectory = [System.IO.Path]::GetTempPath()
-        $relativeOut = Get-BaseApk -Apk 'facebook.apkm' -Destination 'out\relative-base.apk'
+        $relativeOut = Get-BaseApk -Apk 'threads.apkm' -Destination 'out\relative-base.apk'
         Assert-True ((Test-SamePath $relativeOut (Join-Path $commonRoot 'out\relative-base.apk')) -and
             (Get-Content -LiteralPath (Join-Path $commonRoot 'out\relative-base.apk') -Raw) -eq 'base') `
             'A relative bundle path was read against the process directory instead of the current location.'
@@ -3484,7 +3553,7 @@ try {
         Pop-Location
     }
 
-    $xapk = Join-Path $commonRoot 'facebook.xapk'
+    $xapk = Join-Path $commonRoot 'unnamed.xapk'
     $xapkEntries = [ordered]@{
         'config.en.apk' = 'language'
         'com.example.app.apk' = ('app ' * 64)
@@ -3494,6 +3563,53 @@ try {
     Assert-True ((Test-SamePath (Get-BaseApk -Apk $xapk -Destination $xapkOut) $xapkOut) -and
         (Get-Content -LiteralPath $xapkOut -Raw).StartsWith('app ')) `
         'A bundle with no base.apk did not fall back to its largest APK.'
+
+    # APKPure's layout of Threads: the base named for the package, the arm64 split larger than it,
+    # and a manifest.json whose split_apks name the base by id. Size alone took the split.
+    $threadsXapk = Join-Path $commonRoot 'threads.xapk'
+    New-TestBundleArchive -Path $threadsXapk -Entries ([ordered]@{
+        'com.instagram.barcelona.apk' = 'threads base'
+        'icon.png' = 'icon'
+        'config.arm64_v8a.apk' = ('native code ' * 64)
+        'config.mdpi.apk' = 'densities'
+        'manifest.json' = ('{"xapk_version":2,"package_name":"com.instagram.barcelona","split_apks":[' +
+            '{"file":"com.instagram.barcelona.apk","id":"base"},{"file":"config.arm64_v8a.apk","id":"config.arm64_v8a"},' +
+            '{"file":"config.mdpi.apk","id":"config.mdpi"}]}')
+    })
+    $threadsOut = Join-Path $commonRoot 'out/threads-base.apk'
+    Assert-True ((Test-SamePath (Get-BaseApk -Apk $threadsXapk -Destination $threadsOut) $threadsOut) -and
+        (Get-Content -LiteralPath $threadsOut -Raw) -eq 'threads base') `
+        'The base an .xapk manifest names was not taken over the larger arm64 split beside it.'
+    # Without split_apks, the manifest's package name still names the base.
+    $packageOnlyXapk = Join-Path $commonRoot 'package-only.xapk'
+    New-TestBundleArchive -Path $packageOnlyXapk -Entries ([ordered]@{
+        'config.arm64_v8a.apk' = ('native code ' * 64)
+        'other.apk' = ('other ' * 32)
+        'com.instagram.barcelona.apk' = 'threads base'
+        'manifest.json' = '{"package_name":"com.instagram.barcelona"}'
+    })
+    $packageOnlyOut = Join-Path $commonRoot 'out/package-only-base.apk'
+    Assert-True ((Test-SamePath (Get-BaseApk -Apk $packageOnlyXapk -Destination $packageOnlyOut) $packageOnlyOut) -and
+        (Get-Content -LiteralPath $packageOnlyOut -Raw) -eq 'threads base') `
+        'The base an .xapk manifest names by its package was not taken over larger APKs.'
+    # With nothing naming the base, a larger config split still loses to the app's own APK.
+    $unnamedSplitXapk = Join-Path $commonRoot 'unnamed-split.xapk'
+    New-TestBundleArchive -Path $unnamedSplitXapk -Entries ([ordered]@{
+        'config.arm64_v8a.apk' = ('native code ' * 64)
+        'split_feature.apk' = ('feature ' * 48)
+        'com.instagram.barcelona.apk' = 'threads base'
+    })
+    $unnamedSplitOut = Join-Path $commonRoot 'out/unnamed-split-base.apk'
+    Assert-True ((Test-SamePath (Get-BaseApk -Apk $unnamedSplitXapk -Destination $unnamedSplitOut) $unnamedSplitOut) -and
+        (Get-Content -LiteralPath $unnamedSplitOut -Raw) -eq 'threads base') `
+        'A bundle naming no base took a larger config or split_ APK for it.'
+    # And a bundle of splits alone hands back its largest, as before.
+    $splitsOnly = Join-Path $commonRoot 'splits-only.xapk'
+    New-TestBundleArchive -Path $splitsOnly -Entries ([ordered]@{ 'config.mdpi.apk' = 'small'; 'config.arm64_v8a.apk' = ('native ' * 8) })
+    $splitsOnlyOut = Join-Path $commonRoot 'out/splits-only-base.apk'
+    Assert-True ((Test-SamePath (Get-BaseApk -Apk $splitsOnly -Destination $splitsOnlyOut) $splitsOnlyOut) -and
+        (Get-Content -LiteralPath $splitsOnlyOut -Raw).StartsWith('native ')) `
+        'A bundle of splits alone did not hand back its largest APK.'
 
     $noApk = Join-Path $commonRoot 'empty.apkm'
     New-TestBundleArchive -Path $noApk -Entries ([ordered]@{ 'info.json' = '{}' })
@@ -3625,7 +3741,26 @@ try {
     foreach ($relative in $releaseFiles) {
         $destination = Join-Path $releaseRepo $relative
         New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
-        Copy-Item -LiteralPath (Join-Path $Root $relative) -Destination $destination
+        Copy-ReleaseFile $relative $destination
+    }
+    # The cases below need a declared build older than the newest, one a receipt can leave out.
+    # When this checkout's catalog declares a single build, the fixture's copy declares the one
+    # before it too, on every patch at a version code of its own, the way the catalog keeps the
+    # previous build when Threads moves on.
+    $releaseCatalogPath = Join-Path $releaseRepo 'patches-list.json'
+    $releaseCatalogCopy = Get-Content -LiteralPath $releaseCatalogPath -Raw | ConvertFrom-Json
+    $copiedTarget = Get-PatchTarget -PatchList $releaseCatalogCopy
+    if (@($copiedTarget.PackageVersions).Count -lt 2) {
+        $previousBuild = '448.0.0.54.85'
+        foreach ($patch in @($releaseCatalogCopy.patches)) {
+            $patch.compatiblePackages.($copiedTarget.PackageName) = @(@($patch.compatiblePackages.($copiedTarget.PackageName)) + $previousBuild)
+            foreach ($compatibility in @($patch.compatibility | Where-Object { $_.packageName -eq $copiedTarget.PackageName })) {
+                $compatibility.targets = @(@($compatibility.targets) + [pscustomobject]@{ version = $previousBuild
+                        experimental = $false; versionCodes = [pscustomobject]@{ ARM64_V8A = 511808302 } })
+            }
+        }
+        [System.IO.File]::WriteAllText($releaseCatalogPath, ($releaseCatalogCopy | ConvertTo-Json -Depth 20),
+            (New-Object System.Text.UTF8Encoding($false)))
     }
     # The ledger, dated today and listed on every index, so the census a release is held to passes
     # and each published-asset case below is refused for its own fact. The checked-in ledger's date
@@ -3666,7 +3801,7 @@ try {
     }
     $releaseIndexText = $releaseIndexText -replace
         '(?<!\d)\d+ patches\b', "$releasePatchCountForIndex patches"
-    $describedBuild = [regex]::Match([string]$releaseIndex.description, 'Facebook\s+(\d+(?:\.\d+)+)')
+    $describedBuild = [regex]::Match([string]$releaseIndex.description, 'Threads\s+(\d+(?:\.\d+)+)')
     if ($describedBuild.Success -and $describedBuild.Groups[1].Value -ne $releaseTargetForIndex.PackageVersion) {
         $releaseIndexText = $releaseIndexText -replace
             ('(?<![\d.])' + [regex]::Escape($describedBuild.Groups[1].Value) + '(?!\d)'),
@@ -3678,9 +3813,9 @@ try {
     $releaseBugFormPath = Join-Path $releaseRepo '.github/ISSUE_TEMPLATE/bug_report.yml'
     $releaseBugFormText = Get-Content -LiteralPath $releaseBugFormPath -Raw
     $releaseBugFormText = $releaseBugFormText -replace
-        '(placeholder:\s*Version )\S+( for Facebook)', "`${1}$releaseVersionForIndex`${2}"
+        '(placeholder:\s*Version )\S+( for Threads)', "`${1}$releaseVersionForIndex`${2}"
     $releaseBugFormText = $releaseBugFormText -replace
-        '(placeholder:\s*Version \S+ for Facebook )\d+(?:\.\d+)+',
+        '(placeholder:\s*Version \S+ for Threads )\d+(?:\.\d+)+',
         "`${1}$($releaseTargetForIndex.PackageVersion)"
     Set-Content -LiteralPath $releaseBugFormPath -Encoding UTF8 -NoNewline -Value $releaseBugFormText
     # And the README's version badge and the sentence naming the latest release, which the release
@@ -3726,7 +3861,7 @@ try {
     Invoke-FixtureGit -Root $releaseRepo -Arguments @('tag', "v$indexVersionHere", $releaseCommit) | Out-Null
 
     # A receipt for this commit with a run of each build given, every patch applied and the
-    # manifest changes the checked-in allowlist approves, the permission rename, written where the
+    # manifest changes the checked-in allowlist approves, the settings alias and the advertising ID removal, written where the
     # release check looks for it. A schema 1 receipt names no SBOM, as the ones cut before it
     # existed don't.
     $approvedDelta = [ordered]@{ permissionsAdded = @(); permissionsRemoved = @()
@@ -3744,9 +3879,9 @@ try {
             [int]$Schema = (Get-ReleaseReceiptSchemaVersion)) {
         $targets = @(for ($i = 0; $i -lt $Builds.Count; $i++) {
             # Each build at the version code the catalog pins it to, as a run of the declared build.
-            $code = @(@($releaseTarget.PackageVersionCodes[$Builds[$i]]) + @("47500000$i") | Where-Object { $_ })[0]
+            $code = @(@($releaseTarget.PackageVersionCodes[$Builds[$i]]) + @("51200000$i") | Where-Object { $_ })[0]
             [ordered]@{
-                source        = [ordered]@{ file = "facebook-$($Builds[$i])-arm64-v8a.apkm"
+                source        = [ordered]@{ file = "threads-$($Builds[$i])-arm64-v8a.xapk"
                     package = $releaseTarget.PackageName; versionName = $Builds[$i]; versionCode = $code
                     sha256 = ([string]'ABCDEF'[$i % 6] * 64); forced = $false }
                 patches       = @($releaseNames | ForEach-Object { [ordered]@{ name = $_; applied = $true; reason = $null } })
@@ -3815,13 +3950,15 @@ try {
     # that answers -version, plays MergeSplits.java (the merged APK, and a note beside it naming
     # the bundle it came from), and does what the desktop CLI leaves behind for each input (the
     # result report and the patched APK), and an aapt2 that prints the manifest lines written for
-    # each APK. One .apkm per declared build, and a bundle stamped with the commit's time where
+    # each APK. One .xapk per declared build, laid out the way APKPure lays out Threads, and a
+    # bundle stamped with the commit's time where
     # buildAndroid leaves it, carrying the classes.dex the published asset check at the end of
     # this section looks for. The merge carries a component the base APK's manifest lacks, so a
     # delta taken against the base instead of the merge records it as the patches' own, and the
-    # allowlist, which approves only the permission rename, refuses the receipt. The JDK also plays ResourceTableCheck.java, keeping a
-    # copy of the stock APK it was handed, and DexDiff.java, and an apksigner beside aapt2 names
-    # Meta's signer, so verify-all-patches.ps1 runs on the same stand-ins.
+    # allowlist, which approves only the settings alias and the advertising ID removal, refuses the
+    # receipt. The JDK also plays ResourceTableCheck.java, keeping a copy of the stock APK it was
+    # handed, and DexDiff.java, and an apksigner beside aapt2 names Meta's signer, so
+    # verify-all-patches.ps1 runs on the same stand-ins.
     $tools = Join-Path $releaseRoot 'tools'
     $fixtures = Join-Path $releaseRoot 'fixtures'
     New-Item -ItemType Directory -Path $tools, $fixtures -Force | Out-Null
@@ -3927,12 +4064,11 @@ try {
 
     $androidName = 'http://schemas.android.com/apk/res/android:name(0x01010003)='
     $androidExported = '          A: http://schemas.android.com/apk/res/android:exported(0x01010010)=true'
-    # Facebook asks for the two permissions it shares with Meta's other apps, and the patched build
-    # asks for them under the names Install beside Meta's apps gives them: the change the checked-in
-    # allowlist approves, and the only one the patches make here.
-    function Get-FixtureManifest([string]$Build, [string]$Code, [switch]$WithSplit, [switch]$Renamed,
+    # Threads asks for the advertising ID permission and exports its launcher activity. The patched
+    # build no longer asks for the permission and exports the settings alias beside the launcher:
+    # the changes the checked-in allowlist approves, and the only ones the patches make here.
+    function Get-FixtureManifest([string]$Build, [string]$Code, [switch]$WithSplit, [switch]$Patched,
             [string]$Package = $releaseTarget.PackageName) {
-        $prefix = if ($Renamed) { 'app.hushthreads.' } else { 'com.facebook.' }
         $lines = @(
             'N: android=http://schemas.android.com/apk/res/android (line=1)',
             '  E: manifest (line=1)',
@@ -3940,18 +4076,23 @@ try {
             "    A: http://schemas.android.com/apk/res/android:versionName(0x0101021c)=`"$Build`" (Raw: `"$Build`")",
             "    A: package=`"$Package`" (Raw: `"$Package`")",
             '      E: uses-permission (line=10)',
-            "        A: $androidName`"android.permission.INTERNET`" (Raw: `"android.permission.INTERNET`")",
-            '      E: uses-permission (line=11)',
-            "        A: $androidName`"${prefix}permission.prod.FB_APP_COMMUNICATION`" (Raw: `"${prefix}permission.prod.FB_APP_COMMUNICATION`")",
-            '      E: uses-permission (line=12)',
-            "        A: $androidName`"${prefix}receiver.permission.ACCESS`" (Raw: `"${prefix}receiver.permission.ACCESS`")",
-            '      E: application (line=20)',
+            "        A: $androidName`"android.permission.INTERNET`" (Raw: `"android.permission.INTERNET`")")
+        if (-not $Patched) {
+            $lines += @('      E: uses-permission (line=11)',
+                "        A: $androidName`"com.google.android.gms.permission.AD_ID`" (Raw: `"com.google.android.gms.permission.AD_ID`")")
+        }
+        $lines += @('      E: application (line=20)',
             '        E: activity (line=21)',
-            "          A: $androidName`"com.facebook.katana.LoginActivity`" (Raw: `"com.facebook.katana.LoginActivity`")",
+            "          A: $androidName`"com.instagram.barcelona.mainactivity.BarcelonaActivity`" (Raw: `"com.instagram.barcelona.mainactivity.BarcelonaActivity`")",
             $androidExported)
         if ($WithSplit) {
             $lines += @('        E: activity (line=40)',
-                "          A: $androidName`"com.facebook.split.FeatureActivity`" (Raw: `"com.facebook.split.FeatureActivity`")",
+                "          A: $androidName`"com.instagram.barcelona.split.FeatureActivity`" (Raw: `"com.instagram.barcelona.split.FeatureActivity`")",
+                $androidExported)
+        }
+        if ($Patched) {
+            $lines += @('        E: activity-alias (line=60)',
+                "          A: $androidName`"app.morphe.extension.hushthreads.settings.OpenSettings`" (Raw: `"app.morphe.extension.hushthreads.settings.OpenSettings`")",
                 $androidExported)
         }
         return ($lines -join "`n") + "`n"
@@ -3964,16 +4105,18 @@ try {
     # the version name made declared.
     $newerBuild = "$([int]($releaseTarget.PackageVersion -split '\.')[0] + 1).0.0.1.1"
     foreach ($build in @($newerBuild) + @($releaseTarget.PackageVersions)) {
-        $versionCode = if ($build -eq $newerBuild) { 475119344 } else { [long]@($releaseTarget.PackageVersionCodes[$build])[0] }
-        $apkm = Join-Path $fixtures "facebook-$build-arm64-v8a.apkm"
+        $versionCode = if ($build -eq $newerBuild) { 512008382 } else { [long]@($releaseTarget.PackageVersionCodes[$build])[0] }
+        $apkm = Join-Path $fixtures "threads-$build-$versionCode.xapk"
         New-TestBundleArchive -Path $apkm -Entries ([ordered]@{
-            'info.json' = "{`"versioncode`":`"$versionCode`"}"
-            'base.apk' = Get-FixtureManifest -Build $build -Code "$versionCode"
-            'split_config.arm64_v8a.apk' = ('native code ' * 64) })
+            'com.instagram.barcelona.apk' = Get-FixtureManifest -Build $build -Code "$versionCode"
+            'icon.png' = 'icon'
+            'config.arm64_v8a.apk' = ('native code ' * 64)
+            'manifest.json' = ("{`"package_name`":`"com.instagram.barcelona`",`"version_code`":`"$versionCode`",`"split_apks`":[" +
+                '{"file":"com.instagram.barcelona.apk","id":"base"},{"file":"config.arm64_v8a.apk","id":"config.arm64_v8a"}]}') })
         Set-Content -LiteralPath "$apkm.merged.txt" -Encoding ASCII -NoNewline `
             -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit)
         Set-Content -LiteralPath "$apkm.patched.txt" -Encoding ASCII -NoNewline `
-            -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit -Renamed)
+            -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit -Patched)
         # The report the CLI writes: every patch and the internal dependencies applied, one step,
         # and the input's own version, which is what the CLI reports.
         Set-Content -LiteralPath "$apkm.result.json" -Encoding ASCII -Value ([ordered]@{
@@ -3984,12 +4127,12 @@ try {
             packageVersion = $build } | ConvertTo-Json -Depth 6)
         $fixturePaths[$build] = $apkm
     }
-    # And another build of the oldest declared version, as APKMirror lists several arm64 builds of one
-    # Facebook release: the declared name at a code the catalog doesn't pin. Only its base manifest,
-    # since every script has to refuse it before anything is merged or patched.
+    # And another build of the oldest declared version, as one Threads release can come as several
+    # arm64 builds: the declared name at a code the catalog doesn't pin, as an APKMirror .apkm. Only
+    # its base manifest, since every script has to refuse it before anything is merged or patched.
     $variantBuild = @($releaseTarget.PackageVersions)[-1]
     $variantCode = [long]@($releaseTarget.PackageVersionCodes[$variantBuild])[0] - 61
-    $variantApkm = Join-Path $fixtures "facebook-$variantBuild-variant-arm64-v8a.apkm"
+    $variantApkm = Join-Path $fixtures "threads-$variantBuild-variant-arm64-v8a.apkm"
     New-TestBundleArchive -Path $variantApkm -Entries ([ordered]@{
         'info.json' = "{`"versioncode`":`"$variantCode`"}"
         'base.apk' = Get-FixtureManifest -Build $variantBuild -Code "$variantCode" })
@@ -4032,7 +4175,7 @@ try {
     }
 
     # A fixture for every declared build and the newer one: one target each, only the newer build
-    # forced, every patch applied, and no manifest change but the rename, because the patched
+    # forced, every patch applied, and no manifest change but the approved two, because the patched
     # manifest is held to the merge and not to the base.
     $builtBuilds = @($releaseTarget.PackageVersions) + @($newerBuild)
     $allFixtures = @($builtBuilds | ForEach-Object { $fixturePaths[$_] })
@@ -4055,10 +4198,11 @@ try {
             "The receipt does not hash the $label fixture it was given."
         Assert-True (@($builtTarget.patches | Where-Object { $_.applied }).Count -eq $releaseNames.Count) `
             "The receipt does not record every patch applied to $label."
-        # The rename is the patches' change. The split's activity the merge brings in is the merge's.
+        # The alias and the removal are the patches' changes. The split's activity the merge brings
+        # in is the merge's.
         $changes = @(ConvertTo-ManifestDeltaEntries -Delta $builtTarget.manifestDelta)
         Assert-True (($changes -join "`n") -ceq (@($checkedInAllowlist | Sort-Object -Unique -CaseSensitive) -join "`n")) `
-            "The receipt records other manifest changes for $label than the patches' rename: $($changes -join ', ')"
+            "The receipt records other manifest changes for $label than the patches' two: $($changes -join ', ')"
     }
     # Each fixture merged once, and the CLI handed that merge rather than the bundle: the CLI deletes
     # its own merge, and the manifest delta above is taken against this one.
@@ -4086,8 +4230,8 @@ try {
     # patches anything. base.apk is not what the CLI patches, so there's no receipt to fall back to.
     $builtReceiptBeforeMerge = [System.IO.File]::ReadAllBytes($releaseReceipt)
     $brokenMerges = @(
-        @{ Flag = 'merge-fails.txt'; Pattern = '*Could not merge facebook-*.apkm into one APK (exit 9)*could not read the bundle*' },
-        @{ Flag = 'merge-writes-nothing.txt'; Pattern = '*The merge of facebook-*.apkm wrote no APK at *stock-merged.apk*' })
+        @{ Flag = 'merge-fails.txt'; Pattern = '*Could not merge threads-*.xapk into one APK (exit 9)*could not read the bundle*' },
+        @{ Flag = 'merge-writes-nothing.txt'; Pattern = '*The merge of threads-*.xapk wrote no APK at *stock-merged.apk*' })
     foreach ($broken in $brokenMerges) {
         $flag = Join-Path $tools $broken.Flag
         Set-Content -LiteralPath $flag -Value 'on' -Encoding ASCII
@@ -4107,7 +4251,8 @@ try {
 
     # verify-all-patches.ps1 on the same stand-ins, with an apksigner beside aapt2 that names Meta's
     # signer. Once the CLI stopped leaving its merge behind (1.17.0) it held the patched table to
-    # base.apk, so the 7,588 resources 580's splits carry were never compared. It merges first now:
+    # base.apk, so the 7,588 resources the Facebook sibling's 580 splits carry were never compared.
+    # It merges first now:
     # the CLI is handed the merge, the resource check's stock side is that merge, and a bundle that
     # yields no merged APK stops the run before anything is patched. A plain APK goes to the CLI as
     # it is and is its own stock side.
@@ -4149,7 +4294,7 @@ try {
             Remove-Item -LiteralPath $flag -Force -ErrorAction SilentlyContinue
         }
     }
-    $plainFixture = Join-Path $fixtures "facebook-$($releaseTarget.PackageVersion)-arm64-v8a.apk"
+    $plainFixture = Join-Path $fixtures "threads-$($releaseTarget.PackageVersion)-arm64-v8a.apk"
     $newestCode = [regex]::Match((Get-Content -LiteralPath "$newestFixture.merged.txt" -Raw),
         'versionCode\(0x0101021b\)=(\d+)').Groups[1].Value
     Set-Content -LiteralPath $plainFixture -Encoding ASCII -NoNewline `
@@ -4158,7 +4303,7 @@ try {
     # Patched from the plain APK itself: its manifest with the patches' change and no split's
     # component, which verify-all-patches.ps1 would refuse as a change nobody approved.
     Set-Content -LiteralPath "$plainFixture.patched.txt" -Encoding ASCII -NoNewline `
-        -Value (Get-FixtureManifest -Build $releaseTarget.PackageVersion -Code $newestCode -Renamed)
+        -Value (Get-FixtureManifest -Build $releaseTarget.PackageVersion -Code $newestCode -Patched)
     try {
         $said = Invoke-VerifyAll -Apk $plainFixture
         Assert-True ($said -like '*success: every requested patch applied*' -and $said -notlike '*into one APK for the CLI*' -and
@@ -4174,7 +4319,7 @@ try {
 
     # The newest build alone, or beside the undeclared one, is not enough for a receipt: the older
     # declared build has no run. The builder says so before it patches anything. It used to patch
-    # every fixture first, which for Facebook unpacks gigabytes, and then refuse its own receipt.
+    # every fixture first, which for Threads unpacks gigabytes, and then refuse its own receipt.
     foreach ($partial in @(@($releaseTarget.PackageVersion), @($releaseTarget.PackageVersion, $newerBuild))) {
         Assert-Throws { Invoke-ReceiptBuilder -Fixtures @($partial | ForEach-Object { $fixturePaths[$_] }) } `
             "*No fixture is the declared $($releaseTarget.PackageName) $($unproved -join ', ')*Nothing was patched*" `
@@ -4345,8 +4490,8 @@ try {
     # Another Meta app at a build the catalog declares. Neither script may hand it to the CLI: each
     # refuses it by name before anything is patched. The builder gets it beside the newest declared
     # build, so every declared build has a fixture and only the package check stands in the way.
-    $otherPackage = 'com.facebook.lite'
-    $otherApkm = Join-Path $fixtures "facebook-lite-$($unproved[0])-arm64-v8a.apkm"
+    $otherPackage = 'com.instagram.android'
+    $otherApkm = Join-Path $fixtures "instagram-$($unproved[0])-arm64-v8a.apkm"
     New-TestBundleArchive -Path $otherApkm -Entries ([ordered]@{
         'info.json' = "{`"versioncode`":`"$versionCode`"}"
         'base.apk' = Get-FixtureManifest -Build $unproved[0] -Code "$versionCode" -Package $otherPackage })
@@ -4466,7 +4611,7 @@ try {
         }
         function gh {
             $global:LASTEXITCODE = 0
-            "HushThreads v${indexVersionHere}: $($releaseNames.Count) patches for Facebook $($releaseTarget.PackageVersion)."
+            "HushThreads v${indexVersionHere}: $($releaseNames.Count) patches for Threads $($releaseTarget.PackageVersion)."
         }
     }
     function Invoke-IndexPushCheck([hashtable]$Arguments) {
@@ -4502,8 +4647,8 @@ try {
                 "SHA256SUMS.txt lists, and it describes patches-$indexVersionHere.mpp, payloads and all*") -and
             $said -like "*OSV has no advisory for the libraries patches-$indexVersionHere.cdx.json lists: gson 2.14.0*") `
             "The index push did not hold the hosted SBOM to the receipt, or did not ask OSV about it: $said"
-        Assert-True ($said -like '*the Facebook-family source census is 0 day(s) old*every index lists HushThreads or has its submission*') `
-            "The index push was not held to the Facebook-family source census: $said"
+        Assert-True ($said -like '*the Threads source census is 0 day(s) old*every index lists HushThreads or has its submission*') `
+            "The index push was not held to the Threads source census: $said"
         # The receipt the release hosts, held to SHA256SUMS.txt and to the receipt checked here.
         Assert-True ($said -like "*the hosted release-receipt-$releaseVersionHere.json is the receipt checked here, as SHA256SUMS.txt lists it*") `
             "The index push did not hold the hosted receipt to the one it checked: $said"
@@ -4542,7 +4687,7 @@ try {
         try {
             Save-ReleaseLedger -AgeDays 14
             $said = Invoke-IndexPushCheck $publishedRun
-            Assert-True ($said -like '*the Facebook-family source census is 14 day(s) old*') `
+            Assert-True ($said -like '*the Threads source census is 14 day(s) old*') `
                 "A release on a census 14 days old did not say so: $said"
             Save-ReleaseLedger -AgeDays 15
             Assert-Throws { Invoke-IndexPushCheck $publishedRun } '*source census*the census is 15 days old*audit-threads-sources.ps1*' `
@@ -4839,7 +4984,7 @@ try {
     Edit-ReleaseFile 'patches-list.json' { param($text) $text.Replace('"v' + $releaseVersionHere + '"', '"v' + $laterVersion + '"') }
     Edit-ReleaseFile 'CHANGELOG.md' {
         param($text) ([regex]'(?m)^## ').Replace($text,
-            "## $laterVersion (2026-09-26)`n`n* **Facebook:** Needs Morphe Manager $laterFloor or newer.`n`n## ", 1)
+            "## $laterVersion (2026-09-26)`n`n* **Threads:** Needs Morphe Manager $laterFloor or newer.`n`n## ", 1)
     }
     Edit-ReleaseFile 'gradle/libs.versions.toml' {
         param($text) $text -replace '(?m)^(\s*manager-floor\s*=\s*")[^"]+', "`${1}$laterFloor"
@@ -4956,11 +5101,3 @@ Write-Host '[scripts] tracked-file machine name contracts passed'
 
 $global:LASTEXITCODE = 0
 Write-Host '[scripts] report, target, Java and guarded replacement contracts passed'
-$marketingAssets = Join-Path $Root 'scripts/test-marketing-assets.ps1'
-if (-not (Test-Path -LiteralPath $marketingAssets -PathType Leaf)) {
-    throw 'scripts/test-marketing-assets.ps1 is missing. Marketing changes need a repeatable asset check.'
-}
-& $marketingAssets -Root $Root
-if ($LASTEXITCODE -ne 0) {
-    throw 'The marketing asset checks did not pass.'
-}

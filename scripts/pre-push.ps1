@@ -470,11 +470,10 @@ try {
     # held to the builds, signers and dependencies the release scripts expect, and the Gradle file
     # that writes the release bundle where common.ps1 reads it. A push that moved only one of them
     # never ran the tests, and the break surfaced on the next unrelated script push instead.
-    # They also end with the marketing asset check, which holds the artwork's sizes and alpha and
-    # the README's hero and links. A push of only artwork or only the README ran no check of them.
+    # They also copy the README into the release facts fixture and hold it to the catalog, so a
+    # push of only the README runs them too.
     $touchesContracts = $touchesScripts -or @($paths | Where-Object {
-        $_ -eq 'patches-list.json' -or $_ -eq 'patches/build.gradle.kts' -or
-        $_ -like 'assets/*' -or $_ -eq 'README.md'
+        $_ -eq 'patches-list.json' -or $_ -eq 'patches/build.gradle.kts' -or $_ -eq 'README.md'
     }).Count -gt 0
     $injectedRegisterVerifierPaths = @(
         'scripts/BadDexFixture.java',
