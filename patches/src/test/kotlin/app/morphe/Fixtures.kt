@@ -8,6 +8,7 @@
  */
 package app.morphe
 
+import app.morphe.patches.shared.compat.AppCompatibilities
 import java.io.File
 import org.junit.Assert.fail
 import org.junit.Assume.assumeTrue
@@ -45,4 +46,15 @@ internal object Fixtures {
      * hold the Instagram build the coexistence checks read, which no Threads test wants.
      */
     fun apks(): List<File> = files { it.extension == "apk" && it.name.startsWith("threads-") }
+
+    /**
+     * The Threads builds of every version the bundle declares: `threads-<version>-*` as the vendor
+     * ships it (.xapk or .apkm) or merged into one .apk. A declared version with none of them fails.
+     */
+    fun declaredBuilds(): List<File> =
+        AppCompatibilities.threads().single().targets.mapNotNull { it.version }.distinct().flatMap { version ->
+            files { it.name.startsWith("threads-$version-") && it.extension in BUILD_EXTENSIONS }
+        }
+
+    private val BUILD_EXTENSIONS = setOf("xapk", "apkm", "apk")
 }
