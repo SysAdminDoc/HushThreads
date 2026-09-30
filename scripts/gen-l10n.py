@@ -10,7 +10,7 @@ entry per line, # comments) and writes:
   extensions/shared/library/src/main/java/app/morphe/extension/shared/L10nTranslations.java
 
 The English text in the code is the lookup key, so only the translations are stored. They
-travel in the extension's own DEX: HushThreads adds no resources to Facebook.
+travel in the extension's own DEX: HushThreads adds no resources to Threads.
 
 Each language becomes its own method filling a map, split across several methods so no single
 one approaches the 64 KB bytecode limit. Every character past ASCII is written as a \\u escape,
@@ -182,8 +182,11 @@ def main():
 
     lines = [
         "/*",
-        " * Copyright 2026 HushThreads contributors",
-        " * https://github.com/SysAdminDoc/HushThreads",
+        " * Forked from https://github.com/SysAdminDoc/Hushfacebook at c15d4f79 (GPL-3.0),",
+        " * modified for HushThreads (Threads), 2026.",
+        " *",
+        " * Copyright 2026 Hushfacebook contributors",
+        " * https://github.com/SysAdminDoc/Hushfacebook",
         " */",
         "package app.morphe.extension.shared;",
         "",

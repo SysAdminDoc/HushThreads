@@ -251,7 +251,9 @@
         "com.instagram.barcelona",
         "com.instagram.android"
       ],
-      "targetVersions": {},
+      "targetVersions": {
+        "com.instagram.barcelona": []
+      },
       "features": [
         "Threads distraction free (stub)",
         "Threads no ads (stub)"

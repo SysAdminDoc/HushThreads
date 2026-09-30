@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
-    Rank where a method went when Facebook's next build renames it, from structural evidence.
+    Rank where a method went when Threads' next build renames it, from structural evidence.
 
 .DESCRIPTION
-    A patch finds its method by kept names, log literals and shapes. When a new Facebook build moves
+    A patch finds its method by kept names, log literals and shapes. When a new Threads build moves
     one of those anchors, the patch fails at patch time, and somebody has to find where the method
     went. This runs scripts/FingerprintCandidates.java to do the looking.
 
     It captures the method's signature from the build the patch works on: its strings, its literals
-    with the version bytes Facebook changes masked, the references it makes with the obfuscated names
+    with the version bytes Meta changes masked, the references it makes with the obfuscated names
     taken out, an opcode sketch, its prototype, its class and its callers. Then it ranks every method
     of the new build against that and writes a report with the evidence for each candidate. The
     signature's format is scripts/fingerprint-signature.schema.json, so one captured today still
@@ -18,30 +18,28 @@
     candidate stands out it still says to check it by hand. When none does, the run fails closed
     (exit 1) and suggests none, and the report lists the closest for review.
 
-    -Calibrate holds the ranking to scripts/fingerprint-calibration.txt: real transitions the patches
-    resolve on both 577 and 580, each of which has to rank its known replacement in the top five.
-    -CalibrationPath runs a list of your own the same way, and -OldApk and -NewApk name the two builds
-    it describes. They default to 577 and 580, the builds the bundled list names methods of.
+    -Calibrate holds the ranking to a list of real transitions the patches resolve on two builds,
+    each of which has to rank its known replacement in the top five, and -OldApk and -NewApk name
+    the two builds it describes. The list is scripts/fingerprint-calibration.txt unless
+    -CalibrationPath names another. HushThreads has no bundled list yet: it needs a second Threads
+    build and the transitions confirmed on it, so until then -Calibrate takes -CalibrationPath.
 
-    An APK argument is a path to an .apk or .apkm, or a version that names exactly one fixture in the
-    folder HUSHTHREADS_FIXTURE_DIR names, such as 577 or 580.0.0.51.74.
-
-.EXAMPLE
-    scripts/fingerprint-candidates.ps1 -OldApk 577 -Method 'LX/7f5;->A0g(LX/7ej;I)J' -NewApk 580
+    An APK argument is a path to an .apk, .apkm or .xapk, or a version that names exactly one fixture
+    in the folder HUSHTHREADS_FIXTURE_DIR names, such as 449 or 449.0.0.54.82.
 
 .EXAMPLE
-    scripts/fingerprint-candidates.ps1 -OldApk 580 -Method '<descriptor>' -SignaturePath tick.json
+    scripts/fingerprint-candidates.ps1 -OldApk 448 -Method '<descriptor>' -NewApk 449
+
+.EXAMPLE
+    scripts/fingerprint-candidates.ps1 -OldApk 449 -Method '<descriptor>' -SignaturePath feed-merge.json
 
     Captures the signature only, for a build that isn't out yet.
 
 .EXAMPLE
-    scripts/fingerprint-candidates.ps1 -Signature tick.json -NewApk C:\bundles\facebook-581.apkm
+    scripts/fingerprint-candidates.ps1 -Signature feed-merge.json -NewApk C:\bundles\threads-450.xapk
 
 .EXAMPLE
-    scripts/fingerprint-candidates.ps1 -Calibrate
-
-.EXAMPLE
-    scripts/fingerprint-candidates.ps1 -Calibrate -CalibrationPath 580-to-583.txt -OldApk 580 -NewApk 583
+    scripts/fingerprint-candidates.ps1 -Calibrate -CalibrationPath 449-to-450.txt -OldApk 449 -NewApk 450
 
     Checks the ranking against transitions confirmed on a later pair of builds.
 #>
@@ -82,16 +80,16 @@ function Assert-OutsidePatches {
     return $full
 }
 
-# An .apk or .apkm path, or a version naming exactly one fixture.
+# An .apk, .apkm or .xapk path, or a version naming exactly one fixture.
 function Resolve-Build {
     param([string]$Value, [string]$What)
     if (Test-Path -LiteralPath $Value -PathType Leaf) { return (Resolve-FullPath $Value) }
     $fixtures = if ($env:HUSHTHREADS_FIXTURE_DIR) { $env:HUSHTHREADS_FIXTURE_DIR } else { Join-Path $Root 'fixtures' }
     $matching = @(Get-ChildItem -LiteralPath $fixtures -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Extension -in '.apk', '.apkm' -and $_.Name.Contains($Value) })
+        Where-Object { $_.Extension -in '.apk', '.apkm', '.xapk' -and $_.Name.Contains($Value) })
     if ($matching.Count -ne 1) {
         throw ("The $What '$Value' is not a file, and it names $($matching.Count) fixtures in $fixtures, not one. " +
-            'Pass a path to an .apk or .apkm, or set HUSHTHREADS_FIXTURE_DIR.')
+            'Pass a path to an .apk, .apkm or .xapk, or set HUSHTHREADS_FIXTURE_DIR.')
     }
     return $matching[0].FullName
 }
@@ -118,6 +116,14 @@ if (@($modes).Count -ne 1) {
 if ($Method -and -not $OldApk) { throw '-OldApk and -Method go together.' }
 if ($Signature -and -not $NewApk) { throw '-Signature needs -NewApk to rank against.' }
 if ($Method -and -not $NewApk -and -not $SignaturePath) { throw 'Pass -NewApk to rank, -SignaturePath to keep the signature, or both.' }
+if ($Calibrate -and -not ($OldApk -and $NewApk)) { throw '-Calibrate needs -OldApk and -NewApk, the two builds its list describes.' }
+if ($Calibrate -and -not $CalibrationPath) {
+    $CalibrationPath = Join-Path $PSScriptRoot 'fingerprint-calibration.txt'
+    if (-not (Test-Path -LiteralPath $CalibrationPath -PathType Leaf)) {
+        throw ('There is no bundled calibration list yet: scripts/fingerprint-calibration.txt needs transitions ' +
+            'confirmed on two Threads builds. Pass -CalibrationPath with a list of your own.')
+    }
+}
 
 $script:JavaPath = Resolve-Java -Explicit $Java
 $script:DesktopJarPath = Resolve-DesktopCli -Explicit $DesktopJar -Root $Root -Required
@@ -133,11 +139,8 @@ New-Item -ItemType Directory -Force -Path $work | Out-Null
 $exitCode = 2
 try {
     if ($Calibrate) {
-        if (-not $CalibrationPath) { $CalibrationPath = Join-Path $PSScriptRoot 'fingerprint-calibration.txt' }
-        $old = Get-BaseApk -Apk (Resolve-Build $(if ($OldApk) { $OldApk } else { '577.0.0.50.72' }) 'old build') `
-            -Destination (Join-Path $work 'old-base.apk')
-        $new = Get-BaseApk -Apk (Resolve-Build $(if ($NewApk) { $NewApk } else { '580.0.0.51.74' }) 'new build') `
-            -Destination (Join-Path $work 'new-base.apk')
+        $old = Get-BaseApk -Apk (Resolve-Build $OldApk 'old build') -Destination (Join-Path $work 'old-base.apk')
+        $new = Get-BaseApk -Apk (Resolve-Build $NewApk 'new build') -Destination (Join-Path $work 'new-base.apk')
         $exitCode = Invoke-Candidates @('calibrate', (Resolve-FullPath $CalibrationPath), $old, $new, $ReportPath, '--top', "$Top")
     } else {
         $captured = 0

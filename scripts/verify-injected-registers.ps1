@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Check what the bundle injected into Facebook against the shapes that fail on a device.
+    Check what the bundle injected into Threads against the shapes that fail on a device.
 
 .DESCRIPTION
     A patch that writes into a register beyond the method's register count, branches into the
@@ -13,23 +13,19 @@
 
     Static. scripts/DexDiff.java lists every method the patched APK does not share with the
     clean build it came from, and holds each line that was not in the clean body, and every
-    line of every added method (the extension's and the helpers patches add to Facebook's own
+    line of every added method (the extension's and the helpers patches add to the app's own
     classes), to that method's register count. Every changed and added method is also checked
     for a register past its count, the upper half of a wide value included, for branch and
     switch targets, invoke registers, the static and wide parameter layout, move-result
     placement and try ranges, and the whole APK is held to
-    scripts/injected-mutation-contracts.txt: one feed guard, in addNewEdgeToCollection, each
-    story-flag stub calling GraphQLStory's accessor before it returns, the showcase stub calling
-    the accessor of the one class answering ShowcaseFeedUnit, the Stories tray hook first in both
-    tray adapter methods, the reels hook first in the pre-EOF injector, and the swap guard once in
-    the runnable that swaps an edge into the feed, each in the one method its rule's strings and
-    shape pick out.
+    scripts/injected-mutation-contracts.txt: none of the ShortcutManager calls the settings patch
+    sends to SettingsEntry may be left anywhere outside the extension.
 
     On a device. The Android runtime's own verifier is the authority, so with -Serial the
     clean APK and the patched APK are both put through dex2oat with the verify filter and the
     verifier's messages are compared. The patched build has to raise exactly the same message
-    multiset as the clean build, which for Meta's builds so far is none. The emulator works: its
-    x86_64 dex2oat verifies for arm64.
+    multiset as the clean build, which for the Facebook sibling's builds was none. The emulator
+    works: its x86_64 dex2oat verifies for arm64.
 
     Removed host methods and DEX entries fail the static check. The allowlist beside this script
     accepts only exact reviewed removals, and a stale entry fails so an old exception cannot mask
@@ -39,21 +35,25 @@
     all compared the wrong things, and a device run only counts once dex2oat has read a file of
     the size that was pushed (it exits 0 on a missing one). The clean side has to be Meta's own
     build of the same version as the patched one: a patched APK on the clean side would compare
-    two bundles instead of the bundle against Facebook.
+    two bundles instead of the bundle against Threads.
+
+    The package is the one patches-list.json declares (Get-PatchTarget): the installed app -FromDevice
+    pulls, the patched APK's package and the signer the clean APK has to carry all come from it.
 
     The static half compares the whole clean bundle, merged the way the CLI merges it before it
     patches (Get-MergedApk), because the patched APK carries what the splits brought as well as
-    base.apk's code: 580's in-app browser ships its own dex in split_heliumcore.apk, and against
-    base.apk its methods read as some 12,000 added and 212 changed. The merge carries no
-    signature, so Meta's signer is checked on base.apk, DexDiff holds the merge to base.apk's
-    classes*.dex byte for byte (handed base.apk as its last argument), and it fails a clean side
-    that holds any of the bundle's own code. The device half runs base.apk, the same app code.
+    base.apk's code: the Facebook sibling's 580 in-app browser shipped its own dex in
+    split_heliumcore.apk, and against base.apk its methods read as some 12,000 added and 212
+    changed. The merge carries no signature, so Meta's signer is checked on base.apk, DexDiff
+    holds the merge to base.apk's classes*.dex byte for byte (handed base.apk as its last
+    argument), and it fails a clean side that holds any of the bundle's own code. The device half
+    runs base.apk, the same app code.
 
 .EXAMPLE
     scripts/verify-injected-registers.ps1 -PatchedApk C:\work\patched.apk
 
     The clean side is the fixture of the same version in the folder HUSHTHREADS_FIXTURE_DIR
-    names, an .apk or the .apkm bundle Facebook ships as. A bundle is merged here unless
+    names: an .apk, or the .xapk or .apkm bundle Threads ships as. A bundle is merged here unless
     -CleanMerged hands over its merge (verify-all-patches.ps1 has made one to patch).
 
 .EXAMPLE
@@ -77,6 +77,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot 'Resolve-Java.ps1')
 . (Join-Path $PSScriptRoot 'common.ps1')
+. (Join-Path $PSScriptRoot 'patch-target.ps1')
 . (Join-Path $PSScriptRoot 'release-receipt.ps1')
 . (Join-Path $PSScriptRoot 'injected-register-contracts.ps1')
 . (Join-Path $PSScriptRoot 'injected-register-device.ps1')
@@ -85,6 +86,10 @@ $Java = Resolve-Java -Explicit $Java
 # beats a stack trace about a missing class.
 $DesktopJar = Resolve-DesktopCli -Explicit $DesktopJar -Root $root -Required
 $Aapt2 = Resolve-Aapt2 -Explicit $Aapt2 -Root $root
+# The app every check below is about, and whose signer the clean side carries: the one package the
+# catalog declares, as the other scripts read it.
+$catalog = Get-Content -LiteralPath (Join-Path $root 'patches-list.json') -Raw | ConvertFrom-Json
+$package = (Get-PatchTarget -PatchList $catalog).PackageName
 
 function Resolve-Adb {
     param([string]$Explicit)
@@ -129,7 +134,7 @@ New-Item -ItemType Directory -Force -Path $work | Out-Null
 # The report stays where the caller can read it after the run: at -ReportPath when one is given,
 # and otherwise in the working directory, which is kept whenever the run failed or stopped short,
 # because that is when the FAIL line points at the report. The pulled and extracted APKs never
-# outlive the run, because a full Facebook is hundreds of megabytes. Worked out before the default
+# outlive the run, because a full Threads build runs past a hundred megabytes. Worked out before the default
 # path is filled in: reading [bool]$ReportPath after that was always true, and read before it, it
 # was false exactly when the report lived in the directory the cleanup removed.
 $reportInWork = -not $ReportPath
@@ -143,9 +148,9 @@ if ($FromDevice -or $Serial) { $adbPath = Resolve-Adb -Explicit $Adb }
 
 if ($FromDevice) {
     if (-not $Serial) { throw '-FromDevice needs -Serial so it cannot pull from somebody else''s phone.' }
-    $paths = @(& $adbPath -s $Serial shell pm path com.facebook.katana 2>&1 |
+    $paths = @(& $adbPath -s $Serial shell pm path $package 2>&1 |
         ForEach-Object { "$_" } | Where-Object { $_ -match '^package:' })
-    if ($paths.Count -eq 0) { throw "Facebook is not installed on $Serial." }
+    if ($paths.Count -eq 0) { throw "Threads ($package) is not installed on $Serial." }
     if ($paths.Count -ne 1) {
         # A split install has no single APK to compare, and quietly taking the first would
         # compare the base against a whole clean build and call the rest missing.
@@ -162,23 +167,23 @@ if (-not $PatchedApk -or -not (Test-Path -LiteralPath $PatchedApk -PathType Leaf
     throw 'No patched APK. Pass -PatchedApk, or -FromDevice -Serial <serial>.'
 }
 $patched = Get-ApkManifestFacts -Apk $PatchedApk -Aapt2 $Aapt2
-if ($patched.package -ne 'com.facebook.katana' -or [string]::IsNullOrWhiteSpace($patched.versionName)) {
-    throw "$PatchedApk is $($patched.package) $($patched.versionName), not a Facebook build."
+if ($patched.package -ne $package -or [string]::IsNullOrWhiteSpace($patched.versionName)) {
+    throw "$PatchedApk is $($patched.package) $($patched.versionName), not a Threads build ($package)."
 }
 
 if (-not $CleanApk) {
     $fixtures = if ($env:HUSHTHREADS_FIXTURE_DIR) { $env:HUSHTHREADS_FIXTURE_DIR } else { Join-Path $root 'fixtures' }
     $matching = @(Get-ChildItem -LiteralPath $fixtures -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Extension -in '.apk', '.apkm' -and $_.Name -like "*$($patched.versionName)*" })
+        Where-Object { $_.Extension -in '.apk', '.apkm', '.xapk' -and $_.Name -like "*$($patched.versionName)*" })
     if ($matching.Count -ne 1) {
-        throw ("No single fixture for Facebook $($patched.versionName) in $fixtures (found $($matching.Count)). " +
+        throw ("No single fixture for Threads $($patched.versionName) in $fixtures (found $($matching.Count)). " +
             'Pass -CleanApk with Meta''s build of that version.')
     }
     $CleanApk = $matching[0].FullName
 }
 if (-not (Test-Path -LiteralPath $CleanApk -PathType Leaf)) { throw "No clean APK at $CleanApk." }
-# Facebook ships as a split bundle. Its base APK holds the manifest, Meta's signature and the app's
-# own classes*.dex, which is what the device half verifies.
+# Threads ships as a split bundle (an .xapk or .apkm). Its base APK holds the manifest, Meta's
+# signature and the app's own classes*.dex, which is what the device half verifies.
 $cleanBase = Get-BaseApk -Apk $CleanApk -Destination (Join-Path $work 'clean-base.apk')
 
 # The clean side has to be Meta's own build of the version that was patched, not a patched build
@@ -190,24 +195,23 @@ if ($clean.package -ne $patched.package -or $clean.versionName -ne $patched.vers
     throw ("The clean APK is $($clean.package) $($clean.versionName) ($($clean.versionCode)) and the " +
         "patched one $($patched.package) $($patched.versionName) ($($patched.versionCode)); they have to be the same build.")
 }
-$catalog = Get-Content -LiteralPath (Join-Path $root 'patches-list.json') -Raw | ConvertFrom-Json
 $metaSigners = @($catalog.patches | ForEach-Object { $_.compatibility } |
-    Where-Object { $_.packageName -eq 'com.facebook.katana' } |
+    Where-Object { $_.packageName -eq $package } |
     ForEach-Object { $_.signatures } | Sort-Object -Unique)
-if ($metaSigners.Count -eq 0) { throw 'patches-list.json declares no Facebook signer to hold the clean APK to.' }
+if ($metaSigners.Count -eq 0) { throw "patches-list.json declares no signer for $package to hold the clean APK to." }
 $cleanSigners = @(Get-SignerDigests -Apk $cleanBase)
 if (@($cleanSigners | Where-Object { $_ -in $metaSigners }).Count -eq 0) {
     throw "The clean APK at $CleanApk is signed by $($cleanSigners -join ', '), not by Meta; it is not a vendor build."
 }
 # The dex comparison's clean side: the whole bundle, merged as the CLI merged it before patching,
-# so a split's dex (580's in-app browser) is on both sides. DexDiff holds it to the signed base.apk's
-# classes*.dex. A plain APK is its own merge.
+# so a split's dex (the Facebook sibling's 580 in-app browser shipped one) is on both sides. DexDiff
+# holds it to the signed base.apk's classes*.dex. A plain APK is its own merge.
 if (-not $CleanMerged) {
     $CleanMerged = Get-MergedApk -Apk $CleanApk -Destination (Join-Path $work 'clean-merged.apk') -Java $Java -DesktopJar $DesktopJar
 }
 if (-not (Test-Path -LiteralPath $CleanMerged -PathType Leaf)) { throw "No merged clean APK at $CleanMerged." }
 
-Write-Host "[registers] clean   $CleanApk (Facebook $($clean.versionName), signed by Meta)"
+Write-Host "[registers] clean   $CleanApk (Threads $($clean.versionName), signed by Meta)"
 Write-Host "[registers] merged  $CleanMerged (the dex comparison's clean side)"
 Write-Host "[registers] patched $PatchedApk"
 
@@ -231,7 +235,8 @@ if ($Serial) {
     Write-Host "[registers] verifier messages: clean $($comparison.CleanTotal), patched $($comparison.PatchedTotal)"
 
     # Each tally is only returned once dex2oat has read a file of the pushed size, so two empty
-    # tallies are an answer: Meta's build raises nothing, and the patched one must raise nothing more.
+    # tallies are an answer: a clean build that raises nothing (the Facebook sibling's never did)
+    # holds the patched one to nothing more.
     if (-not $comparison.Valid) {
         $missing = @($comparison.Deltas | Where-Object Kind -eq 'missing')
         $extra = @($comparison.Deltas | Where-Object Kind -eq 'extra')

@@ -3,21 +3,23 @@
     Exercise ResourceTableCheck.java against small APKs that aapt2 builds.
 
 .DESCRIPTION
-    The stock APK is Facebook's own package, id 0x7f: two colors (one with a night value), a theme
+    The stock APK is Threads' own package, id 0x7f: two colors (one with a night value), a theme
     on a base theme, and one layout. A resource patch has Morphe rebuild the whole table, and a
     layout the rebuild drops only fails when the app inflates it (Hushfeed upstream #84, where
     this check came from). Each patched APK moves one thing. An unchanged table, a rewritten color
     and a renamed entry pass and are reported. A lost layout, a layout file missing from the
     archive, a changed layout file, a lost style item, a changed parent, a lost night value, a
     reference to nothing, a renamed type and a missing package fail, and each failure names what
-    it lost. Facebook ships as a split bundle, and merging it into one APK drops the split
+    it lost. Threads ships as a split bundle, and merging it into one APK drops the split
     descriptor bundletool wrote (xml/splits0): that loss passes and is reported, and any other
     lost xml resource still fails.
 
     A real split bundle too, built by aapt2 and merged by the CLI's own merger through
-    Get-MergedApk and MergeSplits.java: a resource only the split carries is in the merge, a table
-    that lost it fails against the merge while base.apk would only have called it added, a plain
-    APK comes back as it is, and a bundle the merger can't read is refused.
+    Get-MergedApk and MergeSplits.java, in both shapes a Threads build comes in: an XAPK laid out
+    the way APKPure lays out Threads (the base named for the package, config splits, manifest.json
+    and icon.png) and an .apkm. A resource only the split carries is in each merge, a table that
+    lost it fails against the merge while base.apk would only have called it added, a plain APK
+    comes back as it is, and a bundle the merger can't read is refused.
 #>
 [CmdletBinding()]
 param(
@@ -49,7 +51,7 @@ function Invoke-Checked {
     }
 }
 
-$package = 'com.facebook.katana'
+$package = 'com.instagram.barcelona'
 $manifest = @"
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="$package">
     <application android:theme="@style/SearchTheme" />
@@ -313,7 +315,7 @@ try {
     $otherPackage = New-ResourceApk -Name 'other-package' -Files $stockFiles -PackageId '0x7e'
     $package = Invoke-Check -Patched $otherPackage -Name 'other-package'
     Assert-True ($package.ExitCode -eq 1) "A table without the stock package passed.`n$($package.Output)"
-    Assert-True ($package.Output -match 'FAIL package 0x7f com\.facebook\.katana: not in the patched table') `
+    Assert-True ($package.Output -match 'FAIL package 0x7f com\.instagram\.barcelona: not in the patched table') `
         "The missing package's failure did not name the package.`n$($package.Output)"
 
     # A value that points at nothing: the theme's window background, as bytes, moved to an id the
@@ -377,8 +379,9 @@ try {
     # A real split bundle, merged by the CLI's own merger through Get-MergedApk and MergeSplits.java.
     # aapt2 puts every xxhdpi value in a config split, so dimen/tray_height, which has no other
     # value, is in the split alone. Held to base.apk, the merge's copy of it is only "added" and
-    # never compared, which is how 7,588 of 580's resources went unchecked once the CLI stopped
-    # leaving its merge behind; held to the merge, a table that lost it fails by name.
+    # never compared, which is how 7,588 resources of the Facebook sibling's 580 went unchecked
+    # once the CLI stopped leaving its merge behind; held to the merge, a table that lost it fails
+    # by name.
     $bundleDir = Join-Path $caseRoot 'bundle'
     New-Item -ItemType Directory -Force -Path (Join-Path $bundleDir 'res/values'), (Join-Path $bundleDir 'res/values-xxhdpi'),
         (Join-Path $bundleDir 'out') | Out-Null
@@ -390,7 +393,7 @@ try {
     $bundleManifest = Join-Path $bundleDir 'AndroidManifest.xml'
     # The package by name: $package holds the other-package case's result by now.
     [System.IO.File]::WriteAllText($bundleManifest, ('<manifest xmlns:android="http://schemas.android.com/apk/res/android" ' +
-        'package="com.facebook.katana"><application /></manifest>'), [System.Text.UTF8Encoding]::new($false))
+        'package="com.instagram.barcelona"><application /></manifest>'), [System.Text.UTF8Encoding]::new($false))
     $bundleCompiled = Join-Path $bundleDir 'compiled.zip'
     Invoke-Checked -Program $Aapt2 -Arguments @('compile', '--dir', (Join-Path $bundleDir 'res'), '-o', $bundleCompiled) `
         -Description 'aapt2 compile for the split bundle'
@@ -400,16 +403,35 @@ try {
     Invoke-Checked -Program $Aapt2 -Arguments @('link', '-o', $baseApk, '-I', $androidJar, '--manifest', $bundleManifest,
         '--package-id', '0x7f', '--allow-reserved-package-id', '--split', ($splitApk + [System.IO.Path]::PathSeparator + 'xxhdpi'),
         $bundleCompiled) -Description 'aapt2 link for the split bundle'
-    $bundle = Join-Path $bundleDir 'facebook-split.apkm'
+    # APKPure's layout of Threads: the base named for the package, each split as config.<name>.apk,
+    # an icon, and a manifest.json whose split_apks name the base by id.
+    $bundle = Join-Path $bundleDir 'threads-split.xapk'
     $archive = [System.IO.Compression.ZipFile]::Open($bundle, [System.IO.Compression.ZipArchiveMode]::Create)
+    try {
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $baseApk, 'com.instagram.barcelona.apk') | Out-Null
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $splitApk, 'config.xxhdpi.apk') | Out-Null
+        $writer = New-Object System.IO.StreamWriter($archive.CreateEntry('manifest.json').Open())
+        try {
+            $writer.Write('{"xapk_version":2,"package_name":"com.instagram.barcelona","name":"Threads","split_apks":[' +
+                '{"file":"com.instagram.barcelona.apk","id":"base"},{"file":"config.xxhdpi.apk","id":"config.xxhdpi"}]}')
+        } finally { $writer.Dispose() }
+        $archive.CreateEntry('icon.png').Open().Dispose()
+    } finally { $archive.Dispose() }
+    $mergedApk = Get-MergedApk -Apk $bundle -Destination (Join-Path $bundleDir 'merged/stock-merged.apk') -Java $Java -DesktopJar $DesktopJar
+    Assert-True ($mergedApk -eq (Join-Path $bundleDir 'merged/stock-merged.apk') -and (Test-Path -LiteralPath $mergedApk -PathType Leaf)) `
+        "The split bundle was not merged into the APK asked for: $mergedApk"
+    # The same two APKs as an .apkm merge the same way, and that merge carries the split's resource too.
+    $apkm = Join-Path $bundleDir 'threads-split.apkm'
+    $archive = [System.IO.Compression.ZipFile]::Open($apkm, [System.IO.Compression.ZipArchiveMode]::Create)
     try {
         foreach ($apk in $baseApk, $splitApk) {
             [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $apk, (Split-Path -Leaf $apk)) | Out-Null
         }
     } finally { $archive.Dispose() }
-    $mergedApk = Get-MergedApk -Apk $bundle -Destination (Join-Path $bundleDir 'merged/stock-merged.apk') -Java $Java -DesktopJar $DesktopJar
-    Assert-True ($mergedApk -eq (Join-Path $bundleDir 'merged/stock-merged.apk') -and (Test-Path -LiteralPath $mergedApk -PathType Leaf)) `
-        "The split bundle was not merged into the APK asked for: $mergedApk"
+    $mergedApkm = Get-MergedApk -Apk $apkm -Destination (Join-Path $bundleDir 'merged/apkm-merged.apk') -Java $Java -DesktopJar $DesktopJar
+    $apkmCaught = Invoke-Check -Stock $mergedApkm -Patched $baseApk -Name 'apkm-merged-stock'
+    Assert-True ($apkmCaught.ExitCode -eq 1 -and $apkmCaught.Output -match 'FAIL 0x7f\w{6} dimen/tray_height: not in the patched table') `
+        "A table that lost the split's resource passed against the .apkm's merge.`n$($apkmCaught.Output)"
     $blind = Invoke-Check -Stock $baseApk -Patched $mergedApk -Name 'base-stock'
     Assert-True ($blind.ExitCode -eq 0 -and $blind.Output -match 'added resources: 1\s+0x7f\w{6} dimen/tray_height') `
         "The merge does not carry the split's own resource, or base.apk compared it after all.`n$($blind.Output)"

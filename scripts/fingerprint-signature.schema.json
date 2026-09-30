@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/SysAdminDoc/HushThreads/blob/main/scripts/fingerprint-signature.schema.json",
   "title": "HushThreads fingerprint signature",
-  "description": "What scripts/FingerprintCandidates.java captures about one method of a Facebook build, so it can rank the methods of a later build as that method's replacement. Everything here survives a Redex rebuild or is marked as a name that doesn't. The tool writes exactly these properties and refuses a file of another schema or version.",
+  "description": "What scripts/FingerprintCandidates.java captures about one method of a Threads build, so it can rank the methods of a later build as that method's replacement. Everything here survives a Redex rebuild or is marked as a name that doesn't. The tool writes exactly these properties and refuses a file of another schema or version.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "version", "source", "method", "strings", "literals", "references", "context", "opcodes", "callers"],

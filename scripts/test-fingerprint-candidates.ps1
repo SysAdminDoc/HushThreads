@@ -16,11 +16,12 @@
     out. In "crowd-behind" it scores just under the crowd until its callers count, and the shortlist
     has to widen until it stands out.
 
-    Then fingerprint-candidates.ps1 -Calibrate runs over Facebook 577 and 580 from
-    HUSHTHREADS_FIXTURE_DIR, and every case of fingerprint-calibration.txt has to rank its known 580
-    method in the top five. The report has to show each candidate's prototype, strings, literals,
-    opcode sketch, references and call neighbourhood. The AMOLED resolver that split in two has two
-    real candidates, and that case has to fail closed.
+    HushThreads has no bundled calibration list until a second Threads build is confirmed, so the
+    wrapper's -Calibrate has to refuse a run with no list or no builds named. Then the wrapper
+    calibrates the Threads fixture in HUSHTHREADS_FIXTURE_DIR against itself, named by its version,
+    on the method every patch starts from, BarcelonaAppShell.onCreate: it has to rank first and stand
+    out, and the report has to show the candidate's prototype, strings, literals, opcode sketch,
+    references and call neighbourhood. That run reads the real XAPK's base, all 13 dex files of it.
 
     Through all of it, nothing under patches/ may change, and an output path there, or one ending in
     .kt or .java, has to be refused by both the tool and the wrapper. The tool has to refuse it
@@ -335,34 +336,37 @@ try {
         $wrapperBlocked.Text -match 'never edits a patch' -and -not (Test-Path -LiteralPath $wrapperIntoPatches)) `
         "The wrapper did not refuse a report under patches/ itself.`n$($wrapperBlocked.Text)"
 
-    # The calibration: real transitions of Facebook 577 to 580, run the way a maintainer runs it.
+    # No bundled calibration list yet: it needs transitions confirmed on two Threads builds. The
+    # wrapper says so rather than running on nothing, and it never guesses the two builds.
     $calibrationFile = Join-Path $PSScriptRoot 'fingerprint-calibration.txt'
-    $caseIds = @(Get-Content -LiteralPath $calibrationFile | Where-Object { $_ -match '^case (\S+)$' } | ForEach-Object { $Matches[1] })
-    Assert-True ($caseIds.Count -ge 30) "The calibration holds $($caseIds.Count) cases."
-    foreach ($id in 'reels-ad-break-tick', 'reels-state-name', 'reel-button-factory', 'amoled-fds-litho-resolver') {
-        Assert-True ($caseIds -contains $id) "The calibration lost the case $id, one of the transitions that moved."
-    }
+    Assert-True (-not (Test-Path -LiteralPath $calibrationFile)) `
+        'scripts/fingerprint-calibration.txt exists now. Hold -Calibrate to it here instead of to its refusal.'
+    $noBuilds = Invoke-Wrapper @('-Calibrate', '-CalibrationPath', $crowdCalibration, '-Java', $Java, '-DesktopJar', $DesktopJar, '-Root', $Root)
+    Assert-True ($noBuilds.ExitCode -ne 0 -and $noBuilds.Text -match '-Calibrate needs -OldApk and -NewApk') `
+        "The wrapper calibrated without being told which two builds the list describes.`n$($noBuilds.Text)"
+    $noList = Invoke-Wrapper @('-Calibrate', '-OldApk', $getterApk, '-NewApk', $crowdApk, '-Java', $Java, '-DesktopJar', $DesktopJar, '-Root', $Root)
+    Assert-True ($noList.ExitCode -ne 0 -and $noList.Text -match 'no bundled calibration list yet') `
+        "The wrapper calibrated with no list to hold the ranking to.`n$($noList.Text)"
+
+    # A real Threads build, named by its version the way a maintainer names it, against itself. The
+    # Application's onCreate keeps its class and name on every build, and every patch starts there.
     $fixtures = if ($env:HUSHTHREADS_FIXTURE_DIR) { $env:HUSHTHREADS_FIXTURE_DIR } else { Join-Path $Root 'fixtures' }
-    foreach ($version in '577.0.0.50.72', '580.0.0.51.74') {
-        Assert-True (@(Get-ChildItem -LiteralPath $fixtures -File -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name.Contains($version) }).Count -eq 1) `
-            ("The calibration needs Facebook $version in $fixtures, the folder HUSHTHREADS_FIXTURE_DIR names. " +
-                'Without it the top-five claim is not checked, so this fails rather than skipping.')
-    }
+    $threadsVersion = '449.0.0.54.82'
+    Assert-True (@(Get-ChildItem -LiteralPath $fixtures -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name.Contains($threadsVersion) }).Count -eq 1) `
+        ("The real-build case needs Threads $threadsVersion in $fixtures, the folder HUSHTHREADS_FIXTURE_DIR names. " +
+            'Without it the tool is never run on a real build, so this fails rather than skipping.')
+    $appShell = 'Lcom/instagram/barcelona/app/BarcelonaAppShell;->onCreate()V'
+    $realCalibration = Join-Path $caseRoot 'threads-calibration.txt'
+    [System.IO.File]::WriteAllLines($realCalibration, [string[]]@('case app-shell-create', '  patch Extension', "  old $appShell",
+        "  new $appShell", '  evidence The same build on both sides.'))
+    $caseIds = @('app-shell-create')
     $calibrationReport = Join-Path $caseRoot 'calibration.txt'
-    $calibrated = Invoke-Wrapper @('-Calibrate', '-ReportPath', $calibrationReport, '-Java', $Java, '-DesktopJar', $DesktopJar, '-Root', $Root)
-    $lines = @($calibrated.Output | Where-Object { $_ -match '^\[fingerprint\] case \S+ rank \S+ score' })
-    Assert-True ($calibrated.ExitCode -eq 0 -and $lines.Count -eq $caseIds.Count) `
-        "The calibration did not run every case and pass.`n$($calibrated.Text)"
-    $ranks = @{}
-    foreach ($line in $lines) {
-        Assert-True ($line -match '^\[fingerprint\] case (\S+) rank (\d+) score [0-9.]+ ok (stands-out|fails-closed)$') `
-            "A calibrated case ranked its replacement outside the top five: $line"
-        Assert-True ([int]$Matches[2] -le 5) "A calibrated case ranked its replacement below five: $line"
-        $ranks[$Matches[1]] = $Matches[3]
-    }
-    Assert-True ($ranks['amoled-fds-litho-resolver'] -eq 'fails-closed') `
-        'The AMOLED resolver that split in two has two real candidates, and its case did not fail closed.'
+    $calibrated = Invoke-Wrapper @('-Calibrate', '-CalibrationPath', $realCalibration, '-OldApk', $threadsVersion, '-NewApk', $threadsVersion,
+        '-ReportPath', $calibrationReport, '-Java', $Java, '-DesktopJar', $DesktopJar, '-Root', $Root)
+    Assert-True ($calibrated.ExitCode -eq 0 -and
+        @($calibrated.Output | Where-Object { $_ -match '^\[fingerprint\] case app-shell-create rank 1 score [0-9.]+ ok stands-out$' }).Count -eq 1) `
+        "The Threads Application's onCreate did not rank first and stand out against its own build.`n$($calibrated.Text)"
     $reportText = [System.IO.File]::ReadAllText($calibrationReport)
     # Each line is matched whole from its indent, because a bare 'references:' also sits inside the
     # 'obfuscated references:' line every candidate has, so the check passed with the kept
@@ -398,4 +402,4 @@ try {
 }
 
 $global:LASTEXITCODE = 0
-Write-Host "[scripts] fingerprint candidates passed ($($caseIds.Count) calibrated cases in the top five; ties and misses fail closed)"
+Write-Host "[scripts] fingerprint candidates passed (a real Threads build ranks its own method first; ties and misses fail closed)"

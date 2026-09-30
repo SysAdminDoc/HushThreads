@@ -55,7 +55,7 @@ import java.util.TreeSet;
  * instruction that was not in the clean body is checked against the register count of the method it
  * landed in. Methods the patch adds outright, which is where a hand-written bridge lives and where
  * the registers are chosen rather than inherited, are checked the same way: every one of them, the
- * helpers a patch adds to one of Facebook's own classes as well as the extension's. Every
+ * helpers a patch adds to one of the host app's own classes as well as the extension's. Every
  * instruction of every changed and added method is also held to its method's count in the structural
  * pass, the upper half of each wide value it reads or writes included, and one out of range is a
  * finding there rather than a register the later checks step over.
@@ -67,8 +67,9 @@ import java.util.TreeSet;
  *       register counts as reaching one higher than it names. Missing that would let a
  *       {@code const-wide} one short of the ceiling read as safe.
  *   <li>The highest register travels with the rendered line rather than being read back out of the
- *       text, because this app has string constants that look like register names ({@code v4190},
- *       {@code v20200906}) and parsing the text flags five of them.
+ *       text, because a host app can hold string constants that look like register names (the
+ *       Facebook sibling's held {@code v4190} and {@code v20200906}, and parsing the text flagged
+ *       five of them).
  *   <li>Absence of evidence is a failure, not a pass. A run that finds no changed methods, or no
  *       added methods of the extension's own, is comparing the wrong pair of files and says so
  *       instead of reporting nothing wrong.
@@ -77,28 +78,24 @@ import java.util.TreeSet;
  * <p>Branch targets and try-block ranges are part of a body's identity here, so a change that only
  * moves a jump or widens an exception range still shows up as a changed method.
  *
- * <p>Every changed and added method is also held to the structural rules Facebook's own crash
- * reports came from (FroggoMorphePatches issues 3, 16 and 21): a branch or switch case that lands
- * inside an instruction ("target dex pc is not at instruction start"), an invoke whose registers
- * don't match what the callee takes, a parameter register read as the wrong kind (the static and
- * wide off-by-one), a register the body wrote at the wrong width (a narrow const left where a
- * const-wide was, which the AMOLED sweep did on 580), a move-result cut off from its invoke, and a
- * try range or handler off an instruction boundary. A contract file adds
- * rules about the whole APK: the feed filter's guard has exactly one call site, in
- * addNewEdgeToCollection, because two guards stacked on that method is what broke Froggo's
- * builds; and each extension stub a patch fills in with one of Facebook's renamed accessors calls
- * it before it returns, so a patch that stopped filling one fails here instead of shipping a stub
- * that answers its marker forever; and the Stories tray hook comes first in each of the two tray
- * adapter methods, and the reels hook first in the pre-EOF injector; and the settings patch's
- * stand-in for the Facebook logo's touch listener comes right after the logo gets its tap, on the
- * same view; and the reel watch-history hook takes the place of the one call in the batcher's flush
- * that hands its batch to an executor, on that call's registers; and the runnable that swaps an
- * edge into the feed asks the extension about it once. A start-call, next-call, sole-call or
- * once-call rule names its method by the strings it loads, and a shape where strings alone don't
- * tell it apart, and exactly one of Facebook's methods may answer that: five hold
- * "FeedRefreshTriggerController" on 580, so a rule naming that string alone passed a hook in any
- * of them, and the logo rule named one string and counted calls in any method holding it. The
- * device verifier stays the authority; these catch the known shapes without a phone.
+ * <p>Every changed and added method is also held to the structural rules the Facebook sibling's
+ * crash reports came from (FroggoMorphePatches issues 3, 16 and 21): a branch or switch case that
+ * lands inside an instruction ("target dex pc is not at instruction start"), an invoke whose
+ * registers don't match what the callee takes, a parameter register read as the wrong kind (the
+ * static and wide off-by-one), a register the body wrote at the wrong width (a narrow const left
+ * where a const-wide was, which the Facebook sibling's AMOLED sweep did on its 580), a move-result
+ * cut off from its invoke, and a try range or handler off an instruction boundary. A contract file
+ * adds rules about the whole APK, in the grammar below: a call with exactly one call site, a stub
+ * that has to call out before it returns, a hook that has to come first in a method, right after
+ * one call, in place of one call or once in it, and a call nobody outside the extension may make.
+ * Each kind came from one of the Facebook sibling's patches: its feed guard had to have one call
+ * site, in addNewEdgeToCollection, because two guards stacked on that method is what broke Froggo's
+ * builds. A start-call, next-call, sole-call or once-call rule names its method by the strings it
+ * loads, and a shape where strings alone don't tell it apart, and exactly one of the host app's
+ * methods may answer that: five held "FeedRefreshTriggerController" on the Facebook sibling's 580,
+ * so a rule naming that string alone passed a hook in any of them, and its logo rule named one
+ * string and counted calls in any method holding it. The device verifier stays the authority;
+ * these catch the known shapes without a phone.
  *
  *   java -cp &lt;cli jar&gt; DexDiff.java &lt;cleanApk&gt; &lt;patchedApk&gt; &lt;reportFile&gt;
  *       &lt;removalAllowlist&gt; [&lt;contracts&gt;]
@@ -163,7 +160,7 @@ public class DexDiff {
      *   <li>"start-call &lt;method reference&gt; [in [static|instance] &lt;shape&gt;] holding
      *       &lt;string&gt; [&lt;string&gt; ...]": exactly one method outside the bundle's own code
      *       loads every one of the strings and has the shape, a descriptor such as
-     *       {@code (Lcom/facebook/auth/usersession/FbUserSession;*)Z} where * stands for any run of
+     *       {@code (Landroid/content/Context;*)Z} where * stands for any run of
      *       characters. That method calls the method reference, with nothing before the call but
      *       plain instructions (no other call, branch, switch, return or throw), and no other
      *       method loading the strings calls it.
@@ -1701,8 +1698,8 @@ public class DexDiff {
      * Signature -> the print of each of its definitions ("registerCount:bodyHash"), sorted and
      * joined with a space, for every method of an APK.
      *
-     * <p>A signature can be defined in more than one dex entry. Facebook 580's split bundle, merged,
-     * carries the in-app browser's standalone dex twice (lib/arm64-v8a/libhelium_standalone.dex.so
+     * <p>A signature can be defined in more than one dex entry. The Facebook sibling's 580 split
+     * bundle, merged, carries the in-app browser's standalone dex twice (lib/arm64-v8a/libhelium_standalone.dex.so
      * and assets/heliumcore/helium_standalone.dex.force-store), and 480 of its methods are in
      * classes*.dex too, 212 of them with other bodies. dexlib2 reads the entries in name order, and
      * keyed one body to a signature, the last copy stood for every one: the browser's copy in lib/
@@ -1729,8 +1726,8 @@ public class DexDiff {
      *
      * <p>The comparison reads a bundle's merge, which carries no signature, while Meta's signer is
      * checked on base.apk and the device half runs base.apk. The CLI's merger copies base.apk's
-     * classes*.dex as they are; other dex a merge carries (580's in-app browser's, from
-     * split_heliumcore.apk, twice) came from the splits under other names.
+     * classes*.dex as they are; other dex a merge carries (the Facebook sibling's 580 in-app
+     * browser's, from split_heliumcore.apk, twice) came from the splits under other names.
      */
     private static List<String> rootDexMismatch(File base, File merged) throws Exception {
         Map<String, String> baseDex = rootDexDigests(base);
@@ -2124,8 +2121,9 @@ public class DexDiff {
 
             // Added methods are where registers are chosen by hand rather than reused from the
             // host, which is exactly where an out-of-range one would come from: the extension's,
-            // and the helpers a patch adds to one of Facebook's own classes (the story, reel and
-            // video downloads each add one). Only the extension's were read here until 2026-09-26.
+            // and the helpers a patch adds to one of the host app's own classes (the Facebook
+            // sibling's story, reel and video downloads each added one). Only the extension's were
+            // read here until 2026-09-26.
             // Each definition of one is read, in whichever dex entry it landed.
             for (String s : added) {
                 for (List<String> a : afterBodies.getOrDefault(s, List.of())) {

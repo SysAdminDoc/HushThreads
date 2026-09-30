@@ -21,7 +21,7 @@
     patches were checked on each of them, and the receipt is refused without a run of every
     one. A fixture of any other build is patched under -f and recorded as forced. The fixtures'
     base manifests are read before anything is patched, so a declared build with no fixture
-    stops the run at once instead of after the others, which for Facebook unpacks gigabytes.
+    stops the run at once instead of after the others, which for Threads unpacks gigabytes.
 
     The patched APKs are working files and are deleted on the way out, including after a failure.
 
@@ -42,7 +42,7 @@
     parameter once and refuses the second.
 
     scripts/build-release-receipt.ps1 -WorkDir C:\scratch `
-        -Fixture C:\fixtures\facebook-a.apk,C:\fixtures\facebook-b.apk
+        -Fixture C:\fixtures\threads-a.xapk,C:\fixtures\threads-b.xapk
 #>
 [CmdletBinding()]
 param(
@@ -254,7 +254,7 @@ $workRoot = (Resolve-Path -LiteralPath $WorkDir).Path
 $targets = New-Object System.Collections.Generic.List[object]
 
 # Every declared build needs its own run without -f, and the receipt check refuses a receipt
-# without one. That check comes after the patch runs, and a Facebook patch run unpacks the whole
+# without one. That check comes after the patch runs, and a Threads patch run unpacks the whole
 # bundle, while a base manifest is cheap to read. So the fixtures are held to the catalog here,
 # before anything is patched: a run given only the newest build patched it and then refused the
 # receipt it had produced.
@@ -264,7 +264,7 @@ foreach ($apk in $Fixture) {
     $label = Split-Path -Leaf $apk
     $readDir = Resolve-WithinRoot -Path (Join-Path $workRoot ("manifest-" + [guid]::NewGuid().ToString('N'))) -Root $workRoot
     try {
-        # Facebook ships as a split bundle, which aapt2 can't read; its manifest is the base APK's.
+        # Threads ships as a split bundle, which aapt2 can't read; its manifest is the base APK's.
         $stockApk = Get-BaseApk -Apk $apk -Destination (Join-Path $readDir 'stock-base.apk')
         $stock = Get-ApkManifestFacts -Apk $stockApk -Aapt2 $Aapt2
     } finally {
@@ -275,9 +275,9 @@ foreach ($apk in $Fixture) {
     }
     $stockFacts[$apk] = $stock
 }
-# A fixture is the run of a declared build only when it's that build, version code and all: another
-# arm64 build of 580 was taken for the declared one by its name, patched without -f and recorded as
-# proof of a build nobody ran.
+# A fixture is the run of a declared build only when it's that build, version code and all: in the
+# Facebook sibling, another arm64 build of 580 was taken for the declared one by its name, patched
+# without -f and recorded as proof of a build nobody ran.
 $fixtureVersions = @($Fixture | Where-Object {
         Test-DeclaredBuild -Target $expectedTarget -VersionName ([string]$stockFacts[$_].versionName) `
             -VersionCode ([string]$stockFacts[$_].versionCode) } |

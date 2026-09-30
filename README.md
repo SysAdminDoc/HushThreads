@@ -27,7 +27,7 @@ This project has no connection to Meta or to the Morphe project. Neither endorse
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.32.0 or newer.
 2. Build the bundle (see below) and copy `patches-0.0.1.mpp` to your phone. In Morphe Manager, add it as a patch source from a local file.
-3. Get Threads 449.0.0.54.82 for arm64-v8a, version code 511908382 (120-640dpi, Android 9+). That's the build these patches are checked against. Morphe Manager warns about other builds of the same version.
+3. Get Threads 449.0.0.54.82 (`com.instagram.barcelona`) for arm64-v8a, version code 511908382 (120-640dpi, Android 9+). That's the build these patches are checked against. Morphe Manager warns about other builds of the same version.
 4. In Morphe Manager, pick that file, keep the default patch selection or change it, and patch.
 
 Threads releases a new version about once a week, and each one renames most of its code. Every patch here finds what it changes by names Threads keeps (its post model, the feed cache, JSON parser names, strings and manifest components) rather than by the names that change. When one can't find what it needs, patching stops with a message naming it, instead of producing an app that quietly does nothing. Disable analytics works down three kinds of target. It stops only when a build has none of them, and names each missing one in the patch log.
@@ -40,9 +40,11 @@ Morphe Manager signs the patched Threads with a key it makes on your phone. Andr
 - **On a new phone, import it before you patch anything.** Reinstalling Morphe Manager or clearing its storage makes a new key, and without your exported copy nothing you patched earlier can be updated in place.
 - **A different key means starting over.** Android refuses an update signed with another key, so the only way forward is to uninstall the patched Threads and sign in again.
 
-The same goes for the Play Store copy. A patched Threads can't install over it, so uninstall the Play Store Threads first.
+The same goes for the Threads you have now. A patched Threads can't install over the stock app, so uninstall the stock Threads first.
 
 ## Patches
+
+There are 6 patches, and every one of them is selected by default.
 
 | Patch | What it does |
 |---|---|

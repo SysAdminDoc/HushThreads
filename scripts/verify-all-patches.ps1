@@ -25,7 +25,7 @@
     rewrote, what the rebuild renamed and what was added go in a report beside the result file.
 
     Last, verify-injected-registers.ps1 holds the patched dex to the stock dex: register counts,
-    branch targets, invoke registers, parameter kinds, try ranges and the one feed guard. Its
+    branch targets, invoke registers, parameter kinds, try ranges and the contract file's rules. Its
     report goes beside the result file too.
 
 .EXAMPLE
@@ -33,7 +33,7 @@
         -DesktopJar C:\path\to\morphe-desktop.jar -WorkDir C:\path\to\scratch
 
 .EXAMPLE
-    scripts/verify-all-patches.ps1 -Apk C:\fixtures\facebook-older.apk -Force `
+    scripts/verify-all-patches.ps1 -Apk C:\fixtures\threads-older.xapk -Force `
         -DesktopJar C:\path\to\morphe-desktop.jar -WorkDir C:\path\to\scratch
 #>
 [CmdletBinding()]
@@ -89,13 +89,13 @@ $runId = [guid]::NewGuid().ToString('N')
 $runDir = Join-Path $workRoot "verify-$runId"
 New-Item -ItemType Directory -Force -Path $runDir | Out-Null
 
-# Facebook ships split bundles. aapt2 reads the version facts off one APK, the base, which holds
+# Threads ships split bundles. aapt2 reads the version facts off one APK, the base, which holds
 # the manifest, and the register check's clean side is the base too: it carries every dex and
 # Meta's signature, which a merge doesn't keep.
 $stockApk = Get-BaseApk -Apk $Apk -Destination (Resolve-WithinRoot -Path (Join-Path $runDir 'stock-base.apk') -Root $workRoot)
 
 # The version the result is held to: the stock APK's own, read the same way the receipt reads
-# it. The catalog declares more than one build, so a declared one (its version name and the code the
+# it. The catalog can declare more than one build, so a declared one (its version name and the code the
 # catalog pins it to) is patched as a user's Manager patches it, and any other only with -Force,
 # which tells the CLI to go ahead with -f.
 . (Join-Path $PSScriptRoot 'release-receipt.ps1')
@@ -225,9 +225,9 @@ try {
         Write-Host "[verify] resource report: $resourceReport"
         if ($resourceExitCode -eq 0) {
             # The injected code against Meta's: registers, branches, invokes, parameters and try
-            # ranges, the shapes that pass the CLI and fail on a device. The one-feed-guard rule
-            # rides along from injected-mutation-contracts.txt; it's a project contract, which
-            # the device verifier doesn't check.
+            # ranges, the shapes that pass the CLI and fail on a device. The rules of
+            # injected-mutation-contracts.txt ride along; they're project contracts, which the
+            # device verifier doesn't check.
             $registerReport = Resolve-WithinRoot -Path (Join-Path $workRoot "verify-all-registers-$runId.txt") -Root $workRoot
             $global:LASTEXITCODE = 0
             & (Join-Path $PSScriptRoot 'verify-injected-registers.ps1') -CleanApk $stockApk -CleanMerged $patchInput `

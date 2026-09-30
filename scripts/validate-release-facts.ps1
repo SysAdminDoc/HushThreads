@@ -11,7 +11,7 @@
     at the previous working bundle. Published-asset verification remains strict, and it also
     fetches the release SBOM the receipt names, holds it to the bundle and puts the libraries it
     lists to OSV (release-advisories.ps1), and fetches the published receipt, which SHA256SUMS.txt
-    has to list and which has to be the receipt checked here. It also refuses a release whose Facebook-family source
+    has to list and which has to be the receipt checked here. It also refuses a release whose Threads source
     census (sources/threads-sources.json, refreshed by audit-threads-sources.ps1) is more than
     14 days old, breaks the ledger's rules, or lacks a listing or dated submission on an index.
 #>
@@ -105,10 +105,10 @@ function Require-Match {
 function Get-DescriptionFacts {
     <#
     .SYNOPSIS
-        The patch count and the Facebook build a description names, read the one way every check
+        The patch count and the Threads build a description names, read the one way every check
         here reads them.
     .DESCRIPTION
-        Every "N patches" in it has to name the same N, and every "Facebook <build>" the same build,
+        Every "N patches" in it has to name the same N, and every "Threads <build>" the same build,
         or it says two things and this throws. The lag check used to read the first of each and the
         equality check any of them, so a description quoting the catalog's count in one sentence and
         a stale one in another passed the equality check, whichever the lag check had read. Answers
@@ -118,13 +118,13 @@ function Get-DescriptionFacts {
 
     $counts = @([regex]::Matches($Text, '(?<![\d.])(\d+) patches\b') | ForEach-Object { $_.Groups[1].Value } |
         Select-Object -Unique)
-    $builds = @([regex]::Matches($Text, 'Facebook\s+(\d+(?:\.\d+)+)(?!\d)') | ForEach-Object { $_.Groups[1].Value } |
+    $builds = @([regex]::Matches($Text, 'Threads\s+(\d+(?:\.\d+)+)(?!\d)') | ForEach-Object { $_.Groups[1].Value } |
         Select-Object -Unique)
     if ($counts.Count -gt 1) {
         throw "$Source names $($counts -join ' and ') patches, and it has to name one count."
     }
     if ($builds.Count -gt 1) {
-        throw "$Source names Facebook $($builds -join ' and Facebook '), and it has to name one build as its target."
+        throw "$Source names Threads $($builds -join ' and Threads '), and it has to name one build as its target."
     }
     return [pscustomobject]@{
         PatchCount    = if ($counts.Count -eq 1) { [int]$counts[0] } else { $null }
@@ -143,7 +143,7 @@ if ($ArtifactIsHosted -and $ArtifactPath) {
     throw 'Pass -ArtifactPath for a bundle built here, or -ArtifactIsHosted to check the published asset on its own, not both.'
 }
 
-# The Facebook-family source census (sources/threads-sources.json). A release is when HushThreads
+# The Threads source census (sources/threads-sources.json). A release is when HushThreads
 # tells people where its code came from, so it goes out only on a ledger that keeps every rule
 # threads-sources.ps1 holds it to (a dated listing record for every index among them) and a census
 # from the last 14 days; an index that doesn't list HushThreads yet is named, not refused. Checked first, since it needs no network and no build. Only the
@@ -262,13 +262,13 @@ if ($SkipUrlCheck) {
 }
 Require-Match -Text $readme -Pattern "\b$patchCount patches\b" -Description 'README patch count'
 Require-Match -Text $readme -Pattern ([regex]::Escape($targetPackage)) -Description 'README package name'
-Require-Match -Text $readme -Pattern "Facebook\s+$([regex]::Escape($targetVersion))(?!\d)" -Description 'README target version'
+Require-Match -Text $readme -Pattern "Threads\s+$([regex]::Escape($targetVersion))(?!\d)" -Description 'README target version'
 $descriptionVersion = $sourceVersion
 $descriptionPatchCount = $patchCount
 $descriptionTargetVersion = $targetVersion
 if ($indexLagsSource) {
     if ($null -eq $publishedFacts.PatchCount -or $null -eq $publishedFacts.TargetVersion) {
-        throw 'The published bundle description does not name its patch count and Facebook target.'
+        throw 'The published bundle description does not name its patch count and Threads target.'
     }
     Require-Match -Text ([string]$bundle.description) -Pattern "\bv$([regex]::Escape($publishedVersion))\b" -Description 'published bundle description version'
     $descriptionVersion = "v$publishedVersion"
@@ -348,15 +348,15 @@ if ($SkipUrlCheck) {
     $missing = @()
     if ($description -notmatch "\b$([regex]::Escape($descriptionVersion))\b") { $missing += $descriptionVersion }
     if ($githubFacts.PatchCount -ne $descriptionPatchCount) { $missing += "$descriptionPatchCount patches" }
-    if ($githubFacts.TargetVersion -ne $descriptionTargetVersion) { $missing += "Facebook $descriptionTargetVersion" }
+    if ($githubFacts.TargetVersion -ne $descriptionTargetVersion) { $missing += "Threads $descriptionTargetVersion" }
     if ($missing.Count -gt 0) {
         throw ("The GitHub description of $slug does not say " + ($missing -join ', ') + '. It reads: ' +
             $description + [Environment]::NewLine +
             'Set it with: gh repo edit ' + $slug + ' --description "HushThreads ' + $descriptionVersion +
-            ': ... ' + $descriptionPatchCount + ' patches for Facebook ' + $descriptionTargetVersion + '."')
+            ': ... ' + $descriptionPatchCount + ' patches for Threads ' + $descriptionTargetVersion + '."')
     }
     Write-Host ("[release] the GitHub description of " + $slug + " names " + $descriptionVersion +
-        ", " + $descriptionPatchCount + " patches and Facebook " + $descriptionTargetVersion)
+        ", " + $descriptionPatchCount + " patches and Threads " + $descriptionTargetVersion)
 }
 
 $testRoot = Join-Path $rootPath 'extensions/threads/build/test-results/testDebugUnitTest'
@@ -466,7 +466,7 @@ if ($SkipDescriptionTestCount) {
 # The patch module's tests, which the description quotes as "All N patch tests passed". Until
 # 2026-09-21 nothing read that number; it was typed by hand. Their fixture tests skip when
 # HUSHTHREADS_FIXTURE_DIR is unset, and Gradle counts a skip as a pass, so a release could quote a
-# run that never opened a Facebook APK. Only a check that holds the description to its counts reads
+# run that never opened a Threads APK. Only a check that holds the description to its counts reads
 # them: they are a fact about the release, and a push that rewrites no description has no count
 # to compare them with and no reason to have run them.
 if (-not $SkipDescriptionTestCount) {
@@ -824,19 +824,37 @@ if ($null -eq $indexFloor.Floor) {
 
 # The bug form's placeholders are what a reporter copies when unsure what to write, and they had
 # drifted a long way on Hushfeed, where this check comes from (TikTok 46.2.3, Manager 1.29.0 and
-# Hushfeed 0.29.0 while the bundle targeted 47.0.3). The version line reads the way HushThreads's settings card does, with the version the index
+# Hushfeed 0.29.0 while the bundle targeted 47.0.3). The version line reads the way HushThreads' settings card does, with the version the index
 # publishes, and the manager line names the Manager floor.
 $bugFormPath = Join-Path $rootPath '.github/ISSUE_TEMPLATE/bug_report.yml'
 if (-not (Test-Path -LiteralPath $bugFormPath -PathType Leaf)) {
     throw "The bug report form is missing: $bugFormPath"
 }
 $bugForm = Get-Content -LiteralPath $bugFormPath -Raw
-$bugFormVersions = "Version $publishedVersion for Facebook $targetVersion"
+$bugFormVersions = "Version $publishedVersion for Threads $targetVersion"
 Require-Match -Text $bugForm -Pattern "(?m)^\s*placeholder:\s*$([regex]::Escape($bugFormVersions))\s*$" `
     -Description 'bug report form version placeholder'
 Require-Match -Text $bugForm -Pattern "(?m)^\s*placeholder:\s*Morphe Manager $([regex]::Escape($managerFloor))\s*$" `
     -Description 'bug report form Manager placeholder'
 Write-Host "[release] the bug report form's placeholders say `"$bugFormVersions`" and Morphe Manager $managerFloor"
+# Its patch list is what a reporter ticks, so it names the catalog's patches, every one of them
+# once and nothing else. A patch added or renamed without it would leave reporters no way to say
+# they had it.
+$patchField = [regex]::Match($bugForm, '(?ms)^\s*id:\s*selected_patches\s*$.*?^\s*options:\s*$(.*?)(?=^\s*validations:|^\s*-\s*type:|\z)')
+if (-not $patchField.Success) { throw 'The bug report form has no patch list to pick from (id: selected_patches, with options).' }
+$formPatches = @([regex]::Matches($patchField.Groups[1].Value, '(?m)^\s+-\s+(.+?)\s*$') | ForEach-Object { $_.Groups[1].Value })
+$catalogPatches = @($patches | ForEach-Object { [string]$_.name })
+$unlisted = @($catalogPatches | Where-Object { $formPatches -cnotcontains $_ })
+$unknown = @($formPatches | Where-Object { $catalogPatches -cnotcontains $_ })
+$repeated = @($formPatches | Group-Object -CaseSensitive | Where-Object { $_.Count -gt 1 } | ForEach-Object { $_.Name })
+if ($unlisted.Count -gt 0 -or $unknown.Count -gt 0 -or $repeated.Count -gt 0) {
+    $problems = @()
+    if ($unlisted.Count -gt 0) { $problems += 'it leaves out ' + ($unlisted -join ', ') }
+    if ($unknown.Count -gt 0) { $problems += 'patches-list.json has no ' + ($unknown -join ', ') }
+    if ($repeated.Count -gt 0) { $problems += 'it lists ' + ($repeated -join ', ') + ' more than once' }
+    throw ("The bug report form's patch list doesn't match the catalog: " + ($problems -join '; ') + '.')
+}
+Write-Host "[release] the bug report form's patch list names the catalog's $($catalogPatches.Count) patches"
 
 function Test-ChangelogHere {
     <#
@@ -879,7 +897,7 @@ function Test-ChangelogHere {
     $manager = Test-ChangelogManagerEntry -Current $current -ExpectedVersion $releaseVersion
     if (-not $manager.Valid) { throw "Morphe Manager cannot show this release: $($manager.Reason)" }
     Write-Host ("[release] Morphe Manager can read the $releaseVersion entry: dated " +
-        "$($manager.Date), $($manager.Bullets) bullets scoped Facebook")
+        "$($manager.Date), $($manager.Bullets) bullets scoped Threads")
 
     $described = @(Get-ChangelogVersions -Text $current)
     if ($null -eq $previous) {

@@ -46,7 +46,7 @@ function Get-PatchTarget {
                 throw "$patchName has no exact compatible version for $($property.Name)."
             }
             # The version codes its compatibility block pins each of those builds to. APKMirror
-            # lists several arm64 builds of one Facebook version, each with its own dex, so the name
+            # lists several arm64 builds of one Threads version, each with its own dex, so the name
             # alone doesn't say which of them the patches were proved on. A patch that pins none is
             # read by the name, as before.
             $codes = @{}
@@ -80,10 +80,10 @@ function Get-PatchTarget {
         throw "Expected one compatible package, found $($packages -join ', ')."
     }
     $packageName = $packages[0]
-    # Every version the catalog declares, newest first. Facebook moves a release a week, so the
-    # bundle declares the build it was last proved on and keeps the one before it; the newest is
+    # Every version the catalog declares, newest first. Threads moves a release a week, so the
+    # bundle declares the build it was last proved on and can keep the one before it; the newest is
     # the one a device build and the README name. Compared part by part as numbers, every part:
-    # Facebook's versions have five (580.0.0.51.74) and [version] takes four, so the fifth was
+    # Threads' versions have five (449.0.0.54.82) and [version] takes four, so the fifth was
     # dropped, and two builds apart only there sorted as equals in whatever order the shell left
     # them, the older one first in both.
     $declared = @($targets[$packageName] | Sort-Object -Unique)
@@ -96,7 +96,7 @@ function Get-PatchTarget {
         }
     }
     $width = ($declared | ForEach-Object { @($_ -split '\.').Count } | Measure-Object -Maximum).Maximum
-    # One sort key per part, a missing part below any number, so 580.0.0.51 comes after 580.0.0.51.0.
+    # One sort key per part, a missing part below any number, so 449.0.0.54 comes after 449.0.0.54.0.
     $keys = @(0..($width - 1) | ForEach-Object {
         $part = $_
         { $parts = @($_ -split '\.'); if ($part -lt $parts.Count) { [decimal]$parts[$part] } else { [decimal]-1 } }.GetNewClosure()
@@ -121,7 +121,7 @@ function Test-DeclaredBuild {
         Whether an APK is one of the builds a catalog declares.
     .DESCRIPTION
         Its version name has to be declared, and so does its version code wherever the catalog pins
-        codes to that name. Another arm64 build of Facebook 580 shares the declared name and was
+        codes to that name. Another arm64 build of Threads 449 shares the declared name and was
         never proved, so only a declared build is patched without -f, and only a run of one proves
         a release. Takes Get-PatchTarget's answer, or anything carrying its PackageVersions and
         PackageVersionCodes.
@@ -138,7 +138,7 @@ function Test-DeclaredBuild {
 }
 
 function Format-DeclaredBuilds {
-    # The declared builds the way a refusal names them: 580.0.0.51.74 (475019344), 577.0.0.50.72 (474426275).
+    # The declared builds the way a refusal names them: 449.0.0.54.82 (511908382), 448.0.0.54.85 (511808302).
     param([Parameter(Mandatory = $true)]$Target)
 
     $named = foreach ($version in @($Target.PackageVersions)) {

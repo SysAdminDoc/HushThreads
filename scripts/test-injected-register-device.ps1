@@ -4,8 +4,8 @@
 
 .DESCRIPTION
     Every stage of a device verify can fail, and each failure has to be named and still remove
-    what was pushed. Two of them are about evidence rather than errors: Meta's build raises no
-    verifier message, so a tally only counts once dex2oat has read a file of the pushed size, and
+    what was pushed. Two of them are about evidence rather than errors: a clean Meta build can raise
+    no verifier message at all, so a tally only counts once dex2oat has read a file of the pushed size, and
     dex2oat exits 0 while logging that the file it was given doesn't exist.
 #>
 [CmdletBinding()]

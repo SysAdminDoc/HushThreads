@@ -216,15 +216,18 @@ function Get-BaseApk {
         The APK whose manifest and resource table describe an app: the file itself, or the base
         APK a split bundle carries, copied out to -Destination.
     .DESCRIPTION
-        Facebook ships as a split bundle (.apkm), not as one APK, and aapt2 and the resource check
-        read an APK. The base APK holds the manifest and the app's own resource table; the splits
-        hold densities, languages and feature modules. An .apks or .apkm names it base.apk, an
-        .xapk names it after the package, so the largest APK is the fallback.
+        Threads ships as a split bundle (APKPure's .xapk, APKMirror's .apkm), not as one APK, and
+        aapt2 and the resource check read an APK. The base APK holds the manifest and the app's own
+        resource table; the splits hold densities, languages and native code. An .apks or .apkm
+        names it base.apk. An .xapk names it after the package and says so in its manifest.json,
+        and its config.arm64_v8a split is the larger file (67 MB to the base's 64 MB on 449), so
+        size alone picked the split. The largest APK that isn't a config or split_ file is the
+        fallback when nothing names the base, and the largest of any is the last resort.
 
         Both paths are resolved against PowerShell's location before .NET sees them, and the
         answer is a full path. .NET reads a relative path against the process's own directory,
         which a hook, a scheduled task or a session that moved with Set-Location leaves somewhere
-        else: `-Apk fixtures\facebook.apkm` then named a file that wasn't there.
+        else: `-Apk fixtures\threads.xapk` then named a file that wasn't there.
     #>
     param(
         [Parameter(Mandatory = $true)][string]$Apk,
@@ -238,9 +241,27 @@ function Get-BaseApk {
     $zip = [System.IO.Compression.ZipFile]::OpenRead($Apk)
     try {
         $entry = $zip.Entries | Where-Object { $_.FullName -eq 'base.apk' } | Select-Object -First 1
+        $manifestEntry = $zip.Entries | Where-Object { $_.FullName -eq 'manifest.json' } | Select-Object -First 1
+        if (-not $entry -and $manifestEntry) {
+            # An .xapk's own record of its files: split_apks names the base by id, and the base is
+            # <package_name>.apk when that list is missing.
+            $reader = New-Object System.IO.StreamReader($manifestEntry.Open())
+            try { $manifestText = $reader.ReadToEnd() } finally { $reader.Dispose() }
+            $manifest = $null
+            try { $manifest = $manifestText | ConvertFrom-Json } catch { $manifest = $null }
+            if ($null -ne $manifest) {
+                $named = @(@($manifest.PSObject.Properties['split_apks'] | ForEach-Object { $_.Value }) |
+                    Where-Object { $null -ne $_ -and "$($_.id)" -eq 'base' } | ForEach-Object { "$($_.file)" }) +
+                    @($manifest.PSObject.Properties['package_name'] | Where-Object { $_.Value } | ForEach-Object { "$($_.Value).apk" })
+                foreach ($name in $named) {
+                    $entry = $zip.Entries | Where-Object { $_.FullName -eq $name } | Select-Object -First 1
+                    if ($entry) { break }
+                }
+            }
+        }
         if (-not $entry) {
-            $entry = $zip.Entries | Where-Object { $_.FullName -like '*.apk' } |
-                Sort-Object Length -Descending | Select-Object -First 1
+            $apks = @($zip.Entries | Where-Object { $_.FullName -like '*.apk' } | Sort-Object Length -Descending)
+            $entry = @($apks | Where-Object { $_.Name -notmatch '^(?i)(config\.|split_)' }) + $apks | Select-Object -First 1
         }
         if (-not $entry) { throw "$(Split-Path -Leaf $Apk) holds no APK." }
         New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Destination) | Out-Null
@@ -259,9 +280,10 @@ function Get-MergedApk {
     .DESCRIPTION
         morphe-desktop merges an .apkm, .apks or .xapk into <name>-merged.apk beside its output,
         patches that, and since 1.17.0 deletes it on the way out. The patched APK's resource table
-        and manifest were rebuilt from that merge, so the checks compared them with base.apk
-        instead, which lacks every resource the splits carry: on 580 the patched table held 7,588
-        resources base.apk doesn't, and none of them was compared. So the scripts merge first,
+        and manifest were rebuilt from that merge, so the checks compared them with the base APK
+        instead, which lacks every resource the splits carry: on the Facebook sibling's 580 the
+        patched table held 7,588 resources base.apk doesn't, and none of them was compared. So the
+        scripts merge first,
         with the CLI's own merger and the arguments it passes (MergeSplits.java), and hand the CLI
         the merged APK, which it patches as it is. There is nothing else to fall back to, so a
         merge that fails or writes no APK throws. The extensions are the CLI's own list

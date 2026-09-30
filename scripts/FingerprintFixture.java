@@ -127,7 +127,7 @@ public class FingerprintFixture {
 
     static final String[] MARKERS = {"caller_marker_one", "caller_marker_two"};
 
-    /** A getter answering 1 (an int, or true), static or not: the shape thousands of Facebook's methods have. */
+    /** A getter answering 1 (an int, or true), static or not: the shape thousands of a Meta app's methods have. */
     static Method getter(String owner, String returns, boolean isStatic) {
         int access = AccessFlags.PUBLIC.getValue() | (isStatic ? AccessFlags.STATIC.getValue() : 0);
         return method(access, owner, "A00", returns, Collections.emptyList(), isStatic ? 1 : 2,

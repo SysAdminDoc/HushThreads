@@ -694,7 +694,7 @@ function Test-ChangelogManagerEntry {
     .DESCRIPTION
         Manager fetches this file from main and reads it with its own parser (ChangelogParser,
         Manager 1.30.0). A heading only counts when it ends in a date, "## 0.41.0 (2026-09-18)",
-        and an app only gets its update badge when a bullet is scoped to it, "* **Facebook:** ...".
+        and an app only gets its update badge when a bullet is scoped to it, "* **Threads:** ...".
         Scoped lines are kept one line at a time, so a bullet wrapped onto a second line loses
         the rest. Every heading from 0.23.0 to 0.40.0 was bare, Manager's list stopped at 0.22.0
         and every update showed nothing, and no gate noticed, because Test-ChangelogVersions
@@ -707,7 +707,7 @@ function Test-ChangelogManagerEntry {
     param(
         [Parameter(Mandatory = $true)][string]$Current,
         [Parameter(Mandatory = $true)][string]$ExpectedVersion,
-        [string]$App = 'Facebook'
+        [string]$App = 'Threads'
     )
 
     function Fail { param([string]$Reason) return [pscustomobject]@{ Valid = $false; Reason = $Reason; Date = $null; Bullets = 0 } }
@@ -796,11 +796,19 @@ function Invoke-RepoGit {
     }
     # Windows PowerShell 5.1 turns a native command's stderr into a terminating error under
     # Stop even when it is redirected. Relax for the call and restore afterwards.
+    # git writes a file's bytes as they are, and PowerShell decodes a native command's output with
+    # the console's code page, which is 437 in the console Windows opens for a hidden or scheduled
+    # run. A UTF-8 byte order mark then came back as three characters nothing trims, and the
+    # allowlist read at a commit refused its own first line. The call reads UTF-8 and puts the
+    # console's encoding back after.
     $preference = $ErrorActionPreference
+    $consoleEncoding = [Console]::OutputEncoding
     try {
         $ErrorActionPreference = 'Continue'
+        [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
         return & git -C $Root @Arguments 2>$null
     } finally {
+        [Console]::OutputEncoding = $consoleEncoding
         $ErrorActionPreference = $preference
         foreach ($name in $saved.Keys) { Set-Item -LiteralPath ('Env:\' + $name) -Value $saved[$name] }
     }
