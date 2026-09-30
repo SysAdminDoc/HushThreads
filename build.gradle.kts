@@ -6,7 +6,7 @@ plugins {
 // than any single module can see. The patcher pins 1.77 and the Android build tools ask for
 // 1.79, and both are inside CVE-2025-8916 (1.44 to 1.79) and CVE-2026-5588 (1.49 to 1.84);
 // the reviewed release is the one gradle/libs.versions.toml pins, which says why it is that
-// one. None of this reaches the payload injected into Facebook. It is the build and signing
+// one. None of this reaches the payload injected into Threads. It is the build and signing
 // classpath, and the repository's rule is that a known-affected component does not stay in a
 // reproducible graph.
 //
