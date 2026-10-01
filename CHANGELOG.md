@@ -2,6 +2,10 @@
 
 Every HushThreads release, newest first.
 
+## Unreleased
+
+* **Threads:** A failed Android package or Binder lookup keeps the framework's signer result instead of interrupting a family-caller check.
+
 ## 0.0.2 (2026-09-29)
 
 The first release, with 6 patches for Threads 449.0.0.54.82.
