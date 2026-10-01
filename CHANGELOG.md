@@ -2,9 +2,12 @@
 
 Every HushThreads release, newest first.
 
-## Unreleased
+## 0.0.3 (2026-10-01)
+
+Unreleased source build. The published bundle remains 0.0.2.
 
 * **Threads:** A failed Android package or Binder lookup keeps the framework's signer result instead of interrupting a family-caller check.
+* **Threads:** The sign-in instructions distinguish the successful phone check from the unresolved password-login report.
 
 ## 0.0.2 (2026-09-29)
 

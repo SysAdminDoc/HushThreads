@@ -1,7 +1,7 @@
 ![HushThreads. Keep the thread. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <a href="https://github.com/SysAdminDoc/HushThreads/releases"><img src="https://img.shields.io/badge/version-0.0.2-000000" alt="Version 0.0.2"></a>
+  <a href="https://github.com/SysAdminDoc/HushThreads/releases"><img src="https://img.shields.io/badge/version-0.0.3-000000" alt="Version 0.0.3"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Threads-449.0.0.54.82-000000" alt="Threads 449.0.0.54.82">
@@ -12,7 +12,7 @@
 
 HushThreads is a Morphe patch bundle for Android that takes the ads out of Threads, cleans the links you share and cuts down what the app reports back to Meta.
 
-The latest release is [v0.0.2](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.2), with 6 patches. It's the first one.
+The source is at v0.0.3. The latest release is [v0.0.2](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.2), with 6 patches.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -70,7 +70,7 @@ Long-press the Threads icon and tap HushThreads. You can also open Threads' App 
 
 ## Signing in
 
-A Threads account is an Instagram account. On a patched Threads, tap Log in with Instagram and sign in with your Instagram username and password. That's been tried on a phone and it works.
+On the Instagram login screen, tap Log in with Instagram and use your Instagram username and password. This worked for one account on the supported Threads build with HushThreads 0.0.1 on 2026-09-29. [A password-login failure was reported on 2026-10-01](https://github.com/SysAdminDoc/HushThreads/discussions/2). Its cause hasn't been isolated, so login isn't confirmed for every account or patch selection.
 
 Threads also offers to continue as the Instagram account already on your phone, and that doesn't work on a patched Threads yet. Next to an Instagram patched with the same key, Threads doesn't offer it at all and opens the username and password form instead. Next to the stock Instagram it hasn't been tried. Instagram checks which key the asking app was signed with, though, so expect the same there.
 
