@@ -70,9 +70,15 @@ Long-press the Threads icon and tap HushThreads. You can also open Threads' App 
 
 ## Signing in
 
-On the Instagram login screen, tap Log in with Instagram and use your Instagram username and password. This worked for one account on the supported Threads build with HushThreads 0.0.1 on 2026-09-29. [A password-login failure was reported on 2026-10-01](https://github.com/SysAdminDoc/HushThreads/discussions/2). Its cause hasn't been isolated, so login isn't confirmed for every account or patch selection.
+Tap Log in with Instagram and enter your Instagram username and password. On 2026-10-01, this reached a live feed for one account on Threads 449.0.0.54.82 with the published 0.0.2 bundle and all six tested source 0.0.3 configurations. The source checks covered settings plus Restore screens, each privacy patch added separately, and the full bundle. These checks ran on Android 16 beside signed-in stock Instagram 449.0.0.52.84.
 
-Threads also offers to continue as the Instagram account already on your phone, and that doesn't work on a patched Threads yet. Next to an Instagram patched with the same key, Threads doesn't offer it at all and opens the username and password form instead. Next to the stock Instagram it hasn't been tried. Instagram checks which key the asking app was signed with, though, so expect the same there.
+Stock Threads and the full 0.0.2 and source 0.0.3 bundles also reached the feed through manual sign-in with Instagram absent.
+
+Threads can show Save your login info twice. Tap Not now on each prompt if you don't want to save it.
+
+Stock Threads recovered that Instagram session automatically after its data was cleared. The patched builds offered the manual form, with no Continue as option. The same-key patched Instagram check on 2026-09-29 also offered only the manual form.
+
+[The password-login failure reported on 2026-10-01](https://github.com/SysAdminDoc/HushThreads/discussions/2) remains unresolved. These successful checks haven't identified its cause or established login for every account.
 
 ## Your Threads account
 
