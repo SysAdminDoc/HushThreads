@@ -20,7 +20,7 @@ The latest release is [v0.0.3](https://github.com/SysAdminDoc/HushThreads/releas
 
 - **A feed without ads.** Sponsored posts come out of each page of the feed as it arrives, before Threads saves or shows it.
 - **Links that don't point back at you.** The code Threads adds to a shared link to tie it to your account comes off, along with the other tracking tags.
-- **Less sent home.** Threads' event logs go nowhere, and it gets zeros instead of your phone's advertising ID.
+- **Less sent home.** Matched analytics upload addresses go nowhere, and Threads gets zeros instead of your phone's advertising ID. Other telemetry may remain.
 - **Controls that recover.** Every runtime feature has a switch, and a pause, an automatic safe mode, settings backups and privacy-filtered diagnostics help when Threads changes.
 
 HushThreads is the Threads member of a small family of patch bundles. Its settings screen, diagnostics and release checks come from its Facebook sibling, [Hushfacebook](https://github.com/SysAdminDoc/Hushfacebook). The Threads patches are written here. See [Where the patches come from](#where-the-patches-come-from).
@@ -36,7 +36,7 @@ This project has no connection to Meta or to the Morphe project. Neither endorse
 
 <p><img src="assets/patch-selection.png" width="300" alt="Morphe Manager with the six HushThreads patches selected and Morphe's own patches left off"></p>
 
-Threads releases a new version about once a week, and each one renames most of its code. Every patch here finds what it changes by names Threads keeps (its post model, the feed cache, JSON parser names, strings and manifest components) rather than by the names that change. When one can't find what it needs, patching stops with a message naming it, instead of producing an app that quietly does nothing. Disable analytics works down three kinds of target. It stops only when a build has none of them, and names each missing one in the patch log.
+Threads releases a new version about once a week, and each one renames most of its code. Every patch here finds what it changes by names Threads keeps (its post model, the feed cache, JSON parser names, strings and manifest components) rather than by the names that change. When one can't find what it needs, patching stops with a message naming it, instead of producing an app that quietly does nothing. Disable analytics checks three address kinds: PIGEON (the logger's URL builder), DEFAULT (direct event-log URL returns) and MQTT (the analytics endpoint setting). It stops when none match. The patch log, Privacy settings and exported diagnostics identify matched and missing kinds. The supported 449 build matches all three. This doesn't establish that every telemetry path is covered.
 
 Hide ads and Sanitize sharing links also stop on competing inner targets. The failure lists the candidates so a changed build can be checked before installing it.
 
@@ -56,7 +56,7 @@ There are 6 patches, and every one of them is selected by default.
 
 | Patch | What it does |
 |---|---|
-| `Disable analytics` | Stops Threads sending its usage analytics and event logs to Meta. Everything the app needs to work is left alone. |
+| `Disable analytics` | Redirects matched Pigeon, default event-log and MQTT analytics addresses. Settings show which address kinds were patched. Other telemetry may remain. |
 | `Hide ads` | Takes sponsored posts out of your Threads feed before they're shown. |
 | `HushThreads settings` | Adds HushThreads settings to Threads. Long-press Threads' launcher icon, or open Additional settings in the app on Threads' App info page, to turn features on or off, pause HushThreads, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
 | `Remove the advertising ID` | Stops Threads getting your phone's advertising ID from Google Play services. Threads gets a string of zeros in its place. |
@@ -67,7 +67,7 @@ There are 6 patches, and every one of them is selected by default.
 
 Long-press the Threads icon and tap HushThreads. You can also open Threads' App info page and tap Additional settings in the app, which Samsung phones call Configure in Threads.
 
-<p><img src="assets/settings-overview.png" width="320" alt="HushThreads settings with search, Pause and the Feed and Privacy pages"><img src="assets/settings-privacy.png" width="320" alt="The Privacy page with switches for clean shared links and for stopping analytics uploads"></p>
+<p><img src="assets/settings-overview.png" width="320" alt="HushThreads settings with search, Pause and the Feed and Privacy pages"><img src="assets/settings-privacy.png" width="320" alt="Privacy preview with clean shared links, analytics uploads and all three address kinds matched"></p>
 <p><img src="assets/launcher-shortcut.png" width="320" alt="The HushThreads shortcut on Threads' launcher icon"></p>
 
 ## Signing in
@@ -84,7 +84,7 @@ Stock Threads recovered that Instagram session automatically after its data was 
 
 ## Your Threads account
 
-**Can Meta tell?** Assume it can. A patched Threads is signed with your key rather than Meta's, and Threads' own code checks that signature in places, which is why `Restore screens on re-signed builds` exists. Pick `Disable analytics` and the app's event logs stop reaching Meta, and Meta could notice that too.
+**Can Meta tell?** Assume it can. A patched Threads is signed with your key rather than Meta's, and Threads' own code checks that signature in places, which is why `Restore screens on re-signed builds` exists. `Disable analytics` prevents uploads through matched address paths, and Meta could notice those missing events too.
 
 **What stays the same?** Your feed still comes from Meta's servers, ads included, and HushThreads takes the ads out on your phone after they arrive. It doesn't post, like, follow or message on your behalf, and it doesn't change how you sign in.
 
@@ -96,7 +96,7 @@ HushThreads doesn't collect anything and has no server. The patched app goes onl
 
 The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`. Those open in your browser, and only when you tap one.
 
-`Disable analytics` points Threads' event log uploads at `127.0.0.1`, which is your phone itself, on a port nothing listens on. The upload fails right there and never leaves the phone.
+`Disable analytics` replaces matched Pigeon, default event-log and MQTT analytics addresses with `127.0.0.1`, on a port nothing listens on. Those uploads fail locally. Missing address kinds and other telemetry aren't covered by this claim. Turning the switch off, Pause or safe mode restores the original addresses.
 
 ## Where the patches come from
 

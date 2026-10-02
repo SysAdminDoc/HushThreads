@@ -2,6 +2,11 @@
 
 Every HushThreads release, newest first.
 
+## Unreleased
+
+* **Threads:** Privacy settings and exported reports now list the matched and missing analytics address kinds. Partial coverage stays visible when the switch is off or HushThreads is paused. The guide describes the covered address paths rather than claiming every event log is blocked.
+* **Tooling:** Settings tests initialize their context before accessing patch switches, so their order doesn't affect the result.
+
 ## 0.0.3 (2026-10-01)
 
 * **Threads:** This release keeps the same 6 patches for Threads 449.0.0.54.82. Hide ads and Sanitize sharing links are stricter about where they patch, and the check that lets a same-key Instagram call into Threads no longer stops when Android can't answer a lookup.
