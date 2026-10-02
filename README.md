@@ -101,7 +101,9 @@ Threads can show Save your login info twice. Tap Not now on each prompt if you d
 
 Stock Threads recovered that Instagram session automatically after its data was cleared. The patched builds offered the manual form, with no Continue as option. The same-key patched Instagram check on 2026-09-29 also offered only the manual form.
 
-[The password-login failure reported on 2026-10-01](https://github.com/SysAdminDoc/HushThreads/discussions/2) remains unresolved. These successful checks haven't identified its cause or established login for every account.
+With a Root Mount install you can sign in on stock Threads first. The mounted build uses stock Threads' data, so it keeps that session. On 2026-10-02, on Android 16, a mounted build with only HushThreads settings kept a stock session, and signing out and back in on it reached the feed too.
+
+[The password-login failure reported on 2026-10-01](https://github.com/SysAdminDoc/HushThreads/discussions/2) and [the one on Android 17 with Root Mount](https://github.com/SysAdminDoc/HushThreads/issues/3) remain unresolved. These successful checks haven't identified their cause or established login for every account.
 
 ## Your Threads account
 
