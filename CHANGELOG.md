@@ -6,6 +6,7 @@ Every HushThreads release, newest first.
 
 Source builds only. The published bundle remains at 0.0.3.
 
+* **Threads:** The Pause, Resume and Undo button beside HushThreads' status is at least 48 dp tall now. It took its height from the two lines of text next to it, which left it 39.5 dp tall on a Galaxy S22.
 * **Tooling:** The injected-register device check doesn't clear the phone's log anymore. It writes a marker of its own before dex2oat runs and counts only the verifier lines that follow it. If the log has rolled past that marker by the time it's read, the check stops with an error instead of guessing.
 * **Tooling:** The settings file test resets the release check it turns on, so the release check tests start from a phone that never checked in any suite order.
 

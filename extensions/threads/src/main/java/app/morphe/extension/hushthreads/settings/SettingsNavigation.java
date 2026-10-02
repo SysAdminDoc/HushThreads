@@ -414,6 +414,13 @@ final class SettingsNavigation extends BaseAdapter {
     private void bindAction(View row, boolean paused, boolean nextPaused) {
         ViewGroup frame = row.findViewById(android.R.id.widget_frame);
         frame.removeAllViews();
+        // A frame that matches the row's height never adds to it, so the row was as tall as its two
+        // lines of text and the button inside was held under its 48dp floor (39.5dp on a Galaxy S22).
+        ViewGroup.LayoutParams frameSize = frame.getLayoutParams();
+        if (frameSize != null && frameSize.height == ViewGroup.LayoutParams.MATCH_PARENT) {
+            frameSize.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            frame.setLayoutParams(frameSize);
+        }
         Button action = new Button(screen.getContext());
         action.setText(paused != nextPaused ? L10n.t("Undo") : nextPaused ? L10n.t("Resume") : L10n.t("Pause"));
         action.setAllCaps(false);

@@ -387,6 +387,28 @@ public class SettingsNavigationTest {
         return null;
     }
 
+    /**
+     * The button's floor is 48 dp, but its frame took the row's height, which the text alone set:
+     * on a Galaxy S22 the overview's Pause laid out 39.5 dp tall. Laid out, it and both Resume
+     * buttons are 48 dp or more.
+     */
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    @Config(qualifiers = "w780dp-h1688dp-mdpi")
+    public void theStatusButtonsAreLaidOutAtLeast48dpTall() {
+        layout(dialog.getView());
+        int floor = Math.round(48 * list().getResources().getDisplayMetrics().density);
+        assertTrue("Pause is " + statusAction().getHeight() + " px tall", statusAction().getHeight() >= floor);
+
+        BaseSettings.PAUSED.save(true);
+        PauseForTests.pause(HushThreadsPause.Reason.SWITCH);
+        recreate();
+        layout(dialog.getView());
+        assertTrue("Resume is " + statusAction().getHeight() + " px tall", statusAction().getHeight() >= floor);
+        page.navigation.navigate("Feed");
+        layout(dialog.getView());
+        assertTrue("Feed's Resume is " + pageAction().getHeight() + " px tall", pageAction().getHeight() >= floor);
+    }
+
     private android.widget.Button statusAction() {
         android.view.ViewGroup frame = list().getChildAt(0).findViewById(android.R.id.widget_frame);
         assertEquals(1, frame.getChildCount());
