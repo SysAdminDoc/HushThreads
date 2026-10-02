@@ -125,6 +125,8 @@ Tests: `./gradlew :patches:test :extensions:threads:testDebugUnitTest`. Set `HUS
 
 To apply every patch to a real build and check the result, run `scripts/verify-all-patches.ps1 -Apk <threads bundle> -DesktopJar <morphe-desktop jar> -WorkDir <scratch folder>`. [CONTRIBUTING.md](CONTRIBUTING.md) has the rest.
 
+Before passing `-Serial` to an install or verifier script, acquire an exclusive shared device lease. Set `HUSHTHREADS_DEVICE_LEASE_DIR` to the shared folder, `HUSHTHREADS_DEVICE_LEASE_TOKEN` to your lease's ownership token and `HUSHTHREADS_DEVICE_IDENTITY` to the phone's model or emulator's exact AVD name. The scripts verify identity and renew the owned lease before device commands. Release it after testing. A signing conflict requires repatching with the installed key. `-Replace` is refused, preserving installed apps and accounts. Builds and static checks without `-Serial` need no device lease.
+
 ## License
 
 [GPL-3.0](LICENSE), with the Morphe section 7 notices carried in [NOTICE](NOTICE). Threads, Instagram and Meta are trademarks of Meta Platforms, Inc.

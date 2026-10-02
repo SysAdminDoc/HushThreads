@@ -144,11 +144,16 @@ $completed = $false
 try {
 
 $adbPath = $null
-if ($FromDevice -or $Serial) { $adbPath = Resolve-Adb -Explicit $Adb }
+if ($FromDevice -and -not $Serial) { throw '-FromDevice needs -Serial so it cannot pull from somebody else''s phone.' }
+if ($FromDevice -or $Serial) {
+    $adbPath = Resolve-Adb -Explicit $Adb
+    Assert-HushThreadsDeviceLease -Adb $adbPath -Serial $Serial
+}
 
 if ($FromDevice) {
-    if (-not $Serial) { throw '-FromDevice needs -Serial so it cannot pull from somebody else''s phone.' }
-    $paths = @(& $adbPath -s $Serial shell pm path $package 2>&1 |
+    $installedPaths = Invoke-HushThreadsAdbCommand -Adb $adbPath -RequireLease -Arguments @('-s', $Serial, 'shell', 'pm', 'path', $package)
+    if ($installedPaths.ExitCode -ne 0) { throw "Could not read installed package paths on $Serial." }
+    $paths = @($installedPaths.Output |
         ForEach-Object { "$_" } | Where-Object { $_ -match '^package:' })
     if ($paths.Count -eq 0) { throw "Threads ($package) is not installed on $Serial." }
     if ($paths.Count -ne 1) {
@@ -159,8 +164,8 @@ if ($FromDevice) {
     $onDevice = ($paths[0] -replace '^package:', '').Trim()
     $PatchedApk = Join-Path $work 'patched-installed.apk'
     Write-Host "[registers] pulling $onDevice"
-    & $adbPath -s $Serial pull $onDevice $PatchedApk | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "Could not pull the installed APK from $Serial." }
+    $pull = Invoke-HushThreadsAdbCommand -Adb $adbPath -RequireLease -Arguments @('-s', $Serial, 'pull', $onDevice, $PatchedApk)
+    if ($pull.ExitCode -ne 0) { throw "Could not pull the installed APK from $Serial." }
 }
 
 if (-not $PatchedApk -or -not (Test-Path -LiteralPath $PatchedApk -PathType Leaf)) {

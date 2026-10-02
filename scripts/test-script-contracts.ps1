@@ -237,8 +237,29 @@ try {
 @echo off
 set /p FAKE_ADB_MODE=<"%~dp0mode.txt"
 echo mode=%FAKE_ADB_MODE% args=%*>>"%~dp0adb.log"
+if "%3"=="get-serialno" goto serial_identity
+if "%3|%4|%5"=="shell|getprop|ro.product.model" goto model_identity
+if "%3|%4|%5"=="emu|avd|name" goto avd_identity
+if "%3"=="install" goto install
 if "%3|%4|%5"=="shell|pm|path" goto package_path
 if "%3"=="uninstall" goto uninstall
+exit /b 0
+:serial_identity
+if "%FAKE_ADB_MODE%"=="wrong-serial" echo ANOTHER
+if not "%FAKE_ADB_MODE%"=="wrong-serial" echo %2
+exit /b 0
+:model_identity
+if "%FAKE_ADB_MODE%"=="wrong-model" echo AnotherModel
+if not "%FAKE_ADB_MODE%"=="wrong-model" echo FixtureModel
+exit /b 0
+:avd_identity
+echo FixtureAVD
+echo OK
+exit /b 0
+:install
+if "%FAKE_ADB_MODE%"=="signer-conflict" echo Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE]
+if "%FAKE_ADB_MODE%"=="signer-conflict" exit /b 23
+echo Success
 exit /b 0
 :package_path
 if "%FAKE_ADB_MODE%"=="check-fail" goto check_fail
@@ -257,35 +278,98 @@ exit /b 19
     [System.IO.File]::WriteAllText($fakeAdb, $fakeBody, [System.Text.Encoding]::ASCII)
 
     [System.IO.File]::WriteAllText($mode, 'absent', [System.Text.Encoding]::ASCII)
-    $removed = Remove-AndroidPackageIfInstalled -Adb $fakeAdb -Serial 'CLEAN' -PackageName 'com.example.app'
-    $calls = @(Get-Content -LiteralPath $log)
-    Assert-True (-not $removed) 'An absent package was reported as removed.'
-    Assert-True ($calls.Count -eq 1 -and $calls[0] -like '*shell pm path com.example.app') `
-        'The absent-package path attempted an uninstall.'
+    # Replacement removal is no longer allowed, including through the old shared helper.
+    foreach ($replacementMode in @('absent', 'present', 'check-fail', 'uninstall-fail')) {
+        [IO.File]::WriteAllText($mode, $replacementMode, [Text.Encoding]::ASCII)
+        Assert-Throws { Remove-AndroidPackageIfInstalled -Adb $fakeAdb -Serial 'READY' -PackageName 'com.example.app' } `
+            '*Replacement uninstall is disabled*' "Replacement mode $replacementMode was accepted."
+        Assert-True (-not (Test-Path -LiteralPath $log)) 'A replacement refusal invoked ADB.'
+    }
+    Assert-Throws { & (Join-Path $PSScriptRoot 'patch-for-device.ps1') -Replace -Serial 'READY' } `
+        '*Replacement uninstall is disabled*' 'The device script accepted -Replace.'
+    Assert-True (-not (Test-Path -LiteralPath $log)) '-Replace invoked ADB before refusing.'
 
+    $leaseRoot = Join-Path $caseRoot 'leases'
+    [void][IO.Directory]::CreateDirectory($leaseRoot)
+    $leaseToken = [guid]::NewGuid().ToString('N')
+    function Write-TestDeviceLease {
+        param([string]$Serial = 'READY', [string]$Variant = 'valid')
+        $lease = [ordered]@{schemaVersion = 1; serial = $Serial; project = 'HushThreads'; chatIdentity = 'fixture';
+            ownershipToken = $leaseToken; acquiredUtc = [DateTimeOffset]::UtcNow.ToString('o');
+            expiresUtc = [DateTimeOffset]::UtcNow.AddMinutes(1).ToString('o')}
+        if ($Variant -eq 'foreign') { $lease.ownershipToken = 'another-chat' }
+        if ($Variant -eq 'other-project') { $lease.project = 'AnotherProject' }
+        if ($Variant -eq 'expired') { $lease.expiresUtc = [DateTimeOffset]::UtcNow.AddMinutes(-1).ToString('o') }
+        if ($Variant -eq 'wrong-recorded-serial') { $lease.serial = 'ANOTHER' }
+        [IO.File]::WriteAllText((Join-Path $leaseRoot ($Serial + '.json')), ($lease | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
+    }
+    $leaseArguments = @{Adb = $fakeAdb; Serial = 'READY'; OwnershipToken = $leaseToken;
+        ExpectedIdentity = 'FixtureModel'; LeaseDirectory = $leaseRoot}
+    Assert-Throws { Assert-HushThreadsDeviceLease @leaseArguments } '*No readable exclusive device lease*' 'A missing lease passed.'
+    foreach ($variant in @('foreign', 'other-project', 'expired', 'wrong-recorded-serial')) {
+        Write-TestDeviceLease -Variant $variant
+        $before = [IO.File]::ReadAllText((Join-Path $leaseRoot 'READY.json'))
+        Assert-Throws { Assert-HushThreadsDeviceLease @leaseArguments } '*device lease*' "Lease variant $variant passed."
+        Assert-True ([IO.File]::ReadAllText((Join-Path $leaseRoot 'READY.json')) -ceq $before) "Lease variant $variant was overwritten."
+        Assert-True (-not (Test-Path -LiteralPath $log)) "Lease variant $variant invoked ADB."
+    }
+    foreach ($identityMode in @('wrong-serial', 'wrong-model')) {
+        Write-TestDeviceLease
+        [IO.File]::WriteAllText($mode, $identityMode, [Text.Encoding]::ASCII)
+        Assert-Throws { Assert-HushThreadsDeviceLease @leaseArguments } '*identity*' "Identity variant $identityMode passed."
+        $calls = @(Get-Content -LiteralPath $log)
+        Assert-True (@($calls | Where-Object { $_ -notmatch 'get-serialno|shell getprop ro.product.model' }).Count -eq 0) `
+            'An identity failure issued a device-changing command.'
+        Remove-Item -LiteralPath $log -Force
+    }
+    Write-TestDeviceLease
+    [IO.File]::WriteAllText($mode, 'present', [Text.Encoding]::ASCII)
+    Assert-HushThreadsDeviceLease @leaseArguments
+    $renewed = Get-Content (Join-Path $leaseRoot 'READY.json') -Raw | ConvertFrom-Json
+    Assert-True ([DateTimeOffset]$renewed.expiresUtc -gt [DateTimeOffset]::UtcNow.AddMinutes(19)) 'The owned lease was not renewed.'
+    Assert-True ($renewed.ownershipToken -ceq $leaseToken) 'Renewal changed the ownership token.'
     Remove-Item -LiteralPath $log -Force
-    [System.IO.File]::WriteAllText($mode, 'present', [System.Text.Encoding]::ASCII)
-    $removed = Remove-AndroidPackageIfInstalled -Adb $fakeAdb -Serial 'READY' -PackageName 'com.example.app'
-    $calls = @(Get-Content -LiteralPath $log)
-    Assert-True $removed 'An installed package was not removed.'
-    Assert-True ($calls.Count -eq 2 -and $calls[0] -like '*shell pm path com.example.app' -and
-        $calls[1] -like '*uninstall com.example.app') 'The installed-package path did not check then uninstall.'
+    Write-TestDeviceLease -Serial 'emulator-5554'
+    Assert-HushThreadsDeviceLease -Adb $fakeAdb -Serial 'emulator-5554' -OwnershipToken $leaseToken `
+        -ExpectedIdentity 'FixtureAVD' -LeaseDirectory $leaseRoot
+    Assert-True (@(Get-Content -LiteralPath $log | Where-Object { $_ -like '*emu avd name*' }).Count -eq 1) `
+        'An emulator lease did not verify the exact AVD profile.'
+    Remove-Item -LiteralPath $log -Force
 
-    Remove-Item -LiteralPath $log -Force
-    [System.IO.File]::WriteAllText($mode, 'check-fail', [System.Text.Encoding]::ASCII)
-    Assert-Throws {
-        Remove-AndroidPackageIfInstalled -Adb $fakeAdb -Serial 'BROKEN' -PackageName 'com.example.app'
-    } '*could not check*' 'An ADB transport failure was treated as an absent package.'
-    $calls = @(Get-Content -LiteralPath $log)
-    Assert-True ($calls.Count -eq 1) 'The check-failure path continued after ADB failed.'
-
-    Remove-Item -LiteralPath $log -Force
-    [System.IO.File]::WriteAllText($mode, 'uninstall-fail', [System.Text.Encoding]::ASCII)
-    Assert-Throws {
-        Remove-AndroidPackageIfInstalled -Adb $fakeAdb -Serial 'LOCKED' -PackageName 'com.example.app'
-    } '*uninstall failed*' 'An uninstall failure was accepted.'
-    $calls = @(Get-Content -LiteralPath $log)
-    Assert-True ($calls.Count -eq 2) 'The uninstall-failure path did not perform exactly a check and uninstall.'
+    # Execute the real install suffix, so a signer failure cannot be masked by a later version read.
+    $deviceText = [IO.File]::ReadAllText((Join-Path $PSScriptRoot 'patch-for-device.ps1'))
+    $tokens = $null; $parseErrors = $null
+    $deviceAst = [Management.Automation.Language.Parser]::ParseInput($deviceText, [ref]$tokens, [ref]$parseErrors)
+    $installNode = $deviceAst.FindAll({param($node) $node -is [Management.Automation.Language.AssignmentStatementAst] -and
+        $node.Left.Extent.Text -ceq '$install'}, $true) | Select-Object -First 1
+    Assert-True ($null -ne $installNode -and -not $parseErrors) 'The real install operation was not found.'
+    $installSuffix = [scriptblock]::Create($deviceText.Substring($installNode.Extent.StartOffset))
+    $leaseNames = @('HUSHTHREADS_DEVICE_LEASE_DIR', 'HUSHTHREADS_DEVICE_LEASE_TOKEN', 'HUSHTHREADS_DEVICE_IDENTITY')
+    $savedLeaseEnvironment = @{}
+    foreach ($name in $leaseNames) { $savedLeaseEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
+    try {
+        $env:HUSHTHREADS_DEVICE_LEASE_DIR = $leaseRoot
+        $env:HUSHTHREADS_DEVICE_LEASE_TOKEN = $leaseToken
+        $env:HUSHTHREADS_DEVICE_IDENTITY = 'FixtureModel'
+        foreach ($variant in @('missing', 'foreign', 'expired')) {
+            Write-TestDeviceLease -Variant $variant
+            if ($variant -eq 'missing') { Remove-Item -LiteralPath (Join-Path $leaseRoot 'READY.json') -Force }
+            [IO.File]::WriteAllText($mode, 'present', [Text.Encoding]::ASCII)
+            Assert-Throws { & { $adb = $fakeAdb; $Serial = 'READY'; $out = $reportApk; & $installSuffix } } `
+                '*device lease*' "The real install handler accepted a $variant lease."
+            Assert-True (-not (Test-Path -LiteralPath $log)) "The real install handler used ADB with a $variant lease."
+        }
+        Write-TestDeviceLease
+        [IO.File]::WriteAllText($mode, 'signer-conflict', [Text.Encoding]::ASCII)
+        Assert-Throws { & { $adb = $fakeAdb; $Serial = 'READY'; $out = $reportApk; & $installSuffix } } `
+            '*Signing key conflict on READY*' 'A signing conflict passed the real install handler.'
+        $calls = @(Get-Content -LiteralPath $log)
+        Assert-True (@($calls | Where-Object { $_ -like '*install -r -g*' }).Count -eq 1) 'The update did not preserve installed data.'
+        Assert-True (@($calls | Where-Object { $_ -match 'uninstall|\bclear\b|dumpsys package' }).Count -eq 0) `
+            'A signer conflict uninstalled, cleared or reported the previous build as success.'
+    } finally {
+        foreach ($name in $leaseNames) { [Environment]::SetEnvironmentVariable($name, $savedLeaseEnvironment[$name], 'Process') }
+    }
 
     $emptyJdk = Join-Path $caseRoot 'empty-jdk'
     New-Item -ItemType Directory -Path $emptyJdk | Out-Null
