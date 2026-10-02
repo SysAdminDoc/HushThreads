@@ -123,7 +123,7 @@ The bundle lands in `patches/build/release/patches-<version>.mpp`, beside its SH
 
 Tests: `./gradlew :patches:test :extensions:threads:testDebugUnitTest`. Set `HUSHTHREADS_FIXTURE_DIR` to a folder holding Threads builds to run the tests that read real builds. Without it they skip and say so.
 
-To apply every patch to a real build and check the result, run `scripts/verify-all-patches.ps1 -Apk <threads bundle> -DesktopJar <morphe-desktop jar> -WorkDir <scratch folder>`. [CONTRIBUTING.md](CONTRIBUTING.md) has the rest.
+To apply every patch to a real build and check the result, run `scripts/verify-all-patches.ps1 -Apk <threads bundle> -DesktopJar <morphe-desktop jar> -WorkDir <scratch folder>`. It checks the manifest, stock resources and DEX structure, then verifies each selected feature's intended mutations against the stock APK. These contracts cover the typed feed helpers, owned permalink hook, recorded analytics address kinds and signature wrapper's stock fallback. Omitted features are reported separately. [CONTRIBUTING.md](CONTRIBUTING.md) has the rest.
 
 Before passing `-Serial` to an install or verifier script, acquire an exclusive shared device lease. Set `HUSHTHREADS_DEVICE_LEASE_DIR` to the shared folder, `HUSHTHREADS_DEVICE_LEASE_TOKEN` to your lease's ownership token and `HUSHTHREADS_DEVICE_IDENTITY` to the phone's model or emulator's exact AVD name. The scripts verify identity, renew the owned lease and keep its file exclusively open throughout each device command. Release it after testing. A signing conflict requires repatching with the installed key. `-Replace` is refused, preserving installed apps and accounts. Builds and static checks without `-Serial` need no device lease.
 

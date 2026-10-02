@@ -4,6 +4,8 @@ Every HushThreads release, newest first.
 
 ## Unreleased
 
+* **Tooling:** APK verification now checks the selected feed, link, analytics and signature mutations against the stock build. Missing, replaced or miswired hooks fail even when the DEX structure is valid. Omitted features don't create false failures.
+
 * **Threads:** Link cleaning now rejects an unrelated constructor or a wide write that overwrites the response name. Casts keep tracking the same response object, including a cast through Object.
 
 * **Tooling:** Device install and verifier scripts now check and renew an owned lease and verify the selected phone or emulator profile. The lease file stays exclusively open while each command runs. Signing conflicts preserve installed apps. Replacement uninstall requests are refused before building.

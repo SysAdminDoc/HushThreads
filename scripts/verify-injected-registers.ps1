@@ -19,7 +19,10 @@
     switch targets, invoke registers, the static and wide parameter layout, move-result
     placement and try ranges, and the whole APK is held to
     scripts/injected-mutation-contracts.txt: none of the ShortcutManager calls the settings patch
-    sends to SettingsEntry may be left anywhere outside the extension.
+    sends to SettingsEntry may be left anywhere outside the extension. Selected Threads features
+    must retain their feed helpers, owned permalink hook, recorded analytics address mutations
+    and signature wrapper with its stock fallback. -SelectedPatches supplies the independent
+    validated CLI selection; a standalone check uses the patched SettingsStatus flags.
 
     On a device. The Android runtime's own verifier is the authority, so with -Serial the
     clean APK and the patched APK are both put through dex2oat with the verify filter and the
@@ -45,7 +48,7 @@
     base.apk's code: the Facebook sibling's 580 in-app browser shipped its own dex in
     split_heliumcore.apk, and against base.apk its methods read as some 12,000 added and 212
     changed. The merge carries no signature, so Meta's signer is checked on base.apk, DexDiff
-    holds the merge to base.apk's classes*.dex byte for byte (handed base.apk as its last
+    holds the merge to base.apk's classes*.dex byte for byte (handed base.apk as its sixth
     argument), and it fails a clean side that holds any of the bundle's own code. The device half
     runs base.apk, the same app code.
 
@@ -70,7 +73,9 @@ param(
     [string]$ReportPath,
     [string]$Java,
     [string]$DesktopJar,
-    [string]$Aapt2
+    [string]$Aapt2,
+    # Validated desktop CLI patch names. Without them, a standalone check reads SettingsStatus.
+    [string[]]$SelectedPatches
 )
 
 $ErrorActionPreference = 'Stop'
@@ -122,10 +127,21 @@ function Get-SignerDigests {
 function Invoke-DexDiff {
     $ErrorActionPreference = 'Continue'
     $global:LASTEXITCODE = -1
-    $output = @(& $Java '-Xmx8g' '-cp' $DesktopJar (Join-Path $PSScriptRoot 'DexDiff.java') `
-        $CleanMerged $PatchedApk $ReportPath `
-        (Join-Path $PSScriptRoot 'injected-register-removal-allowlist.txt') `
-        (Join-Path $PSScriptRoot 'injected-mutation-contracts.txt') $cleanBase 2>&1 | ForEach-Object { "$_" })
+    $selectionArguments = @()
+    if ($null -ne $SelectedPatches) {
+        $featureNames = [ordered]@{
+            'Hide ads' = 'hideAds'
+            'Sanitize sharing links' = 'sanitizeSharingLinks'
+            'Disable analytics' = 'disableAnalytics'
+            'Restore screens on re-signed builds' = 'restoreTrust'
+        }
+        foreach ($name in $SelectedPatches) {
+            if ($name -cnotin @($catalog.patches | ForEach-Object { $_.name })) { throw "Unknown selected patch: $name" }
+        }
+        $selected = @($featureNames.Keys | Where-Object { $_ -cin $SelectedPatches } | ForEach-Object { $featureNames[$_] }) -join ','
+        $selectionArguments += $(if ($selected) { $selected } else { 'none' })
+    }
+    $output = @(& $Java '-Xmx8g' '-cp' $DesktopJar (Join-Path $PSScriptRoot 'DexDiff.java') $CleanMerged $PatchedApk $ReportPath (Join-Path $PSScriptRoot 'injected-register-removal-allowlist.txt') (Join-Path $PSScriptRoot 'injected-mutation-contracts.txt') $cleanBase @selectionArguments 2>&1 | ForEach-Object { "$_" })
     [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $output }
 }
 
