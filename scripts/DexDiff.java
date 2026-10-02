@@ -1939,6 +1939,8 @@ public class DexDiff {
     private static final String USER = "Lcom/instagram/user/model/User;";
     /** Each class's interfaces, filled in with the superclasses when featureMethods is asked for them. */
     private static final Map<String, List<String>> INTERFACES = new HashMap<>();
+    /** Each class's instance fields that hold a post, filled in beside INTERFACES. */
+    private static final Map<String, List<String>> POST_FIELDS = new HashMap<>();
     private static final String ENDPOINT = "Lapp/morphe/extension/hushthreads/misc/Analytics;->endpoint(Ljava/lang/String;)Ljava/lang/String;";
     private static final String SIGNERS = "Lapp/morphe/extension/hushthreads/misc/ThreadsSignature;->originalSigners(Landroid/content/pm/PackageInfo;)Ljava/util/List;";
     private static final String LOGGING_URL = "https://graph.facebook.com/logging_client_events";
@@ -1951,6 +1953,9 @@ public class DexDiff {
             if (parents != null) {
                 parents.put(cd.getType(), cd.getSuperclass());
                 INTERFACES.put(cd.getType(), new ArrayList<>(cd.getInterfaces()));
+                List<String> posts = new ArrayList<>();
+                for (Field f : cd.getInstanceFields()) if (f.getType().equals(MEDIA)) posts.add(f.getName());
+                POST_FIELDS.put(cd.getType(), posts);
             }
             for (Method m : cd.getMethods()) methods.computeIfAbsent(sig(cd, m), k -> new ArrayList<>()).add(m);
         }
@@ -2941,15 +2946,7 @@ public class DexDiff {
                 && m.getReturnType().equals("Ljava/lang/Object;") && m.getParameterTypes().size() == 4
                 && m.getParameterTypes().get(1).toString().equals(MEDIA) && holds(m, "itas-android"), "post link fetch");
         List<Instruction> body = instructions(fetch);
-        List<Integer> reads = new ArrayList<>();
-        for (int k = 0; k + 1 < body.size(); k++) {
-            Instruction i = body.get(k);
-            if ((i.getOpcode() != Opcode.INVOKE_INTERFACE && i.getOpcode() != Opcode.INVOKE_VIRTUAL)
-                    || !(((ReferenceInstruction) i).getReference() instanceof MethodReference)) continue;
-            MethodReference call = (MethodReference) ((ReferenceInstruction) i).getReference();
-            if (owners.contains(call.getDefiningClass()) && getters.contains(call.getName()) && call.getParameterTypes().isEmpty()
-                    && call.getReturnType().equals("Ljava/lang/String;") && body.get(k + 1).getOpcode() == Opcode.MOVE_RESULT_OBJECT) reads.add(k);
-        }
+        List<Integer> reads = linkReads(body, owners, getters);
         requireFeature(!reads.isEmpty(), "post link fetch never reads the permalink");
         List<Integer> posts = new ArrayList<>();
         for (int k = reads.get(reads.size() - 1); k < body.size(); k++) {
@@ -2963,7 +2960,57 @@ public class DexDiff {
             blocks.put(read + 2, (now, at) -> featurePostLink(clean, now, at, value, post));
         }
         featureBody(fetch, featureMethod(patched, featureSig(fetch)), 0, Map.of(), POST_LINK, null, blocks);
-        featureHostCalls(patched, POST_LINK, Map.of(featureSig(fetch), reads.size()));
+
+        // Copy link and the other rows read the link themselves, in an object that holds its post
+        // in one post field. Each read is followed by the post out of that field, then the same hook.
+        Map<String, Integer> calls = new HashMap<>(Map.of(featureSig(fetch), reads.size()));
+        for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+            String type = m.getDefiningClass();
+            List<String> postFields = POST_FIELDS.getOrDefault(type, List.of());
+            if (AccessFlags.STATIC.isSet(m.getAccessFlags()) || m.getImplementation() == null || postFields.size() != 1
+                    || type.equals(PERMALINK_REPOSITORY) || type.startsWith("Lapp/morphe/extension/")) continue;
+            List<Instruction> holder = instructions(m);
+            List<Integer> holderReads = linkReads(holder, owners, getters);
+            if (holderReads.isEmpty()) continue;
+            int self = m.getImplementation().getRegisterCount() - m.getParameterTypes().size() - 1
+                    - (int) m.getParameterTypes().stream().filter(p -> p.toString().equals("J") || p.toString().equals("D")).count();
+            String held = type + "->" + postFields.get(0) + ":" + MEDIA;
+            Map<Integer, FeatureBlock> holderBlocks = new HashMap<>();
+            for (int read : holderReads) {
+                int value = ((OneRegisterInstruction) holder.get(read + 1)).getRegisterA();
+                holderBlocks.put(read + 2, (now, at) -> featureHolderLink(clean, now, at, value, self, held));
+            }
+            featureBody(m, featureMethod(patched, featureSig(m)), 0, Map.of(), POST_LINK, null, holderBlocks);
+            calls.put(featureSig(m), holderReads.size());
+        }
+        requireFeature(calls.size() > 1, "nothing that holds a post reads the permalink");
+        featureHostCalls(patched, POST_LINK, calls);
+    }
+
+    /** The reads of the permalink in [body]: a call to one of [getters] on [owners], and its result. */
+    private static List<Integer> linkReads(List<Instruction> body, Set<String> owners, Set<String> getters) {
+        List<Integer> reads = new ArrayList<>();
+        for (int k = 0; k + 1 < body.size(); k++) {
+            Instruction i = body.get(k);
+            if ((i.getOpcode() != Opcode.INVOKE_INTERFACE && i.getOpcode() != Opcode.INVOKE_VIRTUAL)
+                    || !(((ReferenceInstruction) i).getReference() instanceof MethodReference)) continue;
+            MethodReference call = (MethodReference) ((ReferenceInstruction) i).getReference();
+            if (owners.contains(call.getDefiningClass()) && getters.contains(call.getName()) && call.getParameterTypes().isEmpty()
+                    && call.getReturnType().equals("Ljava/lang/String;") && body.get(k + 1).getOpcode() == Opcode.MOVE_RESULT_OBJECT) reads.add(k);
+        }
+        return reads;
+    }
+
+    /** A holder's hook: this into a free local, the post out of the holder's post field, then the fetch's hook with that post. */
+    private static int featureHolderLink(Map<String, List<Method>> clean, List<Instruction> body, int at, int link, int self, String post) {
+        requireFeature(at + 2 <= body.size() && body.get(at).getOpcode() == Opcode.MOVE_OBJECT_FROM16
+                && body.get(at + 1).getOpcode() == Opcode.IGET_OBJECT, "holder link hook doesn't load its post at " + at);
+        TwoRegisterInstruction copy = (TwoRegisterInstruction) body.get(at), load = (TwoRegisterInstruction) body.get(at + 1);
+        int media = copy.getRegisterA();
+        requireFeature(copy.getRegisterB() == self && media < self, "holder link hook reads its post through another register than this");
+        requireFeature(load.getRegisterA() == media && load.getRegisterB() == media && reference(body.get(at + 1)).equals(post),
+                "holder link hook reads another field than " + post);
+        return 2 + featurePostLink(clean, body, at + 2, link, media);
     }
 
     /**

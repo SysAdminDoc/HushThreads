@@ -17,14 +17,20 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.threads.ads.MEDIA
 import app.morphe.patches.threads.misc.extension.enableStatus
 import app.morphe.patches.threads.misc.extension.freeLocalsAt
+import app.morphe.patches.threads.misc.extension.localRegisterCount
+import app.morphe.patches.threads.misc.extension.requireThisIntact
 import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
+import app.morphe.patches.threads.misc.settings.EXTENSION_ROOT
 import app.morphe.patches.threads.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.getReference
 import app.morphe.util.singleOrPatchException
 import app.morphe.util.superclassChain
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
@@ -231,22 +237,13 @@ private fun BytecodePatchContext.replaceShortLinks(link: FieldReference) {
         getter.parameterTypes.isEmpty() && getter.returnType == "Ljava/lang/String;" &&
             getter.implementation?.instructions?.any { it.opcode == Opcode.IGET_OBJECT && it.getReference<FieldReference>() == link } == true
     }.map { it.name }.toSet()
-    val reads = body.indices.filter { index ->
-        val instruction = body[index]
-        if (instruction.opcode != Opcode.INVOKE_INTERFACE && instruction.opcode != Opcode.INVOKE_VIRTUAL) return@filter false
-        val call = instruction.getReference<MethodReference>()!!
-        call.definingClass in types && call.name in getters && call.parameterTypes.isEmpty() &&
-            call.returnType == "Ljava/lang/String;" && body.getOrNull(index + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT
-    }
+    val reads = body.linkReads(types, getters)
     if (reads.isEmpty()) throw PatchException("$PATCH: $where never reads ${link.definingClass}'s link")
 
     val post = body.withIndex().filter { (index, instruction) ->
         index > reads.last() && instruction.opcode == Opcode.IPUT_OBJECT && instruction.getReference<FieldReference>()!!.type == MEDIA
     }.singleOrPatchException("$PATCH: the post $where stores with the link").index
     val media = (body[post] as TwoRegisterInstruction).registerA
-    val code = PostCodeFingerprint.method
-    val author = PostAuthorFingerprint.method
-    val username = UsernameFingerprint.method
 
     val sites = reads.map { read ->
         val after = read + 2
@@ -268,23 +265,97 @@ private fun BytecodePatchContext.replaceShortLinks(link: FieldReference) {
     // Later sites first, so the earlier indices still point where they did.
     for ((after, value, scratch) in sites.sortedByDescending { it.first }) {
         val (postCode, name) = scratch
-        method.addInstructionsWithLabels(
-            after,
-            """
-                const/4 v$postCode, 0x0
-                const/4 v$name, 0x0
-                if-eqz v$media, :link
-                invoke-virtual { v$media }, ${code.definingClass}->${code.name}()Ljava/lang/String;
-                move-result-object v$postCode
-                invoke-virtual { v$media }, ${author.definingClass}->${author.name}()$USER
-                move-result-object v$name
-                if-eqz v$name, :link
-                invoke-virtual { v$name }, ${username.definingClass}->${username.name}()Ljava/lang/String;
-                move-result-object v$name
-                :link
-                invoke-static { v$value, v$name, v$postCode }, $POST_LINK
-                move-result-object v$value
-            """,
-        )
+        method.addInstructionsWithLabels(after, postLinkHook(value, media, postCode, name))
     }
+
+    replaceShortLinksInHolders(types, getters)
 }
+
+/**
+ * The other places Threads reads a post's link out of the server's answer. Copy link, Share to
+ * another app and Share to Instagram each read it in a coroutine of their own, and two older share
+ * rows in a callback, and each of those objects holds the post it asked about in its one post
+ * field. Right after each read the post comes out of that field and the fetch's hook runs.
+ *
+ * Found on the emulator (2026-10-02): the share sheet's Link row still copied a /share/ link,
+ * because Copy link asks the repository's plain fetch and reads the answer itself, never passing
+ * through the fetch above. Send, WhatsApp status and Instagram story, and WhatsApp quick sends keep
+ * the post only in a register that a resumed coroutine hands back empty, so their links stay as
+ * they came. Answers how many reads it hooked.
+ */
+private fun BytecodePatchContext.replaceShortLinksInHolders(types: Set<String>, getters: Set<String>): Int {
+    val holders = mutableListOf<String>()
+    classDefForEach { classDef ->
+        if (classDef.type.startsWith(EXTENSION_ROOT) || classDef.type == PERMALINK_REPOSITORY) return@classDefForEach
+        if (classDef.instanceFields.none { it.type == MEDIA }) return@classDefForEach
+        if (classDef.methods.any { it.readsLinkAsInstance(types, getters) }) holders += classDef.type
+    }
+    var hooked = 0
+    for (type in holders) {
+        val holder = mutableClassDefBy(type)
+        // Two posts and either could be the one the link is for.
+        val post = holder.instanceFields.filter { it.type == MEDIA }.singleOrNull() ?: continue
+        for (method in holder.methods.filter { it.readsLinkAsInstance(types, getters) }) {
+            val body = method.implementation!!.instructions.toList()
+            val reads = body.linkReads(types, getters)
+            method.requireThisIntact(PATCH, reads.map { it + 2 })
+            val self = method.localRegisterCount()
+            val sites = reads.map { read ->
+                val value = (body[read + 1] as OneRegisterInstruction).registerA
+                if (value > 15) throw PatchException("$PATCH: $type->${method.name} keeps the link above v15")
+                Pair(read + 2, value) to method.freeLocalsAt(PATCH, read + 2, 3)
+            }
+            for ((site, scratch) in sites.sortedByDescending { it.first.first }) {
+                val (after, value) = site
+                val (media, postCode, name) = scratch
+                method.addInstructionsWithLabels(
+                    after,
+                    """
+                        move-object/from16 v$media, v$self
+                        iget-object v$media, v$media, $type->${post.name}:$MEDIA
+                    """ + postLinkHook(value, media, postCode, name),
+                )
+            }
+            hooked += reads.size
+        }
+    }
+    if (hooked == 0) throw PatchException("$PATCH: nothing that holds a post reads its link, so Copy link would keep short links")
+    return hooked
+}
+
+/**
+ * Null code and name, the post's code and its author's username when there is a post and an
+ * author, then the extension with the link, the name and the code, its answer replacing the link.
+ */
+private fun BytecodePatchContext.postLinkHook(value: Int, media: Int, postCode: Int, name: Int): String {
+    val code = PostCodeFingerprint.method
+    val author = PostAuthorFingerprint.method
+    val username = UsernameFingerprint.method
+    return """
+        const/4 v$postCode, 0x0
+        const/4 v$name, 0x0
+        if-eqz v$media, :link
+        invoke-virtual { v$media }, ${code.definingClass}->${code.name}()Ljava/lang/String;
+        move-result-object v$postCode
+        invoke-virtual { v$media }, ${author.definingClass}->${author.name}()$USER
+        move-result-object v$name
+        if-eqz v$name, :link
+        invoke-virtual { v$name }, ${username.definingClass}->${username.name}()Ljava/lang/String;
+        move-result-object v$name
+        :link
+        invoke-static { v$value, v$name, v$postCode }, $POST_LINK
+        move-result-object v$value
+    """
+}
+
+/** The reads of the answer's link getter in [this] body: a call to one of [getters] on [types] and its result. */
+private fun List<Instruction>.linkReads(types: Set<String>, getters: Set<String>): List<Int> = indices.filter { index ->
+    val instruction = this[index]
+    if (instruction.opcode != Opcode.INVOKE_INTERFACE && instruction.opcode != Opcode.INVOKE_VIRTUAL) return@filter false
+    val call = instruction.getReference<MethodReference>()!!
+    call.definingClass in types && call.name in getters && call.parameterTypes.isEmpty() &&
+        call.returnType == "Ljava/lang/String;" && getOrNull(index + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT
+}
+
+private fun Method.readsLinkAsInstance(types: Set<String>, getters: Set<String>): Boolean =
+    !AccessFlags.STATIC.isSet(accessFlags) && implementation?.instructions?.toList()?.linkReads(types, getters).orEmpty().isNotEmpty()

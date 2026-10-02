@@ -674,6 +674,7 @@ public class BadDexFixture {
     private static final String FEATURE_CACHE = "Lcom/instagram/barcelona/feed/data/cache/BarcelonaFeedCache;";
     private static final String FEATURE_LAMBDA = FEATURE_CACHE.substring(0, FEATURE_CACHE.length() - 1) + "$addAndSaveItemsFromFeedFetchSuccess$2$1;";
     private static final String FEATURE_RESPONSE = "Lfixture/Permalink;";
+    private static final String FEATURE_HOLDER = "Lfixture/CopyLink;";
     private static final String FEATURE_PARENT = "Lfixture/GraphResponse;";
     private static final String FEATURE_ANALYTICS = "Lapp/morphe/extension/hushthreads/misc/Analytics;";
     private static final String FEATURE_LINKS = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;";
@@ -1457,6 +1458,18 @@ public class BadDexFixture {
         classes.add(featureClass(FEATURE_SHARE, OBJECT, List.of(featureField(FEATURE_SHARE, "raw", "Ljava/lang/String;"),
                 featureField(FEATURE_SHARE, "link", "Ljava/lang/String;"), featureField(FEATURE_SHARE, "post", FEATURE_MEDIA)),
                 define(FEATURE_SHARE, "<init>", "V", false, body(1, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)))));
+        // Copy link: an object holding its post in one post field reads the response's link itself.
+        // v0..v7 locals, this in v8 and the response in v9; the hook takes the post into v7.
+        List<Instruction> copied = new ArrayList<>(List.of(new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 3, 9),
+                type(Opcode.CHECK_CAST, 3, FEATURE_RESPONSE), virtual(LINK_GETTER, 3), op(Opcode.MOVE_RESULT_OBJECT, 2)));
+        if (links && !fault.equals("holder-link-missing")) {
+            copied.add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 7, fault.equals("holder-link-receiver") ? 9 : 8));
+            copied.add(objectField(Opcode.IGET_OBJECT, 7, 7, fault.equals("holder-link-field") ? FEATURE_SHARE : FEATURE_HOLDER, "post", FEATURE_MEDIA));
+            copied.addAll(postLinkHook(2, fault));
+        }
+        copied.add(op(Opcode.RETURN_OBJECT, 2));
+        classes.add(featureClass(FEATURE_HOLDER, OBJECT, List.of(featureField(FEATURE_HOLDER, "post", FEATURE_MEDIA)),
+                define(FEATURE_HOLDER, "copied", OBJECT, false, body(10, copied.toArray(new Instruction[0])), OBJECT)));
         classes.add(featureClass(FEATURE_USER, OBJECT, List.of(), pandoGetter(FEATURE_USER, "username", "Ljava/lang/String;", "username")));
         classes.add(featureClass(FEATURE_PARENT, OBJECT, List.of(), define(FEATURE_PARENT, "<init>", "V", false,
                 body(2, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), "Ljava/lang/String;")));
@@ -1696,6 +1709,7 @@ public class BadDexFixture {
         for (int mask = 1; mask <= 7; mask++) dexes.put("features-mask-" + mask, featureBuild(true, Set.of("disableAnalytics"), mask, ""));
         for (String fault : List.of("feed-missing", "feed-replaced", "feed-register", "feed-duplicate", "item-stub", "ad-target", "ad-discarded", "ad-body", "ad-helper-body", "getter-body", "ad-helper-native", "getter-static",
                 "link-missing", "link-replaced", "link-register", "post-link-missing", "post-link-register", "post-link-getter", "post-link-bypass",
+                "holder-link-missing", "holder-link-receiver", "holder-link-field",
                 "browser-missing", "browser-register", "browser-bypass", "browser-clobber",
                 "pigeon-missing", "pigeon-replaced", "pigeon-bypass",
                 "default-missing", "mqtt-missing", "trust-missing", "trust-replaced", "trust-fallback", "status-missing", "status-false")) {
