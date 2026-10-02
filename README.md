@@ -12,7 +12,7 @@
 
 HushThreads is a Morphe patch bundle for Android that takes the ads out of Threads, cleans the links you share and cuts down what the app reports back to Meta.
 
-The source is at v0.0.3. The latest release is [v0.0.2](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.2), with 6 patches.
+The latest release is [v0.0.3](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.3), with 6 patches.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
