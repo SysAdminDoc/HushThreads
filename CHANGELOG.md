@@ -4,6 +4,8 @@ Every HushThreads release, newest first.
 
 ## Unreleased
 
+* **Tooling:** Localization file-picker tests wait for queued work with a finite completion fence, so recurring animations can't keep the suite running indefinitely. Every existing language and toast assertion remains.
+
 * **Threads:** Shared-link guidance now describes query-parameter removal without claiming that opaque share codes identify the account or are removed. The source comment no longer attributes a Threads rule to ClearURLs.
 
 * **Tooling:** Local APK builds align native ZIP entries before signing and check the final signature and alignment with the existing key. Release receipts now record ELF segment alignment, ZIP alignment and native payload preservation separately from vendor incompatibilities.
