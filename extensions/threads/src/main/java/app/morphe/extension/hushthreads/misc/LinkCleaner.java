@@ -38,10 +38,12 @@ public final class LinkCleaner {
     private LinkCleaner() {}
 
     /*
-     * Reviewed 2026-09-29 against ClearURLs (its Threads rule), Brave's query filter and the keys
-     * Threads 449 names in its own link handling (xmt, slof and igsh,igshid,igsi). Each one only
-     * labels who shared a link and from where; the post a link opens is picked by its path
-     * (/@user/post/CODE), which stays.
+     * Threads 449 link handling names these keys (xmt, slof and igsh,igshid,igsi), inspected
+     * 2026-09-29. ClearURLs and Brave are behavior references, not proof of Threads-specific
+     * privacy semantics: ClearURLs Rules inspected 2026-10-01 had no Threads provider.
+     * Only the query pairs listed below are removed; the path and all other pairs stay.
+     * Opaque /share/ path codes remain unchanged. Their relationship to the sharer requires
+     * matched account evidence before replacement. See https://github.com/ClearURLs/Rules/issues/186.
      */
 
     /** Taken out on any host: Meta's apps add them to links that leave them. */

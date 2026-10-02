@@ -19,7 +19,7 @@ The latest release is [v0.0.3](https://github.com/SysAdminDoc/HushThreads/releas
 ## Why use it
 
 - **A feed without ads.** Sponsored posts come out of each page of the feed as it arrives, before Threads saves or shows it.
-- **Links that don't point back at you.** The code Threads adds to a shared link to tie it to your account comes off, along with the other tracking tags.
+- **Shared links with fewer tags.** Supported query parameters, such as xmt, come off shared post links. Opaque `/share/` links keep their original paths. Their account-specific behavior hasn't been established.
 - **Less sent home.** Matched analytics upload addresses go nowhere, and Threads gets zeros instead of your phone's advertising ID. Other telemetry may remain.
 - **Controls that recover.** Every runtime feature has a switch, and a pause, an automatic safe mode, settings backups and privacy-filtered diagnostics help when Threads changes.
 

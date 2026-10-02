@@ -4,6 +4,8 @@ Every HushThreads release, newest first.
 
 ## Unreleased
 
+* **Threads:** Shared-link guidance now describes query-parameter removal without claiming that opaque share codes identify the account or are removed. The source comment no longer attributes a Threads rule to ClearURLs.
+
 * **Tooling:** Local APK builds align native ZIP entries before signing and check the final signature and alignment with the existing key. Release receipts now record ELF segment alignment, ZIP alignment and native payload preservation separately from vendor incompatibilities.
 
 * **Tooling:** Settings and recovery tests now cover Android 9 and Android 16, including large RTL text, entry and Back actions, content-URI imports with rollback, release-check consent and persisted crash recovery. Existing Android 11 coverage remains.
