@@ -606,6 +606,36 @@ public class SettingsNavigationTest {
         }
     }
 
+    /** The overview describes the feed rules selected for this build, including single-rule builds. */
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    public void feedOverviewAndRowsMatchSelectedRules() throws Exception {
+        List<EnumSet<PatchFamily>> selections = Arrays.asList(
+                EnumSet.of(PatchFamily.HIDE_ADS),
+                EnumSet.of(PatchFamily.HIDE_SUGGESTED_USERS),
+                EnumSet.of(PatchFamily.HIDE_ADS, PatchFamily.HIDE_SUGGESTED_USERS));
+        String[] summaries = {"Sponsored posts in For you and Following",
+                "Suggested accounts in your feed", "Ads and suggested accounts in your feed"};
+        String[] names = {"ads-only", "suggestions-only", "both-rules"};
+        for (int i = 0; i < selections.size(); i++) {
+            PatchFamily.inBuildForTests = selections.get(i);
+            recreate();
+            assertTrue(contains("section_Feed"));
+            Preference feed = (Preference) list().getItemAtPosition(position("section_Feed"));
+            assertEquals(summaries[i], String.valueOf(feed.getSummary()));
+            capture("feed-overview-" + names[i]);
+            tap("section_Feed");
+            assertEquals(selections.get(i).contains(PatchFamily.HIDE_ADS), contains(Settings.HIDE_ADS.key));
+            assertEquals(selections.get(i).contains(PatchFamily.HIDE_SUGGESTED_USERS),
+                    contains(Settings.HIDE_SUGGESTED_USERS.key));
+            ShadowLooper.idleMainLooper(1, java.util.concurrent.TimeUnit.SECONDS);
+            capture("feed-" + names[i]);
+            assertTrue(page.navigation.back());
+        }
+        PatchFamily.inBuildForTests = EnumSet.noneOf(PatchFamily.class);
+        recreate();
+        assertFalse(contains("section_Feed"));
+    }
+
     /** All pages are rendered with the same viewport as the design reference. */
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
     public void renderEveryPageAndSearchOffscreen() throws Exception {

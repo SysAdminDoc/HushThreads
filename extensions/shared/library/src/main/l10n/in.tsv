@@ -59,6 +59,9 @@ Settings exported. The app holding the file wouldn't let HushThreads read it bac
 Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.	Postingan bersponsor dihapus dari Untuk Anda dan Mengikuti sebelum Threads menampilkannya, jadi tidak ada celah kosong.
 # context: summary of the Feed section link on the overview; the same two feed names as the Hide ads switch
 Sponsored posts in For you and Following	Postingan bersponsor di Untuk Anda dan Mengikuti
+# context: Feed overview summaries when suggestions alone, or both feed rules, are selected
+Suggested accounts in your feed	Akun yang disarankan di feed Anda
+Ads and suggested accounts in your feed	Iklan dan akun yang disarankan di feed Anda
 Stop analytics uploads	Hentikan unggahan analitik
 # context: xmt and slof are the tags' own names in the link and stay as they are
 Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.	Menghapus tag pelacakan seperti xmt dan slof dari tautan postingan yang Anda salin atau bagikan. Bagian lain tautan tetap seperti semula.
@@ -168,3 +171,7 @@ Android didn't say which links open here. Tap to check in Android's settings.	An
 Selecting links by hand	Memilih tautan secara manual
 # context: an item in the sentence about what Pause can't turn off; the patch name Remove the advertising ID follows it in brackets, so it mustn't repeat that name
 the removed advertising ID permission	izin ID iklan yang dihapus
+
+# context: optional feed rule and its scope
+Hide suggested users	Sembunyikan pengguna yang disarankan
+Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.	Menghapus kartu terverifikasi yang menyarankan akun untuk diikuti. Postingan biasa dan repost tetap ada.

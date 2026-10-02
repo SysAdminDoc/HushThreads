@@ -76,6 +76,7 @@ public class HushThreadsPreferenceFragmentTest {
     @Before
     public void initializeRowTitlesAfterContext() {
         ROW_TITLES.put(PatchFamily.HIDE_ADS, "Hide ads");
+        ROW_TITLES.put(PatchFamily.HIDE_SUGGESTED_USERS, "Hide suggested users");
         ROW_TITLES.put(PatchFamily.SANITIZE_SHARING_LINKS, "Remove tracking from shared links");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop analytics uploads");
         ROW_TITLES.put(PatchFamily.REMOVE_AD_ID, "Advertising ID removed");
@@ -178,7 +179,7 @@ public class HushThreadsPreferenceFragmentTest {
 
                 List<String> sections = sections(page);
                 List<String> expected = new ArrayList<>();
-                if (build.contains(PatchFamily.HIDE_ADS)) expected.add("Feed");
+                if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_SUGGESTED_USERS)) expected.add("Feed");
                 if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS) || build.contains(PatchFamily.DISABLE_ANALYTICS)) {
                     expected.add("Privacy");
                 }
@@ -193,7 +194,7 @@ public class HushThreadsPreferenceFragmentTest {
         assertEquals(Collections.emptyList(), wrong);
     }
 
-    /** The five patches' rows say what each does, in Threads' own words. */
+    /** Each selected patch's row says what it does, in Threads' own words. */
     @Test
     public void eachPatchsRowSaysWhatItDoes() {
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
@@ -202,13 +203,16 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Hide ads", String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getTitle()));
             assertEquals("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
                     String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getSummary()));
+            assertEquals("Hide suggested users", String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_USERS.key).getTitle()));
+            assertEquals("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
+                    String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_USERS.key).getSummary()));
             assertEquals("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the "
                     + "link stays as it was.", String.valueOf(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key).getSummary()));
             assertEquals("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. "
                     + "Turn this off to use the original addresses.",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
-            // The switches are the screen's, all three on as they ship.
-            for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.SANITIZE_SHARING_LINKS,
+            // Every selected feed/privacy switch ships on.
+            for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS, Settings.SANITIZE_SHARING_LINKS,
                     Settings.DISABLE_ANALYTICS)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }

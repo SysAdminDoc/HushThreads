@@ -49,7 +49,8 @@ import app.morphe.extension.shared.settings.PauseForTests;
  * without a probe here fails the first test.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 30, shadows = ShadowFeedAds.class, instrumentedPackages = "app.morphe.extension.hushthreads.ads")
+@Config(sdk = 30, shadows = {ShadowFeedAds.class, ShadowFeedAds.Status.class},
+        instrumentedPackages = "app.morphe.extension.hushthreads.ads")
 public class PausedHooksTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
@@ -80,10 +81,16 @@ public class PausedHooksTest {
     }
 
     private static Map<PatchFamily, List<Probe>> probes() {
+        ShadowFeedAds.Status.ads = true;
+        ShadowFeedAds.Status.suggestions = true;
         Map<PatchFamily, List<Probe>> probes = new EnumMap<>(PatchFamily.class);
         // A feed page with a sponsored post in it comes back without the post.
         probes.put(PatchFamily.HIDE_ADS, Collections.singletonList(() -> {
             List<Object> page = Arrays.asList("a post", ShadowFeedAds.AD, "another post");
+            return FeedAds.filter(page).size() != page.size();
+        }));
+        probes.put(PatchFamily.HIDE_SUGGESTED_USERS, Collections.singletonList(() -> {
+            List<Object> page = Arrays.asList("a post", ShadowFeedAds.SUGGESTED, "another post");
             return FeedAds.filter(page).size() != page.size();
         }));
         // A shared post link loses the tracking tags Threads added to it.

@@ -39,6 +39,8 @@ import app.morphe.extension.shared.settings.preference.LogBufferManager;
 public enum PatchFamily {
     HIDE_ADS(FamilyNames.HIDE_ADS, "hideAds", null,
             Settings.HIDE_ADS),
+    HIDE_SUGGESTED_USERS(FamilyNames.HIDE_SUGGESTED_USERS, "hideSuggestedUsers", null,
+            Settings.HIDE_SUGGESTED_USERS),
     SANITIZE_SHARING_LINKS(FamilyNames.SANITIZE_SHARING_LINKS, "sanitizeSharingLinks", null,
             Settings.SANITIZE_SHARING_LINKS),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,

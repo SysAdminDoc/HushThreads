@@ -1,5 +1,5 @@
 {
-  "version": "v0.0.3",
+  "version": "v0.0.4",
   "appNames": {
     "com.instagram.barcelona": "Threads"
   },
@@ -53,6 +53,51 @@
       "name": "Hide ads",
       "description": "Takes sponsored posts out of your Threads feed before they're shown.",
       "category": "Ads",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "449.0.0.54.82",
+          "448.0.0.54.85"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "449.0.0.54.82",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 511908382
+              }
+            },
+            {
+              "version": "448.0.0.54.85",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 511808302
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide suggested users",
+      "description": "Removes verified server cards suggesting accounts to follow. Ordinary posts, reposts and unknown card types stay.",
+      "category": "Feed",
       "use": true,
       "dependencies": [
         "BytecodePatch",

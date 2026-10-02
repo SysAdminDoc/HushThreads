@@ -59,6 +59,9 @@ Settings exported. The app holding the file wouldn't let HushThreads read it bac
 Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.	Sponsorlu gönderiler, Threads onları göstermeden önce Senin İçin ve Takip Edilenler akışlarından çıkarılır, böylece boşluk kalmaz.
 # context: summary of the Feed section link on the overview; the same two feed names as the Hide ads switch
 Sponsored posts in For you and Following	Senin İçin ve Takip Edilenler'deki sponsorlu gönderiler
+# context: Feed overview summaries when suggestions alone, or both feed rules, are selected
+Suggested accounts in your feed	Akışınızdaki önerilen hesaplar
+Ads and suggested accounts in your feed	Akışınızdaki reklamlar ve önerilen hesaplar
 Stop analytics uploads	Analiz yüklemelerini durdur
 # context: xmt and slof are the tags' own names in the link and stay as they are
 Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.	Kopyaladığın veya paylaştığın gönderi bağlantılarından xmt ve slof gibi izleme etiketlerini kaldırır. Bağlantının geri kalanı olduğu gibi kalır.
@@ -168,3 +171,7 @@ Android didn't say which links open here. Tap to check in Android's settings.	An
 Selecting links by hand	Bağlantıları elle seçme
 # context: an item in the sentence about what Pause can't turn off; the patch name Remove the advertising ID follows it in brackets, so it mustn't repeat that name
 the removed advertising ID permission	kaldırılan reklam kimliği izni
+
+# context: optional feed rule and its scope
+Hide suggested users	Önerilen kullanıcıları gizle
+Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.	Takip edilecek hesaplar öneren doğrulanmış kartları kaldırır. Normal gönderiler ve yeniden paylaşımlar kalır.

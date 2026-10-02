@@ -85,7 +85,11 @@ final class SettingsNavigation extends BaseAdapter {
         source = screen.getRootAdapter();
         Context context = screen.getContext();
         // Stable English route IDs survive a locale change; the displayed names are localized.
-        section("Feed", L10n.t("Feed"), L10n.t("Sponsored posts in For you and Following"), SettingsIcons.FEED, true);
+        String feedDetail = PatchFamily.HIDE_SUGGESTED_USERS.inBuild()
+                ? (PatchFamily.HIDE_ADS.inBuild() ? L10n.t("Ads and suggested accounts in your feed")
+                : L10n.t("Suggested accounts in your feed"))
+                : L10n.t("Sponsored posts in For you and Following");
+        section("Feed", L10n.t("Feed"), feedDetail, SettingsIcons.FEED, true);
         section("Privacy", L10n.t("Privacy"), L10n.t("Tracking in shared links and analytics uploads"), SettingsIcons.BLOCK, true);
         section("Links", L10n.t("Links"), null, SettingsIcons.LINKS, false);
         section("Updates", L10n.t("Updates"), null, SettingsIcons.UPDATES, false);

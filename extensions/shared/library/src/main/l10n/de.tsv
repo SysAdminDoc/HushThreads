@@ -59,6 +59,9 @@ Settings exported. The app holding the file wouldn't let HushThreads read it bac
 Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.	Gesponserte Beiträge werden aus „Für dich“ und „Gefolgt“ entfernt, bevor Threads sie zeigt, deshalb bleibt keine Lücke.
 # context: summary of the Feed section link on the overview; the same two feed names as the Hide ads switch
 Sponsored posts in For you and Following	Gesponserte Beiträge in „Für dich“ und „Gefolgt“
+# context: Feed overview summaries when suggestions alone, or both feed rules, are selected
+Suggested accounts in your feed	Vorgeschlagene Konten in deinem Feed
+Ads and suggested accounts in your feed	Werbung und vorgeschlagene Konten in deinem Feed
 Stop analytics uploads	Analyse-Uploads stoppen
 # context: xmt and slof are the tags' own names in the link and stay as they are
 Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.	Entfernt Tracking-Tags wie xmt und slof aus den Beitragslinks, die du kopierst oder teilst. Der Rest des Links bleibt, wie er war.
@@ -168,3 +171,7 @@ Android didn't say which links open here. Tap to check in Android's settings.	An
 Selecting links by hand	Links von Hand auswählen
 # context: an item in the sentence about what Pause can't turn off; the patch name Remove the advertising ID follows it in brackets, so it mustn't repeat that name
 the removed advertising ID permission	die entfernte Berechtigung für die Werbe-ID
+
+# context: optional feed rule and its scope
+Hide suggested users	Vorgeschlagene Nutzer ausblenden
+Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.	Entfernt bestätigte Karten mit Konten zum Folgen. Normale Beiträge und Reposts bleiben.

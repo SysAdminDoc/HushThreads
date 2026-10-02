@@ -34,6 +34,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_ADS =
             new BooleanSetting("hushthreads_hide_ads", TRUE);
 
+    /** Verified server cards suggesting accounts to follow, leaving ordinary posts visible. */
+    public static final BooleanSetting HIDE_SUGGESTED_USERS =
+            new BooleanSetting("hushthreads_hide_suggested_users", TRUE);
+
     /**
      * The tracking keys come off the post links Threads hands out when you copy or share one
      * (xmt, slof, igsh and the rest), with the rest of the link left as the server wrote it.

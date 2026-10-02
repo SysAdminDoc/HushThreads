@@ -67,11 +67,12 @@ body:
     id: selected_patches
     attributes:
       label: Which patches were in your build?
-      description: All of them are selected by default. If you kept the manager's own selection, pick them all.
+      description: Pick the patches you selected. Hide suggested users is available in source builds and isn't in the v0.0.3 release.
       multiple: true
       options:
         - Disable analytics
         - Hide ads
+        - Hide suggested users
         - HushThreads settings
         - Remove the advertising ID
         - Restore screens on re-signed builds

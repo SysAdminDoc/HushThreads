@@ -25,6 +25,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean hideSuggestedUsers() {
+        return false;
+    }
+
     public static boolean sanitizeSharingLinks() {
         return false;
     }

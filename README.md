@@ -1,7 +1,7 @@
 ![HushThreads. Keep the thread. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <a href="https://github.com/SysAdminDoc/HushThreads/releases"><img src="https://img.shields.io/badge/version-0.0.3-000000" alt="Version 0.0.3"></a>
+  <a href="https://github.com/SysAdminDoc/HushThreads/releases"><img src="https://img.shields.io/badge/version-0.0.4-000000" alt="Version 0.0.4"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Threads-449.0.0.54.82-000000" alt="Threads 449.0.0.54.82">
@@ -45,7 +45,7 @@ Source builds on main declare both of these arm64-v8a variants. The published v0
 
 Threads releases a new version about once a week, and each one renames most of its code. Every patch here finds what it changes by names Threads keeps (its post model, the feed cache, JSON parser names, strings and manifest components) rather than by the names that change. When one can't find what it needs, patching stops with a message naming it, instead of producing an app that quietly does nothing. Disable analytics checks three address kinds: PIGEON (the logger's URL builder), DEFAULT (direct event-log URL returns) and MQTT (the analytics endpoint setting). It stops when none match. The patch log, Privacy settings and exported diagnostics identify matched and missing kinds. Both declared builds match all three. This doesn't establish that every telemetry path is covered.
 
-Hide ads and Sanitize sharing links also stop on competing inner targets. The failure lists the candidates so a changed build can be checked before installing it.
+Hide ads, Hide suggested users and Sanitize sharing links also stop on competing inner targets. The failure lists the candidates so a changed build can be checked before installing it.
 
 ## Keep your signing key
 
@@ -59,16 +59,19 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-There are 6 patches, and every one of them is selected by default.
+Source v0.0.4 builds contain 7 patches, all selected by default. The published v0.0.3 bundle contains 6 patches and doesn't include Hide suggested users.
 
 | Patch | What it does |
 |---|---|
 | `Disable analytics` | Redirects matched Pigeon, default event-log and MQTT analytics addresses. Settings show which address kinds were patched. Other telemetry may remain. |
 | `Hide ads` | Takes sponsored posts out of your Threads feed before they're shown. |
+| `Hide suggested users` | Removes verified server cards suggesting accounts to follow. Ordinary posts, reposts and unknown card types stay. |
 | `HushThreads settings` | Adds HushThreads settings to Threads. Long-press Threads' launcher icon, or open Additional settings in the app on Threads' App info page, to turn features on or off, pause HushThreads, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
 | `Remove the advertising ID` | Stops Threads getting your phone's advertising ID from Google Play services. Threads gets a string of zeros in its place. |
 | `Restore screens on re-signed builds` | Lets Threads trust itself again on a re-signed build, the way it trusts its Meta-signed self, and lets an Instagram you patch with this build's own key call into it the same as the real Instagram would. A Root Mount install doesn't need this patch. |
 | `Sanitize sharing links` | Takes Threads' tracking tags, such as xmt, off the links you share or copy. The post a link opens stays the same. |
+
+The feed controls share one page filter. Each selected rule has its own switch and removal count. Pause restores the original page, and a failed card check keeps the whole page. Hide suggested users passes fixture checks on both source-supported builds. It hasn't been seen taking a real card out of a live feed yet, because the test account wasn't shown any.
 
 ## Settings
 
@@ -77,7 +80,7 @@ Long-press the Threads icon and tap HushThreads. You can also open Threads' App 
 <p><img src="assets/settings-overview.png" width="320" alt="HushThreads settings with search, Pause and the Feed and Privacy pages"><img src="assets/settings-privacy.png" width="320" alt="Privacy preview with clean shared links, analytics uploads and all three address kinds matched"></p>
 <p><img src="assets/launcher-shortcut.png" width="320" alt="The HushThreads shortcut on Threads' launcher icon"></p>
 
-Diagnostics list hook calls separately from removed ad posts and shared links that changed. Unchanged, disabled, paused or failed operations add no removal or change count. Reports keep these totals without saving the posts or URLs.
+Diagnostics list hook calls separately from removed feed items and shared links that changed. Unchanged, disabled, paused or failed operations add no removal or change count. Reports keep these totals without saving the posts or URLs.
 
 ## Signing in
 

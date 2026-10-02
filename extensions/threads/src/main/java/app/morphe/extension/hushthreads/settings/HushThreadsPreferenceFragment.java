@@ -223,11 +223,15 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         LogBufferManager.registerReportSection(ReleaseCheck.REPORT);
         Set<PatchFamily> build = PatchFamily.inThisBuild();
 
-        if (build.contains(PatchFamily.HIDE_ADS)) {
+        if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_SUGGESTED_USERS)) {
             PreferenceCategory feed = category(screen, L10n.t("Feed"));
-            feed.addPreference(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
+            if (build.contains(PatchFamily.HIDE_ADS)) feed.addPreference(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
                     L10n.t("Sponsored posts come out of For you and Following before Threads shows them, so no gap is "
                             + "left.")));
+            if (build.contains(PatchFamily.HIDE_SUGGESTED_USERS)) {
+                feed.addPreference(toggle(context, Settings.HIDE_SUGGESTED_USERS, L10n.t("Hide suggested users"),
+                        L10n.t("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.")));
+            }
         }
 
         if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS) || build.contains(PatchFamily.DISABLE_ANALYTICS)) {

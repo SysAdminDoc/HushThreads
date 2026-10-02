@@ -2,9 +2,15 @@
 
 Every HushThreads release, newest first.
 
-## Unreleased
+## 0.0.4 (2026-10-02)
+
+Source builds only. The published bundle remains at 0.0.3.
 
 * **Tooling:** Localization file-picker tests wait for queued work with a finite completion fence, so recurring animations can't keep the suite running indefinitely. Every existing language and toast assertion remains.
+
+* **Threads:** Hide suggested users has its own feed switch for verified server cards that suggest accounts to follow. Ads and suggestions share one page filter with separate removal counts. Unknown card types, ordinary posts and reposts stay visible. A failed check keeps the whole original page. Both supported builds pass fixture checks, but removing a real card from a live feed hasn't been seen yet.
+
+* **Tooling:** A patch that finds more than one match now lists the candidates when it stops, so a changed Threads build can be checked before anyone installs it.
 
 * **Threads:** Shared-link guidance now describes query-parameter removal without claiming that opaque share codes identify the account or are removed. The source comment no longer attributes a Threads rule to ClearURLs.
 

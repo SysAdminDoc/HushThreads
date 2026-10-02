@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(322);
+        Map<String, String> table = new HashMap<>(330);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -79,6 +79,8 @@ public final class L10nTranslations {
                 "Eine Datei namens %1$s in %2$s hat HushThreads pausiert.");
         table.put("About",
                 "Info");
+        table.put("Ads and suggested accounts in your feed",
+                "Werbung und vorgeschlagene Konten in deinem Feed");
         table.put("Advertising ID removed",
                 "Werbe-ID entfernt");
         table.put("Analytics address coverage",
@@ -173,13 +175,15 @@ public final class L10nTranslations {
                 "GitHub weist Anfragen aus diesem Netz gerade ab. Versuche es sp\u00e4ter noch einmal.");
         table.put("GitHub's answer couldn't be used. Try again later.",
                 "Mit der Antwort von GitHub lie\u00df sich nichts anfangen. Versuche es sp\u00e4ter noch einmal.");
-        table.put("Go straight to one group of settings. Back returns to where you were.",
-                "Direkt zu einer Gruppe von Einstellungen. Zur\u00fcck bringt dich dorthin, wo du warst.");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Go straight to one group of settings. Back returns to where you were.",
+                "Direkt zu einer Gruppe von Einstellungen. Zur\u00fcck bringt dich dorthin, wo du warst.");
         table.put("Hide ads",
                 "Werbung ausblenden");
+        table.put("Hide suggested users",
+                "Vorgeschlagene Nutzer ausblenden");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s ist erschienen. Aktualisiere es im Morphe Manager.");
         table.put("HushThreads %1$s on Threads %2$s",
@@ -248,6 +252,8 @@ public final class L10nTranslations {
                 "Zeichnet Patch-Aktivit\u00e4t auf und zeigt Fehler f\u00fcr einen Fehlerbericht. Im Alltag ausgeschaltet lassen.");
         table.put("Remove tracking from shared links",
                 "Tracking aus geteilten Links entfernen");
+        table.put("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
+                "Entfernt best\u00e4tigte Karten mit Konten zum Folgen. Normale Beitr\u00e4ge und Reposts bleiben.");
         table.put("Resume",
                 "Fortsetzen");
         table.put("Retry",
@@ -292,15 +298,17 @@ public final class L10nTranslations {
                 "Gesponserte Beitr\u00e4ge in \u201eF\u00fcr dich\u201c und \u201eGefolgt\u201c");
         table.put("Stays in while paused",
                 "Bleibt w\u00e4hrend der Pause aktiv");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Stop analytics uploads",
                 "Analyse-Uploads stoppen");
+        table.put("Suggested accounts in your feed",
+                "Vorgeschlagene Konten in deinem Feed");
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.",
                 "Entfernt Tracking-Tags wie xmt und slof aus den Beitragslinks, die du kopierst oder teilst. Der Rest des Links bleibt, wie er war.");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -386,7 +394,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(322);
+        Map<String, String> table = new HashMap<>(330);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -418,6 +426,8 @@ public final class L10nTranslations {
                 "Un archivo llamado %1$s en %2$s paus\u00f3 HushThreads.");
         table.put("About",
                 "Acerca de");
+        table.put("Ads and suggested accounts in your feed",
+                "Anuncios y cuentas sugeridas en tu feed");
         table.put("Advertising ID removed",
                 "ID de publicidad eliminado");
         table.put("Analytics address coverage",
@@ -512,13 +522,15 @@ public final class L10nTranslations {
                 "GitHub est\u00e1 rechazando por ahora las consultas desde esta red. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
         table.put("GitHub's answer couldn't be used. Try again later.",
                 "No se pudo usar la respuesta de GitHub. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
-        table.put("Go straight to one group of settings. Back returns to where you were.",
-                "Ve directo a un grupo de ajustes. Atr\u00e1s te devuelve a donde estabas.");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("Go straight to one group of settings. Back returns to where you were.",
+                "Ve directo a un grupo de ajustes. Atr\u00e1s te devuelve a donde estabas.");
         table.put("Hide ads",
                 "Ocultar anuncios");
+        table.put("Hide suggested users",
+                "Ocultar usuarios sugeridos");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "Ya sali\u00f3 HushThreads %1$s. Actual\u00edzalo en Morphe Manager.");
         table.put("HushThreads %1$s on Threads %2$s",
@@ -587,6 +599,8 @@ public final class L10nTranslations {
                 "Registra la actividad de los parches y muestra errores para un informe. D\u00e9jalo desactivado en el uso normal.");
         table.put("Remove tracking from shared links",
                 "Quitar el seguimiento de los enlaces compartidos");
+        table.put("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
+                "Elimina las tarjetas verificadas que sugieren cuentas para seguir. Las publicaciones normales y los reposts permanecen.");
         table.put("Resume",
                 "Reanudar");
         table.put("Retry",
@@ -631,15 +645,17 @@ public final class L10nTranslations {
                 "Publicaciones patrocinadas en Para ti y Siguiendo");
         table.put("Stays in while paused",
                 "Se mantiene durante la pausa");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Stop analytics uploads",
                 "Detener el env\u00edo de anal\u00edticas");
+        table.put("Suggested accounts in your feed",
+                "Cuentas sugeridas en tu feed");
         table.put("Supported links",
                 "Enlaces compatibles");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.",
                 "Quita las etiquetas de seguimiento, como xmt y slof, de los enlaces de publicaciones que copias o compartes. El resto del enlace se queda como estaba.");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -725,7 +741,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(322);
+        Map<String, String> table = new HashMap<>(330);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -757,6 +773,8 @@ public final class L10nTranslations {
                 "File bernama %1$s di %2$s menjeda HushThreads.");
         table.put("About",
                 "Tentang");
+        table.put("Ads and suggested accounts in your feed",
+                "Iklan dan akun yang disarankan di feed Anda");
         table.put("Advertising ID removed",
                 "ID iklan dihapus");
         table.put("Analytics address coverage",
@@ -851,13 +869,15 @@ public final class L10nTranslations {
                 "GitHub sedang menolak pemeriksaan dari jaringan ini. Coba lagi nanti.");
         table.put("GitHub's answer couldn't be used. Try again later.",
                 "Jawaban GitHub tidak dapat digunakan. Coba lagi nanti.");
-        table.put("Go straight to one group of settings. Back returns to where you were.",
-                "Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Go straight to one group of settings. Back returns to where you were.",
+                "Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.");
         table.put("Hide ads",
                 "Sembunyikan iklan");
+        table.put("Hide suggested users",
+                "Sembunyikan pengguna yang disarankan");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s sudah dirilis. Perbarui di Morphe Manager.");
         table.put("HushThreads %1$s on Threads %2$s",
@@ -926,6 +946,8 @@ public final class L10nTranslations {
                 "Catat aktivitas patch dan tampilkan kesalahan untuk laporan bug. Matikan saat penggunaan biasa.");
         table.put("Remove tracking from shared links",
                 "Hapus pelacakan dari tautan yang dibagikan");
+        table.put("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
+                "Menghapus kartu terverifikasi yang menyarankan akun untuk diikuti. Postingan biasa dan repost tetap ada.");
         table.put("Resume",
                 "Lanjutkan");
         table.put("Retry",
@@ -970,15 +992,17 @@ public final class L10nTranslations {
                 "Postingan bersponsor di Untuk Anda dan Mengikuti");
         table.put("Stays in while paused",
                 "Tetap aktif saat dijeda");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Stop analytics uploads",
                 "Hentikan unggahan analitik");
+        table.put("Suggested accounts in your feed",
+                "Akun yang disarankan di feed Anda");
         table.put("Supported links",
                 "Tautan yang didukung");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.",
                 "Menghapus tag pelacakan seperti xmt dan slof dari tautan postingan yang Anda salin atau bagikan. Bagian lain tautan tetap seperti semula.");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushThreads lagi.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1064,7 +1088,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(322);
+        Map<String, String> table = new HashMap<>(330);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1096,6 +1120,8 @@ public final class L10nTranslations {
                 "Um arquivo chamado %1$s em %2$s pausou o HushThreads.");
         table.put("About",
                 "Sobre");
+        table.put("Ads and suggested accounts in your feed",
+                "An\u00fancios e contas sugeridas no seu feed");
         table.put("Advertising ID removed",
                 "ID de publicidade removido");
         table.put("Analytics address coverage",
@@ -1190,13 +1216,15 @@ public final class L10nTranslations {
                 "O GitHub est\u00e1 recusando consultas desta rede por enquanto. Tente novamente mais tarde.");
         table.put("GitHub's answer couldn't be used. Try again later.",
                 "N\u00e3o foi poss\u00edvel usar a resposta do GitHub. Tente novamente mais tarde.");
-        table.put("Go straight to one group of settings. Back returns to where you were.",
-                "V\u00e1 diretamente para um grupo de configura\u00e7\u00f5es. Voltar leva voc\u00ea de volta ao ponto em que estava.");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Go straight to one group of settings. Back returns to where you were.",
+                "V\u00e1 diretamente para um grupo de configura\u00e7\u00f5es. Voltar leva voc\u00ea de volta ao ponto em que estava.");
         table.put("Hide ads",
                 "Ocultar an\u00fancios");
+        table.put("Hide suggested users",
+                "Ocultar usu\u00e1rios sugeridos");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "O HushThreads %1$s est\u00e1 dispon\u00edvel. Atualize-o pelo Morphe Manager.");
         table.put("HushThreads %1$s on Threads %2$s",
@@ -1265,6 +1293,8 @@ public final class L10nTranslations {
                 "Registra a atividade dos patches e mostra os erros para um relat\u00f3rio de problema. Mantenha desativado durante o uso normal.");
         table.put("Remove tracking from shared links",
                 "Remover o rastreamento dos links compartilhados");
+        table.put("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
+                "Remove cart\u00f5es verificados que sugerem contas para seguir. Publica\u00e7\u00f5es comuns e reposts permanecem.");
         table.put("Resume",
                 "Retomar");
         table.put("Retry",
@@ -1309,15 +1339,17 @@ public final class L10nTranslations {
                 "Publica\u00e7\u00f5es patrocinadas em Para voc\u00ea e Seguindo");
         table.put("Stays in while paused",
                 "O que continua ativo na pausa");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Stop analytics uploads",
                 "Parar o envio de dados de an\u00e1lise");
+        table.put("Suggested accounts in your feed",
+                "Contas sugeridas no seu feed");
         table.put("Supported links",
                 "Links compat\u00edveis");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.",
                 "Remove dos links de publica\u00e7\u00f5es que voc\u00ea copia ou compartilha as tags de rastreamento, como xmt e slof. O resto do link continua como estava.");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1403,7 +1435,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(322);
+        Map<String, String> table = new HashMap<>(330);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -1435,6 +1467,8 @@ public final class L10nTranslations {
                 "%2$s i\u00e7indeki %1$s adl\u0131 bir dosya HushThreads'u duraklatt\u0131.");
         table.put("About",
                 "Hakk\u0131nda");
+        table.put("Ads and suggested accounts in your feed",
+                "Ak\u0131\u015f\u0131n\u0131zdaki reklamlar ve \u00f6nerilen hesaplar");
         table.put("Advertising ID removed",
                 "Reklam kimli\u011fi kald\u0131r\u0131ld\u0131");
         table.put("Analytics address coverage",
@@ -1529,13 +1563,15 @@ public final class L10nTranslations {
                 "GitHub \u015fu an bu a\u011fdan gelen sorgular\u0131 geri \u00e7eviriyor. Daha sonra tekrar dene.");
         table.put("GitHub's answer couldn't be used. Try again later.",
                 "GitHub'\u0131n yan\u0131t\u0131 kullan\u0131lamad\u0131. Daha sonra tekrar dene.");
-        table.put("Go straight to one group of settings. Back returns to where you were.",
-                "Do\u011frudan bir ayar grubuna git. Geri, bulundu\u011fun yere d\u00f6nd\u00fcr\u00fcr.");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("Go straight to one group of settings. Back returns to where you were.",
+                "Do\u011frudan bir ayar grubuna git. Geri, bulundu\u011fun yere d\u00f6nd\u00fcr\u00fcr.");
         table.put("Hide ads",
                 "Reklamlar\u0131 gizle");
+        table.put("Hide suggested users",
+                "\u00d6nerilen kullan\u0131c\u0131lar\u0131 gizle");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s \u00e7\u0131kt\u0131. Morphe Manager'da g\u00fcncelle.");
         table.put("HushThreads %1$s on Threads %2$s",
@@ -1604,6 +1640,8 @@ public final class L10nTranslations {
                 "Hata raporu i\u00e7in yama etkinli\u011fini kaydeder ve hatalar\u0131 g\u00f6sterir. Normal kullan\u0131mda kapal\u0131 b\u0131rak\u0131n.");
         table.put("Remove tracking from shared links",
                 "Payla\u015f\u0131lan ba\u011flant\u0131lardan izlemeyi kald\u0131r");
+        table.put("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
+                "Takip edilecek hesaplar \u00f6neren do\u011frulanm\u0131\u015f kartlar\u0131 kald\u0131r\u0131r. Normal g\u00f6nderiler ve yeniden payla\u015f\u0131mlar kal\u0131r.");
         table.put("Resume",
                 "Devam et");
         table.put("Retry",
@@ -1648,15 +1686,17 @@ public final class L10nTranslations {
                 "Senin \u0130\u00e7in ve Takip Edilenler'deki sponsorlu g\u00f6nderiler");
         table.put("Stays in while paused",
                 "Duraklat\u0131lsa da devrede kal\u0131r");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Stop analytics uploads",
                 "Analiz y\u00fcklemelerini durdur");
+        table.put("Suggested accounts in your feed",
+                "Ak\u0131\u015f\u0131n\u0131zdaki \u00f6nerilen hesaplar");
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.",
                 "Kopyalad\u0131\u011f\u0131n veya payla\u015ft\u0131\u011f\u0131n g\u00f6nderi ba\u011flant\u0131lar\u0131ndan xmt ve slof gibi izleme etiketlerini kald\u0131r\u0131r. Ba\u011flant\u0131n\u0131n geri kalan\u0131 oldu\u011fu gibi kal\u0131r.");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("That file is too large to be a settings file. Nothing was changed.",

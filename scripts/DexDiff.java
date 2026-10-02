@@ -5,6 +5,7 @@ import com.android.tools.smali.dexlib2.Opcodes;
 import com.android.tools.smali.dexlib2.iface.ClassDef;
 import com.android.tools.smali.dexlib2.iface.DexFile;
 import com.android.tools.smali.dexlib2.iface.ExceptionHandler;
+import com.android.tools.smali.dexlib2.iface.Field;
 import com.android.tools.smali.dexlib2.iface.Method;
 import com.android.tools.smali.dexlib2.iface.MethodImplementation;
 import com.android.tools.smali.dexlib2.iface.MultiDexContainer;
@@ -197,7 +198,7 @@ public class DexDiff {
     /** The kind a first-call rule that asks only for a call leaving a class prefix is read into. */
     private static final String OUTSIDE_FIRST_CALL = "first-call-outside";
     private static final Set<String> THREADS_FEATURES = Set.of(
-            "hideAds", "sanitizeSharingLinks", "disableAnalytics", "restoreTrust");
+            "hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "disableAnalytics", "restoreTrust");
 
     private static final class Contract {
         final String kind;
@@ -2025,8 +2026,12 @@ public class DexDiff {
      */
     private static void featureBody(Method stock, Method patched, int prefix,
             Map<Integer, Integer> insertions, String callee) {
-        requireFeature(stock.getAccessFlags() == patched.getAccessFlags(),
-                featureSig(stock) + " changed its method access flags");
+        featureBody(stock, patched, prefix, insertions, callee, null);
+    }
+
+    private static void featureBody(Method stock, Method patched, int prefix,
+            Map<Integer, Integer> insertions, String callee, FieldReference recordedRaw) {
+        featureDeclaration(stock, patched);
         requireFeature(stock.getImplementation() != null && patched.getImplementation() != null,
                 featureSig(stock) + " lost its executable implementation");
         Layout old = new Layout(stock.getImplementation()), now = new Layout(patched.getImplementation());
@@ -2042,6 +2047,18 @@ public class DexDiff {
             if (register != null) {
                 featureCall(now.instructions, at, callee, register, register);
                 at += 2;
+            }
+            if (recordedRaw != null && old.instructions.get(k).getOpcode() == Opcode.RETURN_VOID) {
+                requireFeature(at + 2 < now.instructions.size(), "raw wrapper lost its constructor recorder");
+                Instruction receiver = now.instructions.get(at), value = now.instructions.get(at + 1), store = now.instructions.get(at + 2);
+                int input = stock.getImplementation().getRegisterCount() - 1;
+                requireFeature(receiver.getOpcode() == Opcode.MOVE_OBJECT_FROM16 && value.getOpcode() == Opcode.MOVE_OBJECT_FROM16
+                        && store.getOpcode() == Opcode.IPUT_OBJECT
+                        && ((TwoRegisterInstruction) receiver).getRegisterA() == 0 && ((TwoRegisterInstruction) receiver).getRegisterB() == input - 1
+                        && ((TwoRegisterInstruction) value).getRegisterA() == 1 && ((TwoRegisterInstruction) value).getRegisterB() == input
+                        && ((TwoRegisterInstruction) store).getRegisterA() == 1 && ((TwoRegisterInstruction) store).getRegisterB() == 0
+                        && reference(store).equals(recordedRaw.toString()), "raw wrapper has a different constructor recorder");
+                at += 3;
             }
             requireFeature(at < now.instructions.size()
                     && featureInstruction(old.instructions.get(k)).equals(featureInstruction(now.instructions.get(at))),
@@ -2111,12 +2128,24 @@ public class DexDiff {
         requireFeature(found.equals(expected), callee + " host calls differ: expected " + expected + ", found " + found);
     }
 
-    private static void featureFeed(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
-        Method merge = featureTarget(clean, m -> m.getDefiningClass().equals(FEED)
+    private static Method featureMerge(Map<String, List<Method>> clean) {
+        return featureTarget(clean, m -> m.getDefiningClass().equals(FEED)
                 && m.getReturnType().equals("Ljava/lang/Object;") && m.getParameterTypes().size() == 8
                 && m.getParameterTypes().get(4).equals("Ljava/util/List;")
                 && instructions(m).stream().anyMatch(i -> reference(i).startsWith(FEED.substring(0, FEED.length() - 1)
                         + "$addAndSaveItemsFromFeedFetchSuccess$2$1;-><init>(")), "feed merge");
+    }
+
+    private static MethodReference featureStockMedia(Map<String, List<Method>> clean) {
+        return featureOne(instructions(featureMerge(clean)).stream().filter(i -> isPlainInvoke(i.getOpcode())
+                && ((ReferenceInstruction) i).getReference() instanceof MethodReference)
+                .map(i -> (MethodReference) ((ReferenceInstruction) i).getReference())
+                .filter(m -> m.getParameterTypes().isEmpty() && m.getReturnType().equals(MEDIA)
+                        && !m.getDefiningClass().equals(MEDIA)).distinct().toList(), "stock feed-item Media getter");
+    }
+
+    private static MethodReference featureFeedPage(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        Method merge = featureMerge(clean);
         int parameter = merge.getImplementation().getRegisterCount() - merge.getParameterTypes().stream().mapToInt(DexDiff::slots).sum();
         for (int n = 0; n < 4; n++) parameter += slots(merge.getParameterTypes().get(n).toString());
         Method actual = featureMethod(patched, featureSig(merge));
@@ -2155,6 +2184,13 @@ public class DexDiff {
         Layout getterLayout = new Layout(getter.getImplementation());
         requireFeature(getterLayout.addresses.get(1) + ((OffsetInstruction) g.get(1)).getCodeOffset()
                 == getterLayout.addresses.get(6), "itemMedia's non-item branch does not return null");
+        requireFeature(AccessFlags.STATIC.isSet(getter.getAccessFlags())
+                && getter.getImplementation().getTryBlocks().isEmpty(), "itemMedia is not an unprotected static accessor");
+        return mediaGetter;
+    }
+
+    private static void featureFeed(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        featureFeedPage(clean, patched);
         Method ad = featureMethod(patched, ADS + "isAd(Ljava/lang/Object;)Z");
         List<Instruction> a = instructions(ad);
         requireFeature(a.size() == 4 && a.get(0).getOpcode() == Opcode.CHECK_CAST && reference(a.get(0)).equals(MEDIA)
@@ -2189,6 +2225,617 @@ public class DexDiff {
                 && Arrays.equals(invokeRegisters(a.get(1)), new int[]{adInput})
                 && ((OneRegisterInstruction) a.get(2)).getRegisterA() == ((OneRegisterInstruction) a.get(3)).getRegisterA(),
                 "isAd uses the wrong receiver or result");
+    }
+
+    private static final String FEATURE_STRING = "Ljava/lang/String;";
+    private static final String SUGGESTED_WIRE = "suggested_users";
+    private static final String KICKSTART_WIRE = "text_app_suggested_users_kickstart_unit";
+    private static final String STRING_EQUALS = "Ljava/lang/String;->equals(Ljava/lang/Object;)Z";
+    private static final String RECORDED_RAW = "hushthreadsSuggestedUsersRaw";
+
+    private record FeatureUse(int index, int register) {}
+    private record ParsedFeatureValue(int result, String parser) {}
+
+    /** Stock value provenance follows copies and both branch arms; a write kills the old value.
+     * Catch edges carry the value before the throwing instruction writes its result. */
+    private static final class FeatureFlow {
+        final Method method;
+        final Layout layout;
+        final List<List<Integer>> normal = new ArrayList<>(), exceptional = new ArrayList<>();
+
+        FeatureFlow(Method method) {
+            this.method = method;
+            requireFeature(method.getImplementation() != null, featureSig(method) + " has no body");
+            layout = new Layout(method.getImplementation());
+            Map<Integer, Integer> indices = new HashMap<>();
+            for (int n = 0; n < layout.instructions.size(); n++) indices.put(layout.addresses.get(n), n);
+            for (int n = 0; n < layout.instructions.size(); n++) {
+                Instruction i = layout.instructions.get(n);
+                int address = layout.addresses.get(n);
+                List<Integer> targets = new ArrayList<>(), handlers = new ArrayList<>();
+                if (i.getOpcode().canContinue()) targets.add(address + i.getCodeUnits());
+                if (i instanceof OffsetInstruction && i.getOpcode() != Opcode.FILL_ARRAY_DATA) {
+                    int target = address + ((OffsetInstruction) i).getCodeOffset();
+                    if (i.getOpcode() == Opcode.PACKED_SWITCH || i.getOpcode() == Opcode.SPARSE_SWITCH) {
+                        Instruction payload = layout.byAddress.get(target);
+                        requireFeature(payload instanceof SwitchPayload, "stock parser has no switch payload");
+                        for (SwitchElement e : ((SwitchPayload) payload).getSwitchElements()) targets.add(address + e.getOffset());
+                    } else targets.add(target);
+                }
+                if (i.getOpcode().canThrow()) for (TryBlock<? extends ExceptionHandler> t : method.getImplementation().getTryBlocks()) {
+                    if (address < t.getStartCodeAddress() || address >= t.getStartCodeAddress() + t.getCodeUnitCount()) continue;
+                    for (ExceptionHandler h : t.getExceptionHandlers()) handlers.add(h.getHandlerCodeAddress());
+                }
+                normal.add(targets.stream().map(indices::get).filter(java.util.Objects::nonNull).distinct().toList());
+                exceptional.add(handlers.stream().map(indices::get).filter(java.util.Objects::nonNull).distinct().toList());
+            }
+        }
+
+        Set<FeatureUse> uses(int definition, int register) {
+            if (definition >= 0) register = ((OneRegisterInstruction) layout.instructions.get(definition)).getRegisterA();
+            Deque<FeatureUse> work = new ArrayDeque<>();
+            if (definition < 0) work.add(new FeatureUse(0, register));
+            else for (int next : normal.get(definition)) work.add(new FeatureUse(next, register));
+            Set<FeatureUse> visited = new HashSet<>(), used = new HashSet<>();
+            while (!work.isEmpty()) {
+                FeatureUse use = work.removeFirst();
+                if (!visited.add(use)) continue;
+                Instruction i = layout.instructions.get(use.index());
+                for (int[] read : valueReads(i)) if (read[0] == use.register()) used.add(use);
+                if (isPlainInvoke(i.getOpcode())) for (int argument : invokeRegisters(i)) if (argument == use.register()) used.add(use);
+                boolean copy = (i.getOpcode() == Opcode.MOVE_OBJECT || i.getOpcode() == Opcode.MOVE_OBJECT_FROM16
+                        || i.getOpcode() == Opcode.MOVE_OBJECT_16) && ((TwoRegisterInstruction) i).getRegisterB() == use.register();
+                int destination = i.getOpcode().setsRegister() ? ((OneRegisterInstruction) i).getRegisterA() : -1;
+                boolean killed = i.getOpcode() != Opcode.CHECK_CAST && (destination == use.register()
+                        || i.getOpcode().setsWideRegister() && destination + 1 == use.register());
+                for (int next : normal.get(use.index())) {
+                    if (!killed) work.add(new FeatureUse(next, use.register()));
+                    if (copy) work.add(new FeatureUse(next, ((OneRegisterInstruction) i).getRegisterA()));
+                }
+                for (int next : exceptional.get(use.index())) work.add(new FeatureUse(next, use.register()));
+            }
+            return used;
+        }
+
+        /** A must-analysis: intersect provenance at joins instead of accepting one alias path. */
+        boolean parameterOnEveryPath(int use, int register, int parameter) {
+            return sourceOnEveryPath(-1, parameter, use, register, false);
+        }
+
+        boolean parsedOnEveryPath(int definition, int use, int register) {
+            return sourceOnEveryPath(definition, -1, use, register, true);
+        }
+
+        boolean sourceOnEveryPath(int definition, int parameter, int use, int register, boolean allowNull) {
+            BitSet[] before = new BitSet[layout.instructions.size()];
+            before[0] = new BitSet(method.getImplementation().getRegisterCount());
+            if (parameter >= 0) before[0].set(parameter);
+            Deque<Integer> work = new ArrayDeque<>(List.of(0));
+            while (!work.isEmpty()) {
+                int n = work.removeFirst();
+                Instruction i = layout.instructions.get(n);
+                BitSet input = before[n], output = (BitSet) input.clone();
+                if (i.getOpcode().setsRegister() && i.getOpcode() != Opcode.CHECK_CAST) {
+                    int destination = ((OneRegisterInstruction) i).getRegisterA();
+                    boolean copy = i.getOpcode() == Opcode.MOVE_OBJECT || i.getOpcode() == Opcode.MOVE_OBJECT_FROM16
+                            || i.getOpcode() == Opcode.MOVE_OBJECT_16;
+                    boolean explicitNull = allowNull && (i.getOpcode() == Opcode.CONST_4 || i.getOpcode() == Opcode.CONST_16
+                            || i.getOpcode() == Opcode.CONST || i.getOpcode() == Opcode.CONST_HIGH16)
+                            && ((WideLiteralInstruction) i).getWideLiteral() == 0;
+                    output.set(destination, n == definition || explicitNull || copy && input.get(((TwoRegisterInstruction) i).getRegisterB()));
+                    if (i.getOpcode().setsWideRegister()) output.clear(destination + 1);
+                }
+                for (int next : normal.get(n)) if (mergeSource(before, next, output)) work.add(next);
+                // A throwing instruction's destination is written only along its normal edge.
+                for (int next : exceptional.get(n)) if (mergeSource(before, next, input)) work.add(next);
+            }
+            return before[use] != null && before[use].get(register);
+        }
+
+        /** A missing Raw model supplies a null lookup key; a present model must supply its field. */
+        boolean lookupOnEveryPath(int definition, int use, int register, int parameter) {
+            BitSet[][] values = new BitSet[layout.instructions.size()][3], nulls = new BitSet[layout.instructions.size()][3];
+            values[0][0] = new BitSet();
+            nulls[0][0] = new BitSet();
+            Deque<int[]> work = new ArrayDeque<>(List.of(new int[]{0, 0}));
+            while (!work.isEmpty()) {
+                int[] state = work.removeFirst();
+                int at = state[0], rawState = state[1]; // 0 unknown, 1 absent, 2 present.
+                Instruction instruction = layout.instructions.get(at);
+                BitSet input = values[at][rawState], zeroInput = nulls[at][rawState];
+                BitSet output = (BitSet) input.clone(), zeroOutput = (BitSet) zeroInput.clone();
+                if (instruction.getOpcode().setsRegister() && instruction.getOpcode() != Opcode.CHECK_CAST) {
+                    int destination = ((OneRegisterInstruction) instruction).getRegisterA();
+                    boolean copy = instruction.getOpcode() == Opcode.MOVE_OBJECT || instruction.getOpcode() == Opcode.MOVE_OBJECT_FROM16
+                            || instruction.getOpcode() == Opcode.MOVE_OBJECT_16;
+                    boolean zero = (instruction.getOpcode() == Opcode.CONST_4 || instruction.getOpcode() == Opcode.CONST_16
+                            || instruction.getOpcode() == Opcode.CONST || instruction.getOpcode() == Opcode.CONST_HIGH16)
+                            && ((WideLiteralInstruction) instruction).getWideLiteral() == 0;
+                    int source = copy ? ((TwoRegisterInstruction) instruction).getRegisterB() : -1;
+                    output.set(destination, at == definition || copy && input.get(source));
+                    zeroOutput.set(destination, zero || copy && zeroInput.get(source));
+                    if (instruction.getOpcode().setsWideRegister()) {
+                        output.clear(destination + 1);
+                        zeroOutput.clear(destination + 1);
+                    }
+                }
+                boolean test = (instruction.getOpcode() == Opcode.IF_EQZ || instruction.getOpcode() == Opcode.IF_NEZ)
+                        && parameterOnEveryPath(at, ((OneRegisterInstruction) instruction).getRegisterA(), parameter);
+                int target = test ? layout.addresses.get(at) + ((OffsetInstruction) instruction).getCodeOffset() : -1;
+                for (int next : normal.get(at)) {
+                    for (int nextState : test ? new int[]{1, 2} : new int[]{rawState}) {
+                        if (test) {
+                            if (rawState != 0 && rawState != nextState) continue;
+                            boolean jump = (nextState == 1) == (instruction.getOpcode() == Opcode.IF_EQZ);
+                            int destination = jump ? target : layout.addresses.get(at) + instruction.getCodeUnits();
+                            if (layout.addresses.get(next) != destination) continue;
+                        }
+                        if (mergeLookup(values, nulls, next, nextState, output, zeroOutput)) work.add(new int[]{next, nextState});
+                    }
+                }
+                for (int next : exceptional.get(at)) {
+                    if (mergeLookup(values, nulls, next, rawState, input, zeroInput)) work.add(new int[]{next, rawState});
+                }
+            }
+            boolean reaches = false;
+            for (int state = 0; state < 3; state++) if (values[use][state] != null) {
+                reaches = true;
+                if (!values[use][state].get(register) && !(state == 1 && nulls[use][state].get(register))) return false;
+            }
+            return reaches;
+        }
+
+        private static boolean mergeLookup(BitSet[][] values, BitSet[][] nulls, int at, int state, BitSet value, BitSet zero) {
+            if (values[at][state] == null) {
+                values[at][state] = (BitSet) value.clone();
+                nulls[at][state] = (BitSet) zero.clone();
+                return true;
+            }
+            BitSet merged = (BitSet) values[at][state].clone(), zeroMerged = (BitSet) nulls[at][state].clone();
+            merged.and(value);
+            zeroMerged.and(zero);
+            if (merged.equals(values[at][state]) && zeroMerged.equals(nulls[at][state])) return false;
+            values[at][state] = merged;
+            nulls[at][state] = zeroMerged;
+            return true;
+        }
+
+        private static boolean mergeSource(BitSet[] before, int at, BitSet incoming) {
+            if (before[at] == null) {
+                before[at] = (BitSet) incoming.clone();
+                return true;
+            }
+            BitSet joined = (BitSet) before[at].clone();
+            joined.and(incoming);
+            if (joined.equals(before[at])) return false;
+            before[at] = joined;
+            return true;
+        }
+
+        int string(String value) {
+            List<Integer> matches = new ArrayList<>();
+            for (int n = 0; n < layout.instructions.size(); n++) {
+                Instruction i = layout.instructions.get(n);
+                if (i instanceof ReferenceInstruction && ((ReferenceInstruction) i).getReference() instanceof StringReference
+                        && reference(i).equals(value)) matches.add(n);
+            }
+            return featureOne(matches, "stock string " + value);
+        }
+
+        boolean reachableWithoutEdge(int target, int edgeFrom, int edgeTo) {
+            Deque<Integer> work = new ArrayDeque<>(List.of(0));
+            Set<Integer> visited = new HashSet<>();
+            while (!work.isEmpty()) {
+                int at = work.removeFirst();
+                if (!visited.add(at)) continue;
+                if (at == target) return true;
+                for (int next : normal.get(at)) if (at != edgeFrom || next != edgeTo) work.add(next);
+                work.addAll(exceptional.get(at));
+            }
+            return false;
+        }
+
+        ParsedFeatureValue parsed(String key, String type) {
+            List<Instruction> body = layout.instructions;
+            int literal = string(key);
+            Set<FeatureUse> keyUses = uses(literal, -1);
+            int comparison = featureOne(keyUses.stream().map(FeatureUse::index).distinct()
+                    .filter(n -> reference(body.get(n)).equals(STRING_EQUALS)).toList(), key + " comparison");
+            int[] arguments = invokeRegisters(body.get(comparison));
+            int keyRegister = featureOne(keyUses.stream().filter(use -> use.index() == comparison
+                    && Arrays.stream(arguments).anyMatch(register -> register == use.register()))
+                    .map(FeatureUse::register).distinct().toList(), key + " comparison key register");
+            requireFeature(arguments.length == 2 && sourceOnEveryPath(literal, -1, comparison, keyRegister, false),
+                    "JSON key " + key + " does not preserve its exact literal on every comparison path");
+            requireFeature(comparison + 3 < body.size() && body.get(comparison + 1).getOpcode() == Opcode.MOVE_RESULT
+                    && body.get(comparison + 2).getOpcode() == Opcode.IF_EQZ
+                    && ((OneRegisterInstruction) body.get(comparison + 1)).getRegisterA()
+                    == ((OneRegisterInstruction) body.get(comparison + 2)).getRegisterA(), key + " has no direct key branch");
+            int join = featureOne(normal.get(comparison + 2).stream().filter(n -> n != comparison + 3).toList(), key + " branch join");
+            Set<Integer> branch = new HashSet<>();
+            Deque<Integer> work = new ArrayDeque<>(List.of(comparison + 3));
+            while (!work.isEmpty()) {
+                int n = work.removeFirst();
+                if (n != join && branch.add(n)) work.addAll(normal.get(n));
+            }
+            List<ParsedFeatureValue> values = new ArrayList<>();
+            for (int n : branch) {
+                Instruction i = body.get(n);
+                if (!(i instanceof ReferenceInstruction) || !(((ReferenceInstruction) i).getReference() instanceof MethodReference)
+                        || !isPlainInvoke(i.getOpcode()) || n + 1 >= body.size() || body.get(n + 1).getOpcode() != Opcode.MOVE_RESULT_OBJECT) continue;
+                MethodReference call = (MethodReference) ((ReferenceInstruction) i).getReference();
+                if (!call.getParameterTypes().equals(method.getParameterTypes())) continue;
+                if (type.equals(FEATURE_STRING)) {
+                    if (call.getReturnType().equals(type)) values.add(new ParsedFeatureValue(n + 1, null));
+                } else if (n > 0 && n + 2 < body.size() && !isStaticInvoke(i.getOpcode())
+                        && call.getName().equals("parseFromJsonParser") && call.getReturnType().equals("Ljava/lang/Object;")
+                        && body.get(n + 2).getOpcode() == Opcode.CHECK_CAST && reference(body.get(n + 2)).equals(type)
+                        && ((OneRegisterInstruction) body.get(n + 2)).getRegisterA() == ((OneRegisterInstruction) body.get(n + 1)).getRegisterA()
+                        && body.get(n - 1).getOpcode() == Opcode.SGET_OBJECT
+                        && ((OneRegisterInstruction) body.get(n - 1)).getRegisterA() == invokeRegisters(i)[0]) {
+                    FieldReference loader = (FieldReference) ((ReferenceInstruction) body.get(n - 1)).getReference();
+                    values.add(new ParsedFeatureValue(n + 1, loader.getType()));
+                }
+            }
+            ParsedFeatureValue value = featureOne(values, "typed JSON value for " + key);
+            int reader = value.result() - 1;
+            requireFeature(!reachableWithoutEdge(reader, comparison + 2, comparison + 3),
+                    "JSON key " + key + " true edge does not control its typed reader");
+            requireFeature(method.getParameterTypes().size() == 1 && slots(method.getParameterTypes().get(0)) == 1,
+                    key + " has no single JSON input parameter");
+            int parameter = method.getImplementation().getRegisterCount() - 1;
+            int[] readerArguments = invokeRegisters(body.get(reader));
+            int input = isStaticInvoke(body.get(reader).getOpcode()) ? 0 : 1;
+            requireFeature(readerArguments.length == input + 1 && parameterOnEveryPath(reader, readerArguments[input], parameter),
+                    "JSON key " + key + " typed reader does not preserve the original JSON input on every path");
+            return value;
+        }
+    }
+
+    private static void featureDeclaration(Method stock, Method patched) {
+        requireFeature(featureSig(stock).equals(featureSig(patched)) && stock.getAccessFlags() == patched.getAccessFlags()
+                && stock.getAnnotations().equals(patched.getAnnotations())
+                && stock.getHiddenApiRestrictions().equals(patched.getHiddenApiRestrictions()),
+                featureSig(stock) + " changed its method declaration");
+        requireFeature(stock.getParameters().size() == patched.getParameters().size(), featureSig(stock) + " changed its parameters");
+        for (int n = 0; n < stock.getParameters().size(); n++) {
+            var before = stock.getParameters().get(n);
+            var after = patched.getParameters().get(n);
+            requireFeature(before.getType().equals(after.getType())
+                    && java.util.Objects.equals(before.getName(), after.getName())
+                    && java.util.Objects.equals(before.getSignature(), after.getSignature())
+                    && before.getAnnotations().equals(after.getAnnotations()), featureSig(stock) + " changed parameter " + n);
+        }
+    }
+
+    private static void featureFieldDeclaration(Field stock, Field patched) {
+        requireFeature(stock.toString().equals(patched.toString()) && stock.getAccessFlags() == patched.getAccessFlags()
+                && java.util.Objects.equals(stock.getInitialValue(), patched.getInitialValue())
+                && stock.getAnnotations().equals(patched.getAnnotations())
+                && stock.getHiddenApiRestrictions().equals(patched.getHiddenApiRestrictions()),
+                "stock card field declaration changed: " + stock);
+    }
+
+    private static <T> T featureOne(List<T> values, String label) {
+        requireFeature(values.size() == 1, label + " has " + values.size() + " candidates");
+        return values.get(0);
+    }
+
+    private static Map<String, ClassDef> featureClasses(File apk, Set<String> wanted) throws Exception {
+        Map<String, ClassDef> classes = new HashMap<>();
+        MultiDexContainer<? extends DexFile> dex = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault());
+        for (String entry : dex.getDexEntryNames()) for (ClassDef cd : dex.getEntry(entry).getDexFile().getClasses()) {
+            if (wanted.contains(cd.getType())) requireFeature(classes.put(cd.getType(), cd) == null, "duplicate stock class " + cd.getType());
+        }
+        requireFeature(classes.keySet().equals(wanted), "missing stock card classes " + wanted);
+        return classes;
+    }
+
+    private static Field featureField(ClassDef owner, FieldReference reference, boolean enumConstant) {
+        List<Field> fields = new ArrayList<>();
+        for (Field field : owner.getFields()) if (field.getName().equals(reference.getName()) && field.getType().equals(reference.getType())) fields.add(field);
+        Field field = featureOne(fields, "stock field " + reference);
+        requireFeature(AccessFlags.PUBLIC.isSet(field.getAccessFlags())
+                && AccessFlags.STATIC.isSet(field.getAccessFlags()) == enumConstant
+                && (!enumConstant || AccessFlags.FINAL.isSet(field.getAccessFlags()) && AccessFlags.ENUM.isSet(field.getAccessFlags())),
+                "inaccessible stock card field " + reference);
+        return field;
+    }
+
+    private static FieldReference featureEnum(Method initializer, String wire, String name, String enumType) {
+        FeatureFlow flow = new FeatureFlow(initializer);
+        List<Instruction> body = flow.layout.instructions;
+        Set<FeatureUse> names = flow.uses(flow.string(name), -1);
+        List<Integer> constructors = flow.uses(flow.string(wire), -1).stream().filter(use -> {
+            Instruction i = body.get(use.index());
+            if (!isPlainInvoke(i.getOpcode()) || !(i instanceof ReferenceInstruction)
+                    || !(((ReferenceInstruction) i).getReference() instanceof MethodReference)) return false;
+            MethodReference call = (MethodReference) ((ReferenceInstruction) i).getReference();
+            int[] registers = invokeRegisters(i);
+            return call.getDefiningClass().equals(enumType) && call.getName().equals("<init>") && call.getReturnType().equals("V")
+                    && call.getParameterTypes().equals(List.of(FEATURE_STRING, "I", FEATURE_STRING)) && registers.length == 4
+                    && registers[3] == use.register() && names.contains(new FeatureUse(use.index(), registers[1]));
+        }).map(FeatureUse::index).distinct().toList();
+        int constructor = featureOne(constructors, "enum construction for " + wire);
+        int receiver = invokeRegisters(body.get(constructor))[0], allocation = -1;
+        for (int n = 0; n < constructor; n++) if (body.get(n).getOpcode().setsRegister()
+                && ((OneRegisterInstruction) body.get(n)).getRegisterA() == receiver) allocation = n;
+        requireFeature(allocation >= 0 && body.get(allocation).getOpcode() == Opcode.NEW_INSTANCE
+                && reference(body.get(allocation)).equals(enumType), "enum construction receiver is not allocated for " + wire);
+        return featureOne(flow.uses(allocation, -1).stream().filter(use -> body.get(use.index()).getOpcode() == Opcode.SPUT_OBJECT
+                && ((OneRegisterInstruction) body.get(use.index())).getRegisterA() == use.register())
+                .map(use -> (FieldReference) ((ReferenceInstruction) body.get(use.index())).getReference())
+                .filter(field -> field.getDefiningClass().equals(enumType) && field.getType().equals(enumType)).distinct().toList(), "enum field for " + wire);
+    }
+
+    private static FieldReference featureSlot(FeatureFlow flow, ParsedFeatureValue value, String owner, String model, Set<FeatureUse> receivers, int allocation) {
+        FieldReference slot = featureOne(flow.uses(value.result(), -1).stream().filter(use -> {
+            Instruction i = flow.layout.instructions.get(use.index());
+            return i.getOpcode() == Opcode.IPUT_OBJECT && ((TwoRegisterInstruction) i).getRegisterA() == use.register()
+                    && receivers.contains(new FeatureUse(use.index(), ((TwoRegisterInstruction) i).getRegisterB()));
+        }).map(use -> (FieldReference) ((ReferenceInstruction) flow.layout.instructions.get(use.index())).getReference())
+                .filter(f -> f.getDefiningClass().equals(owner) && f.getType().equals(model)).distinct().toList(), "item-owned JSON slot");
+        for (int n = 0; n < flow.layout.instructions.size(); n++) {
+            Instruction i = flow.layout.instructions.get(n);
+            if (i.getOpcode() != Opcode.IPUT_OBJECT || !reference(i).equals(slot.toString())) continue;
+            TwoRegisterInstruction store = (TwoRegisterInstruction) i;
+            requireFeature(flow.parsedOnEveryPath(value.result(), n, store.getRegisterA())
+                    && flow.sourceOnEveryPath(allocation, -1, n, store.getRegisterB(), false),
+                    "JSON slot does not preserve its exact parsed result or explicit null on every path: " + slot);
+        }
+        return slot;
+    }
+
+    private static MethodReference featureWrapper(FeatureFlow flow, FieldReference slot, String model) {
+        List<MethodReference> wrappers = new ArrayList<>();
+        for (int n = 0; n < flow.layout.instructions.size(); n++) {
+            Instruction i = flow.layout.instructions.get(n);
+            if (i.getOpcode() != Opcode.IGET_OBJECT || !reference(i).equals(slot.toString())) continue;
+            for (FeatureUse use : flow.uses(n, -1)) {
+                Instruction call = flow.layout.instructions.get(use.index());
+                if (!isPlainInvoke(call.getOpcode()) || !(call instanceof ReferenceInstruction)
+                        || !(((ReferenceInstruction) call).getReference() instanceof MethodReference)) continue;
+                MethodReference target = (MethodReference) ((ReferenceInstruction) call).getReference();
+                int[] args = invokeRegisters(call);
+                if (target.getName().equals("<init>") && target.getParameterTypes().equals(List.of(model))
+                        && args.length == 2 && args[1] == use.register()) wrappers.add(target);
+            }
+        }
+        return featureOne(wrappers.stream().distinct().toList(), "wrapper consuming " + slot);
+    }
+
+    /** Resolve the selected content from the allocation that consumes each target raw slot.
+     * A populated raw slot alone does not prove the vendor selected it as the active card. */
+    private static FieldReference featureActiveContent(FeatureFlow flow, FieldReference slot, MethodReference wrapper,
+            String item, Set<FeatureUse> itemReceivers) {
+        Set<Integer> constructors = new HashSet<>();
+        List<Instruction> body = flow.layout.instructions;
+        for (int n = 0; n < body.size(); n++) {
+            if (body.get(n).getOpcode() != Opcode.IGET_OBJECT || !reference(body.get(n)).equals(slot.toString())) continue;
+            for (FeatureUse use : flow.uses(n, -1)) {
+                Instruction call = body.get(use.index());
+                if (isPlainInvoke(call.getOpcode()) && reference(call).equals(featureSig(wrapper))
+                        && invokeRegisters(call).length == 2 && invokeRegisters(call)[1] == use.register()) constructors.add(use.index());
+            }
+        }
+        Set<FieldReference> stores = new HashSet<>();
+        for (int n = 0; n < body.size(); n++) {
+            if (body.get(n).getOpcode() != Opcode.NEW_INSTANCE || !reference(body.get(n)).equals(wrapper.getDefiningClass())) continue;
+            Set<FeatureUse> allocations = flow.uses(n, -1);
+            boolean constructs = allocations.stream().anyMatch(use -> constructors.contains(use.index())
+                    && invokeRegisters(body.get(use.index()))[0] == use.register());
+            if (!constructs) continue;
+            for (FeatureUse use : allocations) {
+                Instruction i = body.get(use.index());
+                if (i.getOpcode() != Opcode.IPUT_OBJECT || ((TwoRegisterInstruction) i).getRegisterA() != use.register()
+                        || !itemReceivers.contains(new FeatureUse(use.index(), ((TwoRegisterInstruction) i).getRegisterB()))) continue;
+                FieldReference field = (FieldReference) ((ReferenceInstruction) i).getReference();
+                if (field.getDefiningClass().equals(item) && field.getType().startsWith("L")) stores.add(field);
+            }
+        }
+        return featureOne(new ArrayList<>(stores), "active content field consuming " + slot);
+    }
+
+    private static void featureRecordableWrapper(Method wrapper, String model) {
+        requireFeature(wrapper.getParameterTypes().equals(List.of(model)) && !AccessFlags.STATIC.isSet(wrapper.getAccessFlags())
+                && wrapper.getReturnType().equals("V") && wrapper.getImplementation() != null, "raw wrapper constructor signature changed");
+        int input = wrapper.getImplementation().getRegisterCount() - 1;
+        requireFeature(input - 1 >= 2 && wrapper.getImplementation().getTryBlocks().isEmpty(), "raw wrapper has no safe unprotected recorder registers");
+        boolean returns = false;
+        for (Instruction i : wrapper.getImplementation().getInstructions()) {
+            if (i.getOpcode() == Opcode.RETURN_VOID) returns = true;
+            if (!i.getOpcode().setsRegister()) continue;
+            int destination = ((OneRegisterInstruction) i).getRegisterA();
+            int last = destination + (i.getOpcode().setsWideRegister() ? 1 : 0);
+            requireFeature(last < input - 1 || destination > input, "raw wrapper overwrites its original receiver or parameter");
+        }
+        requireFeature(returns, "raw wrapper has no constructor return to record");
+    }
+
+    private static void featurePreserveCards(Map<String, ClassDef> before, Map<String, ClassDef> after,
+            Map<String, List<Method>> patched, Method wrapper, Field recordedRaw) {
+        for (String owner : before.keySet()) {
+            ClassDef stock = before.get(owner), actual = after.get(owner);
+            requireFeature(stock.getAccessFlags() == actual.getAccessFlags() && java.util.Objects.equals(stock.getSuperclass(), actual.getSuperclass())
+                    && stock.getInterfaces().equals(actual.getInterfaces()) && java.util.Objects.equals(stock.getSourceFile(), actual.getSourceFile())
+                    && stock.getAnnotations().equals(actual.getAnnotations()), "stock card class declaration changed: " + owner);
+            Map<String, Field> fields = new HashMap<>(), actualFields = new HashMap<>();
+            for (Field field : stock.getFields()) requireFeature(fields.put(field.toString(), field) == null, "duplicate stock card field: " + field);
+            if (recordedRaw != null && owner.equals(wrapper.getDefiningClass())) fields.put(recordedRaw.toString(), recordedRaw);
+            for (Field field : actual.getFields()) requireFeature(actualFields.put(field.toString(), field) == null, "duplicate patched card field: " + field);
+            requireFeature(fields.keySet().equals(actualFields.keySet()), "stock card fields changed: " + owner);
+            for (String field : fields.keySet()) featureFieldDeclaration(fields.get(field), actualFields.get(field));
+            Set<String> methods = new HashSet<>(), actualMethods = new HashSet<>();
+            for (Method m : actual.getMethods()) actualMethods.add(featureSig(m));
+            for (Method m : stock.getMethods()) {
+                methods.add(featureSig(m));
+                Method p = featureMethod(patched, featureSig(m));
+                if (m.getImplementation() == null) {
+                    featureDeclaration(m, p);
+                    requireFeature(p.getImplementation() == null, "stock card declaration changed: " + featureSig(m));
+                } else featureBody(m, p, 0, Map.of(), "", recordedRaw != null && featureSig(m).equals(featureSig(wrapper)) ? recordedRaw : null);
+            }
+            requireFeature(methods.equals(actualMethods), "stock card methods added or removed: " + owner);
+        }
+    }
+
+    /** Card fields are resolved from stock JSON keys, constructor arguments and enum allocation.
+     * The generated predicate must then match every guard, receiver, branch and result register. */
+    private static void featureSuggested(Map<String, List<Method>> clean, Map<String, List<Method>> patched,
+            File cleanApk, File patchedApk) throws Exception {
+        MethodReference media = featureFeedPage(clean, patched);
+        String item = media.getDefiningClass();
+        Method kind = featureTarget(clean, m -> m.getDefiningClass().equals(item) && m.getParameterTypes().isEmpty()
+                && m.getReturnType().startsWith("L") && !AccessFlags.STATIC.isSet(m.getAccessFlags())
+                && AccessFlags.PUBLIC.isSet(m.getAccessFlags()) && holds(m, "feedItemType"), "feedItemType getter");
+        String enumType = kind.getReturnType();
+        Method initializer = featureMethod(clean, enumType + "-><clinit>()V");
+        FieldReference suggestedKind = featureEnum(initializer, SUGGESTED_WIRE, "SUGGESTED_USERS", enumType);
+        FieldReference kickstartKind = featureEnum(initializer, KICKSTART_WIRE, "KICKSTART_FEED_UNIT", enumType);
+        Method constructor = featureTarget(clean, m -> m.getName().equals("<init>") && m.getReturnType().equals("V")
+                && holds(m, "XDTSuggestedUsers"), "raw suggestion constructor");
+        String model = constructor.getDefiningClass();
+        Method parser = featureTarget(clean, m -> m.getName().equals("unsafeParseFromJson") && m.getReturnType().equals("Ljava/lang/Object;")
+                && m.getParameterTypes().size() == 1 && holds(m, SUGGESTED_WIRE, KICKSTART_WIRE), "suggestion response parser");
+        FeatureFlow root = new FeatureFlow(parser);
+        int allocation = featureOne(java.util.stream.IntStream.range(0, root.layout.instructions.size()).boxed()
+                .filter(n -> root.layout.instructions.get(n).getOpcode() == Opcode.NEW_INSTANCE
+                        && reference(root.layout.instructions.get(n)).equals(item)).toList(), "parsed feed-item allocation");
+        Set<FeatureUse> receivers = root.uses(allocation, -1);
+        ParsedFeatureValue suggested = root.parsed(SUGGESTED_WIRE, model), kickstart = root.parsed(KICKSTART_WIRE, model);
+        FieldReference suggestedSlot = featureSlot(root, suggested, item, model, receivers, allocation);
+        FieldReference kickstartSlot = featureSlot(root, kickstart, item, model, receivers, allocation);
+        requireFeature(!suggestedSlot.equals(kickstartSlot) && suggested.parser().equals(kickstart.parser()), "card slots are not distinct with one raw parser");
+        Method rawParser = featureTarget(clean, m -> m.getDefiningClass().equals(suggested.parser()) && m.getName().equals("unsafeParseFromJson")
+                && m.getReturnType().equals("Ljava/lang/Object;") && m.getParameterTypes().equals(parser.getParameterTypes()) && holds(m, "netego_type"), "raw netego_type parser");
+        FeatureFlow raw = new FeatureFlow(rawParser);
+        ParsedFeatureValue rawValue = raw.parsed("netego_type", FEATURE_STRING);
+        Set<Integer> arguments = new HashSet<>();
+        for (FeatureUse use : raw.uses(rawValue.result(), -1)) {
+            Instruction call = raw.layout.instructions.get(use.index());
+            if (!isPlainInvoke(call.getOpcode()) || !reference(call).equals(featureSig(constructor))) continue;
+            int[] args = invokeRegisters(call);
+            int word = 1;
+            for (int n = 0; n < constructor.getParameterTypes().size(); n++) {
+                CharSequence parameter = constructor.getParameterTypes().get(n);
+                if (word < args.length && args[word] == use.register() && parameter.equals(FEATURE_STRING)) arguments.add(n);
+                word += slots(parameter);
+            }
+        }
+        int argument = featureOne(new ArrayList<>(arguments), "netego_type constructor argument");
+        int argumentWord = 1;
+        for (int n = 0; n < argument; n++) argumentWord += slots(constructor.getParameterTypes().get(n));
+        for (int n = 0; n < raw.layout.instructions.size(); n++) {
+            Instruction i = raw.layout.instructions.get(n);
+            if (!isPlainInvoke(i.getOpcode()) || !reference(i).equals(featureSig(constructor))) continue;
+            int[] args = invokeRegisters(i);
+            requireFeature(argumentWord < args.length && raw.parsedOnEveryPath(rawValue.result(), n, args[argumentWord]),
+                    "netego_type constructor argument does not preserve its exact parsed result or explicit null on every path");
+        }
+        int thisRegister = constructor.getImplementation().getRegisterCount() - 1 - constructor.getParameterTypes().stream().mapToInt(DexDiff::slots).sum();
+        int parameterRegister = thisRegister + 1;
+        for (int n = 0; n < argument; n++) parameterRegister += slots(constructor.getParameterTypes().get(n));
+        FeatureFlow modelFlow = new FeatureFlow(constructor);
+        FieldReference rawType = featureOne(modelFlow.uses(-1, parameterRegister).stream().filter(use -> {
+            Instruction i = modelFlow.layout.instructions.get(use.index());
+            return i.getOpcode() == Opcode.IPUT_OBJECT && ((TwoRegisterInstruction) i).getRegisterA() == use.register()
+                    && ((TwoRegisterInstruction) i).getRegisterB() == thisRegister;
+        }).map(use -> (FieldReference) ((ReferenceInstruction) modelFlow.layout.instructions.get(use.index())).getReference())
+                .filter(f -> f.getDefiningClass().equals(model) && f.getType().equals(FEATURE_STRING)).distinct().toList(), "constructor-owned netego_type field");
+        List<Integer> rawStores = new ArrayList<>();
+        for (int n = 0; n < modelFlow.layout.instructions.size(); n++) {
+            Instruction i = modelFlow.layout.instructions.get(n);
+            if (i.getOpcode() == Opcode.IPUT_OBJECT && reference(i).equals(rawType.toString())) rawStores.add(n);
+        }
+        int rawStore = featureOne(rawStores, "single netego_type constructor writer");
+        TwoRegisterInstruction rawWrite = (TwoRegisterInstruction) modelFlow.layout.instructions.get(rawStore);
+        requireFeature(modelFlow.parameterOnEveryPath(rawStore, rawWrite.getRegisterB(), thisRegister)
+                && modelFlow.parameterOnEveryPath(rawStore, rawWrite.getRegisterA(), parameterRegister),
+                "netego_type writer does not preserve the parsed constructor parameter on every path");
+        for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+            if (!m.getDefiningClass().equals(model) || featureSig(m).equals(featureSig(constructor))) continue;
+            requireFeature(instructions(m).stream().noneMatch(i -> i.getOpcode() == Opcode.IPUT_OBJECT && reference(i).equals(rawType.toString())),
+                    "netego_type has another model writer: " + featureSig(m));
+        }
+        MethodReference wrapperCall = featureWrapper(root, suggestedSlot, model);
+        requireFeature(featureSig(wrapperCall).equals(featureSig(featureWrapper(root, kickstartSlot, model))), "card slots use different wrappers");
+        Method wrapper = featureMethod(clean, featureSig(wrapperCall));
+        FieldReference activeContent = featureActiveContent(root, suggestedSlot, wrapperCall, item, receivers);
+        requireFeature(activeContent.equals(featureActiveContent(root, kickstartSlot, wrapperCall, item, receivers)), "card slots do not select one active content field");
+        featureRecordableWrapper(wrapper, model);
+        FeatureFlow wrapperFlow = new FeatureFlow(wrapper);
+        Set<Integer> mapReads = new HashSet<>();
+        for (int n = 0; n < wrapperFlow.layout.instructions.size(); n++) {
+            Instruction i = wrapperFlow.layout.instructions.get(n);
+            if (i.getOpcode() != Opcode.IGET_OBJECT || !reference(i).equals(rawType.toString())) continue;
+            for (FeatureUse use : wrapperFlow.uses(n, -1)) {
+                int at = use.index();
+                Instruction call = wrapperFlow.layout.instructions.get(at);
+                if (reference(call).equals("Ljava/util/Map;->get(Ljava/lang/Object;)Ljava/lang/Object;") && invokeRegisters(call)[1] == use.register()
+                        && at + 2 < wrapperFlow.layout.instructions.size() && wrapperFlow.layout.instructions.get(at + 1).getOpcode() == Opcode.MOVE_RESULT_OBJECT
+                        && wrapperFlow.layout.instructions.get(at + 2).getOpcode() == Opcode.CHECK_CAST
+                        && reference(wrapperFlow.layout.instructions.get(at + 2)).equals(enumType)
+                        && ((OneRegisterInstruction) wrapperFlow.layout.instructions.get(at + 1)).getRegisterA()
+                        == ((OneRegisterInstruction) wrapperFlow.layout.instructions.get(at + 2)).getRegisterA()) {
+                    int input = wrapper.getImplementation().getRegisterCount() - 1;
+                    requireFeature(wrapperFlow.parameterOnEveryPath(n, ((TwoRegisterInstruction) i).getRegisterB(), input)
+                            && wrapperFlow.lookupOnEveryPath(n, at, invokeRegisters(call)[1], input),
+                            "raw netego_type lookup does not preserve its original raw tag on every path");
+                    mapReads.add(at);
+                }
+            }
+        }
+        requireFeature(mapReads.size() == 1, "raw netego_type does not select the wrapper's feed enum");
+        Set<String> owners = Set.of(item, enumType, model, parser.getDefiningClass(), rawParser.getDefiningClass(), wrapper.getDefiningClass());
+        Map<String, ClassDef> before = featureClasses(cleanApk, owners), after = featureClasses(patchedApk, owners);
+        String wrapperType = wrapper.getDefiningClass();
+        List<Field> captureFields = new ArrayList<>();
+        for (Field field : before.get(wrapperType).getFields()) requireFeature(!field.getName().equals(RECORDED_RAW), "stock wrapper already has a recording field");
+        for (Field field : after.get(wrapperType).getFields()) if (field.getName().equals(RECORDED_RAW)) captureFields.add(field);
+        Field recordedRaw = featureOne(captureFields, "owned raw-wrapper recording field");
+        requireFeature(recordedRaw.getType().equals(model) && recordedRaw.getAccessFlags() == (AccessFlags.PUBLIC.getValue() | AccessFlags.FINAL.getValue())
+                && recordedRaw.getInitialValue() == null && recordedRaw.getAnnotations().isEmpty()
+                && recordedRaw.getHiddenApiRestrictions().isEmpty(), "raw-wrapper recording field has a different declaration");
+        requireFeature(before.get(enumType).getSuperclass().equals("Ljava/lang/Enum;") && AccessFlags.PUBLIC.isSet(before.get(enumType).getAccessFlags())
+                && AccessFlags.PUBLIC.isSet(before.get(model).getAccessFlags()), "card enum/model is inaccessible");
+        featureField(before.get(enumType), suggestedKind, true);
+        featureField(before.get(enumType), kickstartKind, true);
+        featureField(before.get(item), suggestedSlot, false);
+        featureField(before.get(item), kickstartSlot, false);
+        featureField(before.get(item), activeContent, false);
+        requireFeature(AccessFlags.FINAL.isSet(featureField(before.get(model), rawType, false).getAccessFlags()), "raw netego_type field is mutable");
+        featurePreserveCards(before, after, patched, wrapper, recordedRaw);
+        Method stub = featureMethod(patched, ADS + "isSuggestedUserItem(Ljava/lang/Object;)Z");
+        List<Instruction> body = instructions(stub);
+        Opcode[] expected = { Opcode.INSTANCE_OF, Opcode.IF_EQZ, Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT,
+                Opcode.IF_NEZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.SGET_OBJECT, Opcode.IF_EQ, Opcode.SGET_OBJECT,
+                Opcode.IF_NE, Opcode.IGET_OBJECT, Opcode.CONST_STRING, Opcode.GOTO, Opcode.IGET_OBJECT, Opcode.CONST_STRING,
+                Opcode.IF_EQZ, Opcode.IGET_OBJECT, Opcode.INSTANCE_OF, Opcode.IF_EQZ, Opcode.CHECK_CAST, Opcode.IGET_OBJECT,
+                Opcode.IF_NE, Opcode.IGET_OBJECT, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.RETURN, Opcode.CONST_4, Opcode.RETURN };
+        int[][] registers = { {0, 4}, {0}, {4}, {4}, {0}, {0}, {4}, {0}, {1}, {0, 1}, {1}, {0, 1}, {0, 4}, {1}, {},
+                {0, 4}, {1}, {0}, {2, 4}, {3, 2}, {3}, {2}, {2, 2}, {0, 2}, {0, 0}, {1, 0}, {0}, {0}, {0}, {0} };
+        requireFeature(body.size() == expected.length && AccessFlags.STATIC.isSet(stub.getAccessFlags())
+                && stub.getImplementation().getRegisterCount() == 5 && stub.getImplementation().getTryBlocks().isEmpty(), "suggestion predicate is a stub or has a different declaration");
+        Map<Integer, String> references = Map.ofEntries(Map.entry(0, item), Map.entry(2, item), Map.entry(3, featureSig(media)), Map.entry(6, featureSig(kind)),
+                Map.entry(8, suggestedKind.toString()), Map.entry(10, kickstartKind.toString()), Map.entry(12, kickstartSlot.toString()), Map.entry(13, KICKSTART_WIRE),
+                Map.entry(15, suggestedSlot.toString()), Map.entry(16, SUGGESTED_WIRE), Map.entry(18, activeContent.toString()), Map.entry(19, wrapperType),
+                Map.entry(21, wrapperType), Map.entry(22, recordedRaw.toString()), Map.entry(24, rawType.toString()), Map.entry(25, STRING_EQUALS));
+        Layout layout = new Layout(stub.getImplementation());
+        Map<Integer, Integer> branches = Map.of(1, 28, 5, 28, 9, 15, 11, 28, 14, 17, 17, 28, 20, 28, 23, 28);
+        for (int n = 0; n < body.size(); n++) {
+            Instruction i = body.get(n);
+            requireFeature(i.getOpcode() == expected[n] || expected[n] == Opcode.CONST_STRING && i.getOpcode() == Opcode.CONST_STRING_JUMBO,
+                    "suggestion predicate instruction " + n + " changed");
+            int[] actualRegisters = isPlainInvoke(i.getOpcode()) ? invokeRegisters(i)
+                    : i instanceof TwoRegisterInstruction ? new int[]{ ((TwoRegisterInstruction) i).getRegisterA(), ((TwoRegisterInstruction) i).getRegisterB() }
+                    : i instanceof OneRegisterInstruction ? new int[]{ ((OneRegisterInstruction) i).getRegisterA() } : new int[0];
+            requireFeature(Arrays.equals(actualRegisters, registers[n]), "suggestion predicate registers changed at " + n);
+            if (references.containsKey(n)) requireFeature(reference(i).equals(references.get(n)), "suggestion predicate target changed at " + n);
+            if (branches.containsKey(n)) requireFeature(layout.addresses.get(n) + ((OffsetInstruction) i).getCodeOffset()
+                    == layout.addresses.get(branches.get(n)), "suggestion predicate guard changed at " + n);
+        }
+        requireFeature(((WideLiteralInstruction) body.get(28)).getWideLiteral() == 0, "unknown suggestion cards do not return false");
+        featureHostCalls(patched, featureSig(stub), Map.of());
     }
 
     private static int ownedPermalinkStore(Method parser, Map<String, String> parents) {
@@ -2339,6 +2986,96 @@ public class DexDiff {
         featureHostCalls(patched, SIGNERS, Map.of(featureSig(stock), 1));
     }
 
+    private static void featureFalseStub(Map<String, List<Method>> patched, String signature, boolean optional) {
+        if (optional && !patched.containsKey(signature)) return;
+        Method stub = featureMethod(patched, signature);
+        List<Instruction> body = instructions(stub);
+        requireFeature(AccessFlags.STATIC.isSet(stub.getAccessFlags()) && body.size() == 2 && body.get(0).getOpcode() == Opcode.CONST_4
+                && ((WideLiteralInstruction) body.get(0)).getWideLiteral() == 0
+                && body.get(1).getOpcode() == (stub.getReturnType().equals("Z") ? Opcode.RETURN : Opcode.RETURN_OBJECT)
+                && ((OneRegisterInstruction) body.get(0)).getRegisterA() == ((OneRegisterInstruction) body.get(1)).getRegisterA()
+                && stub.getImplementation().getTryBlocks().isEmpty(), "omitted feature has an active accessor: " + signature);
+    }
+
+    private static void featurePreserveTargets(Map<String, List<Method>> clean, Map<String, List<Method>> patched,
+            java.util.function.Predicate<Method> predicate) {
+        for (List<Method> definitions : clean.values()) for (Method stock : definitions) if (predicate.test(stock)) {
+            Method actual = featureMethod(patched, featureSig(stock));
+            if (stock.getImplementation() != null) featureBody(stock, actual, 0, Map.of(), "");
+            else {
+                featureDeclaration(stock, actual);
+                requireFeature(actual.getImplementation() == null, "omitted feature altered " + featureSig(stock));
+            }
+        }
+    }
+
+    private static void featureOmittedSuggested(Map<String, List<Method>> clean, Map<String, List<Method>> patched,
+            File cleanApk, File patchedApk) throws Exception {
+        featureFalseStub(patched, ADS + "isSuggestedUserItem(Ljava/lang/Object;)Z", true);
+        featureHostCalls(patched, ADS + "isSuggestedUserItem(Ljava/lang/Object;)Z", Map.of());
+        MultiDexContainer<? extends DexFile> dex = DexFileFactory.loadDexContainer(patchedApk, Opcodes.getDefault());
+        for (String entry : dex.getDexEntryNames()) for (ClassDef cd : dex.getEntry(entry).getDexFile().getClasses())
+            for (Field field : cd.getFields()) requireFeature(!field.getName().equals(RECORDED_RAW), "omitted suggestion feature added a raw recording field: " + field);
+        // Old targets without these kept anchors still get predicate/capture absence checks.
+        boolean hasModel = clean.values().stream().flatMap(List::stream).anyMatch(m -> m.getName().equals("<init>") && holds(m, "XDTSuggestedUsers"));
+        boolean hasParser = clean.values().stream().flatMap(List::stream).anyMatch(m -> m.getName().equals("unsafeParseFromJson") && holds(m, SUGGESTED_WIRE, KICKSTART_WIRE));
+        if (!hasModel || !hasParser) return;
+        String item = featureStockMedia(clean).getDefiningClass();
+        Method kind = featureTarget(clean, m -> m.getDefiningClass().equals(item) && m.getParameterTypes().isEmpty()
+                && m.getReturnType().startsWith("L") && holds(m, "feedItemType"), "omitted feedItemType getter");
+        Method constructor = featureTarget(clean, m -> m.getName().equals("<init>") && holds(m, "XDTSuggestedUsers"), "omitted raw suggestion constructor");
+        String model = constructor.getDefiningClass();
+        Method parser = featureTarget(clean, m -> m.getName().equals("unsafeParseFromJson") && m.getReturnType().equals("Ljava/lang/Object;")
+                && m.getParameterTypes().size() == 1 && holds(m, SUGGESTED_WIRE, KICKSTART_WIRE), "omitted suggestion response parser");
+        FeatureFlow root = new FeatureFlow(parser);
+        int allocation = featureOne(java.util.stream.IntStream.range(0, root.layout.instructions.size()).boxed()
+                .filter(n -> root.layout.instructions.get(n).getOpcode() == Opcode.NEW_INSTANCE && reference(root.layout.instructions.get(n)).equals(item)).toList(), "omitted feed-item allocation");
+        ParsedFeatureValue value = root.parsed(SUGGESTED_WIRE, model);
+        FieldReference slot = featureSlot(root, value, item, model, root.uses(allocation, -1), allocation);
+        MethodReference wrapper = featureWrapper(root, slot, model);
+        Set<String> owners = Set.of(item, kind.getReturnType(), model, parser.getDefiningClass(), value.parser(), wrapper.getDefiningClass());
+        featurePreserveCards(featureClasses(cleanApk, owners), featureClasses(patchedApk, owners), patched, null, null);
+    }
+
+    private static void featureOmitted(String feature, Map<String, List<Method>> clean, Map<String, List<Method>> patched,
+            File cleanApk, File patchedApk) throws Exception {
+        switch (feature) {
+            case "hideSuggestedUsers": featureOmittedSuggested(clean, patched, cleanApk, patchedApk); break;
+            case "hideAds":
+                featureFalseStub(patched, ADS + "isAd(Ljava/lang/Object;)Z", true);
+                featurePreserveTargets(clean, patched, m -> m.getDefiningClass().equals(MEDIA)
+                        || m.getReturnType().equals("Z") && instructions(m).stream().anyMatch(i -> i instanceof WideLiteralInstruction
+                                && (int) ((WideLiteralInstruction) i).getWideLiteral() == 0x8669a9b0));
+                break;
+            case "sanitizeSharingLinks":
+                featureHostCalls(patched, CLEAN_LINK, Map.of());
+                featurePreserveTargets(clean, patched, m -> holds(m, "permalink", "XDTPermalinkResponse"));
+                break;
+            case "disableAnalytics":
+                featureHostCalls(patched, ENDPOINT, Map.of());
+                if (patched.containsKey(STATUS + "analyticsAddressMask()I")) requireFeature(featureConstant(patched, "analyticsAddressMask", "I") == 0,
+                        "omitted analytics feature has nonzero address coverage");
+                featurePreserveTargets(clean, patched, m -> holds(m, "/pigeon_nest", "/logging_client_events") || holds(m, LOGGING_URL)
+                        || m.getName().equals("<init>") && holds(m, "analytics_endpoint"));
+                break;
+            case "restoreTrust":
+                featureHostCalls(patched, SIGNERS, Map.of());
+                featurePreserveTargets(clean, patched, m -> !callSites(instructions(m), "Landroid/content/pm/SigningInfo;->getApkContentsSigners()[Landroid/content/pm/Signature;").isEmpty()
+                        && !callSites(instructions(m), "Landroid/content/pm/SigningInfo;->getSigningCertificateHistory()[Landroid/content/pm/Signature;").isEmpty());
+                break;
+            default: throw new IllegalArgumentException("Unknown omitted feature " + feature);
+        }
+        if (feature.equals("hideAds") || feature.equals("hideSuggestedUsers")) {
+            boolean feed = false;
+            for (String flag : List.of("hideAds", "hideSuggestedUsers")) if (patched.containsKey(STATUS + flag + "()Z")) feed |= featureConstant(patched, flag, "Z") == 1;
+            if (!feed) {
+                featureHostCalls(patched, FILTER_PAGE, Map.of());
+                featureFalseStub(patched, ADS + "itemMedia(Ljava/lang/Object;)Ljava/lang/Object;", true);
+                featurePreserveTargets(clean, patched, m -> m.getDefiningClass().equals(FEED));
+            }
+        }
+    }
+
     private static List<String> checkThreadsFeatures(File cleanApk, File patchedApk, Set<String> rules,
             Set<String> selected) throws Exception {
         Map<String, List<Method>> patched = featureMethods(patchedApk, null);
@@ -2355,6 +3092,20 @@ public class DexDiff {
             try {
                 boolean hasStatus = patched.containsKey(STATUS + feature + "()Z");
                 if (!hasStatus && selected != null && !selected.contains(feature)) {
+                    if (hasPayload) {
+                        if (clean == null) clean = featureMethods(cleanApk, parents);
+                        featureOmitted(feature, clean, patched, cleanApk, patchedApk);
+                    }
+                    System.out.println("[diff] threads-feature " + feature + ": omitted");
+                    continue;
+                }
+                // Historical bundles predate this independently selectable family. Existing
+                // families still require their statuses whenever an extension payload exists.
+                if (!hasStatus && selected == null && feature.equals("hideSuggestedUsers")) {
+                    if (hasPayload) {
+                        if (clean == null) clean = featureMethods(cleanApk, parents);
+                        featureOmitted(feature, clean, patched, cleanApk, patchedApk);
+                    }
                     System.out.println("[diff] threads-feature " + feature + ": omitted");
                     continue;
                 }
@@ -2366,12 +3117,15 @@ public class DexDiff {
                 requireFeature(flag == 0 || flag == 1, feature + " status is not boolean");
                 if (selected != null) requireFeature((flag == 1) == selected.contains(feature), feature + " status disagrees with the selected patches");
                 if (flag == 0) {
+                    if (clean == null) clean = featureMethods(cleanApk, parents);
+                    featureOmitted(feature, clean, patched, cleanApk, patchedApk);
                     System.out.println("[diff] threads-feature " + feature + ": omitted");
                     continue;
                 }
                 if (clean == null) clean = featureMethods(cleanApk, parents);
                 switch (feature) {
                     case "hideAds": featureFeed(clean, patched); break;
+                    case "hideSuggestedUsers": featureSuggested(clean, patched, cleanApk, patchedApk); break;
                     case "sanitizeSharingLinks": featureLinks(clean, patched, parents); break;
                     case "disableAnalytics": featureAnalytics(clean, patched); break;
                     case "restoreTrust": featureTrust(clean, patched); break;
