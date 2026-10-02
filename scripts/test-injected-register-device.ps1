@@ -112,7 +112,9 @@ try {
                 } elseif ($FailureStage -eq 'log-read') {
                     $exitCode = 15
                 } elseif ($FailureStage -eq 'rotated') {
-                    $output = $current
+                    # This run's marker is gone but another run's is still there, so taking any
+                    # marker for this run's fails this case.
+                    $output = @($stale) + @($current)
                 } else {
                     $output = @($stale) + @("I HushThreadsVerify: $($state.Marker)") + @($current)
                 }
@@ -267,12 +269,60 @@ try {
     Assert-True (Test-PushGateRunsSuite $prePush 'scripts/test-injected-register-device.ps1') `
         'The push gate does not run the verifier cleanup fixtures.'
     # Phones and emulators are shared between sessions, so no device script may clear a log
-    # buffer, including the ones that never reach the fake above.
+    # buffer, including the ones that never reach the fake above. A command or an argument list
+    # gives its words in order, a string's own words split out, so logcat then -c or --clear is
+    # found on one line, across an array's lines or inside one string. Options are case-sensitive.
+    function Test-ClearsDeviceLog {
+        param([string]$Path)
+        $parseErrors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$null, [ref]$parseErrors)
+        if ($parseErrors.Count -ne 0) { throw "Could not parse ${Path}: $($parseErrors[0].Message)" }
+        $groups = $ast.FindAll({ param($Node)
+            $Node -is [System.Management.Automation.Language.CommandAst] -or
+            $Node -is [System.Management.Automation.Language.ArrayExpressionAst] -or
+            $Node -is [System.Management.Automation.Language.ArrayLiteralAst] }, $true)
+        foreach ($group in $groups) {
+            # Not into script blocks, which are groups of their own.
+            $words = [string[]]@($group.FindAll({ param($Node)
+                    $Node -is [System.Management.Automation.Language.StringConstantExpressionAst] -or
+                    $Node -is [System.Management.Automation.Language.ExpandableStringExpressionAst] -or
+                    $Node -is [System.Management.Automation.Language.CommandParameterAst] }, $false) |
+                Sort-Object { $_.Extent.StartOffset } |
+                ForEach-Object {
+                    if ($_ -is [System.Management.Automation.Language.CommandParameterAst]) { '-' + $_.ParameterName }
+                    else { $_.Value -split '\s+' }
+                })
+            $logcat = [array]::IndexOf($words, 'logcat')
+            if ($logcat -ge 0 -and @($words | Select-Object -Skip ($logcat + 1) | Where-Object { $_ -ceq '-c' -or $_ -ceq '--clear' }).Count -gt 0) {
+                return $true
+            }
+        }
+        return $false
+    }
     $clearing = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.ps1' -File -Recurse |
-        Where-Object { $_.Name -notlike 'test-*' -and
-            [System.IO.File]::ReadAllText($_.FullName) -match 'logcat\b[^\r\n]*?[\s''",](-c|--clear)\b' } |
+        Where-Object { $_.Name -notlike 'test-*' -and (Test-ClearsDeviceLog $_.FullName) } |
         ForEach-Object { $_.Name })
     Assert-True ($clearing.Count -eq 0) "These scripts clear a shared device's log buffer: $($clearing -join ', ')"
+    $clearCases = [ordered]@{
+        'logcat -c on one line' = @($true, '& $Adb -s $Serial logcat -c')
+        'logcat -b all -c' = @($true, '& $Adb -s $Serial logcat -b all -c')
+        'an argument array over several lines' = @($true, "`$arguments = @(`n    '-s', `$Serial,`n    'logcat',`n    '-c'`n)")
+        'an argument array of one word per line' = @($true, "`$arguments = @(`n    '-s'`n    `$Serial`n    'logcat'`n    '--clear'`n)")
+        'logcat -c inside one string' = @($true, '& $Adb -s $Serial shell "logcat -c"')
+        'logcat -c in a script block' = @($true, 'Invoke-Command { & $Adb logcat -c }')
+        'logcat -d' = @($false, '& $Adb -s $Serial logcat -d')
+        'an upper-case -C, which is not the clear flag' = @($false, '& $Adb -s $Serial logcat -C')
+        "another command's -c before logcat" = @($false, 'pwsh -c "adb logcat -d"')
+        'logcat and -c in separate commands' = @($false, "& `$Adb logcat -d`npwsh -c 'Get-Date'")
+    }
+    $clearCopy = Join-Path ([System.IO.Path]::GetTempPath()) ('hushthreads-log-clear-' + [guid]::NewGuid().ToString('N') + '.ps1')
+    try {
+        $clearFailures = @(foreach ($name in $clearCases.Keys) {
+            [System.IO.File]::WriteAllText($clearCopy, $clearCases[$name][1])
+            if ((Test-ClearsDeviceLog $clearCopy) -ne $clearCases[$name][0]) { "${name}: the scan said $(-not $clearCases[$name][0])" }
+        })
+        Assert-True ($clearFailures.Count -eq 0) ("The log clear scan misjudged:`n" + ($clearFailures -join "`n"))
+    } finally { [System.IO.File]::Delete($clearCopy) }
 
     # The checks themselves, on copies with the wiring taken out in ways that leave its text
     # behind. Each copy has to fail the check it was made for, and an untouched copy has to pass.
