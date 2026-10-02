@@ -4,12 +4,10 @@ Every HushThreads release, newest first.
 
 ## 0.0.3 (2026-10-01)
 
-Unreleased source build. The published bundle remains 0.0.2.
-
+* **Threads:** This release keeps the same 6 patches for Threads 449.0.0.54.82. Hide ads and Sanitize sharing links are stricter about where they patch, and the check that lets a same-key Instagram call into Threads no longer stops when Android can't answer a lookup.
 * **Threads:** Hide ads now requires one distinct item getter with a matching cast and method declaration. Link cleaning follows the named response object's registers and requires one owned string store. Competing targets stop patching with candidate details.
-
 * **Threads:** A failed Android package or Binder lookup keeps the framework's signer result instead of interrupting a family-caller check.
-* **Threads:** Password sign-in reached a feed for one account with the published 0.0.2 bundle and six source 0.0.3 patch configurations beside signed-in stock Instagram on Threads 449. Both full bundles also passed with Instagram absent. The guide records the two save-login prompts. Continue as wasn't offered, and the reported password failure remains unresolved.
+* **Threads:** Password sign-in reached a feed for one account with the published 0.0.2 bundle and six 0.0.3 patch configurations beside signed-in stock Instagram on Threads 449. Both full bundles also passed with Instagram absent. The guide records the two save-login prompts. Continue as wasn't offered, and the reported password failure remains unresolved.
 
 ## 0.0.2 (2026-09-29)
 
