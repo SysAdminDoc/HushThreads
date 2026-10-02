@@ -141,6 +141,9 @@ public class SettingsBackupTest {
         Utils.awaitBackgroundTasksForTests();
         ShadowLooper.idleMainLooper();
         for (BooleanSetting setting : SettingsBackup.ALLOWLIST) setting.resetToDefault();
+        // Off the list on purpose, so the loop above misses it, and ReleaseCheckTest starts from a
+        // phone that never checked.
+        Settings.CHECK_FOR_RELEASES.resetToDefault();
         BaseSettings.PAUSED.resetToDefault();
         BaseSettings.DEBUG.resetToDefault();
         BaseSettings.DEBUG_LOG_FILTERS.resetToDefault();

@@ -6,6 +6,8 @@ Every HushThreads release, newest first.
 
 Source builds only. The published bundle remains at 0.0.3.
 
+* **Tooling:** The settings file test resets the release check it turns on, so the release check tests start from a phone that never checked in any suite order.
+
 * **Tooling:** Localization file-picker tests wait for queued work with a finite completion fence, so recurring animations can't keep the suite running indefinitely. Every existing language and toast assertion remains.
 
 * **Threads:** Hide suggested users has its own feed switch for verified server cards that suggest accounts to follow. Ads and suggestions share one page filter with separate removal counts. Unknown card types, ordinary posts and reposts stay visible. A failed check keeps the whole original page. Both supported builds pass fixture checks, but removing a real card from a live feed hasn't been seen yet.
