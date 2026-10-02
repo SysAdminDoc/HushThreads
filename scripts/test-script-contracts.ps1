@@ -5378,10 +5378,11 @@ Write-Host '[scripts] tracked-file machine name contracts passed'
 #
 # upstream-drift.ps1 lists the ported files Hushfacebook changed after the recorded commit. Two
 # fixture repositories stand in: an upstream with Facebook's names and a tree with Threads' names
-# and its own provenance.json. A Facebook-only change, a change to a file a single-file original
-# rule takes back, and a file added here all leave the answer at 0; a renamed file's change and a
-# deletion are listed with exit 1; a file a rule names with no upstream counterpart, and an
-# upstream that can't be read, exit 2 instead of reading as either answer.
+# and its own provenance.json. A Facebook-only change and a change to a file a single-file original
+# rule takes back leave the answer at 0, as does a GIT_DIR left pointing at another repository; a
+# renamed file's change and a deletion are listed with exit 1; a ported file with no upstream
+# counterpart, named or under a ported directory, and an upstream that can't be read, exit 2
+# instead of reading as either answer.
 
 $driftRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('hushthreads-drift-' + [guid]::NewGuid().ToString('N'))
 try {
@@ -5429,18 +5430,26 @@ try {
     $driftRules = @(
         (& $portedRule @("$sharedDir/Utils.java", "$sharedDir/settings/**")),
         (& $portedRule @("$threadsSettings/HushThreadsPreferenceFragment.java")),
-        [ordered]@{ paths = @("$sharedDir/settings/Local.java"); origin = 'original'; upstream = 'https://example.invalid/Local' })
+        [ordered]@{ paths = @("$sharedDir/settings/Local.java", "$sharedDir/settings/AddedHere.java"); origin = 'original'; upstream = 'https://example.invalid/Local' })
     [System.IO.File]::WriteAllText((Join-Path $driftLocal 'provenance.json'), (@{ rules = $driftRules } | ConvertTo-Json -Depth 6))
-    $orphanRules = @($driftRules[0], (& $portedRule @("$threadsSettings/Orphan.java")), $driftRules[2])
     $orphanProvenance = Join-Path $driftRoot 'orphan-provenance.json'
-    [System.IO.File]::WriteAllText($orphanProvenance, (@{ rules = $orphanRules } | ConvertTo-Json -Depth 6))
+    [System.IO.File]::WriteAllText($orphanProvenance, (@{ rules = @($driftRules[0], (& $portedRule @("$threadsSettings/Orphan.java")), $driftRules[2]) } | ConvertTo-Json -Depth 6))
+    $unlistedProvenance = Join-Path $driftRoot 'unlisted-provenance.json'
+    [System.IO.File]::WriteAllText($unlistedProvenance, (@{ rules = @($driftRules[0], $driftRules[1],
+        [ordered]@{ paths = @("$sharedDir/settings/Local.java"); origin = 'original'; upstream = 'https://example.invalid/Local' }) } | ConvertTo-Json -Depth 6))
     Save-DriftCommit $driftLocal 'local' | Out-Null
 
     $same = Invoke-Drift $recorded
     Assert-True ($same.Exit -eq 0 -and $same.Text -like '*Checked 3 ported files*' -and $same.Text -like '*No ported file changed*') `
         "The drift check didn't read an unchanged upstream as clean: exit $($same.Exit), $($same.Text)"
-    Assert-True ($same.Text -like "*added here, not in upstream: $sharedDir/settings/AddedHere.java*") `
-        "A file added under a ported directory wasn't listed as added here: $($same.Text)"
+    # Pointed at the upstream, an inherited GIT_DIR would list its files as this tree's.
+    $env:GIT_DIR = Join-Path $driftUpstream '.git'
+    try { $hooked = Invoke-Drift $recorded } finally { $env:GIT_DIR = $null }
+    Assert-True ($hooked.Exit -eq 0 -and $hooked.Text -like '*Checked 3 ported files*') `
+        "An inherited GIT_DIR changed what the drift check read: exit $($hooked.Exit), $($hooked.Text)"
+    $unlisted = Invoke-Drift $recorded -Provenance $unlistedProvenance
+    Assert-True ($unlisted.Exit -eq 2 -and $unlisted.Text -like "*settings/AddedHere.java (looked for*") `
+        "A file under a ported directory with no upstream counterpart wasn't refused: exit $($unlisted.Exit), $($unlisted.Text)"
 
     Write-DriftFile $driftUpstream "$facebookSettings/FacebookOnly.java" 'class A { int x; }'
     Write-DriftFile $driftUpstream "$sharedDir/settings/Local.java" 'class A { int x; }'
@@ -5466,7 +5475,7 @@ try {
         "An upstream deletion wasn't listed beside the change: exit $($two.Exit), $($two.Text)"
 
     $orphan = Invoke-Drift $recorded -Provenance $orphanProvenance
-    Assert-True ($orphan.Exit -eq 2 -and $orphan.Text -like "*Orphan.java is named in provenance.json*") `
+    Assert-True ($orphan.Exit -eq 2 -and $orphan.Text -like "*settings/Orphan.java (looked for*") `
         "A named file with no upstream counterpart didn't stop the check: exit $($orphan.Exit), $($orphan.Text)"
     $unreadable = Invoke-Drift 'HEAD' -UpstreamRepo (Join-Path $driftRoot 'absent')
     Assert-True ($unreadable.Exit -eq 2 -and $unreadable.Text -like '*upstream-drift:*') `

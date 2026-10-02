@@ -11,10 +11,10 @@
     Every tracked file under a ported rule that names the upstream is mapped to its path in the
     upstream tree: Threads' package and patch directories become Facebook's, and a file named for
     HushThreads or Threads takes Hushfacebook's or Facebook's name. A rule naming a single file wins
-    over the directory rule around it, as in ProvenanceTest. Each file a rule names on its own has
-    to exist upstream at the recorded commit, so a wrong mapping stops the check instead of reading
-    as no change. A file under a ported directory with no upstream counterpart was added here and
-    is listed, but isn't drift.
+    over the directory rule around it, as in ProvenanceTest. Every mapped path has to exist
+    upstream at the recorded commit, so a wrong mapping stops the check instead of reading as no
+    change. A file written here that sits in a ported directory needs its own original rule, which
+    takes it out of this check.
 
     The upstream comes from -UpstreamRepo, a local checkout read at -Ref, or, without one, from a
     temporary blob-less clone of the rule's upstream URL read at its default branch. Only trees are
@@ -42,8 +42,10 @@ $ErrorActionPreference = 'Stop'
 if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 if (-not $Provenance) { $Provenance = Join-Path $Root 'provenance.json' }
 # Run from a hook, GIT_DIR alone would point both repositories' git calls at the pushing tree.
-foreach ($name in @([Environment]::GetEnvironmentVariables().Keys | Where-Object { "$_" -like 'GIT_*' })) {
-    [Environment]::SetEnvironmentVariable($name, $null)
+# Removed through Env:, since [Environment]::SetEnvironmentVariable($name, $null) still hands git
+# an empty GIT_DIR in pwsh.
+foreach ($name in @(Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_*' } | ForEach-Object Name)) {
+    Remove-Item -LiteralPath "Env:$name"
 }
 
 function Invoke-Git {
@@ -107,19 +109,18 @@ try {
     Invoke-Git $repository @('merge-base', '--is-ancestor', $commit, $head) | Out-Null
     $atCommit = [System.Collections.Generic.HashSet[string]]::new([string[]]@(Invoke-Git $repository @('ls-tree', '-r', '--name-only', $commit)))
 
+    # A miss is a wrong mapping or a file written here without its own original rule. Either way
+    # the file would never be compared, so the check can't answer.
     $mapped = [ordered]@{}
-    $added = New-Object System.Collections.Generic.List[string]
+    $missing = New-Object System.Collections.Generic.List[string]
     foreach ($file in $files) {
         $upstreamPath = ConvertTo-UpstreamPath $file
-        if ($atCommit.Contains($upstreamPath)) {
-            $mapped[$upstreamPath] = $file
-        } elseif (@($ported | Where-Object { $_.paths -contains $file }).Count -gt 0) {
-            throw "$file is named in provenance.json, but $upstreamPath isn't in $Upstream at $commit."
-        } else {
-            $added.Add($file)
-        }
+        if ($atCommit.Contains($upstreamPath)) { $mapped[$upstreamPath] = $file } else { $missing.Add("$file (looked for $upstreamPath)") }
     }
-    if ($mapped.Count -eq 0) { throw "None of the ported files map to a file in $Upstream at $commit." }
+    if ($missing.Count -gt 0) {
+        throw "These files fall under a rule ported from $Upstream, but nothing is at their upstream path at ${commit}: " +
+            ($missing -join '; ') + '. Fix the mapping, or give a file written here its own original rule.'
+    }
 
     $changes = @(Invoke-Git $repository (@('diff', '--no-renames', '--name-status', $commit, $head, '--') +
         @($mapped.Keys | ForEach-Object { ":(literal)$_" })))
@@ -129,7 +130,6 @@ try {
     })
 
     Write-Host ("Checked {0} ported files against {1} {2}..{3}." -f $mapped.Count, $Upstream, $commit.Substring(0, 8), $head.Substring(0, 8))
-    foreach ($file in $added) { Write-Host "  added here, not in upstream: $file" }
     foreach ($item in $drift) { Write-Host ("  {0} upstream: {1} (here: {2})" -f $item.Status, $item.Upstream, $item.Local) }
     if ($drift.Count -gt 0) {
         Write-Host "$($drift.Count) ported file(s) changed upstream since the recorded commit."
