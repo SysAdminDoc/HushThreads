@@ -4,6 +4,8 @@ Every HushThreads release, newest first.
 
 ## Unreleased
 
+* **Tooling:** Concurrent builds now isolate split-bundle inputs before merging. Device builds use the same merge path, preserve the original archive and clean temporary inputs after success or failure.
+
 * **Tooling:** APK verification now checks the selected feed, link, analytics and signature mutations against the stock build. Missing, replaced or miswired hooks fail even when the DEX structure is valid. Omitted features don't create false failures.
 
 * **Threads:** Link cleaning now rejects an unrelated constructor or a wide write that overwrites the response name. Casts keep tracking the same response object, including a cast through Object.

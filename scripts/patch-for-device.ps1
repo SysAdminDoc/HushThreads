@@ -138,22 +138,25 @@ if (Test-Path $out) { Remove-Item $out -Force }
 Write-Host "[device] $($names.Count) patches from $(Split-Path -Leaf $bundle) onto $(Split-Path -Leaf $Apk)"
 $enable = @()
 foreach ($name in $names) { $enable += '-e'; $enable += $name }
-$arguments = @('patch', '--exclusive', '-p', $bundle, '-o', $out, '-t', $temp, '-r', $result,
-    '--keystore', $Keystore, '--keystore-password', $keystorePassword,
-    '--keystore-entry-alias', $KeyAlias, '--keystore-entry-password', $keystorePassword) + $enable + @($Apk)
 $argumentFile = Join-Path $OutDir 'morphe-patch.args'
-$argumentFileLines = @($arguments | ForEach-Object {
-    $value = [string]$_
-    if ($value.IndexOfAny([char[]]"`r`n") -ge 0) {
-        throw 'A Morphe command argument contains a newline and cannot be written safely.'
-    }
-    '"' + $value.Replace('\', '\\').Replace('"', '\"') + '"'
-})
-[System.IO.File]::WriteAllLines(
-    $argumentFile,
-    $argumentFileLines,
-    (New-Object System.Text.UTF8Encoding($false)))
+$mergedInput = Join-Path $OutDir 'stock-merged.apk'
+$mergeRequired = [IO.Path]::GetExtension($Apk).TrimStart('.').ToLowerInvariant() -in @('apkm', 'apks', 'xapk')
 try {
+    $patchInput = Get-MergedApk -Apk $Apk -Destination $mergedInput -Java $Java -DesktopJar $DesktopJar
+    $arguments = @('patch', '--exclusive', '-p', $bundle, '-o', $out, '-t', $temp, '-r', $result,
+        '--keystore', $Keystore, '--keystore-password', $keystorePassword,
+        '--keystore-entry-alias', $KeyAlias, '--keystore-entry-password', $keystorePassword) + $enable + @($patchInput)
+    $argumentFileLines = @($arguments | ForEach-Object {
+        $value = [string]$_
+        if ($value.IndexOfAny([char[]]"`r`n") -ge 0) {
+            throw 'A Morphe command argument contains a newline and cannot be written safely.'
+        }
+        '"' + $value.Replace('\', '\\').Replace('"', '\"') + '"'
+    })
+    [System.IO.File]::WriteAllLines(
+        $argumentFile,
+        $argumentFileLines,
+        (New-Object System.Text.UTF8Encoding($false)))
     # Continue for the call alone: the CLI logs WARNING and SEVERE on stderr, which Windows
     # PowerShell 5.1 turns into a terminating error under Stop. The exit code decides.
     $preference = $ErrorActionPreference
@@ -171,6 +174,7 @@ try {
     if ($cliExitCode -ne 0) { throw "The desktop CLI exited with $cliExitCode" }
 } finally {
     Remove-Item -LiteralPath $argumentFile -Force -ErrorAction SilentlyContinue
+    if ($mergeRequired) { Remove-Item -LiteralPath $mergedInput -Force -ErrorAction SilentlyContinue }
     # The CLI unpacks the whole APK here and a run against Threads leaves gigabytes behind.
     if (Test-Path -LiteralPath $temp) { Remove-Item -LiteralPath $temp -Recurse -Force -ErrorAction SilentlyContinue }
 }
