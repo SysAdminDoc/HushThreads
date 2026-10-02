@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
     List the files HushThreads ported from Hushfacebook that Hushfacebook has changed since the
-    commit provenance.json records.
+    commit their provenance.json rule records.
 
 .DESCRIPTION
     Most of the shared extension library, the settings screen and the trust patch came from
-    Hushfacebook at one commit. A fix that lands there later doesn't reach HushThreads unless
+    Hushfacebook, each at the commit its ported rule records. A fix that lands there later doesn't reach HushThreads unless
     someone notices, and this is the noticing.
 
     Every tracked file under a ported rule that names the upstream is mapped to its path in the
@@ -79,20 +79,21 @@ try {
     $rules = @((Get-Content -LiteralPath $Provenance -Raw | ConvertFrom-Json).rules)
     $ported = @($rules | Where-Object { $_.origin -eq 'ported' -and $_.upstream -eq $Upstream })
     if ($ported.Count -eq 0) { throw "provenance.json has no ported rule from $Upstream." }
-    $commits = @($ported | ForEach-Object { $_.commit } | Sort-Object -Unique)
-    if ($commits.Count -ne 1 -or $commits[0] -notmatch '^[0-9a-f]{40}$') {
-        throw "The rules from $Upstream don't record one full commit: $($commits -join ', ')"
+    foreach ($rule in $ported) {
+        if ("$($rule.commit)" -notmatch '^[0-9a-f]{40}$') {
+            throw "A rule from $Upstream doesn't record a full commit: $($rule.paths -join ', ')"
+        }
     }
-    $commit = $commits[0]
 
     # Which rule each tracked file falls under: a single-file rule first, then a directory rule.
-    $files = New-Object System.Collections.Generic.List[string]
+    # Each file is compared from the commit its own rule records.
+    $files = New-Object System.Collections.Generic.List[object]
     foreach ($file in @(Invoke-Git $Root @('ls-files', '--', 'patches', 'extensions'))) {
         $literal = @($rules | Where-Object { $_.paths -contains $file })
         $owner = if ($literal.Count -gt 0) { $literal } else {
             @($rules | Where-Object { $rule = $_; @($rule.paths | Where-Object { Test-RulePath $_ $file }).Count -gt 0 })
         }
-        if ($owner.Count -gt 0 -and $ported -contains $owner[0]) { $files.Add($file) }
+        if ($owner.Count -gt 0 -and $ported -contains $owner[0]) { $files.Add([pscustomobject]@{ File = $file; Commit = $owner[0].commit }) }
     }
     if ($files.Count -eq 0) { throw "No tracked file falls under a rule from $Upstream." }
 
@@ -106,31 +107,40 @@ try {
         $repository = $clone
     }
     $head = @(Invoke-Git $repository @('rev-parse', '--verify', "$Ref^{commit}"))[0]
-    Invoke-Git $repository @('merge-base', '--is-ancestor', $commit, $head) | Out-Null
-    $atCommit = [System.Collections.Generic.HashSet[string]]::new([string[]]@(Invoke-Git $repository @('ls-tree', '-r', '--name-only', $commit)))
 
-    # A miss is a wrong mapping or a file written here without its own original rule. Either way
-    # the file would never be compared, so the check can't answer.
-    $mapped = [ordered]@{}
-    $missing = New-Object System.Collections.Generic.List[string]
-    foreach ($file in $files) {
-        $upstreamPath = ConvertTo-UpstreamPath $file
-        if ($atCommit.Contains($upstreamPath)) { $mapped[$upstreamPath] = $file } else { $missing.Add("$file (looked for $upstreamPath)") }
+    $checked = 0
+    $drift = New-Object System.Collections.Generic.List[object]
+    $groups = @($files | Group-Object Commit | Sort-Object Name)
+    foreach ($group in $groups) {
+        $commit = $group.Name
+        Invoke-Git $repository @('merge-base', '--is-ancestor', $commit, $head) | Out-Null
+        $atCommit = [System.Collections.Generic.HashSet[string]]::new([string[]]@(Invoke-Git $repository @('ls-tree', '-r', '--name-only', $commit)))
+
+        # A miss is a wrong mapping or a file written here without its own original rule. Either
+        # way the file would never be compared, so the check can't answer.
+        $mapped = [ordered]@{}
+        $missing = New-Object System.Collections.Generic.List[string]
+        foreach ($entry in $group.Group) {
+            $upstreamPath = ConvertTo-UpstreamPath $entry.File
+            if ($atCommit.Contains($upstreamPath)) { $mapped[$upstreamPath] = $entry.File } else { $missing.Add("$($entry.File) (looked for $upstreamPath)") }
+        }
+        if ($missing.Count -gt 0) {
+            throw "These files fall under a rule ported from $Upstream, but nothing is at their upstream path at ${commit}: " +
+                ($missing -join '; ') + '. Fix the mapping, or give a file written here its own original rule.'
+        }
+        $checked += $mapped.Count
+
+        $changes = @(Invoke-Git $repository (@('diff', '--no-renames', '--name-status', $commit, $head, '--') +
+            @($mapped.Keys | ForEach-Object { ":(literal)$_" })))
+        foreach ($line in $changes) {
+            $status, $path = $line -split "`t", 2
+            $drift.Add([pscustomobject]@{ Status = $(if ($status -eq 'D') { 'deleted' } else { 'changed' }); Upstream = $path; Local = $mapped[$path]; Since = $commit })
+        }
     }
-    if ($missing.Count -gt 0) {
-        throw "These files fall under a rule ported from $Upstream, but nothing is at their upstream path at ${commit}: " +
-            ($missing -join '; ') + '. Fix the mapping, or give a file written here its own original rule.'
-    }
 
-    $changes = @(Invoke-Git $repository (@('diff', '--no-renames', '--name-status', $commit, $head, '--') +
-        @($mapped.Keys | ForEach-Object { ":(literal)$_" })))
-    $drift = @(foreach ($line in $changes) {
-        $status, $path = $line -split "`t", 2
-        [pscustomobject]@{ Status = $(if ($status -eq 'D') { 'deleted' } else { 'changed' }); Upstream = $path; Local = $mapped[$path] }
-    })
-
-    Write-Host ("Checked {0} ported files against {1} {2}..{3}." -f $mapped.Count, $Upstream, $commit.Substring(0, 8), $head.Substring(0, 8))
-    foreach ($item in $drift) { Write-Host ("  {0} upstream: {1} (here: {2})" -f $item.Status, $item.Upstream, $item.Local) }
+    Write-Host ("Checked {0} ported files against {1} from {2} up to {3}." -f $checked, $Upstream,
+        (($groups | ForEach-Object { $_.Name.Substring(0, 8) }) -join ', '), $head.Substring(0, 8))
+    foreach ($item in $drift) { Write-Host ("  {0} upstream since {1}: {2} (here: {3})" -f $item.Status, $item.Since.Substring(0, 8), $item.Upstream, $item.Local) }
     if ($drift.Count -gt 0) {
         Write-Host "$($drift.Count) ported file(s) changed upstream since the recorded commit."
         exit 1

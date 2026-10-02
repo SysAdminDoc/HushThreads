@@ -5456,21 +5456,32 @@ try {
     Write-DriftFile $driftUpstream "$sharedDir/settings/NewUpstream.java" 'class A {}'
     $unrelated = Save-DriftCommit $driftUpstream 'unrelated'
     $quiet = Invoke-Drift $unrelated
-    Assert-True ($quiet.Exit -eq 0 -and $quiet.Text -notlike '*changed upstream:*' -and $quiet.Text -like '*No ported file changed*') `
+    Assert-True ($quiet.Exit -eq 0 -and $quiet.Text -notmatch 'changed upstream since [0-9a-f]{8}:' -and $quiet.Text -like '*No ported file changed*') `
         "A Facebook-only change or one to a file an original rule takes back read as drift: exit $($quiet.Exit), $($quiet.Text)"
 
     Write-DriftFile $driftUpstream "$facebookSettings/HushfacebookPreferenceFragment.java" 'class A { int y; }'
     $renamed = Save-DriftCommit $driftUpstream 'renamed file changed'
     $one = Invoke-Drift $renamed
     Assert-True ($one.Exit -eq 1 -and
-        $one.Text -like "*changed upstream: $facebookSettings/HushfacebookPreferenceFragment.java (here: $threadsSettings/HushThreadsPreferenceFragment.java)*" -and
+        $one.Text -like "*changed upstream since ????????: $facebookSettings/HushfacebookPreferenceFragment.java (here: $threadsSettings/HushThreadsPreferenceFragment.java)*" -and
         $one.Text -like '*1 ported file(s) changed*') `
         "A change to a renamed ported file wasn't listed with exit 1: exit $($one.Exit), $($one.Text)"
+
+    # A rule recording a later commit compares its files from there: the fragment ported again at
+    # the commit that changed it reads as current, beside the older rule's files.
+    $newerProvenance = Join-Path $driftRoot 'newer-provenance.json'
+    [System.IO.File]::WriteAllText($newerProvenance, (@{ rules = @($driftRules[0],
+        [ordered]@{ paths = @("$threadsSettings/HushThreadsPreferenceFragment.java"); origin = 'ported'; upstream = 'https://example.invalid/Upstream'; commit = $renamed },
+        $driftRules[2]) } | ConvertTo-Json -Depth 6))
+    $newer = Invoke-Drift $renamed -Provenance $newerProvenance
+    $newerCommits = @($recorded, $renamed | ForEach-Object { $_.Substring(0, 8) } | Sort-Object) -join ', '
+    Assert-True ($newer.Exit -eq 0 -and $newer.Text -like "*Checked 3 ported files*from $newerCommits up to*") `
+        "A rule at a later commit wasn't compared from that commit: exit $($newer.Exit), $($newer.Text)"
 
     Invoke-FixtureGit -Root $driftUpstream -Arguments @('rm', '--quiet', "$sharedDir/settings/Setting.java") | Out-Null
     $deleted = Save-DriftCommit $driftUpstream 'deleted'
     $two = Invoke-Drift $deleted
-    Assert-True ($two.Exit -eq 1 -and $two.Text -like "*deleted upstream: $sharedDir/settings/Setting.java*" -and
+    Assert-True ($two.Exit -eq 1 -and $two.Text -like "*deleted upstream since ????????: $sharedDir/settings/Setting.java*" -and
         $two.Text -like '*2 ported file(s) changed*') `
         "An upstream deletion wasn't listed beside the change: exit $($two.Exit), $($two.Text)"
 
