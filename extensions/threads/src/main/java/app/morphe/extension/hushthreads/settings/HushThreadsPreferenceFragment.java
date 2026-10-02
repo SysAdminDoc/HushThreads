@@ -243,13 +243,20 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
             }
         }
 
-        if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS) || build.contains(PatchFamily.DISABLE_ANALYTICS)) {
+        if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS) || build.contains(PatchFamily.EXTERNAL_BROWSER)
+                || build.contains(PatchFamily.DISABLE_ANALYTICS)) {
             PreferenceCategory privacy = category(screen, L10n.t("Privacy"));
             if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS)) {
                 privacy.addPreference(toggle(context, Settings.SANITIZE_SHARING_LINKS,
                         L10n.t("Remove tracking from shared links"),
                         L10n.t("Takes tracking tags such as xmt and slof off the post links you copy or share. A short "
                                 + "share link becomes the post's own link.")));
+            }
+            if (build.contains(PatchFamily.EXTERNAL_BROWSER)) {
+                privacy.addPreference(toggle(context, Settings.OPEN_LINKS_EXTERNALLY,
+                        L10n.t("Open links in your browser"),
+                        L10n.t("Web links you tap open in your default browser, or the app for that site, without "
+                                + "Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.")));
             }
             if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {
                 privacy.addPreference(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop analytics uploads"),

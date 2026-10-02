@@ -688,6 +688,10 @@ public class BadDexFixture {
     private static final String FEATURE_SHARE = "Lfixture/ShareResult;";
     private static final ImmutableMethodReference POST_LINKER = method(FEATURE_LINKS, "postLink", "Ljava/lang/String;", "Ljava/lang/String;", OBJECT, "Ljava/lang/String;");
     private static final ImmutableMethodReference LINK_GETTER = method(FEATURE_RESPONSE, "link", "Ljava/lang/String;");
+    private static final String FEATURE_BROWSER = "Lapp/morphe/extension/hushthreads/misc/ExternalBrowser;";
+    private static final String CONTEXT = "Landroid/content/Context;";
+    private static final ImmutableMethodReference LINK_OPENER = method(FEATURE_BROWSER, "open", "Z", CONTEXT, "Ljava/lang/String;");
+    private static final String LAUNCHER_MESSAGE = "ThreadsBrowserLauncher: cookie injection failed; system WebView unavailable";
     private static final ImmutableMethodReference POST_CODE = method(FEATURE_MEDIA, "code", "Ljava/lang/String;");
     private static final ImmutableMethodReference POST_TITLE = method(FEATURE_MEDIA, "title", "Ljava/lang/String;");
     private static final ImmutableMethodReference POST_AUTHOR = method(FEATURE_MEDIA, "author", FEATURE_USER);
@@ -1373,6 +1377,7 @@ public class BadDexFixture {
         boolean suggestions = patched && selected.contains("hideSuggestedUsers");
         boolean feed = ads || suggestions || fault.equals("omitted-feed-hook");
         boolean links = patched && selected.contains("sanitizeSharingLinks");
+        boolean browser = patched && selected.contains("openLinksExternally");
         boolean analytics = patched && selected.contains("disableAnalytics");
         boolean trust = patched && selected.contains("restoreTrust");
         List<Instruction> merge = new ArrayList<>();
@@ -1456,6 +1461,23 @@ public class BadDexFixture {
         classes.add(featureClass(FEATURE_PARENT, OBJECT, List.of(), define(FEATURE_PARENT, "<init>", "V", false,
                 body(2, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), "Ljava/lang/String;")));
 
+        List<Instruction> launcher = new ArrayList<>();
+        if (browser && !fault.equals("browser-missing")) {
+            launcher.add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 0, 3));
+            launcher.add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 1, fault.equals("browser-register") ? 9 : 10));
+            launcher.add(invoke(LINK_OPENER, 0, 1));
+            int result = fault.equals("browser-clobber") ? 4 : 0;
+            launcher.add(op(Opcode.MOVE_RESULT, result));
+            // Past the hook's return-void to the stock's first instruction, or straight to its return.
+            launcher.add(ifEqz(result, fault.equals("browser-bypass") ? 12 : 3));
+            launcher.add(op(Opcode.RETURN_VOID));
+        }
+        launcher.addAll(List.of(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 2, 10), type(Opcode.NEW_INSTANCE, 1, "Ljava/net/URI;"),
+                direct(method("Ljava/net/URI;", "<init>", "V", "Ljava/lang/String;"), 1, 2), string(0, LAUNCHER_MESSAGE), op(Opcode.RETURN_VOID)));
+        classes.add(featureClass("Lfixture/BrowserLauncher;", OBJECT, List.of(), define("Lfixture/BrowserLauncher;", "launch", "V", true,
+                body(12, launcher.toArray(new Instruction[0])), CONTEXT, OBJECT, OBJECT, OBJECT,
+                "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", OBJECT)));
+
         List<Instruction> pigeon = new ArrayList<>(List.of(string(0, "/pigeon_nest"), string(1, "/logging_client_events"),
                 ifEqz(3, fault.equals("pigeon-bypass") ? 6 : 2)));
         if (fault.equals("default-coverage-missing")) {
@@ -1523,8 +1545,10 @@ public class BadDexFixture {
         if (!patched) return classes;
 
         List<Method> flags = new ArrayList<>();
-        for (String flag : List.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "disableAnalytics", "restoreTrust")) {
+        for (String flag : List.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust")) {
             if ((fault.equals("status-missing") || fault.equals("historical-missing-ad-status")) && flag.equals("hideAds")) continue;
+            // The published bundles came before Open links in browser.
+            if (fault.startsWith("historical") && flag.equals("openLinksExternally")) continue;
             if ((fault.equals("suggestion-status-missing") || fault.startsWith("historical")) && flag.equals("hideSuggestedUsers")) continue;
             boolean enabled = selected.contains(flag) && !(fault.equals("status-false") && flag.equals("hideAds"));
             if (fault.equals("suggestion-status-false") && flag.equals("hideSuggestedUsers")) enabled = false;
@@ -1556,6 +1580,8 @@ public class BadDexFixture {
                 body(1, op(Opcode.RETURN_OBJECT, 0)), "Ljava/lang/String;"),
                 define(FEATURE_LINKS, "postLink", "Ljava/lang/String;", true, body(3, op(Opcode.RETURN_OBJECT, 0)),
                         "Ljava/lang/String;", OBJECT, "Ljava/lang/String;")));
+        classes.add(featureClass(FEATURE_BROWSER, OBJECT, List.of(), define(FEATURE_BROWSER, "open", "Z", true,
+                body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0)), CONTEXT, "Ljava/lang/String;")));
         classes.add(featureClass(FEATURE_TRUST, OBJECT, List.of(), define(FEATURE_TRUST, "originalSigners", SHORTCUT_LIST, true,
                 body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0)), PACKAGE_INFO)));
         if (patched && (fault.equals("ad-body") || fault.equals("ad-helper-body") || fault.equals("getter-body")
@@ -1662,7 +1688,7 @@ public class BadDexFixture {
         if (!out.isDirectory() && !out.mkdirs()) throw new IllegalStateException("Cannot create " + out);
 
         Map<String, List<ClassDef>> dexes = new LinkedHashMap<>();
-        Set<String> allFeatures = Set.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "disableAnalytics", "restoreTrust");
+        Set<String> allFeatures = Set.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust");
         dexes.put("features-clean", featureBuild(false, Set.of(), 0, ""));
         dexes.put("features-good", featureBuild(true, allFeatures, 7, ""));
         dexes.put("features-omitted", featureBuild(true, Set.of(), 0, ""));
@@ -1670,6 +1696,7 @@ public class BadDexFixture {
         for (int mask = 1; mask <= 7; mask++) dexes.put("features-mask-" + mask, featureBuild(true, Set.of("disableAnalytics"), mask, ""));
         for (String fault : List.of("feed-missing", "feed-replaced", "feed-register", "feed-duplicate", "item-stub", "ad-target", "ad-discarded", "ad-body", "ad-helper-body", "getter-body", "ad-helper-native", "getter-static",
                 "link-missing", "link-replaced", "link-register", "post-link-missing", "post-link-register", "post-link-getter", "post-link-bypass",
+                "browser-missing", "browser-register", "browser-bypass", "browser-clobber",
                 "pigeon-missing", "pigeon-replaced", "pigeon-bypass",
                 "default-missing", "mqtt-missing", "trust-missing", "trust-replaced", "trust-fallback", "status-missing", "status-false")) {
             dexes.put("features-bad-" + fault, featureBuild(true, allFeatures, 7, fault));
@@ -1728,7 +1755,7 @@ public class BadDexFixture {
         }
         dexes.put("features-metadata-clean", metadataStock);
         dexes.put("features-metadata-good", metadataPatched);
-        for (String feature : List.of("hideAds", "sanitizeSharingLinks", "disableAnalytics", "restoreTrust")) {
+        for (String feature : List.of("hideAds", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust")) {
             List<ClassDef> unselected = featureBuild(true, Set.of("hideSuggestedUsers", feature), 7, "");
             omitFeatureStatus(unselected, feature, false);
             dexes.put("features-bad-omitted-" + feature, unselected);

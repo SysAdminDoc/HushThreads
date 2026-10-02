@@ -92,7 +92,7 @@ final class SettingsNavigation extends BaseAdapter {
                 ? L10n.t("Sponsored posts in For you and Following")
                 : L10n.t("Where you left off in your feed");
         section("Feed", L10n.t("Feed"), feedDetail, SettingsIcons.FEED, true);
-        section("Privacy", L10n.t("Privacy"), L10n.t("Tracking in shared links and analytics uploads"), SettingsIcons.BLOCK, true);
+        section("Privacy", L10n.t("Privacy"), L10n.t("Tracking in links and analytics uploads"), SettingsIcons.BLOCK, true);
         section("Links", L10n.t("Links"), null, SettingsIcons.LINKS, false);
         section("Updates", L10n.t("Updates"), null, SettingsIcons.UPDATES, false);
         section("Set when you patched", L10n.t("Set when you patched"), null, SettingsIcons.PATCHED, false);

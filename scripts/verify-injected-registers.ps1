@@ -134,6 +134,7 @@ function Invoke-DexDiff {
             'Hide ads' = 'hideAds'
             'Hide suggested users' = 'hideSuggestedUsers'
             'Sanitize sharing links' = 'sanitizeSharingLinks'
+            'Open links in browser' = 'openLinksExternally'
             'Disable analytics' = 'disableAnalytics'
             'Restore screens on re-signed builds' = 'restoreTrust'
         }

@@ -78,7 +78,7 @@ none	nenhum
 Threads can't read your phone's advertising ID. The permission for it is gone from this build.	O Threads não consegue ler o ID de publicidade do seu celular. A permissão para isso foi removida desta versão.
 Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.	O Threads fechou com erro ou travou no primeiro minuto após iniciar, três vezes seguidas, então o HushThreads foi pausado automaticamente.
 Threads' web addresses are selected for this app in Android's settings, so their links open here.	Os endereços web do Threads estão selecionados para este app nas configurações do Android, então os links deles abrem aqui.
-Tracking in shared links and analytics uploads	Rastreamento em links compartilhados e envio de dados de análise
+Tracking in links and analytics uploads	Rastreamento em links e envio de dados de análise
 Try again, or go back to Threads.	Tente novamente ou volte para o Threads.
 Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.	Até você retomar, todas as opções, menos o Registro de depuração, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo.
 Full report saved to %1$s	Relatório completo salvo em %1$s
@@ -177,3 +177,5 @@ Returning to Threads within ten minutes keeps your place. Pull to refresh still 
 No time limit	Sem limite de tempo
 With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.	Com a opção acima ativada, você continua no ponto em que estava, não importa quanto tempo fique fora. Puxar para atualizar e iniciar o Threads novamente continuam carregando novas publicações.
 Where you left off in your feed	Onde você parou no seu feed
+Open links in your browser	Abrir links no seu navegador
+Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.	Links da web que você toca abrem no seu navegador padrão, ou no app desse site, sem o rastreador de cliques do Threads. Páginas do Threads, do Instagram e outras da Meta continuam abrindo no Threads.

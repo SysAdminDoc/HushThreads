@@ -20,6 +20,7 @@ The latest release is [v0.0.3](https://github.com/SysAdminDoc/HushThreads/releas
 
 - **A feed without ads.** Sponsored posts come out of each page of the feed as it arrives, before Threads saves or shows it.
 - **Shared links with fewer tags.** Tracking parameters such as xmt come off shared post links. A short `/share/` link is made fresh for every share and stands for that share's xmt token, so HushThreads hands out the post's own link (`threads.com/@name/post/code`) in its place.
+- **Links open in your browser.** A web link you tap in a post opens in your default browser, or in the app Android picks for that site, instead of Threads' own browser. When Threads wraps the link in its click tracker (`l.threads.com`), the real address is read out of it on the phone, so the tracker isn't asked. Threads, Instagram and other Meta pages still open in Threads.
 - **Less sent home.** Matched analytics upload addresses go nowhere, and Threads gets zeros instead of your phone's advertising ID. Other telemetry may remain.
 - **Controls that recover.** Every runtime feature has a switch, and a pause, an automatic safe mode, settings backups and privacy-filtered diagnostics help when Threads changes.
 
@@ -59,7 +60,7 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-Source v0.0.4 builds contain 8 patches. All but Block background-return feed refresh are selected by default. The published v0.0.3 bundle contains 6 patches and has neither Hide suggested users nor Block background-return feed refresh.
+Source v0.0.4 builds contain 9 patches. All but Block background-return feed refresh are selected by default. The published v0.0.3 bundle contains 6 patches and has none of Hide suggested users, Block background-return feed refresh or Open links in browser.
 
 | Patch | What it does |
 |---|---|
@@ -68,6 +69,7 @@ Source v0.0.4 builds contain 8 patches. All but Block background-return feed ref
 | `Hide ads` | Takes sponsored posts out of your Threads feed before they're shown. |
 | `Hide suggested users` | Removes verified server cards suggesting accounts to follow. Ordinary posts, reposts and unknown card types stay. |
 | `HushThreads settings` | Adds HushThreads settings to Threads. Long-press Threads' launcher icon, or open Additional settings in the app on Threads' App info page, to turn features on or off, pause HushThreads, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
+| `Open links in browser` | Opens the web links you tap in your default browser instead of Threads' own, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads. |
 | `Remove the advertising ID` | Stops Threads getting your phone's advertising ID from Google Play services. Threads gets a string of zeros in its place. |
 | `Restore screens on re-signed builds` | Lets Threads trust itself again on a re-signed build, the way it trusts its Meta-signed self, and lets an Instagram you patch with this build's own key call into it the same as the real Instagram would. A Root Mount install doesn't need this patch. |
 | `Sanitize sharing links` | Takes Threads' tracking tags, such as xmt, off the links you share or copy, and turns a short share link into the post's own link. The post a link opens stays the same. |
@@ -85,7 +87,7 @@ Long-press the Threads icon and tap HushThreads. You can also open Threads' App 
 
 If Threads crashes within a minute of starting three times in a row, HushThreads pauses itself from the next start and says why at the top of its settings. Your switches stay saved. Tap Resume and restart Threads to turn it back on. A force-stop doesn't count as a crash. On Android 9 and 10 only ordinary crashes count. Android 11 and later also count crashes in Threads' native code and freezes that Android reports as not responding. This was checked on a Galaxy S22 with Threads 449.
 
-Diagnostics list hook calls separately from removed feed items and shared links that changed. Unchanged, disabled, paused or failed operations add no removal or change count. Reports keep these totals without saving the posts or URLs.
+Diagnostics list hook calls separately from removed feed items, shared links that changed and links sent to your browser. Unchanged, disabled, paused or failed operations add no removal or change count. Reports keep these totals without saving the posts or URLs.
 
 ## Signing in
 
@@ -114,6 +116,8 @@ Stock Threads recovered that Instagram session automatically after its data was 
 HushThreads doesn't collect anything and has no server. The patched app goes online on HushThreads' behalf for one thing only: the release check, and it's off until you turn it on. Once it's on, HushThreads asks `api.github.com` for its latest release at most once a day, when Threads starts, and again whenever you tap Check now. That's a plain HTTPS request with `HushThreads/<version>` as its User-Agent, and it carries no cookies and nothing about you or your phone. It only follows a redirect that stays on api.github.com, and it reads at most 256 KB of the answer. GitHub sees your IP address, as any site you visit does. From the answer, HushThreads keeps the version number and, if the notes name one, the Threads version the release targets. Nothing else is kept.
 
 The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`. Those open in your browser, and only when you tap one.
+
+`Open links in browser` hands a tapped web link to Android as an ordinary link, the way any app does, so your default browser or the site's own app opens it. When Threads wrapped the link in its click tracker (`l.threads.com`, `l.instagram.com`, or a `/linkshim` page), HushThreads reads the real address out of it on the phone and sends only that, with tracking tags such as `fbclid` removed. Links to Threads, Instagram, Facebook, Messenger and Meta stay in Threads' own browser, because sign-in, security checks and Accounts Center need its session. If nothing on the phone can open a web link, the link stays in Threads too.
 
 `Disable analytics` replaces matched Pigeon, default event-log and MQTT analytics addresses with `127.0.0.1`, on a port nothing listens on. Those uploads fail locally. Missing address kinds and other telemetry aren't covered by this claim. Turning the switch off, Pause or safe mode restores the original addresses.
 

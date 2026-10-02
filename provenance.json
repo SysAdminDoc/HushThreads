@@ -176,6 +176,31 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/misc/ExternalBrowser.java"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/Hushfacebook",
+      "commit": "0afb0e33ff7f7108d92cf57199c85747e14de50a",
+      "via": [
+        "https://github.com/andrewliang25/morphe-patches"
+      ],
+      "license": "GPL-3.0",
+      "changes": "Renamed for Threads, with one entry point the browser launcher calls with its context and link in place of the browser activity's intent, Threads' own click trackers (l.threads.com, l.threads.net, l.instagram.com and /linkshim) unwrapped as Threads reads them, and Threads, Instagram and the other Meta sites kept in the app."
+    },
+    {
+      "paths": [
+        "patches/src/main/kotlin/app/morphe/patches/threads/misc/externalbrowser/**"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [
+        "https://github.com/SysAdminDoc/Hushfacebook"
+      ],
+      "license": "GPL-3.0-only",
+      "changes": "Open links in browser: the extension asked first thing in Threads' browser launcher, found by the message it logs and the link it parses."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/misc/Analytics.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/misc/analytics/**"
       ],

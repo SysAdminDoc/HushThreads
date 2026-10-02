@@ -54,6 +54,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_sanitize_sharing_links", TRUE);
 
     /**
+     * A web link you tap opens in the phone's browser, or the app Android picks for it, instead of
+     * Threads' own browser, and without Threads' click tracker. Meta's own sites stay in Threads.
+     */
+    public static final BooleanSetting OPEN_LINKS_EXTERNALLY =
+            new BooleanSetting("hushthreads_open_links_externally", TRUE);
+
+    /**
      * Threads' analytics uploads go to an address that answers nothing: the Pigeon event logger,
      * the graph.facebook.com event endpoint and the MQTT client's analytics endpoint.
      */

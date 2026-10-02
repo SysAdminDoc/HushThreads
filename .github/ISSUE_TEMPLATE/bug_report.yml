@@ -67,7 +67,7 @@ body:
     id: selected_patches
     attributes:
       label: Which patches were in your build?
-      description: Pick the patches you selected. Hide suggested users and Block background-return feed refresh are in source builds, not the v0.0.3 release.
+      description: Pick the patches you selected. Hide suggested users, Block background-return feed refresh and Open links in browser are in source builds, not the v0.0.3 release.
       multiple: true
       options:
         - Block background-return feed refresh
@@ -75,6 +75,7 @@ body:
         - Hide ads
         - Hide suggested users
         - HushThreads settings
+        - Open links in browser
         - Remove the advertising ID
         - Restore screens on re-signed builds
         - Sanitize sharing links

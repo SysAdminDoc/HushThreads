@@ -37,6 +37,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean openLinksExternally() {
+        return false;
+    }
+
     public static boolean disableAnalytics() {
         return false;
     }

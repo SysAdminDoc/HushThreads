@@ -45,6 +45,8 @@ public enum PatchFamily {
             Settings.BLOCK_RETURN_REFRESH, Settings.RETURN_REFRESH_NO_LIMIT),
     SANITIZE_SHARING_LINKS(FamilyNames.SANITIZE_SHARING_LINKS, "sanitizeSharingLinks", null,
             Settings.SANITIZE_SHARING_LINKS),
+    EXTERNAL_BROWSER(FamilyNames.EXTERNAL_BROWSER, "openLinksExternally", null,
+            Settings.OPEN_LINKS_EXTERNALLY),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,
             Settings.DISABLE_ANALYTICS),
     // A manifest can't be switched at run time: the permission is gone from the APK whether or not

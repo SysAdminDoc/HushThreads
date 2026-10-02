@@ -521,8 +521,8 @@ public class SettingsNavigationTest {
         page.navigation.open(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key));
         recreate();
         assertTrue(contains(Settings.SANITIZE_SHARING_LINKS.key));
-        // Privacy includes both switches and the address coverage disclosed by this build.
-        assertEquals(3, list().getCount());
+        // Privacy includes its three switches and the address coverage disclosed by this build.
+        assertEquals(4, list().getCount());
         assertTrue(titles().contains("Analytics address coverage"));
         page.navigation.back();
         findSearch(dialog.getView()).setText("shared links");

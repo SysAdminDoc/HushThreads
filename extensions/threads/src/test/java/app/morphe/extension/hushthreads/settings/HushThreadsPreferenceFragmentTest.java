@@ -79,6 +79,7 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_SUGGESTED_USERS, "Hide suggested users");
         ROW_TITLES.put(PatchFamily.RETURN_REFRESH, "Keep feed position on return");
         ROW_TITLES.put(PatchFamily.SANITIZE_SHARING_LINKS, "Remove tracking from shared links");
+        ROW_TITLES.put(PatchFamily.EXTERNAL_BROWSER, "Open links in your browser");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop analytics uploads");
         ROW_TITLES.put(PatchFamily.REMOVE_AD_ID, "Advertising ID removed");
         ROW_TITLES.put(PatchFamily.RESTORE_TRUST, "Re-signed build fix");
@@ -184,7 +185,8 @@ public class HushThreadsPreferenceFragmentTest {
                         || build.contains(PatchFamily.RETURN_REFRESH)) {
                     expected.add("Feed");
                 }
-                if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS) || build.contains(PatchFamily.DISABLE_ANALYTICS)) {
+                if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS) || build.contains(PatchFamily.EXTERNAL_BROWSER)
+                        || build.contains(PatchFamily.DISABLE_ANALYTICS)) {
                     expected.add("Privacy");
                 }
                 expected.addAll(EVERY_BUILD.subList(0, 2));
@@ -218,12 +220,16 @@ public class HushThreadsPreferenceFragmentTest {
                     + "start still load new posts.", String.valueOf(page.findPreference(Settings.RETURN_REFRESH_NO_LIMIT.key).getSummary()));
             assertEquals("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share "
                     + "link becomes the post's own link.", String.valueOf(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key).getSummary()));
+            assertEquals("Open links in your browser", String.valueOf(page.findPreference(Settings.OPEN_LINKS_EXTERNALLY.key).getTitle()));
+            assertEquals("Web links you tap open in your default browser, or the app for that site, without Threads' click "
+                    + "tracker. Threads, Instagram and other Meta pages still open in Threads.",
+                    String.valueOf(page.findPreference(Settings.OPEN_LINKS_EXTERNALLY.key).getSummary()));
             assertEquals("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. "
                     + "Turn this off to use the original addresses.",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
             // Every selected feed/privacy switch ships on.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS, Settings.BLOCK_RETURN_REFRESH,
-                    Settings.SANITIZE_SHARING_LINKS, Settings.DISABLE_ANALYTICS)) {
+                    Settings.SANITIZE_SHARING_LINKS, Settings.OPEN_LINKS_EXTERNALLY, Settings.DISABLE_ANALYTICS)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             // The time limit holds until someone lifts it.

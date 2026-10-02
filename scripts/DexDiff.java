@@ -198,7 +198,7 @@ public class DexDiff {
     /** The kind a first-call rule that asks only for a call leaving a class prefix is read into. */
     private static final String OUTSIDE_FIRST_CALL = "first-call-outside";
     private static final Set<String> THREADS_FEATURES = Set.of(
-            "hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "disableAnalytics", "restoreTrust");
+            "hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust");
 
     private static final class Contract {
         final String kind;
@@ -1932,6 +1932,9 @@ public class DexDiff {
     private static final String FILTER_PAGE = ADS + "filter(Ljava/util/List;)Ljava/util/List;";
     private static final String CLEAN_LINK = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->sanitizeShared(Ljava/lang/String;)Ljava/lang/String;";
     private static final String POST_LINK = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->postLink(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;";
+    private static final String OPEN_LINK = "Lapp/morphe/extension/hushthreads/misc/ExternalBrowser;->open(Landroid/content/Context;Ljava/lang/String;)Z";
+    /** What only Threads' browser launcher logs, the string Open links in browser finds it by. */
+    private static final String LAUNCHER_MESSAGE = "ThreadsBrowserLauncher: cookie injection failed; system WebView unavailable";
     private static final String PERMALINK_REPOSITORY = "Lcom/instagram/barcelona/share/permalink/data/PermalinkRepository;";
     private static final String USER = "Lcom/instagram/user/model/User;";
     /** Each class's interfaces, filled in with the superclasses when featureMethods is asked for them. */
@@ -3096,6 +3099,61 @@ public class DexDiff {
         featureHostCalls(patched, SIGNERS, Map.of(featureSig(stock), 1));
     }
 
+    /**
+     * Open links in browser: Threads' browser launcher asks the extension first. Its first six
+     * instructions copy the context and the link into two locals, call the extension, and return
+     * when the link went out. A kept link falls through to the stock launcher, unchanged.
+     */
+    private static void featureBrowser(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        Method stock = featureTarget(clean, m -> AccessFlags.STATIC.isSet(m.getAccessFlags()) && m.getReturnType().equals("V")
+                && holds(m, LAUNCHER_MESSAGE), "browser launcher");
+        requireFeature(stock.getParameterTypes().size() > 0 && stock.getParameterTypes().get(0).equals("Landroid/content/Context;")
+                && stock.getParameterTypes().stream().noneMatch(p -> p.equals("J") || p.equals("D")),
+                "browser launcher takes no context first");
+        int locals = stock.getImplementation().getRegisterCount() - stock.getParameterTypes().size();
+        int link = featureLauncherLink(stock, locals);
+        Method actual = featureMethod(patched, featureSig(stock));
+        List<Instruction> body = instructions(actual);
+        requireFeature(body.size() >= 6 && body.get(0).getOpcode() == Opcode.MOVE_OBJECT_FROM16
+                && body.get(1).getOpcode() == Opcode.MOVE_OBJECT_FROM16 && isStaticInvoke(body.get(2).getOpcode())
+                && reference(body.get(2)).equals(OPEN_LINK) && body.get(3).getOpcode() == Opcode.MOVE_RESULT
+                && body.get(4).getOpcode() == Opcode.IF_EQZ && body.get(5).getOpcode() == Opcode.RETURN_VOID,
+                "browser launcher hook is missing");
+        TwoRegisterInstruction context = (TwoRegisterInstruction) body.get(0), url = (TwoRegisterInstruction) body.get(1);
+        int result = ((OneRegisterInstruction) body.get(3)).getRegisterA();
+        requireFeature(context.getRegisterB() == locals && url.getRegisterB() == link
+                && Arrays.equals(invokeRegisters(body.get(2)), new int[]{context.getRegisterA(), url.getRegisterA()})
+                && context.getRegisterA() != url.getRegisterA() && context.getRegisterA() < locals && url.getRegisterA() < locals
+                && result < locals && ((OneRegisterInstruction) body.get(4)).getRegisterA() == result,
+                "browser launcher hook passes the wrong context or link");
+        Layout layout = new Layout(actual.getImplementation());
+        requireFeature(layout.addresses.get(4) + ((OffsetInstruction) body.get(4)).getCodeOffset() == layout.addresses.get(6),
+                "a link that stays doesn't fall through to the launcher");
+        featureBody(stock, actual, 6, Map.of(), OPEN_LINK);
+        featureHostCalls(patched, OPEN_LINK, Map.of(featureSig(stock), 1));
+    }
+
+    /** The parameter register of the string the launcher parses with java.net.URI, through the moves in front of it. */
+    private static int featureLauncherLink(Method stock, int locals) {
+        List<Instruction> body = instructions(stock);
+        int parse = featureOne(java.util.stream.IntStream.range(0, body.size()).boxed()
+                .filter(k -> body.get(k).getOpcode() == Opcode.INVOKE_DIRECT
+                        && reference(body.get(k)).equals("Ljava/net/URI;-><init>(Ljava/lang/String;)V")).toList(), "launcher URI parse");
+        int register = invokeRegisters(body.get(parse))[1];
+        for (int k = parse - 1; k >= 0; k--) {
+            Instruction i = body.get(k);
+            if (i.getOpcode() == Opcode.MOVE_OBJECT || i.getOpcode() == Opcode.MOVE_OBJECT_FROM16 || i.getOpcode() == Opcode.MOVE_OBJECT_16) {
+                if (((TwoRegisterInstruction) i).getRegisterA() == register) register = ((TwoRegisterInstruction) i).getRegisterB();
+            } else {
+                requireFeature(i.getOpcode() == Opcode.NEW_INSTANCE && ((OneRegisterInstruction) i).getRegisterA() != register,
+                        "browser launcher runs " + i.getOpcode().name + " before it parses the link");
+            }
+        }
+        requireFeature(register >= locals && stock.getParameterTypes().get(register - locals).equals("Ljava/lang/String;"),
+                "browser launcher parses no string parameter");
+        return register;
+    }
+
     private static void featureFalseStub(Map<String, List<Method>> patched, String signature, boolean optional) {
         if (optional && !patched.containsKey(signature)) return;
         Method stub = featureMethod(patched, signature);
@@ -3163,6 +3221,10 @@ public class DexDiff {
                 featurePreserveTargets(clean, patched, m -> holds(m, "permalink", "XDTPermalinkResponse")
                         || m.getDefiningClass().equals(PERMALINK_REPOSITORY));
                 break;
+            case "openLinksExternally":
+                featureHostCalls(patched, OPEN_LINK, Map.of());
+                featurePreserveTargets(clean, patched, m -> holds(m, LAUNCHER_MESSAGE));
+                break;
             case "disableAnalytics":
                 featureHostCalls(patched, ENDPOINT, Map.of());
                 if (patched.containsKey(STATUS + "analyticsAddressMask()I")) requireFeature(featureConstant(patched, "analyticsAddressMask", "I") == 0,
@@ -3211,9 +3273,9 @@ public class DexDiff {
                     System.out.println("[diff] threads-feature " + feature + ": omitted");
                     continue;
                 }
-                // Historical bundles predate this independently selectable family. Existing
+                // Historical bundles predate these independently selectable families. Existing
                 // families still require their statuses whenever an extension payload exists.
-                if (!hasStatus && selected == null && feature.equals("hideSuggestedUsers")) {
+                if (!hasStatus && selected == null && (feature.equals("hideSuggestedUsers") || feature.equals("openLinksExternally"))) {
                     if (hasPayload) {
                         if (clean == null) clean = featureMethods(cleanApk, parents);
                         featureOmitted(feature, clean, patched, cleanApk, patchedApk);
@@ -3239,6 +3301,7 @@ public class DexDiff {
                     case "hideAds": featureFeed(clean, patched); break;
                     case "hideSuggestedUsers": featureSuggested(clean, patched, cleanApk, patchedApk); break;
                     case "sanitizeSharingLinks": featureLinks(clean, patched, parents); break;
+                    case "openLinksExternally": featureBrowser(clean, patched); break;
                     case "disableAnalytics": featureAnalytics(clean, patched); break;
                     case "restoreTrust": featureTrust(clean, patched); break;
                     default: throw new IllegalArgumentException("Unknown feature " + feature);

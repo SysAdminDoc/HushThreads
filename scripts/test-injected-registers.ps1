@@ -478,6 +478,7 @@ if not "%~2"=="" set "standInFamilies=%standInFamilies%,%~2"
 if not "%~3"=="" set "standInFamilies=%standInFamilies%,%~3"
 if not "%~4"=="" set "standInFamilies=%standInFamilies%,%~4"
 if not "%~5"=="" set "standInFamilies=%standInFamilies%,%~5"
+if not "%~6"=="" set "standInFamilies=%standInFamilies%,%~6"
 echo [diff] requested families: %standInFamilies%
 echo [diff] structural findings: 0
 exit /b $DexDiffExit
@@ -534,8 +535,8 @@ try {
     Assert-True ($suggestions.ExitCode -eq 0 -and $suggestions.Text -match '(?m)^\[registers\] \[diff\] requested families: hideSuggestedUsers$') `
         "The verifier did not forward independent Suggested Users selection to DexDiff.`n$($suggestions.Text)"
     $allFamilies = Invoke-VerifierWithStandIns -Name 'selected-all-families' -DexDiffExit 0 -SelectedPatches @(
-        'Hide ads', 'Hide suggested users', 'Sanitize sharing links', 'Disable analytics', 'Restore screens on re-signed builds')
-    Assert-True ($allFamilies.ExitCode -eq 0 -and $allFamilies.Text -match '(?m)^\[registers\] \[diff\] requested families: hideAds,hideSuggestedUsers,sanitizeSharingLinks,disableAnalytics,restoreTrust$') `
+        'Hide ads', 'Hide suggested users', 'Sanitize sharing links', 'Open links in browser', 'Disable analytics', 'Restore screens on re-signed builds')
+    Assert-True ($allFamilies.ExitCode -eq 0 -and $allFamilies.Text -match '(?m)^\[registers\] \[diff\] requested families: hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust$') `
         "The verifier did not forward all independently selected families to DexDiff.`n$($allFamilies.Text)"
     $refused = Invoke-VerifierWithStandIns -Name 'refused' -DexDiffExit 1
     Assert-True ($refused.ExitCode -eq 1 -and $refused.Text -match $reached -and
@@ -621,19 +622,20 @@ try {
             ("The good build's $($shortcut.Call), sent to the stand-in whose own call is inside the extension, " +
             "was not reported clean.`n$($good.Output -join "`n")")
     }
-    # Every rule must have bad builds of its own. The feature fixtures below cover five families.
+    # Every rule must have bad builds of its own. The feature fixtures below cover six families.
     $otherRules = @(Get-Content -LiteralPath $contracts | ForEach-Object { $_.Trim() } |
         Where-Object { $_ -and -not $_.StartsWith('#') -and $_ -notmatch '^no-call\s' })
-    Assert-True ((($otherRules | Sort-Object) -join ',') -ceq 'threads-feature disableAnalytics,threads-feature hideAds,threads-feature hideSuggestedUsers,threads-feature restoreTrust,threads-feature sanitizeSharingLinks') `
+    Assert-True ((($otherRules | Sort-Object) -join ',') -ceq 'threads-feature disableAnalytics,threads-feature hideAds,threads-feature hideSuggestedUsers,threads-feature openLinksExternally,threads-feature restoreTrust,threads-feature sanitizeSharingLinks') `
         ("The contract file holds rules this suite builds no bad fixtures for:`n$($otherRules -join "`n")")
 
     $featureClean = New-DexApk -Name 'features-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-clean') })
     $featureCases = [ordered]@{
-        'features-good' = 'hideAds,hideSuggestedUsers,sanitizeSharingLinks,disableAnalytics,restoreTrust'
+        'features-good' = 'hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust'
         'features-omitted' = 'none'
         'features-only-hideAds' = 'hideAds'
         'features-only-hideSuggestedUsers' = 'hideSuggestedUsers'
         'features-only-sanitizeSharingLinks' = 'sanitizeSharingLinks'
+        'features-only-openLinksExternally' = 'openLinksExternally'
         'features-only-disableAnalytics' = 'disableAnalytics'
         'features-only-restoreTrust' = 'restoreTrust'
     }
@@ -642,7 +644,7 @@ try {
         $apk = New-DexApk -Name $case.Key -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case.Key) })
         $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case.Key -Contracts $contracts -Features $case.Value
         Assert-True ($checked.ExitCode -eq 0 -and (Get-Findings $checked).Fails.Count -eq 0) ("Feature selection $($case.Key) failed. " + ($checked.Output -join [Environment]::NewLine))
-        foreach ($feature in @('hideAds', 'hideSuggestedUsers', 'sanitizeSharingLinks', 'disableAnalytics', 'restoreTrust')) {
+        foreach ($feature in @('hideAds', 'hideSuggestedUsers', 'sanitizeSharingLinks', 'openLinksExternally', 'disableAnalytics', 'restoreTrust')) {
             $state = if ($feature -cin ($case.Value -split ',')) { 'verified' } else { 'omitted' }
             Assert-True (($checked.Output -join [Environment]::NewLine) -match [regex]::Escape("threads-feature ${feature}: $state")) "Feature $feature did not report $state."
         }
@@ -650,6 +652,7 @@ try {
     $discardedClean = New-DexApk -Name 'features-ad-discarded-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-ad-discarded-clean') })
     $featureFaults = @('feed-missing', 'feed-replaced', 'feed-register', 'feed-duplicate', 'item-stub', 'ad-target', 'ad-discarded', 'ad-body', 'ad-helper-body', 'getter-body', 'ad-helper-native', 'getter-static',
         'link-missing', 'link-replaced', 'link-register', 'post-link-missing', 'post-link-register', 'post-link-getter', 'post-link-bypass',
+        'browser-missing', 'browser-register', 'browser-bypass', 'browser-clobber',
         'pigeon-missing', 'pigeon-replaced', 'pigeon-bypass',
         'default-missing', 'mqtt-missing', 'trust-missing', 'trust-replaced', 'trust-fallback',
         'status-missing', 'status-false', 'zero-mask', 'unknown-mask')
@@ -763,6 +766,7 @@ try {
     $omittedFaults = [ordered]@{
         'omitted-hideAds' = @('hideAds', 'hideSuggestedUsers')
         'omitted-sanitizeSharingLinks' = @('sanitizeSharingLinks', 'hideSuggestedUsers')
+        'omitted-openLinksExternally' = @('openLinksExternally', 'hideSuggestedUsers')
         'omitted-disableAnalytics' = @('disableAnalytics', 'hideSuggestedUsers')
         'omitted-restoreTrust' = @('restoreTrust', 'hideSuggestedUsers')
         'omitted-suggestion-predicate' = @('hideSuggestedUsers', 'hideAds')
@@ -796,8 +800,9 @@ try {
     $historical = New-DexApk -Name 'features-historical' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-historical') })
     foreach ($selection in @($null, 'hideAds,sanitizeSharingLinks,disableAnalytics,restoreTrust')) {
         $checked = Invoke-DexDiff -Clean $featureClean -Patched $historical -Allowlist $emptyAllowlist -Name "historical-$selection" -Contracts $contracts -Features $selection
-        Assert-True ($checked.ExitCode -eq 0 -and ($checked.Output -join [Environment]::NewLine) -match 'threads-feature hideSuggestedUsers: omitted') `
-            'A historical bundle missing only the new status was refused.'
+        $text = $checked.Output -join [Environment]::NewLine
+        Assert-True ($checked.ExitCode -eq 0 -and $text -match 'threads-feature hideSuggestedUsers: omitted' -and $text -match 'threads-feature openLinksExternally: omitted') `
+            'A historical bundle missing only the new statuses was refused.'
     }
     $legacyMissingAd = New-DexApk -Name 'features-historical-missing-ad-status' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-historical-missing-ad-status') })
     $legacyChecked = Invoke-DexDiff -Clean $featureClean -Patched $legacyMissingAd -Allowlist $emptyAllowlist -Name 'historical-missing-ad-status' -Contracts $contracts
@@ -805,6 +810,12 @@ try {
         'Historical omission weakened the pre-existing ad status requirement.'
     $selectedHistorical = Invoke-DexDiff -Clean $featureClean -Patched $historical -Allowlist $emptyAllowlist `
         -Name 'historical-selected-suggestions' -Contracts $contracts -Features 'hideAds,hideSuggestedUsers,sanitizeSharingLinks,disableAnalytics,restoreTrust'
+    Assert-True ($selectedHistorical.ExitCode -ne 0 -and ($selectedHistorical.Output -join [Environment]::NewLine) -notmatch 'contract: openLinksExternally:') `
+        'An unselected Open links in browser was held to its status on a historical bundle.'
+    $selectedBrowser = Invoke-DexDiff -Clean $featureClean -Patched $historical -Allowlist $emptyAllowlist `
+        -Name 'historical-selected-browser' -Contracts $contracts -Features 'hideAds,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust'
+    Assert-True ($selectedBrowser.ExitCode -ne 0 -and ($selectedBrowser.Output -join [Environment]::NewLine) -match 'contract: openLinksExternally:') `
+        'Explicit browser selection accepted a historical bundle without the new status.'
     Assert-True ($selectedHistorical.ExitCode -ne 0 -and ($selectedHistorical.Output -join [Environment]::NewLine) -match 'contract: hideSuggestedUsers:') `
         'Explicit suggestion selection accepted a historical bundle without the new status.'
     $exceptionClean = New-DexApk -Name 'features-exception-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-exception-clean') })

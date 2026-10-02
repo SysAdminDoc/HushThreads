@@ -36,5 +36,6 @@ no-call Landroid/content/pm/ShortcutManager;->removeAllDynamicShortcuts()V outsi
 threads-feature hideAds
 threads-feature hideSuggestedUsers
 threads-feature sanitizeSharingLinks
+threads-feature openLinksExternally
 threads-feature disableAnalytics
 threads-feature restoreTrust

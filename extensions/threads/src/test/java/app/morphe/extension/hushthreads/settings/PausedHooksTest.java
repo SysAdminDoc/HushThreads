@@ -15,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.lang.reflect.Field;
@@ -34,6 +35,7 @@ import app.morphe.extension.hushthreads.ads.FeedAds;
 import app.morphe.extension.hushthreads.ads.ShadowFeedAds;
 import app.morphe.extension.hushthreads.feed.ReturnRefresh;
 import app.morphe.extension.hushthreads.misc.Analytics;
+import app.morphe.extension.hushthreads.misc.ExternalBrowser;
 import app.morphe.extension.hushthreads.misc.LinkCleaner;
 import app.morphe.extension.shared.SettingsContextRule;
 import app.morphe.extension.shared.settings.BaseSettings;
@@ -122,6 +124,9 @@ public class PausedHooksTest {
                     String shared = "https://www.threads.com/share/BAXudaEdTE/";
                     return !shared.equals(LinkCleaner.postLink(shared, "zuck", "C8abc"));
                 }));
+        // A tapped web link goes to the phone's browser instead of Threads' own.
+        probes.put(PatchFamily.EXTERNAL_BROWSER, Collections.singletonList(
+                () -> ExternalBrowser.open(RuntimeEnvironment.getApplication(), "https://example.org/")));
         // The event log upload address Threads built is swapped for one that answers nothing.
         probes.put(PatchFamily.DISABLE_ANALYTICS, Collections.singletonList(() -> {
             String upload = "https://graph.threads.net/logging_client_events";
