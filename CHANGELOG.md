@@ -6,6 +6,7 @@ Every HushThreads release, newest first.
 
 Source builds only. The published bundle remains at 0.0.3.
 
+* **Tooling:** The injected-register device check doesn't clear the phone's log anymore. It writes a marker of its own before dex2oat runs and counts only the verifier lines that follow it. If the log has rolled past that marker by the time it's read, the check stops with an error instead of guessing.
 * **Tooling:** The settings file test resets the release check it turns on, so the release check tests start from a phone that never checked in any suite order.
 
 * **Tooling:** Localization file-picker tests wait for queued work with a finite completion fence, so recurring animations can't keep the suite running indefinitely. Every existing language and toast assertion remains.
