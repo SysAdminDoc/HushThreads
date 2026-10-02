@@ -175,3 +175,8 @@ the removed advertising ID permission	die entfernte Berechtigung für die Werbe-
 # context: optional feed rule and its scope
 Hide suggested users	Vorgeschlagene Nutzer ausblenden
 Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.	Entfernt bestätigte Karten mit Konten zum Folgen. Normale Beiträge und Reposts bleiben.
+Keep feed position on return	Feedposition beim Zurückkehren beibehalten
+Returning to Threads within ten minutes keeps your place. Pull to refresh still works.	Wenn du innerhalb von zehn Minuten zu Threads zurückkehrst, bleibst du an derselben Stelle. Zum Aktualisieren kannst du weiter nach unten ziehen.
+No time limit	Kein Zeitlimit
+With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.	Wenn der Schalter oben an ist, bleibt deine Stelle erhalten, egal wie lange du weg bist. Zum Aktualisieren ziehen und ein Neustart laden weiterhin neue Beiträge.
+Where you left off in your feed	Wo du in deinem Feed aufgehört hast

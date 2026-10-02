@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(330);
+        Map<String, String> table = new HashMap<>(340);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -212,6 +212,8 @@ public final class L10nTranslations {
                 "Es ist f\u00fcr Threads %1$s gedacht.");
         table.put("Jump to a section",
                 "Zu einem Abschnitt springen");
+        table.put("Keep feed position on return",
+                "Feedposition beim Zur\u00fcckkehren beibehalten");
         table.put("Licenses",
                 "Lizenzen");
         table.put("Links",
@@ -226,6 +228,8 @@ public final class L10nTranslations {
                 "Keine App auf diesem Handy kann den Link \u00f6ffnen. Die Adresse ist %1$s.");
         table.put("No matching settings",
                 "Keine passenden Einstellungen");
+        table.put("No time limit",
+                "Kein Zeitlimit");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
                 "Keine Webadresse von Threads ist f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links woanders. Tippe, um sie in den Android-Einstellungen auszuw\u00e4hlen.");
         table.put("OK",
@@ -258,6 +262,8 @@ public final class L10nTranslations {
                 "Fortsetzen");
         table.put("Retry",
                 "Erneut versuchen");
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "Wenn du innerhalb von zehn Minuten zu Threads zur\u00fcckkehrst, bleibst du an derselben Stelle. Zum Aktualisieren kannst du weiter nach unten ziehen.");
         table.put("Save full report",
                 "Vollst\u00e4ndigen Bericht speichern");
         table.put("Save the full report in Download/Morphe.",
@@ -292,15 +298,15 @@ public final class L10nTranslations {
                 "Einstellungen importiert. %1$d Schalter wurden ge\u00e4ndert.");
         table.put("Source code and issues",
                 "Quellcode und Issues");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
                 "Gesponserte Beitr\u00e4ge werden aus \u201eF\u00fcr dich\u201c und \u201eGefolgt\u201c entfernt, bevor Threads sie zeigt, deshalb bleibt keine L\u00fccke.");
         table.put("Sponsored posts in For you and Following",
                 "Gesponserte Beitr\u00e4ge in \u201eF\u00fcr dich\u201c und \u201eGefolgt\u201c");
         table.put("Stays in while paused",
                 "Bleibt w\u00e4hrend der Pause aktiv");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Stop analytics uploads",
                 "Analyse-Uploads stoppen");
         table.put("Suggested accounts in your feed",
@@ -375,6 +381,10 @@ public final class L10nTranslations {
                 "Version");
         table.put("Version %1$s for Threads %2$s",
                 "Version %1$s f\u00fcr Threads %2$s");
+        table.put("Where you left off in your feed",
+                "Wo du in deinem Feed aufgeh\u00f6rt hast");
+        table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
+                "Wenn der Schalter oben an ist, bleibt deine Stelle erhalten, egal wie lange du weg bist. Zum Aktualisieren ziehen und ein Neustart laden weiterhin neue Beitr\u00e4ge.");
         table.put("You have the newest HushThreads release.",
                 "Du hast die neueste Version von HushThreads.");
         table.put("You paused HushThreads.",
@@ -394,7 +404,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(330);
+        Map<String, String> table = new HashMap<>(340);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -559,6 +569,8 @@ public final class L10nTranslations {
                 "Est\u00e1 pensado para Threads %1$s.");
         table.put("Jump to a section",
                 "Ir a una secci\u00f3n");
+        table.put("Keep feed position on return",
+                "Mantener la posici\u00f3n del feed al volver");
         table.put("Licenses",
                 "Licencias");
         table.put("Links",
@@ -573,6 +585,8 @@ public final class L10nTranslations {
                 "Ninguna app de este tel\u00e9fono puede abrir el enlace. La direcci\u00f3n es %1$s.");
         table.put("No matching settings",
                 "No hay ajustes coincidentes");
+        table.put("No time limit",
+                "Sin l\u00edmite de tiempo");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
                 "Ninguna direcci\u00f3n web de Threads est\u00e1 seleccionada para esta app, as\u00ed que sus enlaces se abren en otro sitio. Toca para seleccionarlas en los ajustes de Android.");
         table.put("OK",
@@ -605,6 +619,8 @@ public final class L10nTranslations {
                 "Reanudar");
         table.put("Retry",
                 "Reintentar");
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "Si vuelves a Threads en menos de diez minutos, seguir\u00e1s donde estabas. Puedes deslizar hacia abajo para actualizar.");
         table.put("Save full report",
                 "Guardar informe completo");
         table.put("Save the full report in Download/Morphe.",
@@ -639,15 +655,15 @@ public final class L10nTranslations {
                 "Configuraci\u00f3n importada. Cambiaron %1$d interruptores.");
         table.put("Source code and issues",
                 "C\u00f3digo fuente e incidencias");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
                 "Las publicaciones patrocinadas salen de Para ti y Siguiendo antes de que Threads las muestre, as\u00ed que no queda ning\u00fan hueco.");
         table.put("Sponsored posts in For you and Following",
                 "Publicaciones patrocinadas en Para ti y Siguiendo");
         table.put("Stays in while paused",
                 "Se mantiene durante la pausa");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Stop analytics uploads",
                 "Detener el env\u00edo de anal\u00edticas");
         table.put("Suggested accounts in your feed",
@@ -722,6 +738,10 @@ public final class L10nTranslations {
                 "Versi\u00f3n");
         table.put("Version %1$s for Threads %2$s",
                 "Versi\u00f3n %1$s para Threads %2$s");
+        table.put("Where you left off in your feed",
+                "Donde te quedaste en tu feed");
+        table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
+                "Con el interruptor de arriba activado, tu lugar se mantiene sin importar cu\u00e1nto tiempo est\u00e9s fuera. Deslizar para actualizar y abrir la app de nuevo siguen cargando publicaciones nuevas.");
         table.put("You have the newest HushThreads release.",
                 "Tienes la versi\u00f3n m\u00e1s reciente de HushThreads.");
         table.put("You paused HushThreads.",
@@ -741,7 +761,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(330);
+        Map<String, String> table = new HashMap<>(340);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -906,6 +926,8 @@ public final class L10nTranslations {
                 "Rilis ini ditujukan untuk Threads %1$s.");
         table.put("Jump to a section",
                 "Lompat ke bagian");
+        table.put("Keep feed position on return",
+                "Pertahankan posisi feed saat kembali");
         table.put("Licenses",
                 "Lisensi");
         table.put("Links",
@@ -920,6 +942,8 @@ public final class L10nTranslations {
                 "Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.");
         table.put("No matching settings",
                 "Tidak ada pengaturan yang cocok");
+        table.put("No time limit",
+                "Tanpa batas waktu");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
                 "Tidak ada alamat web Threads yang dipilih untuk aplikasi ini, jadi tautannya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.");
         table.put("OK",
@@ -952,6 +976,8 @@ public final class L10nTranslations {
                 "Lanjutkan");
         table.put("Retry",
                 "Coba lagi");
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "Jika kembali ke Threads dalam sepuluh menit, posisi feed tetap sama. Tarik ke bawah untuk memuat ulang masih berfungsi.");
         table.put("Save full report",
                 "Simpan laporan lengkap");
         table.put("Save the full report in Download/Morphe.",
@@ -986,15 +1012,15 @@ public final class L10nTranslations {
                 "Pengaturan diimpor. %1$d sakelar berubah.");
         table.put("Source code and issues",
                 "Kode sumber dan laporan masalah");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
                 "Postingan bersponsor dihapus dari Untuk Anda dan Mengikuti sebelum Threads menampilkannya, jadi tidak ada celah kosong.");
         table.put("Sponsored posts in For you and Following",
                 "Postingan bersponsor di Untuk Anda dan Mengikuti");
         table.put("Stays in while paused",
                 "Tetap aktif saat dijeda");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Stop analytics uploads",
                 "Hentikan unggahan analitik");
         table.put("Suggested accounts in your feed",
@@ -1069,6 +1095,10 @@ public final class L10nTranslations {
                 "Versi");
         table.put("Version %1$s for Threads %2$s",
                 "Versi %1$s untuk Threads %2$s");
+        table.put("Where you left off in your feed",
+                "Posisi terakhir Anda di feed");
+        table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
+                "Jika sakelar di atas aktif, posisi Anda tetap tersimpan berapa lama pun Anda pergi. Tarik untuk memuat ulang dan membuka ulang aplikasi tetap memuat postingan baru.");
         table.put("You have the newest HushThreads release.",
                 "Anda sudah memakai rilis HushThreads terbaru.");
         table.put("You paused HushThreads.",
@@ -1088,7 +1118,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(330);
+        Map<String, String> table = new HashMap<>(340);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1253,6 +1283,8 @@ public final class L10nTranslations {
                 "Compat\u00edvel com o Threads %1$s.");
         table.put("Jump to a section",
                 "Ir para uma se\u00e7\u00e3o");
+        table.put("Keep feed position on return",
+                "Manter a posi\u00e7\u00e3o no feed ao voltar");
         table.put("Licenses",
                 "Licen\u00e7as");
         table.put("Links",
@@ -1267,6 +1299,8 @@ public final class L10nTranslations {
                 "Nenhum aplicativo neste dispositivo consegue abrir o link. O endere\u00e7o \u00e9 %1$s.");
         table.put("No matching settings",
                 "Nenhuma configura\u00e7\u00e3o encontrada");
+        table.put("No time limit",
+                "Sem limite de tempo");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
                 "Nenhum endere\u00e7o web do Threads est\u00e1 selecionado para este app, ent\u00e3o os links deles abrem em outro lugar. Toque para selecion\u00e1-los nas configura\u00e7\u00f5es do Android.");
         table.put("OK",
@@ -1299,6 +1333,8 @@ public final class L10nTranslations {
                 "Retomar");
         table.put("Retry",
                 "Tentar novamente");
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "Ao voltar ao Threads em at\u00e9 dez minutos, voc\u00ea continuar\u00e1 no ponto em que estava. O gesto de puxar para baixo para atualizar continuar\u00e1 funcionando.");
         table.put("Save full report",
                 "Salvar relat\u00f3rio completo");
         table.put("Save the full report in Download/Morphe.",
@@ -1333,15 +1369,15 @@ public final class L10nTranslations {
                 "Configura\u00e7\u00f5es importadas. %1$d op\u00e7\u00f5es foram alteradas.");
         table.put("Source code and issues",
                 "C\u00f3digo-fonte e relatos de problemas");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
                 "As publica\u00e7\u00f5es patrocinadas saem de Para voc\u00ea e Seguindo antes que o Threads as mostre, ent\u00e3o nenhum espa\u00e7o fica vazio.");
         table.put("Sponsored posts in For you and Following",
                 "Publica\u00e7\u00f5es patrocinadas em Para voc\u00ea e Seguindo");
         table.put("Stays in while paused",
                 "O que continua ativo na pausa");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Stop analytics uploads",
                 "Parar o envio de dados de an\u00e1lise");
         table.put("Suggested accounts in your feed",
@@ -1416,6 +1452,10 @@ public final class L10nTranslations {
                 "Vers\u00e3o");
         table.put("Version %1$s for Threads %2$s",
                 "Vers\u00e3o %1$s para o Threads %2$s");
+        table.put("Where you left off in your feed",
+                "Onde voc\u00ea parou no seu feed");
+        table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
+                "Com a op\u00e7\u00e3o acima ativada, voc\u00ea continua no ponto em que estava, n\u00e3o importa quanto tempo fique fora. Puxar para atualizar e iniciar o Threads novamente continuam carregando novas publica\u00e7\u00f5es.");
         table.put("You have the newest HushThreads release.",
                 "Voc\u00ea j\u00e1 est\u00e1 usando a vers\u00e3o mais nova do HushThreads.");
         table.put("You paused HushThreads.",
@@ -1435,7 +1475,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(330);
+        Map<String, String> table = new HashMap<>(340);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -1600,6 +1640,8 @@ public final class L10nTranslations {
                 "Threads %1$s i\u00e7in haz\u0131rland\u0131.");
         table.put("Jump to a section",
                 "Bir b\u00f6l\u00fcme git");
+        table.put("Keep feed position on return",
+                "Geri d\u00f6n\u00fcnce ak\u0131\u015f konumunu koru");
         table.put("Licenses",
                 "Lisanslar");
         table.put("Links",
@@ -1614,6 +1656,8 @@ public final class L10nTranslations {
                 "Bu telefondaki hi\u00e7bir uygulama ba\u011flant\u0131y\u0131 a\u00e7am\u0131yor. Adres: %1$s.");
         table.put("No matching settings",
                 "E\u015fle\u015fen ayar yok");
+        table.put("No time limit",
+                "S\u00fcre s\u0131n\u0131r\u0131 yok");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
                 "Threads'in web adreslerinden hi\u00e7biri bu uygulama i\u00e7in se\u00e7ili de\u011fil, bu y\u00fczden ba\u011flant\u0131lar\u0131 ba\u015fka yerde a\u00e7\u0131l\u0131r. Android ayarlar\u0131nda se\u00e7mek i\u00e7in dokunun.");
         table.put("OK",
@@ -1646,6 +1690,8 @@ public final class L10nTranslations {
                 "Devam et");
         table.put("Retry",
                 "Yeniden dene");
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "Threads'e on dakika i\u00e7inde d\u00f6nersen kald\u0131\u011f\u0131n yer korunur. Yenilemek i\u00e7in a\u015fa\u011f\u0131 \u00e7ekmeye devam edebilirsin.");
         table.put("Save full report",
                 "Tam raporu kaydet");
         table.put("Save the full report in Download/Morphe.",
@@ -1680,15 +1726,15 @@ public final class L10nTranslations {
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131. %1$d anahtar de\u011fi\u015fti.");
         table.put("Source code and issues",
                 "Kaynak kodu ve sorunlar");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
                 "Sponsorlu g\u00f6nderiler, Threads onlar\u0131 g\u00f6stermeden \u00f6nce Senin \u0130\u00e7in ve Takip Edilenler ak\u0131\u015flar\u0131ndan \u00e7\u0131kar\u0131l\u0131r, b\u00f6ylece bo\u015fluk kalmaz.");
         table.put("Sponsored posts in For you and Following",
                 "Senin \u0130\u00e7in ve Takip Edilenler'deki sponsorlu g\u00f6nderiler");
         table.put("Stays in while paused",
                 "Duraklat\u0131lsa da devrede kal\u0131r");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Stop analytics uploads",
                 "Analiz y\u00fcklemelerini durdur");
         table.put("Suggested accounts in your feed",
@@ -1763,6 +1809,10 @@ public final class L10nTranslations {
                 "S\u00fcr\u00fcm");
         table.put("Version %1$s for Threads %2$s",
                 "Threads %2$s i\u00e7in %1$s s\u00fcr\u00fcm\u00fc");
+        table.put("Where you left off in your feed",
+                "Ak\u0131\u015fta kald\u0131\u011f\u0131n yer");
+        table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
+                "Yukar\u0131daki anahtar a\u00e7\u0131kken ne kadar uzun s\u00fcre uzakta kal\u0131rsan kal yerin korunur. Yenilemek i\u00e7in \u00e7ekmek ve uygulamay\u0131 yeniden ba\u015flatmak yine yeni g\u00f6nderileri y\u00fckler.");
         table.put("You have the newest HushThreads release.",
                 "En yeni HushThreads s\u00fcr\u00fcm\u00fcn\u00fc kullan\u0131yorsun.");
         table.put("You paused HushThreads.",

@@ -187,6 +187,29 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/ReturnRefresh.java"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/Hushfacebook",
+      "commit": "d12e61b41319bab835f540793682dc106e889412",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Renamed for Threads, with Facebook's four return checks (the resume callback, warm start, foreground auto-scroll and teardown while away) replaced by Threads' three: the hot-start decision, the reset to main feed and the feed screen's warm-start check."
+    },
+    {
+      "paths": [
+        "patches/src/main/kotlin/app/morphe/patches/threads/feed/**"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [
+        "https://github.com/SysAdminDoc/Hushfacebook"
+      ],
+      "license": "GPL-3.0-only",
+      "changes": "Block background-return feed refresh: Threads' hot-start decision, reset to main feed and warm-start check, found in 449 and 448, each asking the extension. Hushfacebook's patch of the same name was the behavior reference."
+    },
+    {
+      "paths": [
         "patches/src/main/kotlin/app/morphe/patches/threads/misc/adid/**"
       ],
       "origin": "original",

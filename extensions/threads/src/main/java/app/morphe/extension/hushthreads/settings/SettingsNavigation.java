@@ -88,7 +88,9 @@ final class SettingsNavigation extends BaseAdapter {
         String feedDetail = PatchFamily.HIDE_SUGGESTED_USERS.inBuild()
                 ? (PatchFamily.HIDE_ADS.inBuild() ? L10n.t("Ads and suggested accounts in your feed")
                 : L10n.t("Suggested accounts in your feed"))
-                : L10n.t("Sponsored posts in For you and Following");
+                : PatchFamily.HIDE_ADS.inBuild() || !PatchFamily.RETURN_REFRESH.inBuild()
+                ? L10n.t("Sponsored posts in For you and Following")
+                : L10n.t("Where you left off in your feed");
         section("Feed", L10n.t("Feed"), feedDetail, SettingsIcons.FEED, true);
         section("Privacy", L10n.t("Privacy"), L10n.t("Tracking in shared links and analytics uploads"), SettingsIcons.BLOCK, true);
         section("Links", L10n.t("Links"), null, SettingsIcons.LINKS, false);

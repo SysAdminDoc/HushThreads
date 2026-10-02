@@ -38,6 +38,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_SUGGESTED_USERS =
             new BooleanSetting("hushthreads_hide_suggested_users", TRUE);
 
+    /** Keep the current feed when returning to Threads within ten minutes. */
+    public static final BooleanSetting BLOCK_RETURN_REFRESH =
+            new BooleanSetting("hushthreads_block_return_refresh", TRUE);
+
+    /** With the switch above, keep the feed however long Threads stayed in the background. */
+    public static final BooleanSetting RETURN_REFRESH_NO_LIMIT =
+            new BooleanSetting("hushthreads_return_refresh_no_limit", FALSE);
+
     /**
      * The tracking keys come off the post links Threads hands out when you copy or share one
      * (xmt, slof, igsh and the rest), with the rest of the link left as the server wrote it.

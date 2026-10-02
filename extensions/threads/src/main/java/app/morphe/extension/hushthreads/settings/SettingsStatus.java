@@ -29,6 +29,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean returnRefresh() {
+        return false;
+    }
+
     public static boolean sanitizeSharingLinks() {
         return false;
     }

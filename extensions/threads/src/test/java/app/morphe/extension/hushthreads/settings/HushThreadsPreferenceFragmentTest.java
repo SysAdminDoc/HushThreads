@@ -77,6 +77,7 @@ public class HushThreadsPreferenceFragmentTest {
     public void initializeRowTitlesAfterContext() {
         ROW_TITLES.put(PatchFamily.HIDE_ADS, "Hide ads");
         ROW_TITLES.put(PatchFamily.HIDE_SUGGESTED_USERS, "Hide suggested users");
+        ROW_TITLES.put(PatchFamily.RETURN_REFRESH, "Keep feed position on return");
         ROW_TITLES.put(PatchFamily.SANITIZE_SHARING_LINKS, "Remove tracking from shared links");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop analytics uploads");
         ROW_TITLES.put(PatchFamily.REMOVE_AD_ID, "Advertising ID removed");
@@ -179,7 +180,10 @@ public class HushThreadsPreferenceFragmentTest {
 
                 List<String> sections = sections(page);
                 List<String> expected = new ArrayList<>();
-                if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_SUGGESTED_USERS)) expected.add("Feed");
+                if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_SUGGESTED_USERS)
+                        || build.contains(PatchFamily.RETURN_REFRESH)) {
+                    expected.add("Feed");
+                }
                 if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS) || build.contains(PatchFamily.DISABLE_ANALYTICS)) {
                     expected.add("Privacy");
                 }
@@ -206,16 +210,24 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Hide suggested users", String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_USERS.key).getTitle()));
             assertEquals("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
                     String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_USERS.key).getSummary()));
+            assertEquals("Keep feed position on return", String.valueOf(page.findPreference(Settings.BLOCK_RETURN_REFRESH.key).getTitle()));
+            assertEquals("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                    String.valueOf(page.findPreference(Settings.BLOCK_RETURN_REFRESH.key).getSummary()));
+            assertEquals("No time limit", String.valueOf(page.findPreference(Settings.RETURN_REFRESH_NO_LIMIT.key).getTitle()));
+            assertEquals("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh "
+                    + "start still load new posts.", String.valueOf(page.findPreference(Settings.RETURN_REFRESH_NO_LIMIT.key).getSummary()));
             assertEquals("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the "
                     + "link stays as it was.", String.valueOf(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key).getSummary()));
             assertEquals("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. "
                     + "Turn this off to use the original addresses.",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
             // Every selected feed/privacy switch ships on.
-            for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS, Settings.SANITIZE_SHARING_LINKS,
-                    Settings.DISABLE_ANALYTICS)) {
+            for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS, Settings.BLOCK_RETURN_REFRESH,
+                    Settings.SANITIZE_SHARING_LINKS, Settings.DISABLE_ANALYTICS)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
+            // The time limit holds until someone lifts it.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.RETURN_REFRESH_NO_LIMIT.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

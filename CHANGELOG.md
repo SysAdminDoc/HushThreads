@@ -14,6 +14,8 @@ Source builds only. The published bundle remains at 0.0.3.
 
 * **Tooling:** A patch that finds more than one match now lists the candidates when it stops, so a changed Threads build can be checked before anyone installs it.
 
+* **Threads:** Block background-return feed refresh keeps your place in the feed when you come back to Threads within ten minutes, or after any time away with No time limit on. Threads' background refresh of For you, its reset to the main feed, the feed's own reload and its swap to posts fetched while you were away all get one answer per return. Pull to refresh and a fresh launch still load new posts. It isn't selected by default. Checked on a Galaxy S22 with Threads 449.
+
 * **Tooling:** `scripts/upstream-drift.ps1` lists the files ported from Hushfacebook that changed there after the commit their rule records, and exits 1 when any did. A ported file with no upstream counterpart, or an upstream it can't read, exits 2 so neither passes for a clean answer.
 
 * **Threads:** Shared-link guidance now describes query-parameter removal without claiming that opaque share codes identify the account or are removed. The source comment no longer attributes a Threads rule to ClearURLs.

@@ -41,6 +41,8 @@ public enum PatchFamily {
             Settings.HIDE_ADS),
     HIDE_SUGGESTED_USERS(FamilyNames.HIDE_SUGGESTED_USERS, "hideSuggestedUsers", null,
             Settings.HIDE_SUGGESTED_USERS),
+    RETURN_REFRESH(FamilyNames.RETURN_REFRESH, "returnRefresh", null,
+            Settings.BLOCK_RETURN_REFRESH, Settings.RETURN_REFRESH_NO_LIMIT),
     SANITIZE_SHARING_LINKS(FamilyNames.SANITIZE_SHARING_LINKS, "sanitizeSharingLinks", null,
             Settings.SANITIZE_SHARING_LINKS),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,

@@ -59,10 +59,11 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-Source v0.0.4 builds contain 7 patches, all selected by default. The published v0.0.3 bundle contains 6 patches and doesn't include Hide suggested users.
+Source v0.0.4 builds contain 8 patches. All but Block background-return feed refresh are selected by default. The published v0.0.3 bundle contains 6 patches and has neither Hide suggested users nor Block background-return feed refresh.
 
 | Patch | What it does |
 |---|---|
+| `Block background-return feed refresh` | Keeps your place in the feed when you come back to Threads within ten minutes, or after any time away with No time limit on. Pull to refresh and a fresh launch still load new posts. |
 | `Disable analytics` | Redirects matched Pigeon, default event-log and MQTT analytics addresses. Settings show which address kinds were patched. Other telemetry may remain. |
 | `Hide ads` | Takes sponsored posts out of your Threads feed before they're shown. |
 | `Hide suggested users` | Removes verified server cards suggesting accounts to follow. Ordinary posts, reposts and unknown card types stay. |
@@ -72,6 +73,8 @@ Source v0.0.4 builds contain 7 patches, all selected by default. The published v
 | `Sanitize sharing links` | Takes Threads' tracking tags, such as xmt, off the links you share or copy. The post a link opens stays the same. |
 
 The feed controls share one page filter. Each selected rule has its own switch and removal count. Pause restores the original page, and a failed card check keeps the whole page. Hide suggested users passes fixture checks on both source-supported builds. It hasn't been seen taking a real card out of a live feed yet, because the test account wasn't shown any.
+
+Block background-return feed refresh answers the four checks Threads makes as it comes back: the background refresh of For you, the reset to the main feed after a long absence, the feed's own reload and scroll to the top, and the swap to posts it fetched while you were away. The first check after you left decides for the others. Its hooks pass fixture checks on both source-supported builds. On a Galaxy S22 with Threads 449, five minutes away kept the same posts on screen, while the same trip with the switch off reloaded the feed. Pull to refresh still loaded new posts, and eleven minutes away let Threads refresh as usual. The 448 build has only been checked against its code so far.
 
 ## Settings
 

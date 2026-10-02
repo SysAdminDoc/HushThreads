@@ -67,9 +67,10 @@ body:
     id: selected_patches
     attributes:
       label: Which patches were in your build?
-      description: Pick the patches you selected. Hide suggested users is available in source builds and isn't in the v0.0.3 release.
+      description: Pick the patches you selected. Hide suggested users and Block background-return feed refresh are in source builds, not the v0.0.3 release.
       multiple: true
       options:
+        - Block background-return feed refresh
         - Disable analytics
         - Hide ads
         - Hide suggested users

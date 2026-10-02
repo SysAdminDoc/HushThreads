@@ -32,6 +32,7 @@ import java.util.Set;
 
 import app.morphe.extension.hushthreads.ads.FeedAds;
 import app.morphe.extension.hushthreads.ads.ShadowFeedAds;
+import app.morphe.extension.hushthreads.feed.ReturnRefresh;
 import app.morphe.extension.hushthreads.misc.Analytics;
 import app.morphe.extension.hushthreads.misc.LinkCleaner;
 import app.morphe.extension.shared.SettingsContextRule;
@@ -93,6 +94,24 @@ public class PausedHooksTest {
             List<Object> page = Arrays.asList("a post", ShadowFeedAds.SUGGESTED, "another post");
             return FeedAds.filter(page).size() != page.size();
         }));
+        // Each of Threads' return checks, straight after its screens were hidden, keeps the feed.
+        probes.put(PatchFamily.RETURN_REFRESH, Arrays.asList(
+                () -> {
+                    ReturnRefresh.uiHidden();
+                    return ReturnRefresh.holdHotStart();
+                },
+                () -> {
+                    ReturnRefresh.uiHidden();
+                    return !ReturnRefresh.resetToFeed(true);
+                },
+                () -> {
+                    ReturnRefresh.uiHidden();
+                    return !ReturnRefresh.warmStart(true);
+                },
+                () -> {
+                    ReturnRefresh.uiHidden();
+                    return !ReturnRefresh.cachedPosts(true);
+                }));
         // A shared post link loses the tracking tags Threads added to it.
         probes.put(PatchFamily.SANITIZE_SHARING_LINKS, Collections.singletonList(() -> {
             String shared = "https://www.threads.com/@zuck/post/C8abc?xmt=AQGz&slof=1";
