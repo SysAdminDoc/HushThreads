@@ -459,9 +459,12 @@ class SanitizeSharingLinksFixtureTest {
             .filter { it.opcode == Opcode.NEW_INSTANCE }.map { ((it as ReferenceInstruction).reference as TypeReference).type }.toMutableSet()
         val hierarchy = mutableMapOf<String, String?>()
         FixtureDex.forEach(build) { dex -> dex.classes.forEach { hierarchy[it.type] = it.superclass } }
+        // Only the build's own classes. With StringBuilder or java.lang.Object in the set, every toString()
+        // call in the APK read as a link read, and the scan below held thousands of classes.
+        allocated.retainAll(hierarchy.keys)
         for (type in allocated.toList()) {
             var parent = hierarchy[type]
-            while (parent != null && allocated.add(parent)) parent = hierarchy[parent]
+            while (parent != null && parent in hierarchy && allocated.add(parent)) parent = hierarchy[parent]
         }
         // The share sheet's fetch, and the post and user classes whose getters the hook calls.
         val loaded = parsers + FixtureDex.classes(build, allocated + setOf(PERMALINK_REPOSITORY, MEDIA, USER)).values
