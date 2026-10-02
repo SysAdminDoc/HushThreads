@@ -12,13 +12,20 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.threads.ads.MEDIA
 import app.morphe.patches.threads.misc.extension.SETTINGS_STATUS
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import app.morphe.util.RegisterLiveness
+import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
@@ -51,9 +58,126 @@ class SanitizeSharingLinksFixtureTest {
     }
 
     @Test
+    fun `the extension's post link takes the link, an author and a code`() {
+        val cleaner = ExtensionDex.classDef("$EXTENSION_PACKAGE/misc/LinkCleaner;")
+        val method = cleaner.methods.single { it.name == "postLink" }
+        assertTrue(AccessFlags.STATIC.isSet(method.accessFlags) && AccessFlags.PUBLIC.isSet(method.accessFlags))
+        assertEquals(POST_LINK, "${method.definingClass}->postLink(${method.parameterTypes.joinToString("")})${method.returnType}")
+    }
+
+    @Test
+    fun `each declared build hands the post's author and code to the extension after both link reads`() {
+        for (build in Fixtures.declaredBuilds()) {
+            clearMatches()
+            val where = build.name
+            val classes = parserClasses(build)
+            val fetch = fetchOf(classes)
+            val stock = fetch.body
+            assertEquals("$where: the fetch reads the link twice", 2, fetch.reads.size)
+
+            val context = PatchContexts.of(ExtensionDex.classes() + classes)
+            sanitizeSharingLinksPatch.execute(context)
+
+            val mutable = context.mutableClassDefBy(PERMALINK_REPOSITORY).methods.single { it.isPostLinkFetch() }
+            val patched = mutable.instructions()
+            assertEquals("$where: twelve instructions after each read", stock.size + 24, patched.size)
+            assertEquals("$where: no new registers", fetch.method.implementation!!.registerCount, mutable.implementation!!.registerCount)
+            for ((n, read) in fetch.reads.withIndex()) {
+                val at = read + 2 + 12 * n
+                val link = fetch.link(read)
+                val block = patched.subList(at, at + 12)
+                assertEquals(
+                    "$where: hook shape after read $read",
+                    listOf(Opcode.CONST_4, Opcode.CONST_4, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT,
+                        Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL,
+                        Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT),
+                    block.map { it.opcode },
+                )
+                val code = (block[0] as OneRegisterInstruction).registerA
+                val name = (block[1] as OneRegisterInstruction).registerA
+                assertTrue("$where: two scratch registers apart from the link and the post",
+                    setOf(code, name, link, fetch.post).size == 4)
+                val live = RegisterLiveness.of(fetch.method).liveInto(read + 2)
+                assertTrue("$where: nothing reads v$code or v$name after read $read", code !in live && name !in live)
+
+                fun call(index: Int) = block[index] as FiveRegisterInstruction
+                assertEquals("$where: a post without a value skips to the call", at + 10, patched.target(at + 2))
+                assertEquals(fetch.post, (block[2] as OneRegisterInstruction).registerA)
+                assertEquals(fetch.post, call(3).registerC)
+                assertTrue("$where: the code getter", block[3].method()!!.let { it.returnType == "Ljava/lang/String;" && classes.reads(MEDIA, it.name, 0x2eaded) })
+                assertEquals(code, (block[4] as OneRegisterInstruction).registerA)
+                assertEquals(fetch.post, call(5).registerC)
+                assertTrue("$where: the author getter", block[5].method()!!.let { it.returnType == USER && classes.reads(MEDIA, it.name, 0x36ebcb) })
+                assertEquals(name, (block[6] as OneRegisterInstruction).registerA)
+                assertEquals("$where: no author skips to the call", at + 10, patched.target(at + 7))
+                assertEquals(name, (block[7] as OneRegisterInstruction).registerA)
+                assertEquals(name, call(8).registerC)
+                assertTrue("$where: the username getter", block[8].method()!!.let { it.returnType == "Ljava/lang/String;" && classes.reads(USER, it.name, 0xf02988d6.toInt()) })
+                assertEquals(name, (block[9] as OneRegisterInstruction).registerA)
+                assertEquals(POST_LINK, block[10].method().toString())
+                assertEquals(listOf(link, name, code), call(10).let { listOf(it.registerC, it.registerD, it.registerE) })
+                assertEquals("$where: the post's own link replaces the read one", link, (block[11] as OneRegisterInstruction).registerA)
+                assertEquals("$where: then the fetch goes on as it did", stock[read + 2].opcode, patched[at + 12].opcode)
+            }
+            assertEquals("$where: one parser call, two fetch calls", 2, patched.count { it.method()?.toString() == POST_LINK })
+        }
+    }
+
+    @Test
+    fun `the post link hook skips other getters and refuses a fetch it can't follow`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val classes = parserClasses(build)
+            val fetch = fetchOf(classes)
+            val first = fetch.reads.first()
+            val response = (fetch.body[first] as FiveRegisterInstruction).registerC
+            val getter = fetch.body[first].method()!!
+            val owner = fetch.body[fetch.store] as TwoRegisterInstruction
+            val cases = listOf(
+                Triple("decoy", fetch.reads.last() + 2, "invoke-interface { v$response }, Lfixture/Decoy;->${getter.name}()Ljava/lang/String;\nmove-result-object v${fetch.link(first)}"),
+                Triple("no read", -1, ""),
+                Triple("other getter", fetch.reads.last() + 2, ""),
+                Triple("overwritten post", fetch.store, "const/4 v${fetch.post}, 0x0"),
+                Triple("branch", fetch.store, "if-eqz v${fetch.post}, :store\nnop\n:store\nnop"),
+                Triple("two posts", fetch.store, "iput-object v${fetch.post}, v${owner.registerB}, ${fetch.body[fetch.store].field()}"),
+            )
+            for ((label, index, code) in cases) {
+                clearMatches()
+                val context = PatchContexts.of(ExtensionDex.classes() + classes)
+                val mutable = context.mutableClassDefBy(PERMALINK_REPOSITORY).methods.single { it.isPostLinkFetch() }
+                if (label == "no read") {
+                    for (read in fetch.reads) mutable.replaceInstruction(read, "invoke-interface { v$response }, Lfixture/Decoy;->${getter.name}()Ljava/lang/String;")
+                } else if (label == "other getter") {
+                    // A String getter on the answer itself that doesn't read the link isn't a link read.
+                    val answer = classes.single { getter.definingClass in it.interfaces && it.methods.any { m -> m.name == getter.name } }.type
+                    context.mutableClassDefBy(answer).methods.add(ImmutableMethod(
+                        answer, "decoyLink", emptyList(), "Ljava/lang/String;", AccessFlags.PUBLIC.value, null, null, MutableMethodImplementation(2),
+                    ).toMutable().apply { addInstructions(0, "const-string v0, \"decoy\"\nreturn-object v0") })
+                    mutable.addInstructions(index, "invoke-interface { v$response }, ${getter.definingClass}->decoyLink()Ljava/lang/String;\n" +
+                        "move-result-object v${fetch.link(first)}")
+                } else {
+                    mutable.addInstructions(index, code)
+                }
+                if (label == "decoy" || label == "other getter") {
+                    sanitizeSharingLinksPatch.execute(context)
+                    assertEquals("$label: only the answer's own getter", 2, mutable.instructions().count { it.method()?.toString() == POST_LINK })
+                    continue
+                }
+                val error = assertThrows("$label: refused", PatchException::class.java) { sanitizeSharingLinksPatch.execute(context) }.message.orEmpty()
+                val expected = when (label) {
+                    "no read" -> "never reads"
+                    "overwritten post" -> "writes v${fetch.post}"
+                    "branch" -> "branches between"
+                    else -> "expected exactly one match, found 2"
+                }
+                assertTrue("$label: $error", error.contains(expected))
+            }
+        }
+    }
+
+    @Test
     fun `an unrelated String store before the response field is not sanitized`() {
         for (build in Fixtures.declaredBuilds()) {
-            PermalinkResponseParserFingerprint.clearMatch()
+            clearMatches()
             val classes = parserClasses(build)
             val parser = classes.flatMap { it.methods }.single { it.isPermalinkParser() }
             val stock = parser.instructions()
@@ -96,7 +220,7 @@ class SanitizeSharingLinksFixtureTest {
                 Triple("overwritten receiver", store, "const/4 v${original.registerB}, 0x0"),
             )
             for ((label, index, code) in cases) {
-                PermalinkResponseParserFingerprint.clearMatch()
+                clearMatches()
                 val context = PatchContexts.of(ExtensionDex.classes() + classes)
                 val mutable = context.mutableClassDefBy(parser.definingClass).methods.single { it.name == parser.name }
                 mutable.addInstructions(index, code)
@@ -118,7 +242,7 @@ class SanitizeSharingLinksFixtureTest {
     @Test
     fun `each declared build parses the permalink once, and the link is cleaned before it's kept`() {
         for (build in Fixtures.declaredBuilds()) {
-            PermalinkResponseParserFingerprint.clearMatch()
+            clearMatches()
             val where = build.name
             val classes = parserClasses(build)
             val parsers = classes.flatMap { it.methods }.filter { it.isPermalinkParser() }
@@ -175,7 +299,7 @@ class SanitizeSharingLinksFixtureTest {
             val store = (constructor + 1 until stock.size).first { stock[it].opcode == Opcode.IPUT_OBJECT }
             val owner = ((stock[created] as ReferenceInstruction).reference as TypeReference).type
             for (variant in listOf("wide before allocation", "wide before constructor", "unrelated constructor", "cast alias")) {
-                PermalinkResponseParserFingerprint.clearMatch()
+                clearMatches()
                 val context = PatchContexts.of(ExtensionDex.classes() + classes)
                 val mutable = context.mutableClassDefBy(parser.definingClass).methods.single { it.name == parser.name }
                 when (variant) {
@@ -211,8 +335,57 @@ class SanitizeSharingLinksFixtureTest {
             var parent = hierarchy[type]
             while (parent != null && allocated.add(parent)) parent = hierarchy[parent]
         }
-        return parsers + FixtureDex.classes(build, allocated).values
+        // The share sheet's fetch, and the post and user classes whose getters the hook calls.
+        return parsers + FixtureDex.classes(build, allocated + setOf(PERMALINK_REPOSITORY, MEDIA, USER)).values
     }
+
+    private fun clearMatches() {
+        for (fingerprint in listOf(PermalinkResponseParserFingerprint, PostLinkFetchFingerprint, PostCodeFingerprint,
+            PostAuthorFingerprint, UsernameFingerprint)) fingerprint.clearMatch()
+    }
+
+    private fun Method.isPostLinkFetch(): Boolean = definingClass == PERMALINK_REPOSITORY &&
+        returnType == "Ljava/lang/Object;" && parameterTypes.size == 4 && parameterTypes[1].toString() == MEDIA &&
+        instructions().any { it.string() == "itas-android" }
+
+    /** The stock shape the hook reads, found apart from the patch. */
+    private class Fetch(val method: Method, val body: List<Instruction>, val reads: List<Int>, val store: Int) {
+        val post get() = (body[store] as TwoRegisterInstruction).registerA
+        fun link(read: Int) = (body[read + 1] as OneRegisterInstruction).registerA
+    }
+
+    private fun fetchOf(classes: List<ClassDef>): Fetch {
+        val parser = classes.flatMap { it.methods }.single { it.isPermalinkParser() }.instructions()
+        val typeName = parser.indexOfFirst { it.string() == "XDTPermalinkResponse" }
+        val created = (typeName until parser.size).first { parser[it].opcode == Opcode.NEW_INSTANCE }
+        val response = ((parser[created] as ReferenceInstruction).reference as TypeReference).type
+        val field = parser[(created until parser.size).first { parser[it].opcode == Opcode.IPUT_OBJECT && parser[it].field()?.type == "Ljava/lang/String;" }].field()
+        val getter = classes.single { it.type == response }.methods.single { method ->
+            method.parameterTypes.isEmpty() && method.returnType == "Ljava/lang/String;" &&
+                method.instructions().any { it.opcode == Opcode.IGET_OBJECT && it.field() == field }
+        }
+        val fetch = classes.flatMap { it.methods }.single { it.isPostLinkFetch() }
+        val body = fetch.instructions()
+        val reads = body.indices.filter {
+            body[it].opcode == Opcode.INVOKE_INTERFACE && (body[it].method()?.name == getter.name) && body[it].method()?.returnType == "Ljava/lang/String;"
+        }
+        val store = body.indexOfLast { it.opcode == Opcode.IPUT_OBJECT && it.field()?.type == MEDIA }
+        return Fetch(fetch, body, reads, store)
+    }
+
+    private fun Instruction.method(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
+
+    /** The index [index]'s branch lands on. */
+    private fun List<Instruction>.target(index: Int): Int {
+        var address = 0
+        val at = IntArray(size) { i -> address.also { address += this[i].codeUnits } }
+        return at.indexOfFirst { it == at[index] + (this[index] as OffsetInstruction).codeOffset }
+    }
+
+    /** Whether [owner]'s method [name] reads the Pando field whose name hashes to [hash]. */
+    private fun List<ClassDef>.reads(owner: String, name: String, hash: Int): Boolean =
+        single { it.type == owner }.methods.single { it.name == name && it.parameterTypes.isEmpty() }.instructions()
+            .any { (it as? NarrowLiteralInstruction)?.narrowLiteral == hash }
 
     private fun Method.isPermalinkParser(): Boolean {
         if (name != "unsafeParseFromJson" || returnType != "Ljava/lang/Object;") return false

@@ -64,7 +64,7 @@ Suggested accounts in your feed	Vorgeschlagene Konten in deinem Feed
 Ads and suggested accounts in your feed	Werbung und vorgeschlagene Konten in deinem Feed
 Stop analytics uploads	Analyse-Uploads stoppen
 # context: xmt and slof are the tags' own names in the link and stay as they are
-Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.	Entfernt Tracking-Tags wie xmt und slof aus den Beitragslinks, die du kopierst oder teilst. Der Rest des Links bleibt, wie er war.
+Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.	Entfernt Tracking-Tags wie xmt und slof aus den Beitragslinks, die du kopierst oder teilst. Ein kurzer Teilen-Link wird zum eigenen Link des Beitrags.
 The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.	Die App, in der die Datei liegt, braucht zu lange, deshalb wartet HushThreads nicht mehr. Es wurde nichts geändert.
 The app holding the last settings file still hasn't answered. Try again later.	Die App mit der letzten Einstellungsdatei hat noch immer nicht geantwortet. Versuche es später noch einmal.
 The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.	Die App, in der die Einstellungsdatei liegt, braucht zu lange, deshalb wartet HushThreads nicht mehr. Sie kann das Speichern noch abschließen, also prüfe die Datei, bevor du dich darauf verlässt.

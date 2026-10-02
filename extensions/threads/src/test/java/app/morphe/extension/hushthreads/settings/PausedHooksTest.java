@@ -112,11 +112,16 @@ public class PausedHooksTest {
                     ReturnRefresh.uiHidden();
                     return !ReturnRefresh.cachedPosts(true);
                 }));
-        // A shared post link loses the tracking tags Threads added to it.
-        probes.put(PatchFamily.SANITIZE_SHARING_LINKS, Collections.singletonList(() -> {
-            String shared = "https://www.threads.com/@zuck/post/C8abc?xmt=AQGz&slof=1";
-            return !shared.equals(LinkCleaner.sanitizeShared(shared));
-        }));
+        // A shared post link loses the tracking tags Threads added to it, and a short one becomes the post's own.
+        probes.put(PatchFamily.SANITIZE_SHARING_LINKS, Arrays.asList(
+                () -> {
+                    String shared = "https://www.threads.com/@zuck/post/C8abc?xmt=AQGz&slof=1";
+                    return !shared.equals(LinkCleaner.sanitizeShared(shared));
+                },
+                () -> {
+                    String shared = "https://www.threads.com/share/BAXudaEdTE/";
+                    return !shared.equals(LinkCleaner.postLink(shared, "zuck", "C8abc"));
+                }));
         // The event log upload address Threads built is swapped for one that answers nothing.
         probes.put(PatchFamily.DISABLE_ANALYTICS, Collections.singletonList(() -> {
             String upload = "https://graph.threads.net/logging_client_events";

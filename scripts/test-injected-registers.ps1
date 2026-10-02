@@ -649,7 +649,8 @@ try {
     }
     $discardedClean = New-DexApk -Name 'features-ad-discarded-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-ad-discarded-clean') })
     $featureFaults = @('feed-missing', 'feed-replaced', 'feed-register', 'feed-duplicate', 'item-stub', 'ad-target', 'ad-discarded', 'ad-body', 'ad-helper-body', 'getter-body', 'ad-helper-native', 'getter-static',
-        'link-missing', 'link-replaced', 'link-register', 'pigeon-missing', 'pigeon-replaced', 'pigeon-bypass',
+        'link-missing', 'link-replaced', 'link-register', 'post-link-missing', 'post-link-register', 'post-link-getter', 'post-link-bypass',
+        'pigeon-missing', 'pigeon-replaced', 'pigeon-bypass',
         'default-missing', 'mqtt-missing', 'trust-missing', 'trust-replaced', 'trust-fallback',
         'status-missing', 'status-false', 'zero-mask', 'unknown-mask')
     foreach ($fault in $featureFaults) {

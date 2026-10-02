@@ -19,7 +19,7 @@ The latest release is [v0.0.3](https://github.com/SysAdminDoc/HushThreads/releas
 ## Why use it
 
 - **A feed without ads.** Sponsored posts come out of each page of the feed as it arrives, before Threads saves or shows it.
-- **Shared links with fewer tags.** Supported query parameters, such as xmt, come off shared post links. Opaque `/share/` links keep their original paths. Their account-specific behavior hasn't been established.
+- **Shared links with fewer tags.** Tracking parameters such as xmt come off shared post links. A short `/share/` link is made fresh for every share and stands for that share's xmt token, so HushThreads hands out the post's own link (`threads.com/@name/post/code`) in its place.
 - **Less sent home.** Matched analytics upload addresses go nowhere, and Threads gets zeros instead of your phone's advertising ID. Other telemetry may remain.
 - **Controls that recover.** Every runtime feature has a switch, and a pause, an automatic safe mode, settings backups and privacy-filtered diagnostics help when Threads changes.
 
@@ -70,7 +70,7 @@ Source v0.0.4 builds contain 8 patches. All but Block background-return feed ref
 | `HushThreads settings` | Adds HushThreads settings to Threads. Long-press Threads' launcher icon, or open Additional settings in the app on Threads' App info page, to turn features on or off, pause HushThreads, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
 | `Remove the advertising ID` | Stops Threads getting your phone's advertising ID from Google Play services. Threads gets a string of zeros in its place. |
 | `Restore screens on re-signed builds` | Lets Threads trust itself again on a re-signed build, the way it trusts its Meta-signed self, and lets an Instagram you patch with this build's own key call into it the same as the real Instagram would. A Root Mount install doesn't need this patch. |
-| `Sanitize sharing links` | Takes Threads' tracking tags, such as xmt, off the links you share or copy. The post a link opens stays the same. |
+| `Sanitize sharing links` | Takes Threads' tracking tags, such as xmt, off the links you share or copy, and turns a short share link into the post's own link. The post a link opens stays the same. |
 
 The feed controls share one page filter. Each selected rule has its own switch and removal count. Pause restores the original page, and a failed card check keeps the whole page. Hide suggested users passes fixture checks on both source-supported builds. It hasn't been seen taking a real card out of a live feed yet, because the test account wasn't shown any.
 

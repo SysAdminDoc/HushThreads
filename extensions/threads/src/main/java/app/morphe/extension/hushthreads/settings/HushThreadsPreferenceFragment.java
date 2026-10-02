@@ -248,8 +248,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
             if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS)) {
                 privacy.addPreference(toggle(context, Settings.SANITIZE_SHARING_LINKS,
                         L10n.t("Remove tracking from shared links"),
-                        L10n.t("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest "
-                                + "of the link stays as it was.")));
+                        L10n.t("Takes tracking tags such as xmt and slof off the post links you copy or share. A short "
+                                + "share link becomes the post's own link.")));
             }
             if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {
                 privacy.addPreference(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop analytics uploads"),

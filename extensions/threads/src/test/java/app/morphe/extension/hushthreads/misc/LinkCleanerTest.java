@@ -80,6 +80,92 @@ public class LinkCleanerTest {
     }
 
     @Test
+    public void aShortLinkBecomesThePostsOwnLink() {
+        assertEquals("https://www.threads.com/@threads/post/Dd9gVqImmyx",
+                LinkCleaner.postLink("https://www.threads.com/share/BAXudaEdTE/", "threads", "Dd9gVqImmyx"));
+        // Without the closing slash, on threads.net, keeping what followed the path but its tracking keys.
+        assertEquals("https://threads.net/@a.b_c/post/C-8_x#top", LinkCleaner.ownLink("https://threads.net/share/x1/#top", "a.b_c", "C-8_x"));
+        assertEquals("http://WWW.Threads.com/@u/post/C?keep=1",
+                LinkCleaner.ownLink("http://WWW.Threads.com/share/abc?xmt=AQ&keep=1&igsh=z", "u", "C"));
+        assertEquals(Collections.singletonList("Sanitize sharing links: invoked 1, 0 found, 0 missing. "
+                + "Counted: short links replaced 1"), HookStatus.report());
+    }
+
+    @Test
+    public void anythingButAShortThreadsLinkStaysAsItCame() {
+        String[] kept = {
+                "https://www.threads.com/@threads/post/Dd9gVqImmyx",
+                "https://www.threads.com/share/",
+                "https://www.threads.com/share/a/b",
+                "https://www.threads.com/sharex/abc/",
+                "https://www.instagram.com/share/abc/",
+                "https://evil.example/share/abc/",
+                "https://www.threads.com.evil.example/share/abc/",
+                "https://user@www.threads.com/share/abc/",
+                "https://www.threads.com:8443/share/abc/",
+                "intent://www.threads.com/share/abc/#Intent;end",
+                "https://www.threads.com?next=/share/abc/",
+                "https://www.threads.com#/share/abc/",
+                "not a link",
+        };
+        for (String url : kept) {
+            assertSame(url, LinkCleaner.ownLink(url, "threads", "Dd9gVqImmyx"));
+            assertSame(url, LinkCleaner.postLink(url, "threads", "Dd9gVqImmyx"));
+        }
+        assertNull(LinkCleaner.ownLink(null, "threads", "C"));
+        assertNull(LinkCleaner.postLink(null, "threads", "C"));
+        assertEquals(Collections.singletonList("Sanitize sharing links: invoked 14, 0 found, 0 missing"), HookStatus.report());
+    }
+
+    @Test
+    public void aMissingOrOddAuthorOrCodeKeepsTheShortLink() {
+        String link = "https://www.threads.com/share/BAXudaEdTE/";
+        String[][] pairs = {
+                {null, "C"}, {"threads", null}, {"", "C"}, {"threads", ""}, {"a/b", "C"}, {"a?b", "C"}, {"a b", "C"},
+                {"abcdefghijabcdefghijabcdefghij1", "C"}, {"threads", "C/../x"}, {"threads", "C#x"}, {"threads", "C?x"},
+        };
+        for (String[] pair : pairs) assertSame(pair[0] + " " + pair[1], link, LinkCleaner.ownLink(link, pair[0], pair[1]));
+        // The hook hands over whatever the author's name read gave, so anything but a String is no name.
+        assertSame(link, LinkCleaner.postLink(link, new Object(), "C"));
+        assertSame(link, LinkCleaner.postLink(link, null, "C"));
+        assertEquals(Collections.singletonList("Sanitize sharing links: invoked 2, 0 found, 0 missing. "
+                + "Counted: short links kept, no author or code 2"), HookStatus.report());
+    }
+
+    @Test
+    public void disabledNotReadyAndPausedSharesKeepTheShortLink() throws Exception {
+        String link = "https://www.threads.com/share/BAXudaEdTE/";
+        Settings.SANITIZE_SHARING_LINKS.save(false);
+        assertSame(link, LinkCleaner.postLink(link, "threads", "C"));
+        Settings.SANITIZE_SHARING_LINKS.save(true);
+        SettingsContextRule.withoutContext(() -> assertSame(link, LinkCleaner.postLink(link, "threads", "C")));
+        java.lang.reflect.Method pause = Setting.class.getDeclaredMethod("setPausedForProcess", boolean.class);
+        pause.setAccessible(true);
+        try {
+            pause.invoke(null, true);
+            assertSame(link, LinkCleaner.postLink(link, "threads", "C"));
+        } finally {
+            pause.invoke(null, false);
+        }
+        assertEquals(Collections.singletonList("Sanitize sharing links: invoked 3, 0 found, 0 missing"),
+                HookStatus.report());
+    }
+
+    @Test
+    @Config(shadows = ThrowingSettingsRead.class, instrumentedPackages = "app.morphe.extension.shared")
+    public void aSettingsReadFailureKeepsTheShortLink() {
+        String link = "https://www.threads.com/share/BAXudaEdTE/";
+        try {
+            ThrowingSettingsRead.fail = true;
+            assertSame(link, LinkCleaner.postLink(link, "threads", "C"));
+        } finally {
+            ThrowingSettingsRead.fail = false;
+        }
+        String report = HookStatus.report().toString();
+        assertTrue(report, report.contains("switch read") && !report.contains("short links") && !report.contains("BAXudaEdTE"));
+    }
+
+    @Test
     @Config(shadows = ThrowingSettingsRead.class, instrumentedPackages = "app.morphe.extension.shared")
     public void aSettingsReadFailureKeepsTheLinkAndAddsNoChangeOutcome() {
         String original = "https://example.org/a?fbclid=private-marker";

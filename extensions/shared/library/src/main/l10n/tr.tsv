@@ -64,7 +64,7 @@ Suggested accounts in your feed	Akışınızdaki önerilen hesaplar
 Ads and suggested accounts in your feed	Akışınızdaki reklamlar ve önerilen hesaplar
 Stop analytics uploads	Analiz yüklemelerini durdur
 # context: xmt and slof are the tags' own names in the link and stay as they are
-Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.	Kopyaladığın veya paylaştığın gönderi bağlantılarından xmt ve slof gibi izleme etiketlerini kaldırır. Bağlantının geri kalanı olduğu gibi kalır.
+Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.	Kopyaladığın veya paylaştığın gönderi bağlantılarından xmt ve slof gibi izleme etiketlerini kaldırır. Kısa paylaşım bağlantısı, gönderinin kendi bağlantısına dönüşür.
 The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.	O dosyayı tutan uygulama çok uzun sürüyor, bu yüzden HushThreads beklemeyi bıraktı. Hiçbir şey değiştirilmedi.
 The app holding the last settings file still hasn't answered. Try again later.	Son ayar dosyasını tutan uygulama hâlâ yanıt vermedi. Daha sonra tekrar dene.
 The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.	Ayar dosyasını tutan uygulama çok uzun sürüyor, bu yüzden HushThreads beklemeyi bıraktı. O uygulama kaydetmeyi yine de bitirebilir, bu yüzden dosyaya güvenmeden önce onu kontrol et.

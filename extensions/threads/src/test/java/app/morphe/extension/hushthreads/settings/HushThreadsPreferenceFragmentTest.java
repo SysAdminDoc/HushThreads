@@ -216,8 +216,8 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("No time limit", String.valueOf(page.findPreference(Settings.RETURN_REFRESH_NO_LIMIT.key).getTitle()));
             assertEquals("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh "
                     + "start still load new posts.", String.valueOf(page.findPreference(Settings.RETURN_REFRESH_NO_LIMIT.key).getSummary()));
-            assertEquals("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the "
-                    + "link stays as it was.", String.valueOf(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key).getSummary()));
+            assertEquals("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share "
+                    + "link becomes the post's own link.", String.valueOf(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key).getSummary()));
             assertEquals("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. "
                     + "Turn this off to use the original addresses.",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));

@@ -322,7 +322,7 @@
     },
     {
       "name": "Sanitize sharing links",
-      "description": "Takes Threads' tracking tags, such as xmt, off the links you share or copy. The post a link opens stays the same.",
+      "description": "Takes Threads' tracking tags, such as xmt, off the links you share or copy, and turns a short share link into the post's own link. The post a link opens stays the same.",
       "category": "Privacy",
       "use": true,
       "dependencies": [

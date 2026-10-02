@@ -1931,6 +1931,11 @@ public class DexDiff {
     private static final String ADS = "Lapp/morphe/extension/hushthreads/ads/FeedAds;->";
     private static final String FILTER_PAGE = ADS + "filter(Ljava/util/List;)Ljava/util/List;";
     private static final String CLEAN_LINK = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->sanitizeShared(Ljava/lang/String;)Ljava/lang/String;";
+    private static final String POST_LINK = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->postLink(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;";
+    private static final String PERMALINK_REPOSITORY = "Lcom/instagram/barcelona/share/permalink/data/PermalinkRepository;";
+    private static final String USER = "Lcom/instagram/user/model/User;";
+    /** Each class's interfaces, filled in with the superclasses when featureMethods is asked for them. */
+    private static final Map<String, List<String>> INTERFACES = new HashMap<>();
     private static final String ENDPOINT = "Lapp/morphe/extension/hushthreads/misc/Analytics;->endpoint(Ljava/lang/String;)Ljava/lang/String;";
     private static final String SIGNERS = "Lapp/morphe/extension/hushthreads/misc/ThreadsSignature;->originalSigners(Landroid/content/pm/PackageInfo;)Ljava/util/List;";
     private static final String LOGGING_URL = "https://graph.facebook.com/logging_client_events";
@@ -1940,7 +1945,10 @@ public class DexDiff {
         Map<String, List<Method>> methods = new HashMap<>();
         MultiDexContainer<? extends DexFile> dex = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault());
         for (String entry : dex.getDexEntryNames()) for (ClassDef cd : dex.getEntry(entry).getDexFile().getClasses()) {
-            if (parents != null) parents.put(cd.getType(), cd.getSuperclass());
+            if (parents != null) {
+                parents.put(cd.getType(), cd.getSuperclass());
+                INTERFACES.put(cd.getType(), new ArrayList<>(cd.getInterfaces()));
+            }
             for (Method m : cd.getMethods()) methods.computeIfAbsent(sig(cd, m), k -> new ArrayList<>()).add(m);
         }
         return methods;
@@ -2031,6 +2039,16 @@ public class DexDiff {
 
     private static void featureBody(Method stock, Method patched, int prefix,
             Map<Integer, Integer> insertions, String callee, FieldReference recordedRaw) {
+        featureBody(stock, patched, prefix, insertions, callee, recordedRaw, Map.of());
+    }
+
+    /** A hook longer than a call and its result: checks the one at [at] and answers its length. */
+    private interface FeatureBlock {
+        int check(List<Instruction> body, int at);
+    }
+
+    private static void featureBody(Method stock, Method patched, int prefix,
+            Map<Integer, Integer> insertions, String callee, FieldReference recordedRaw, Map<Integer, FeatureBlock> blocks) {
         featureDeclaration(stock, patched);
         requireFeature(stock.getImplementation() != null && patched.getImplementation() != null,
                 featureSig(stock) + " lost its executable implementation");
@@ -2048,6 +2066,8 @@ public class DexDiff {
                 featureCall(now.instructions, at, callee, register, register);
                 at += 2;
             }
+            FeatureBlock block = blocks.get(k);
+            if (block != null) at += block.check(now.instructions, at);
             if (recordedRaw != null && old.instructions.get(k).getOpcode() == Opcode.RETURN_VOID) {
                 requireFeature(at + 2 < now.instructions.size(), "raw wrapper lost its constructor recorder");
                 Instruction receiver = now.instructions.get(at), value = now.instructions.get(at + 1), store = now.instructions.get(at + 2);
@@ -2899,6 +2919,96 @@ public class DexDiff {
         int link = ((TwoRegisterInstruction) instructions(parser).get(store)).getRegisterA();
         featureBody(parser, featureMethod(patched, featureSig(parser)), 0, Map.of(store, link), CLEAN_LINK);
         featureHostCalls(patched, CLEAN_LINK, Map.of(featureSig(parser), 1));
+
+        // The share sheet's fetch reads that link through the response's getter of the same field,
+        // and each read is followed by the post's code and author's name going to the extension.
+        FieldReference field = (FieldReference) ((ReferenceInstruction) instructions(parser).get(store)).getReference();
+        Set<String> chain = new HashSet<>();
+        for (String type = field.getDefiningClass(); type != null && chain.add(type); type = parents.get(type)) { }
+        Set<String> owners = new HashSet<>(chain);
+        for (String type : chain) owners.addAll(INTERFACES.getOrDefault(type, List.of()));
+        Set<String> getters = new HashSet<>();
+        for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+            if (chain.contains(m.getDefiningClass()) && m.getParameterTypes().isEmpty() && m.getReturnType().equals("Ljava/lang/String;")
+                    && instructions(m).stream().anyMatch(i -> i.getOpcode() == Opcode.IGET_OBJECT && reference(i).equals(field.toString()))) {
+                getters.add(m.getName());
+            }
+        }
+        Method fetch = featureTarget(clean, m -> m.getDefiningClass().equals(PERMALINK_REPOSITORY)
+                && m.getReturnType().equals("Ljava/lang/Object;") && m.getParameterTypes().size() == 4
+                && m.getParameterTypes().get(1).toString().equals(MEDIA) && holds(m, "itas-android"), "post link fetch");
+        List<Instruction> body = instructions(fetch);
+        List<Integer> reads = new ArrayList<>();
+        for (int k = 0; k + 1 < body.size(); k++) {
+            Instruction i = body.get(k);
+            if ((i.getOpcode() != Opcode.INVOKE_INTERFACE && i.getOpcode() != Opcode.INVOKE_VIRTUAL)
+                    || !(((ReferenceInstruction) i).getReference() instanceof MethodReference)) continue;
+            MethodReference call = (MethodReference) ((ReferenceInstruction) i).getReference();
+            if (owners.contains(call.getDefiningClass()) && getters.contains(call.getName()) && call.getParameterTypes().isEmpty()
+                    && call.getReturnType().equals("Ljava/lang/String;") && body.get(k + 1).getOpcode() == Opcode.MOVE_RESULT_OBJECT) reads.add(k);
+        }
+        requireFeature(!reads.isEmpty(), "post link fetch never reads the permalink");
+        List<Integer> posts = new ArrayList<>();
+        for (int k = reads.get(reads.size() - 1); k < body.size(); k++) {
+            if (body.get(k).getOpcode() == Opcode.IPUT_OBJECT && ((FieldReference) ((ReferenceInstruction) body.get(k)).getReference()).getType().equals(MEDIA)) posts.add(k);
+        }
+        requireFeature(posts.size() == 1, "post link fetch stores " + posts.size() + " posts with the link");
+        int post = ((TwoRegisterInstruction) body.get(posts.get(0))).getRegisterA();
+        Map<Integer, FeatureBlock> blocks = new HashMap<>();
+        for (int read : reads) {
+            int value = ((OneRegisterInstruction) body.get(read + 1)).getRegisterA();
+            blocks.put(read + 2, (now, at) -> featurePostLink(clean, now, at, value, post));
+        }
+        featureBody(fetch, featureMethod(patched, featureSig(fetch)), 0, Map.of(), POST_LINK, null, blocks);
+        featureHostCalls(patched, POST_LINK, Map.of(featureSig(fetch), reads.size()));
+    }
+
+    /**
+     * The hook after one link read: null code and name, the post's code and its author's username
+     * when there is a post and an author, then the extension with the link, the name and the code,
+     * its answer replacing the link.
+     */
+    private static int featurePostLink(Map<String, List<Method>> clean, List<Instruction> body, int at, int link, int post) {
+        Opcode[] shape = {Opcode.CONST_4, Opcode.CONST_4, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT,
+                Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT,
+                Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT};
+        requireFeature(at + shape.length <= body.size(), "post link hook cut short at " + at);
+        for (int n = 0; n < shape.length; n++) requireFeature(body.get(at + n).getOpcode() == shape[n], "post link hook differs at " + (at + n));
+        int code = registerA(body.get(at)), name = registerA(body.get(at + 1));
+        requireFeature(((WideLiteralInstruction) body.get(at)).getWideLiteral() == 0 && ((WideLiteralInstruction) body.get(at + 1)).getWideLiteral() == 0,
+                "post link hook doesn't start from null");
+        requireFeature(new HashSet<>(List.of(code, name, link, post)).size() == 4, "post link hook shares a register");
+        requireFeature(registerA(body.get(at + 2)) == post && lands(body, at + 2) == at + 10, "post link hook's post check skips the wrong way");
+        requireFeature(Arrays.equals(invokeRegisters(body.get(at + 3)), new int[]{post}) && registerA(body.get(at + 4)) == code
+                && readsField(clean, body.get(at + 3), MEDIA, "Ljava/lang/String;", "code"), "post link hook reads another post field than code");
+        requireFeature(Arrays.equals(invokeRegisters(body.get(at + 5)), new int[]{post}) && registerA(body.get(at + 6)) == name
+                && readsField(clean, body.get(at + 5), MEDIA, USER, "user"), "post link hook reads another post field than user");
+        requireFeature(registerA(body.get(at + 7)) == name && lands(body, at + 7) == at + 10, "post link hook's author check skips the wrong way");
+        requireFeature(Arrays.equals(invokeRegisters(body.get(at + 8)), new int[]{name}) && registerA(body.get(at + 9)) == name
+                && readsField(clean, body.get(at + 8), USER, "Ljava/lang/String;", "username"), "post link hook reads another user field than username");
+        requireFeature(reference(body.get(at + 10)).equals(POST_LINK) && Arrays.equals(invokeRegisters(body.get(at + 10)), new int[]{link, name, code})
+                && registerA(body.get(at + 11)) == link, "missing or miswired " + POST_LINK + " at instruction " + (at + 10));
+        return shape.length;
+    }
+
+    private static int registerA(Instruction i) {
+        return ((OneRegisterInstruction) i).getRegisterA();
+    }
+
+    /** The index a forward branch at [index] lands on, or -1 when it lands between instructions or behind. */
+    private static int lands(List<Instruction> body, int index) {
+        int offset = ((OffsetInstruction) body.get(index)).getCodeOffset(), units = 0, k = index;
+        while (units < offset && k < body.size()) units += body.get(k++).getCodeUnits();
+        return offset > 0 && units == offset ? k : -1;
+    }
+
+    /** Whether [call] is a getter on [owner] answering [returns] that reads the Pando field named [field] by its hash. */
+    private static boolean readsField(Map<String, List<Method>> clean, Instruction call, String owner, String returns, String field) {
+        MethodReference m = (MethodReference) ((ReferenceInstruction) call).getReference();
+        if (!m.getDefiningClass().equals(owner) || !m.getParameterTypes().isEmpty() || !m.getReturnType().equals(returns)) return false;
+        List<Method> found = clean.getOrDefault(featureSig(m), List.of());
+        return found.size() == 1 && instructions(found.get(0)).stream().anyMatch(i -> i instanceof WideLiteralInstruction
+                && i.getOpcode().name.startsWith("const") && ((WideLiteralInstruction) i).getWideLiteral() == field.hashCode());
     }
 
     private static void featureAnalytics(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
@@ -3049,7 +3159,9 @@ public class DexDiff {
                 break;
             case "sanitizeSharingLinks":
                 featureHostCalls(patched, CLEAN_LINK, Map.of());
-                featurePreserveTargets(clean, patched, m -> holds(m, "permalink", "XDTPermalinkResponse"));
+                featureHostCalls(patched, POST_LINK, Map.of());
+                featurePreserveTargets(clean, patched, m -> holds(m, "permalink", "XDTPermalinkResponse")
+                        || m.getDefiningClass().equals(PERMALINK_REPOSITORY));
                 break;
             case "disableAnalytics":
                 featureHostCalls(patched, ENDPOINT, Map.of());

@@ -683,6 +683,15 @@ public class BadDexFixture {
     private static final String SIGNER_RESULT = "Lfixture/SignerResult;";
     private static final ImmutableMethodReference PAGE_FILTER = method(FEATURE_ADS, "filter", SHORTCUT_LIST, SHORTCUT_LIST);
     private static final ImmutableMethodReference LINK_SANITIZER = method(FEATURE_LINKS, "sanitizeShared", "Ljava/lang/String;", "Ljava/lang/String;");
+    private static final String FEATURE_USER = "Lcom/instagram/user/model/User;";
+    private static final String FEATURE_REPOSITORY = "Lcom/instagram/barcelona/share/permalink/data/PermalinkRepository;";
+    private static final String FEATURE_SHARE = "Lfixture/ShareResult;";
+    private static final ImmutableMethodReference POST_LINKER = method(FEATURE_LINKS, "postLink", "Ljava/lang/String;", "Ljava/lang/String;", OBJECT, "Ljava/lang/String;");
+    private static final ImmutableMethodReference LINK_GETTER = method(FEATURE_RESPONSE, "link", "Ljava/lang/String;");
+    private static final ImmutableMethodReference POST_CODE = method(FEATURE_MEDIA, "code", "Ljava/lang/String;");
+    private static final ImmutableMethodReference POST_TITLE = method(FEATURE_MEDIA, "title", "Ljava/lang/String;");
+    private static final ImmutableMethodReference POST_AUTHOR = method(FEATURE_MEDIA, "author", FEATURE_USER);
+    private static final ImmutableMethodReference USERNAME = method(FEATURE_USER, "username", "Ljava/lang/String;");
     private static final ImmutableMethodReference ANALYTICS_ENDPOINT = method(FEATURE_ANALYTICS, "endpoint", "Ljava/lang/String;", "Ljava/lang/String;");
     private static final ImmutableMethodReference ORIGINAL_SIGNERS = method(FEATURE_TRUST, "originalSigners", SHORTCUT_LIST, PACKAGE_INFO);
     private static final ImmutableMethodReference ITEM_MEDIA = method(FEATURE_ITEM, "media", FEATURE_MEDIA);
@@ -691,6 +700,27 @@ public class BadDexFixture {
     private static final ImmutableMethodReference STRING_EQUALS = method("Ljava/lang/String;", "equals", "Z", OBJECT);
     private static final ImmutableMethodReference MEDIA_AD = method(FEATURE_MEDIA, "sponsored", "Z");
     private static final ImmutableMethodReference INJECTED_AD = method("Lfixture/AdFlag;", "injected", "Z", OBJECT);
+
+    /** A Pando getter: it asks for the field by its name's hash and, here, answers null. */
+    private static Method pandoGetter(String owner, String name, String returns, String field) {
+        return define(owner, name, returns, false, body(2, new ImmutableInstruction31i(Opcode.CONST, 0, field.hashCode()),
+                new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0)));
+    }
+
+    /**
+     * The share-link hook after a read of the link into [link], with the post in v7 and v0/v1 free.
+     * Faults: the link register swapped for the code's, the code getter swapped for another field's,
+     * and the post check jumping past the call.
+     */
+    private static List<Instruction> postLinkHook(int link, String fault) {
+        return List.of(new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), new ImmutableInstruction11n(Opcode.CONST_4, 1, 0),
+                ifEqz(7, fault.equals("post-link-bypass") ? 20 : 16),
+                virtual(fault.equals("post-link-getter") ? POST_TITLE : POST_CODE, 7), op(Opcode.MOVE_RESULT_OBJECT, 0),
+                virtual(POST_AUTHOR, 7), op(Opcode.MOVE_RESULT_OBJECT, 1),
+                ifEqz(1, 6),
+                virtual(USERNAME, 1), op(Opcode.MOVE_RESULT_OBJECT, 1),
+                invoke(POST_LINKER, fault.equals("post-link-register") ? 0 : link, 1, 0), op(Opcode.MOVE_RESULT_OBJECT, link));
+    }
 
     private static Instruction virtual(ImmutableMethodReference callee, int... registers) {
         int[] r = Arrays.copyOf(registers, 5);
@@ -1385,7 +1415,10 @@ public class BadDexFixture {
                 define(FEATURE_MEDIA, "other", "Z", false, fault.equals("ad-discarded") ? body(2,
                         new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), invoke(INJECTED_AD, 0), op(Opcode.MOVE_RESULT, 0),
                         new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0))
-                        : body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0)))));
+                        : body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0))),
+                pandoGetter(FEATURE_MEDIA, "code", "Ljava/lang/String;", "code"),
+                pandoGetter(FEATURE_MEDIA, "title", "Ljava/lang/String;", "caption"),
+                pandoGetter(FEATURE_MEDIA, "author", FEATURE_USER, "user")));
 
         List<Instruction> parser = new ArrayList<>(List.of(string(2, "permalink"), string(0, "XDTPermalinkResponse"),
                 type(Opcode.NEW_INSTANCE, 1, FEATURE_RESPONSE),
@@ -1399,7 +1432,27 @@ public class BadDexFixture {
         parser.add(op(Opcode.RETURN_OBJECT, 1));
         classes.add(featureClass("Lfixture/PermalinkParser;", OBJECT, List.of(), define("Lfixture/PermalinkParser;", "unsafeParseFromJson", OBJECT, true,
                 body(3, parser.toArray(new Instruction[0])))));
-        classes.add(featureClass(FEATURE_RESPONSE, FEATURE_PARENT, List.of(featureField(FEATURE_RESPONSE, "url", "Ljava/lang/String;"))));
+        classes.add(featureClass(FEATURE_RESPONSE, FEATURE_PARENT, List.of(featureField(FEATURE_RESPONSE, "url", "Ljava/lang/String;")),
+                define(FEATURE_RESPONSE, "link", "Ljava/lang/String;", false, body(2,
+                        objectField(Opcode.IGET_OBJECT, 0, 1, FEATURE_RESPONSE, "url", "Ljava/lang/String;"), op(Opcode.RETURN_OBJECT, 0)))));
+
+        // The share sheet's fetch: two reads of the response's link, then the post stored with both.
+        List<Instruction> fetch = new ArrayList<>(List.of(string(0, "itas-android"),
+                new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 3, 8), type(Opcode.CHECK_CAST, 3, FEATURE_RESPONSE),
+                virtual(LINK_GETTER, 3), op(Opcode.MOVE_RESULT_OBJECT, 2)));
+        if (links && !fault.equals("post-link-missing")) fetch.addAll(postLinkHook(2, fault));
+        fetch.addAll(List.of(virtual(LINK_GETTER, 3), op(Opcode.MOVE_RESULT_OBJECT, 4)));
+        if (links && !fault.equals("post-link-missing")) fetch.addAll(postLinkHook(4, fault));
+        fetch.addAll(List.of(type(Opcode.NEW_INSTANCE, 1, FEATURE_SHARE), direct(method(FEATURE_SHARE, "<init>", "V"), 1),
+                objectField(Opcode.IPUT_OBJECT, 4, 1, FEATURE_SHARE, "raw", "Ljava/lang/String;"),
+                objectField(Opcode.IPUT_OBJECT, 2, 1, FEATURE_SHARE, "link", "Ljava/lang/String;"),
+                objectField(Opcode.IPUT_OBJECT, 7, 1, FEATURE_SHARE, "post", FEATURE_MEDIA), op(Opcode.RETURN_OBJECT, 1)));
+        classes.add(featureClass(FEATURE_REPOSITORY, OBJECT, List.of(), define(FEATURE_REPOSITORY, "fetch", OBJECT, false,
+                body(10, fetch.toArray(new Instruction[0])), OBJECT, FEATURE_MEDIA, OBJECT, OBJECT)));
+        classes.add(featureClass(FEATURE_SHARE, OBJECT, List.of(featureField(FEATURE_SHARE, "raw", "Ljava/lang/String;"),
+                featureField(FEATURE_SHARE, "link", "Ljava/lang/String;"), featureField(FEATURE_SHARE, "post", FEATURE_MEDIA)),
+                define(FEATURE_SHARE, "<init>", "V", false, body(1, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)))));
+        classes.add(featureClass(FEATURE_USER, OBJECT, List.of(), pandoGetter(FEATURE_USER, "username", "Ljava/lang/String;", "username")));
         classes.add(featureClass(FEATURE_PARENT, OBJECT, List.of(), define(FEATURE_PARENT, "<init>", "V", false,
                 body(2, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), "Ljava/lang/String;")));
 
@@ -1500,7 +1553,9 @@ public class BadDexFixture {
         classes.add(featureClass(FEATURE_ANALYTICS, OBJECT, List.of(), define(FEATURE_ANALYTICS, "endpoint", "Ljava/lang/String;", true,
                 body(1, op(Opcode.RETURN_OBJECT, 0)), "Ljava/lang/String;")));
         classes.add(featureClass(FEATURE_LINKS, OBJECT, List.of(), define(FEATURE_LINKS, "sanitizeShared", "Ljava/lang/String;", true,
-                body(1, op(Opcode.RETURN_OBJECT, 0)), "Ljava/lang/String;")));
+                body(1, op(Opcode.RETURN_OBJECT, 0)), "Ljava/lang/String;"),
+                define(FEATURE_LINKS, "postLink", "Ljava/lang/String;", true, body(3, op(Opcode.RETURN_OBJECT, 0)),
+                        "Ljava/lang/String;", OBJECT, "Ljava/lang/String;")));
         classes.add(featureClass(FEATURE_TRUST, OBJECT, List.of(), define(FEATURE_TRUST, "originalSigners", SHORTCUT_LIST, true,
                 body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0)), PACKAGE_INFO)));
         if (patched && (fault.equals("ad-body") || fault.equals("ad-helper-body") || fault.equals("getter-body")
@@ -1614,7 +1669,8 @@ public class BadDexFixture {
         for (String feature : allFeatures) dexes.put("features-only-" + feature, featureBuild(true, Set.of(feature), 7, ""));
         for (int mask = 1; mask <= 7; mask++) dexes.put("features-mask-" + mask, featureBuild(true, Set.of("disableAnalytics"), mask, ""));
         for (String fault : List.of("feed-missing", "feed-replaced", "feed-register", "feed-duplicate", "item-stub", "ad-target", "ad-discarded", "ad-body", "ad-helper-body", "getter-body", "ad-helper-native", "getter-static",
-                "link-missing", "link-replaced", "link-register", "pigeon-missing", "pigeon-replaced", "pigeon-bypass",
+                "link-missing", "link-replaced", "link-register", "post-link-missing", "post-link-register", "post-link-getter", "post-link-bypass",
+                "pigeon-missing", "pigeon-replaced", "pigeon-bypass",
                 "default-missing", "mqtt-missing", "trust-missing", "trust-replaced", "trust-fallback", "status-missing", "status-false")) {
             dexes.put("features-bad-" + fault, featureBuild(true, allFeatures, 7, fault));
         }

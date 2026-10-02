@@ -313,8 +313,8 @@ public final class L10nTranslations {
                 "Vorgeschlagene Konten in deinem Feed");
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
-        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.",
-                "Entfernt Tracking-Tags wie xmt und slof aus den Beitragslinks, die du kopierst oder teilst. Der Rest des Links bleibt, wie er war.");
+        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
+                "Entfernt Tracking-Tags wie xmt und slof aus den Beitragslinks, die du kopierst oder teilst. Ein kurzer Teilen-Link wird zum eigenen Link des Beitrags.");
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -670,8 +670,8 @@ public final class L10nTranslations {
                 "Cuentas sugeridas en tu feed");
         table.put("Supported links",
                 "Enlaces compatibles");
-        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.",
-                "Quita las etiquetas de seguimiento, como xmt y slof, de los enlaces de publicaciones que copias o compartes. El resto del enlace se queda como estaba.");
+        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
+                "Quita las etiquetas de seguimiento, como xmt y slof, de los enlaces de publicaciones que copias o compartes. Un enlace corto para compartir pasa a ser el enlace propio de la publicaci\u00f3n.");
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1027,8 +1027,8 @@ public final class L10nTranslations {
                 "Akun yang disarankan di feed Anda");
         table.put("Supported links",
                 "Tautan yang didukung");
-        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.",
-                "Menghapus tag pelacakan seperti xmt dan slof dari tautan postingan yang Anda salin atau bagikan. Bagian lain tautan tetap seperti semula.");
+        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
+                "Menghapus tag pelacakan seperti xmt dan slof dari tautan postingan yang Anda salin atau bagikan. Tautan berbagi pendek diganti dengan tautan postingan itu sendiri.");
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushThreads lagi.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1384,8 +1384,8 @@ public final class L10nTranslations {
                 "Contas sugeridas no seu feed");
         table.put("Supported links",
                 "Links compat\u00edveis");
-        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.",
-                "Remove dos links de publica\u00e7\u00f5es que voc\u00ea copia ou compartilha as tags de rastreamento, como xmt e slof. O resto do link continua como estava.");
+        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
+                "Remove dos links de publica\u00e7\u00f5es que voc\u00ea copia ou compartilha as tags de rastreamento, como xmt e slof. Um link curto de compartilhamento vira o link da pr\u00f3pria publica\u00e7\u00e3o.");
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1741,8 +1741,8 @@ public final class L10nTranslations {
                 "Ak\u0131\u015f\u0131n\u0131zdaki \u00f6nerilen hesaplar");
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
-        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.",
-                "Kopyalad\u0131\u011f\u0131n veya payla\u015ft\u0131\u011f\u0131n g\u00f6nderi ba\u011flant\u0131lar\u0131ndan xmt ve slof gibi izleme etiketlerini kald\u0131r\u0131r. Ba\u011flant\u0131n\u0131n geri kalan\u0131 oldu\u011fu gibi kal\u0131r.");
+        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
+                "Kopyalad\u0131\u011f\u0131n veya payla\u015ft\u0131\u011f\u0131n g\u00f6nderi ba\u011flant\u0131lar\u0131ndan xmt ve slof gibi izleme etiketlerini kald\u0131r\u0131r. K\u0131sa payla\u015f\u0131m ba\u011flant\u0131s\u0131, g\u00f6nderinin kendi ba\u011flant\u0131s\u0131na d\u00f6n\u00fc\u015f\u00fcr.");
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("That file is too large to be a settings file. Nothing was changed.",

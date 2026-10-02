@@ -64,7 +64,7 @@ Suggested accounts in your feed	Akun yang disarankan di feed Anda
 Ads and suggested accounts in your feed	Iklan dan akun yang disarankan di feed Anda
 Stop analytics uploads	Hentikan unggahan analitik
 # context: xmt and slof are the tags' own names in the link and stay as they are
-Takes tracking tags such as xmt and slof off the post links you copy or share. The rest of the link stays as it was.	Menghapus tag pelacakan seperti xmt dan slof dari tautan postingan yang Anda salin atau bagikan. Bagian lain tautan tetap seperti semula.
+Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.	Menghapus tag pelacakan seperti xmt dan slof dari tautan postingan yang Anda salin atau bagikan. Tautan berbagi pendek diganti dengan tautan postingan itu sendiri.
 The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.	Aplikasi yang menyimpan file itu terlalu lama, jadi HushThreads berhenti menunggu. Tidak ada yang diubah.
 The app holding the last settings file still hasn't answered. Try again later.	Aplikasi yang menyimpan file pengaturan terakhir masih belum merespons. Coba lagi nanti.
 The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.	Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushThreads berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.
