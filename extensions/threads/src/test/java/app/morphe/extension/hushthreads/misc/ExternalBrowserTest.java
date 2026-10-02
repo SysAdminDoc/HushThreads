@@ -122,7 +122,8 @@ public class ExternalBrowserTest {
     @Test
     public void aLinkThatWasntWrappedGoesOutToo() {
         assertTrue(ExternalBrowser.open(feed, "HTTPS://Example.org/page"));
-        assertEquals("HTTPS://Example.org/page", opened().getDataString());
+        assertEquals("the scheme goes out in lower case, the only case a browser's filter matches",
+                "https://Example.org/page", opened().getDataString());
     }
 
     @Test

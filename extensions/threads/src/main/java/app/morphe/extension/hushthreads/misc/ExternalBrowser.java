@@ -116,7 +116,8 @@ public final class ExternalBrowser {
         target = Uri.parse(LinkCleaner.clean(target.toString()));
 
         try {
-            Intent view = new Intent(Intent.ACTION_VIEW, target);
+            // Intent filters match a scheme case-sensitively, so HTTPS://... would find no browser.
+            Intent view = new Intent(Intent.ACTION_VIEW, target.normalizeScheme());
             // Only an app that declares it opens web links takes it, as for any link from an app.
             view.addCategory(Intent.CATEGORY_BROWSABLE);
             // A context that isn't an activity has no task for the browser to start in.
