@@ -1465,7 +1465,8 @@ public class BadDexFixture {
         if (links && !fault.equals("holder-link-missing")) {
             copied.add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 7, fault.equals("holder-link-receiver") ? 9 : 8));
             copied.add(objectField(Opcode.IGET_OBJECT, 7, 7, fault.equals("holder-link-field") ? FEATURE_SHARE : FEATURE_HOLDER, "post", FEATURE_MEDIA));
-            copied.addAll(postLinkHook(2, fault));
+            // The holder-post-link faults break only this copy of the hook, so the fetch's passes first.
+            copied.addAll(postLinkHook(2, fault.startsWith("holder-post-link-") ? fault.substring("holder-".length()) : fault));
         }
         copied.add(op(Opcode.RETURN_OBJECT, 2));
         classes.add(featureClass(FEATURE_HOLDER, OBJECT, List.of(featureField(FEATURE_HOLDER, "post", FEATURE_MEDIA)),
@@ -1709,7 +1710,7 @@ public class BadDexFixture {
         for (int mask = 1; mask <= 7; mask++) dexes.put("features-mask-" + mask, featureBuild(true, Set.of("disableAnalytics"), mask, ""));
         for (String fault : List.of("feed-missing", "feed-replaced", "feed-register", "feed-duplicate", "item-stub", "ad-target", "ad-discarded", "ad-body", "ad-helper-body", "getter-body", "ad-helper-native", "getter-static",
                 "link-missing", "link-replaced", "link-register", "post-link-missing", "post-link-register", "post-link-getter", "post-link-bypass",
-                "holder-link-missing", "holder-link-receiver", "holder-link-field",
+                "holder-link-missing", "holder-link-receiver", "holder-link-field", "holder-post-link-register", "holder-post-link-bypass",
                 "browser-missing", "browser-register", "browser-bypass", "browser-clobber",
                 "pigeon-missing", "pigeon-replaced", "pigeon-bypass",
                 "default-missing", "mqtt-missing", "trust-missing", "trust-replaced", "trust-fallback", "status-missing", "status-false")) {
