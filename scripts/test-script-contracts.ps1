@@ -723,6 +723,10 @@ try {
                 exportedComponentsAdded = @(); exportedComponentsRemoved = @() }
         })
     }
+    foreach ($targetReceipt in $template.targets) {
+        $emptyNative = [pscustomobject]@{ extractNativeLibs = $true; libraries = @(); zipAligned = $null }
+        $targetReceipt.nativeAlignment = Get-NativePageDelta -Stock $emptyNative -Patched $emptyNative
+    }
     $templateJson = $template | ConvertTo-Json -Depth 12
 
     function New-TestReceipt {
@@ -733,11 +737,11 @@ try {
     }
 
     function Test-TestReceipt {
-        param($Receipt, [string[]]$Approved = @())
+        param($Receipt, [string[]]$Approved = @(), [int]$Schema = (Get-ReleaseReceiptSchemaVersion))
         return Test-ReleaseReceipt -Receipt $Receipt -ExpectedVersion '9.9.9' `
             -ExpectedPatchNames @('Alpha', 'Beta') -ExpectedPatcherVersion '1.12.0' `
             -ExpectedManagerFloor '1.29.0' -ExpectedPackageName 'com.example.host' -ExpectedPackageVersions $declaredBuilds `
-            -ExpectedPackageVersionCodes $declaredCodes -BundlePath $bundle -ApprovedManifestDelta $Approved
+            -ExpectedPackageVersionCodes $declaredCodes -BundlePath $bundle -ApprovedManifestDelta $Approved -ExpectedSchemaVersion $Schema
     }
 
     $valid = Test-TestReceipt -Receipt (New-TestReceipt)
@@ -746,6 +750,9 @@ try {
     # Every fact the receipt exists to pin, put in front of the check one at a time. A gate that
     # has never been shown to fail is a gate nobody has tested.
     $mutations = [ordered]@{
+        'no native alignment evidence'         = { param($r) $r.targets[0].PSObject.Properties.Remove('nativeAlignment') }
+        'a native compatibility claim without evidence' = { param($r) $r.targets[0].nativeAlignment.alignmentCompatible = $false }
+        'a missing native ZIP verdict field'    = { param($r) $r.targets[0].nativeAlignment.patched.PSObject.Properties.Remove('zipAligned') }
         'a receipt from a different schema'     = { param($r) $r.schemaVersion = 99 }
         'a receipt for a different version'     = { param($r) $r.release.version = '9.9.8' }
         'a tag that does not match the version' = { param($r) $r.release.tag = 'v9.9.8' }
@@ -1080,10 +1087,13 @@ try {
         -ExpectedPatcherVersion '1.12.0' -ExpectedManagerFloor '1.29.0' -ExpectedPackageName 'com.example.host' `
         -ExpectedPackageVersions $declaredBuilds -BundlePath $bundle -ExpectedSchemaVersion 1
     Assert-True $oneAtOne.Valid "A schema 1 receipt was refused at schema 1: $($oneAtOne.Reason)"
-    $oneAtTwo = Test-TestReceipt -Receipt $schemaOne
+    $oneAtTwo = Test-TestReceipt -Receipt $schemaOne -Schema 2
     Assert-True ($oneAtTwo.Reason -like '*schema version 1; its release is read at version 2*') `
         "A schema 1 receipt was not refused where schema 2 is expected: $($oneAtTwo.Reason)"
-    $twoAtOne = Test-ReceiptWithSbom (New-TestReceipt) -Schema 1
+    $schemaTwo = New-TestReceipt -Mutate { param($r) $r.schemaVersion = 2; foreach ($target in $r.targets) { $target.PSObject.Properties.Remove('nativeAlignment') } }
+    $twoAtTwo = Test-ReceiptWithSbom $schemaTwo -Schema 2
+    Assert-True $twoAtTwo.Valid "A schema 2 receipt without newer native fields was refused at schema 2: $($twoAtTwo.Reason)"
+    $twoAtOne = Test-ReceiptWithSbom $schemaTwo -Schema 1
     Assert-True ($twoAtOne.Reason -like '*schema version 2; its release is read at version 1*') `
         "A schema 2 receipt was not refused where schema 1 is expected: $($twoAtOne.Reason)"
     $oneWithSbom = Test-ReceiptWithSbom $schemaOne -Schema 1
@@ -4112,6 +4122,12 @@ try {
                 manifestDelta = $approvedDelta
             }
         })
+        if ($Schema -ge 3) {
+            foreach ($targetReceipt in $targets) {
+                $emptyNative = [pscustomobject]@{ extractNativeLibs = $true; libraries = @(); zipAligned = $null }
+                $targetReceipt.nativeAlignment = Get-NativePageDelta -Stock $emptyNative -Patched $emptyNative
+            }
+        }
         $document = [ordered]@{
             schemaVersion = $Schema
             release   = [ordered]@{ version = $releaseVersionHere; tag = "v$releaseVersionHere"; commit = $Commit
@@ -4202,6 +4218,8 @@ try {
         'rem Its own folder, read before shift moves %0 along with the arguments.',
         'set "HERE=%~dp0"',
         'rem -Xmx -cp <jar> <tool>.java and the tool''s arguments.',
+        'if /i "%~nx1"=="NativePageCheck.java" goto native',
+        'if /i "%~nx3"=="SignAlignedApk.java" goto sign',
         'if /i "%~nx4"=="MergeSplits.java" goto merge',
         'if /i "%~nx4"=="ResourceTableCheck.java" goto resources',
         'if /i "%~nx4"=="DexDiff.java" goto dexdiff',
@@ -4266,6 +4284,14 @@ try {
         'copy /y "%~5" "!HERE!resource-stock.txt" >nul || exit /b 8',
         'echo Note: the source launcher compiled with a warning 1>&2',
         'echo [resources] stand-in: every stock resource resolves in the patched table',
+        'exit /b 0',
+        ':native',
+        '>"%~3" echo {"libraries":[]}',
+        'exit /b 0',
+        ':sign',
+        'if exist "!HERE!sign-fails.txt" (echo injected signing failure 1>&2 & exit /b 14)',
+        'copy /y "%~4" "%~5" >nul || exit /b 12',
+        'copy /y "%~4.xmltree" "%~5.xmltree" >nul || exit /b 13',
         'exit /b 0',
         ':dexdiff',
         'echo [diff] structural findings: 0',
@@ -4695,6 +4721,19 @@ try {
             "patch-for-device.ps1 left the base APK it read for $build behind."
         Assert-True ((@(Get-Content -LiteralPath $mergeLog) -join '') -ceq "merge $($fixturePaths[$build])" -and
             -not (Test-Path -LiteralPath (Join-Path $deviceOut 'stock-merged.apk'))) 'The device build did not merge once and clean its generated merge.'
+    }
+    $signingFailure = Join-Path $tools 'sign-fails.txt'
+    $previousSigningPassword = $env:HUSHTHREADS_SIDELOAD_KEYSTORE_PASSWORD
+    try {
+        $env:HUSHTHREADS_SIDELOAD_KEYSTORE_PASSWORD = 'native-contract-password'
+        Set-Content -LiteralPath $signingFailure -Value 'on' -Encoding ASCII
+        Assert-Throws { Invoke-DeviceBuild -Apk $fixturePaths[$releaseTarget.PackageVersion] } '*APK signing failed*' 'A signing failure produced a completed device APK.'
+        Assert-True (-not (Test-Path -LiteralPath $deviceApk) -and
+            -not (Test-Path -LiteralPath (Join-Path $deviceOut "hushthreads-$releaseVersionHere-unsigned.apk"))) 'A failed signing run left a final or temporary APK.'
+        Assert-True ($env:HUSHTHREADS_SIDELOAD_KEYSTORE_PASSWORD -ceq 'native-contract-password') 'The signing password environment was not restored.'
+    } finally {
+        Remove-Item -LiteralPath $signingFailure -Force -ErrorAction SilentlyContinue
+        $env:HUSHTHREADS_SIDELOAD_KEYSTORE_PASSWORD = $previousSigningPassword
     }
     foreach ($broken in $brokenMerges) {
         $flag = Join-Path $tools $broken.Flag
@@ -5192,7 +5231,7 @@ try {
         Assert-True ($said -like "*the receipt is held to schema 1, which its own commit $($schemaOneCommit.Substring(0, 8)) wrote*" -and
             $said -like "*the receipt proves $($releaseNames.Count) patches on*from commit $($schemaOneCommit.Substring(0, 8))*") `
             "A receipt cut before the SBOM was not read as its own commit wrote it: $said"
-        Save-ReleaseReceipt -Builds $releaseTarget.PackageVersions -Commit $schemaOneCommit -Seconds $schemaOneSeconds
+        Save-ReleaseReceipt -Builds $releaseTarget.PackageVersions -Commit $schemaOneCommit -Seconds $schemaOneSeconds -Schema 2
         Assert-Throws { Invoke-ReleaseCheck } '*schema version 2; its release is read at version 1*' `
             'A schema 2 receipt was accepted for a commit whose builder wrote schema 1.'
     } finally {
@@ -5337,3 +5376,6 @@ Write-Host '[scripts] tracked-file machine name contracts passed'
 
 $global:LASTEXITCODE = 0
 Write-Host '[scripts] report, target, Java and guarded replacement contracts passed'
+
+& (Join-Path $PSScriptRoot 'test-native-page-alignment.ps1') -Root $Root
+if ($LASTEXITCODE -ne 0) { throw 'Native alignment contract suite failed.' }

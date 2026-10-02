@@ -164,6 +164,10 @@ Run `scripts/audit-threads-sources.ps1` when sources change. It stamps a clean c
 
 Device scripts require `HUSHTHREADS_DEVICE_SERIAL` and an exclusive lease. Set `HUSHTHREADS_DEVICE_LEASE_DIR`, `HUSHTHREADS_DEVICE_LEASE_TOKEN` and `HUSHTHREADS_DEVICE_IDENTITY`. Release the lease after testing. Signing conflicts require the installed key. Replacement installs are refused to preserve apps and accounts.
 
+Local APK verification inspects every ELF's load segments and checks uncompressed native ZIP entries with the SDK's 16 KB alignment check. ZIP alignment determines load compatibility when Android loads libraries directly from the APK; extracted libraries still have their ZIP verdict recorded. Builds remove stale ZIP alignment declarations, align the unsigned APK, then sign and check the final APK. No native payload is rewritten. Receipts separate unchanged vendor ELF incompatibilities from packaging defects. These static checks don't establish runtime support on a 16 KB-page device.
+
+`scripts/patch-for-device.ps1` reads existing BKS, JKS and PKCS12 keys without converting them. `HUSHTHREADS_SIDELOAD_KEYSTORE_PASSWORD` supplies the store password; an explicitly empty value in PowerShell 7 selects an unprotected store. Set `HUSHTHREADS_SIDELOAD_KEY_PASSWORD` when the private entry uses a different password. Both travel through the process environment. The documented local test-key fallback applies only when the store password variable is unset.
+
 ## Reporting a problem
 
 Use [Issues](https://github.com/SysAdminDoc/HushThreads/issues) for bugs and [Discussions](https://github.com/SysAdminDoc/HushThreads/discussions) for questions. Include the Threads version, version code and ABI, Morphe Manager and HushThreads versions, selected patches, reproduction steps and expected/actual behavior. Attach diagnostics or relevant screenshots after removing private messages and account details. Reports stay open until you or another user confirms the fix works.

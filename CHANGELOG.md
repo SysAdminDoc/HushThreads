@@ -4,6 +4,8 @@ Every HushThreads release, newest first.
 
 ## Unreleased
 
+* **Tooling:** Local APK builds align native ZIP entries before signing and check the final signature and alignment with the existing key. Release receipts now record ELF segment alignment, ZIP alignment and native payload preservation separately from vendor incompatibilities.
+
 * **Tooling:** Settings and recovery tests now cover Android 9 and Android 16, including large RTL text, entry and Back actions, content-URI imports with rollback, release-check consent and persisted crash recovery. Existing Android 11 coverage remains.
 
 * **Tooling:** The build classpath uses Guava 33.7.2, which fixes the serialized-collection allocation advisory. Manager still supplies its own copy. The patch-source import guard now scans from the repository root and rejects static imports, missing sources and empty source directories.
