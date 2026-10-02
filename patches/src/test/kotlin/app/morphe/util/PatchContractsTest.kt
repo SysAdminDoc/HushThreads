@@ -9,6 +9,8 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11n
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11x
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction35c
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -47,6 +49,18 @@ class PatchContractsTest {
                 .withIndex().toList().singleOrPatchException("Test patch: store")
         }
         assertTrue(instructions.message, instructions.message.orEmpty().contains("Candidates: 0: return-object, 1: const/4"))
+
+        val calls = assertThrows(PatchException::class.java) {
+            listOf("first", "second").map { ImmutableInstruction35c(Opcode.INVOKE_STATIC, 0, 0, 0, 0, 0, 0, ImmutableMethodReference("LX/Feed;", it, emptyList(), "V")) }
+                .singleOrPatchException("Test patch: call")
+        }
+        assertTrue(calls.message, calls.message.orEmpty().contains("Candidates: invoke-static LX/Feed;->first()V, invoke-static LX/Feed;->second()V"))
+
+        // Twelve are named and the rest are counted, so a broad selector can't flood the message.
+        val many = assertThrows(PatchException::class.java) {
+            (1..13).map { "c$it" }.singleOrPatchException("Test patch: getter")
+        }
+        assertTrue(many.message, many.message.orEmpty().contains("found 13") && many.message.orEmpty().contains("c12, ...") && !many.message.orEmpty().contains("c13"))
 
         val empty = assertThrows(PatchException::class.java) {
             emptyList<String>().singleOrPatchException("Test patch: getter")

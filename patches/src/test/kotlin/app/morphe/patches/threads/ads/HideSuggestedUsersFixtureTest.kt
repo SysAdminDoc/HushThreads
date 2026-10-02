@@ -165,6 +165,14 @@ class HideSuggestedUsersFixtureTest {
             assertTrue(vendor.name, stubSize(adsOnly, "isAd") > 2)
             assertEquals(vendor.name, 2, stubSize(adsOnly, "isSuggestedUserItem"))
 
+            val suggestionsOnly = context(vendor)
+            hideSuggestedUsersPatch.execute(suggestionsOnly)
+            assertEquals(vendor.name, 1, filterCalls(suggestionsOnly))
+            assertEquals(vendor.name, 0, status(suggestionsOnly, "hideAds"))
+            assertEquals(vendor.name, 1, status(suggestionsOnly, "hideSuggestedUsers"))
+            assertEquals(vendor.name, 2, stubSize(suggestionsOnly, "isAd"))
+            assertTrue(vendor.name, stubSize(suggestionsOnly, "isSuggestedUserItem") > 2)
+
             val both = context(vendor)
             InjectedAdCheckFingerprint.clearMatch()
             hideAdsPatch.execute(both)

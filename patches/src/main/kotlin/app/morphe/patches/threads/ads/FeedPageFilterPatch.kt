@@ -25,7 +25,8 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 internal const val FEED_ADS = "$EXTENSION_PACKAGE/ads/FeedAds;"
-private const val PATCH = "Feed rules"
+// The shared hook fails for whichever feed patch was selected, so its messages name both.
+private const val PATCH = "Feed filter (Hide ads, Hide suggested users)"
 
 /** One pre-cache page boundary shared by independently selected feed patches. */
 internal val feedPageFilterPatch = bytecodePatch {
@@ -59,7 +60,7 @@ internal val feedPageFilterPatch = bytecodePatch {
             }
         }.distinctBy { it.toString() }
         val itemMedia = getters.singleOrPatchException(
-            "$PATCH: item-owned no-argument Media getter in ${merge.definingClass}->${merge.name}; candidates: " + getters.joinToString(),
+            "$PATCH: item-owned no-argument Media getter in ${merge.definingClass}->${merge.name}",
         )
         mutableClassDefBy(itemMedia.definingClass).methods.filter {
             it.name == itemMedia.name && it.returnType == MEDIA && it.parameterTypes.isEmpty() &&
