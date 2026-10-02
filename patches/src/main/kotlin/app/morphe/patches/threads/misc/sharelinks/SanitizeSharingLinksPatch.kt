@@ -16,6 +16,7 @@ import app.morphe.patches.threads.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.getReference
 import app.morphe.util.singleOrPatchException
+import app.morphe.util.superclassChain
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -82,9 +83,11 @@ val sanitizeSharingLinksPatch = bytecodePatch(
             val allocation = instructions[created]
             if (allocation.opcode != Opcode.NEW_INSTANCE) continue
             val owner = allocation.getReference<TypeReference>()!!.type
+            val constructorOwners = superclassChain(owner).toSet()
             val aliases = mutableSetOf((allocation as OneRegisterInstruction).registerA)
             val typeUnchanged = instructions.subList(typeName + 1, created + 1).none {
-                it.opcode.setsRegister() && (it as? OneRegisterInstruction)?.registerA == typeRegister
+                val register = (it as? OneRegisterInstruction)?.registerA
+                it.opcode.setsRegister() && (register == typeRegister || it.opcode.setsWideRegister() && register == typeRegister - 1)
             }
             if (!typeUnchanged) continue
             var namedResponse = false
@@ -104,10 +107,12 @@ val sanitizeSharingLinksPatch = bytecodePatch(
                         word += if (parameter == "J" || parameter == "D") 2 else 1
                         parameter == "Ljava/lang/String;" && register == typeRegister &&
                             instructions.subList(typeName + 1, index).none {
-                                it.opcode.setsRegister() && (it as? OneRegisterInstruction)?.registerA == typeRegister
+                                val register = (it as? OneRegisterInstruction)?.registerA
+                                it.opcode.setsRegister() && (register == typeRegister || it.opcode.setsWideRegister() && register == typeRegister - 1)
                             }
                     }
-                    if (call.name == "<init>" && call.returnType == "V" && registers.firstOrNull() in aliases && takesTypeName) {
+                    if (call.name == "<init>" && call.returnType == "V" && call.definingClass in constructorOwners &&
+                        registers.firstOrNull() in aliases && takesTypeName) {
                         namedResponse = true
                     }
                 }
@@ -121,7 +126,7 @@ val sanitizeSharingLinksPatch = bytecodePatch(
                     val carriesResponse = when (instruction.opcode) {
                         Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16 ->
                             (instruction as TwoRegisterInstruction).registerB in aliases
-                        Opcode.CHECK_CAST -> target in aliases && instruction.getReference<TypeReference>()?.type == owner
+                        Opcode.CHECK_CAST -> target in aliases
                         else -> false
                     }
                     aliases.remove(target)
