@@ -2318,6 +2318,8 @@ try {
         'param([string]$Root)',
         "Set-Content -LiteralPath '$contractsMarker' -Value 'ran'",
         'exit 0')
+    Set-Content -LiteralPath (Join-Path $hookRoot 'scripts/test-threads-sources.ps1') -Encoding UTF8 -Value @(
+        'param([string]$Root)', 'exit 0')
     # The runtime tests start through HUSHTHREADS_BUILD_WRAPPER, which the hook reads from the
     # user's environment when this process lacks it, so a stub stands in for it here: it records
     # that the tests were asked for and builds nothing. The credentials the build path wants first
@@ -2474,17 +2476,20 @@ try {
         $expected = @($verifierRoutes.Keys | Where-Object { $verifierRoutes[$_] -contains $file }) -join ', '
         Assert-True ($ran -eq $expected) "A push of scripts/$file ran [$ran], not [$expected]."
     }
-    # The ledger's rules read NOTICE, provenance.json and the catalog, and hold docs/sources.md to
-    # the ledger. A push of any of those, or of the ledger alone, runs its suite and no other
-    # verifier; the catalog also runs the release facts and the contract tests, held below.
-    foreach ($file in @('sources/threads-sources.json', 'NOTICE', 'provenance.json', 'docs/sources.md', 'patches-list.json')) {
+    # The ledger's rules read NOTICE, provenance.json and the catalog, and hold the README source
+    # section to the ledger. These paths run its suite and no other verifier. README and the
+    # catalog also keep their release facts and contract-test routes.
+    foreach ($file in @('sources/threads-sources.json', 'NOTICE', 'provenance.json', 'README.md', 'patches-list.json')) {
         foreach ($suite in $verifierRoutes.Keys) { Remove-Item -LiteralPath (& $verifierMarker $suite) -Force -ErrorAction SilentlyContinue }
         Invoke-Hook -Paths @($file)
         $ran = @($verifierRoutes.Keys | Where-Object { Test-Path -LiteralPath (& $verifierMarker $_) }) -join ', '
         Assert-True ($ran -eq 'scripts/test-threads-sources.ps1') "A push of $file ran [$ran], not the source ledger's suite alone."
-        if ($file -ne 'patches-list.json') {
+        if ($file -notin @('patches-list.json', 'README.md')) {
             Assert-True (-not (Test-Path -LiteralPath $contractsMarker) -and -not (Test-Path -LiteralPath $factsMarker)) `
                 "A push of $file ran the contract tests or the release facts, which read nothing it changes."
+        } else {
+            Assert-True ((Test-Path -LiteralPath $contractsMarker) -and (Test-Path -LiteralPath $factsMarker)) `
+                "A push of $file skipped its existing contract-test or release-facts route."
         }
     }
 
@@ -2495,11 +2500,14 @@ try {
     Assert-True ((Test-Path -LiteralPath $factsMarker) -and (Test-Path -LiteralPath $contractsMarker)) `
         'A push that changed only the catalog did not run both the release check and the script contract tests.'
 
-    # These tests copy the README into the release facts fixture and hold it to the catalog there,
-    # so a push of only the README runs them as well as the release check.
+    # The README keeps its catalog/facts checks and also guards the source ledger's prose.
+    foreach ($suite in $verifierRoutes.Keys) { Remove-Item -LiteralPath (& $verifierMarker $suite) -Force -ErrorAction SilentlyContinue }
     Invoke-Hook -Paths @('README.md')
     Assert-True ((Test-Path -LiteralPath $factsMarker) -and (Test-Path -LiteralPath $contractsMarker)) `
         'A push that changed only the README did not run both the release check and the script contract tests.'
+    $readmeSuites = @($verifierRoutes.Keys | Where-Object { Test-Path -LiteralPath (& $verifierMarker $_) }) -join ', '
+    Assert-True ($readmeSuites -eq 'scripts/test-threads-sources.ps1') `
+        "A README-only push ran [$readmeSuites], not the source ledger's verifier alone."
 
     Invoke-Hook -Paths @('CHANGELOG.md')
     Assert-True (Test-Path -LiteralPath $factsMarker) `
@@ -3188,14 +3196,16 @@ try {
             # The release facts half checks the files a push carries as well. A stub check, committed
             # the way the real one is, fails on a README that says broken and records where it ran
             # and whether it read test results. Its own commit is never in a pushed range, so no
-            # push below touches scripts/. A README push asks for the contract tests too, since they
-            # hold the README to the catalog, so a stub suite that passes is committed with it.
+            # push below touches scripts/. README asks for the contract and source-ledger suites,
+            # so passing stubs for both are committed with the facts fixture.
             $gateFacts = Join-Path $hookRoot 'gate-facts-ran.txt'
             & git -C $gateRepo checkout --quiet -- extensions/marker.txt
             New-Item -ItemType Directory -Path (Join-Path $gateRepo 'scripts') -Force | Out-Null
-            Set-Content -LiteralPath (Join-Path $gateRepo 'scripts/test-script-contracts.ps1') -Encoding UTF8 -Value @(
-                'param([string]$Root)', 'exit 0')
-            & git -C $gateRepo add scripts/test-script-contracts.ps1
+            foreach ($suite in @('test-script-contracts.ps1', 'test-threads-sources.ps1')) {
+                Set-Content -LiteralPath (Join-Path $gateRepo "scripts/$suite") -Encoding UTF8 -Value @(
+                    'param([string]$Root)', 'exit 0')
+                & git -C $gateRepo add "scripts/$suite"
+            }
             Set-Content -LiteralPath (Join-Path $gateRepo 'scripts/validate-release-facts.ps1') -Encoding UTF8 -Value @(
                 'param([string]$Root, [switch]$SkipDescriptionTestCount, [switch]$AllowPublishedIndexLag,',
                 '    [switch]$VerifyPublishedAsset, [string]$ArtifactPath, [switch]$SkipTestResults)',

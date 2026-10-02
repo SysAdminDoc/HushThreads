@@ -4,6 +4,8 @@ Every HushThreads release, newest first.
 
 ## Unreleased
 
+* **Tooling:** The source ledger now records HushThreads in all five discovery indexes, groups verified forks and mirrors under their origins, and distinguishes candidates from catalogs. Build, reporting and source guidance now lives in README; licensing and mirror checks work without local guides.
+
 * **Threads:** Source builds now declare stable arm64 Threads 448.0.0.54.85 alongside 449.0.0.54.82. All six patches pass unforced verification on both, and same-key updates preserve a signed-in session through settings and live-feed checks.
 
 * **Threads:** Diagnostics count each removed ad post and each shared link that actually changes, separately from hook calls. Disabled, paused and failed operations add no outcome. Counts remain bounded and survive clear/undo without overflowing.

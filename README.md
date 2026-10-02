@@ -111,34 +111,73 @@ The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.o
 
 ## Where the patches come from
 
-| Source | What came from it |
+HushThreads' build, settings, diagnostics and safety checks came from [Hushfacebook](https://github.com/SysAdminDoc/Hushfacebook) at `c15d4f79`. That code carries the notices from [Hushfeed](https://github.com/SysAdminDoc/hushfeed), [Andrew Liang's patches](https://github.com/andrewliang25/morphe-patches), [FroggoMorphePatches](https://github.com/SapitoSucio/FroggoMorphePatches) and the Morphe/ReVanced chain recorded in [NOTICE](NOTICE) and [provenance.json](provenance.json).
+
+[sources/threads-sources.json](sources/threads-sources.json) records 12 external sources across seven lineages, with forks and file mirrors grouped under their origins. Branch pins follow commits touching watched paths; separate head fields record inspected branch tips. No external Threads code is adopted. Hide ads uses the feed-cache merge location identified by zeldrisho, with an implementation written here.
+
+| Source | What we found |
 |---|---|
-| [SysAdminDoc/Hushfacebook](https://github.com/SysAdminDoc/Hushfacebook) at `c15d4f7` | The Gradle build, the shared extension library with its settings screen, diagnostics and pause, the bytecode helpers, the link cleaner, the re-signed build fix and the checks that apply every patch to real builds before a release. Some of that came to Hushfacebook from [Hushfeed](https://github.com/SysAdminDoc/hushfeed), [Andrew Liang's patches](https://github.com/andrewliang25/morphe-patches) and [FroggoMorphePatches](https://github.com/SapitoSucio/FroggoMorphePatches). |
-| [zeldrisho/morphe-patches](https://github.com/zeldrisho/morphe-patches) | The place Hide ads takes ads out, the feed cache's merge of each page. None of its code is used. |
-| [Morphe](https://github.com/MorpheApp) and [ReVanced](https://gitlab.com/ReVanced/revanced-patches) | The patcher and the patch template. Everything above grew from their code. |
+| [ReVanced](https://gitlab.com/ReVanced/revanced-patches) and [Aunali321/ReVancedExperiments](https://github.com/Aunali321/ReVancedExperiments) | GPL candidates for ad filtering. |
+| [chiggi_morphe_patches](https://github.com/durgesh0505/chiggi_morphe_patches) and [zeldrisho/morphe-patches](https://github.com/zeldrisho/morphe-patches) | GPL candidates with ad filtering, AD_ID permission removal and app/package renaming. |
+| [MrxSiN/ThreadsHideAds](https://github.com/MrxSiN/ThreadsHideAds) | GPL candidate using modern Xposed, DexKit and a compiled filtering policy. |
+| [NexAlloy](https://github.com/NexAlloy/NexAlloy) and [joel122002/ReVancedXposed](https://github.com/joel122002/ReVancedXposed) | GPL candidates for Xposed ad filtering. |
+| [kareemlukitomo/morphe-patches](https://github.com/kareemlukitomo/morphe-patches) | GPL candidate that changes the Threads share domain. |
+| [chirag127/morphe-patches](https://github.com/chirag127/morphe-patches) | Rejected. Its Threads patches are stubs. |
+| [revanced-troubleshooting-guide](https://github.com/SodaWithoutSparkles/revanced-troubleshooting-guide) | Rejected. It stores catalogs without an independent patch body. |
+| [yt-revanced-icon](https://github.com/kairusds/yt-revanced-icon) and [rvmm-config-gen](https://github.com/user2user1/rvmm-config-gen) | Catalogs recorded as behavior-only. The former lacks a license; the latter uses AGPL-3.0, outside the ledger's accepted license list. |
 
-Every source file says where it came from in its header, and [provenance.json](provenance.json) maps each file to the project and commit it came from, with its licence. [docs/sources.md](docs/sources.md) covers the other Threads patch sources: what each one does and what this bundle took from it.
+The census remains dated 2026-09-29. Repository entries and all five discovery indexes were checked on 2026-10-02. All five list HushThreads. GitLab code search wasn't run.
 
-## Building from source
+Keep copyright, author, license and source notices when editing or moving files. Remove a notice only when its covered code is gone. Carry the GPL section 7 notices in NOTICE and make them available to users. Keep blocked original source URLs in notices, with a working GitLab mirror beside them.
 
-You need JDK 17 or newer and the Android SDK. The Morphe patcher comes from GitHub Packages, so you also need a GitHub token with `read:packages`.
+Copied code keeps its headers and gets a `Forked from` line naming the repository and commit. Every shipped file needs one applicable provenance rule, its license and matching header links. A file rule takes precedence over a folder rule. Code written here must not claim an upstream origin. `ProvenanceTest` checks these requirements.
 
-```bash
-export GITHUB_ACTOR=<your GitHub user>
-export GITHUB_TOKEN=<a token with read:packages>
-./gradlew :patches:generatePatchesList
-./gradlew :patches:buildAndroid
+Before external code ships, mark its source adopted with the exact commit, compatible license URL/hash, NOTICE entry and provenance rule. A release receipt must prove patching on at least two real Threads fixtures and every declared build. Missing or incompatible licenses, and code derived from them, remain behavior-only. Mirrors inherit the original's disposition. Use the original repository URL and commit in notices and provenance.
+
+## Building and checking
+
+Use JDK 21, the Android SDK and PowerShell. Set `JAVA_HOME` and `ANDROID_HOME`, or configure the SDK in `local.properties`. GitHub Packages requires `GITHUB_ACTOR` and `GITHUB_TOKEN` with `read:packages`.
+
+Declared arm64 builds: 449.0.0.54.82 / 511908382 and 448.0.0.54.85 / 511808302.
+
+```powershell
+$env:HUSHTHREADS_FIXTURE_DIR = '<fixture folder>'
+$env:HUSHTHREADS_DESKTOP_JAR = '<Morphe desktop JAR>'
+./gradlew.bat :patches:generatePatchesList
+./gradlew.bat :patches:buildAndroid
+./gradlew.bat :patches:test :extensions:threads:testDebugUnitTest
+./gradlew.bat :extensions:threads:lintRelease :extensions:shared:library:lintRelease
+./scripts/verify-all-patches.ps1 -Apk '<Threads bundle>' -DesktopJar '<Morphe desktop JAR>' -WorkDir '<scratch folder>'
 ```
 
-The bundle lands in `patches/build/release/patches-<version>.mpp`, beside its SHA-256 and a CycloneDX SBOM of every library that goes into it. Run `generatePatchesList` before `buildAndroid`, or the bundle loses its Android payload.
+Generate the patch list before building. The bundle, SHA-256 and CycloneDX SBOM land in `patches/build/release`. Tests rebuild the jar in `patches/build/libs`. Keep private fixtures outside tracked files. Without `HUSHTHREADS_FIXTURE_DIR`, real-build tests skip.
 
-Tests: `./gradlew :patches:test :extensions:threads:testDebugUnitTest`. Set `HUSHTHREADS_FIXTURE_DIR` to a folder holding Threads builds to run the tests that read real builds. Without it they skip and say so.
+Run verification on every retained build. It checks every selected patch, approved manifest changes, merged stock resources and injected DEX structure and feature contracts. Split merges use private input directories. Concurrent runs need separate outputs. Plain APKs are used directly.
 
-To apply every patch to a real build and check the result, run `scripts/verify-all-patches.ps1 -Apk <threads bundle> -DesktopJar <morphe-desktop jar> -WorkDir <scratch folder>`. It checks the manifest, stock resources and DEX structure, then verifies each selected feature's intended mutations against the stock APK. These contracts cover the typed feed helpers, owned permalink hook, recorded analytics address kinds and signature wrapper's stock fallback. Called stock methods keep their operations, method flags and ordered exception handling, including valid splits of long protected ranges. Omitted features are reported separately and don't require payloads. [CONTRIBUTING.md](CONTRIBUTING.md) has the rest.
+Run `scripts/build-release-receipt.ps1` and `scripts/validate-release-facts.ps1` after the tests, lints and fixture verification. OSV checks every bundled library. HIGH/CRITICAL labels, CVSS 3 scores of 7.0 or higher, and unrated advisories stop release. Exceptions in `scripts/advisory-exceptions.txt` need a package, advisory, reason and expiry within 90 days. Expired or unmatched exceptions fail.
 
-Split bundles are copied into a private input directory for each merge. Concurrent runs can share the original XAPK when each has its own output directory. Temporary inputs are cleaned on success or failure, and plain APKs are used directly.
+Run `scripts/audit-threads-sources.ps1` when sources change. It stamps a clean census. Releases require a census no more than 14 days old. `scripts/test-threads-sources.ps1` checks the ledger and source documentation.
 
-Before passing `-Serial` to an install or verifier script, acquire an exclusive shared device lease. Set `HUSHTHREADS_DEVICE_LEASE_DIR` to the shared folder, `HUSHTHREADS_DEVICE_LEASE_TOKEN` to your lease's ownership token and `HUSHTHREADS_DEVICE_IDENTITY` to the phone's model or emulator's exact AVD name. The scripts verify identity, renew the owned lease and keep its file exclusively open throughout each device command. Release it after testing. A signing conflict requires repatching with the installed key. `-Replace` is refused, preserving installed apps and accounts. Builds and static checks without `-Serial` need no device lease.
+`scripts/install-hooks.ps1` installs the push checks. `HUSHTHREADS_WORKDIR` or `build/morphe-tools` can locate the desktop JAR. `HUSHTHREADS_BUILD_WRAPPER` optionally runs Gradle as `<wrapper> -ProjectDir <repository> -Tasks <task>...`.
+
+Device scripts require `HUSHTHREADS_DEVICE_SERIAL` and an exclusive lease. Set `HUSHTHREADS_DEVICE_LEASE_DIR`, `HUSHTHREADS_DEVICE_LEASE_TOKEN` and `HUSHTHREADS_DEVICE_IDENTITY`. Release the lease after testing. Signing conflicts require the installed key. Replacement installs are refused to preserve apps and accounts.
+
+## Reporting a problem
+
+Use [Issues](https://github.com/SysAdminDoc/HushThreads/issues) for bugs and [Discussions](https://github.com/SysAdminDoc/HushThreads/discussions) for questions. Include the Threads version, version code and ABI, Morphe Manager and HushThreads versions, selected patches, reproduction steps and expected/actual behavior. Attach diagnostics or relevant screenshots after removing private messages and account details. Reports stay open until you or another user confirms the fix works.
+
+## When Threads updates
+
+Retain the new stable arm64 bundle and verify its identity and publisher signatures. Explore an undeclared build with:
+
+```powershell
+./scripts/verify-all-patches.ps1 -Apk '<new bundle>' -Force -DesktopJar '<Morphe desktop JAR>' -WorkDir '<scratch folder>'
+./scripts/fingerprint-candidates.ps1 -OldApk '<old bundle>' -Method '<method descriptor>' -NewApk '<new bundle>'
+```
+
+Candidate ranking suggests methods to inspect. It changes nothing. Fix anchors and inner-target guards against the new and declared builds. Use kept names, strings, Pando fields or method shapes. `ObfuscatedIdentityTest` rejects hardcoded obfuscated identities.
+
+Before declaring support, check every selected patch, settings, login and live feeds on the new and declared builds. Record the exact version name and arm64 version code in `AppCompatibilities.kt`, regenerate, rebuild and rerun the real-fixture checks and verification without `-Force` on every retained build.
 
 ## License
 
