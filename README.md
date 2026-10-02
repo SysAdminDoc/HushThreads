@@ -118,6 +118,8 @@ On 2026-10-02, repeated enabled, off and paused feed sessions on Android 16 and 
 
 HushThreads' build, settings, diagnostics and safety checks came from [Hushfacebook](https://github.com/SysAdminDoc/Hushfacebook) at `c15d4f79`. That code carries the notices from [Hushfeed](https://github.com/SysAdminDoc/hushfeed), [Andrew Liang's patches](https://github.com/andrewliang25/morphe-patches), [FroggoMorphePatches](https://github.com/SapitoSucio/FroggoMorphePatches) and the Morphe/ReVanced chain recorded in [NOTICE](NOTICE) and [provenance.json](provenance.json).
 
+`scripts/upstream-drift.ps1` lists the ported files Hushfacebook has changed since that commit. It reads only the upstream's file tree and exits 1 when something changed. Each change still gets reviewed before any of it is brought over.
+
 [sources/threads-sources.json](sources/threads-sources.json) records 12 external sources across seven lineages, with forks and file mirrors grouped under their origins. Branch pins follow commits touching watched paths; separate head fields record inspected branch tips. No external Threads code is adopted. Hide ads uses the feed-cache merge location identified by zeldrisho, with an implementation written here.
 
 | Source | What we found |

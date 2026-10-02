@@ -12,6 +12,8 @@ Source builds only. The published bundle remains at 0.0.3.
 
 * **Tooling:** A patch that finds more than one match now lists the candidates when it stops, so a changed Threads build can be checked before anyone installs it.
 
+* **Tooling:** `scripts/upstream-drift.ps1` lists the files ported from Hushfacebook that changed there after the recorded commit, and exits 1 when any did. A file the provenance names with no upstream counterpart, or an upstream it can't read, exits 2 so neither passes for a clean answer.
+
 * **Threads:** Shared-link guidance now describes query-parameter removal without claiming that opaque share codes identify the account or are removed. The source comment no longer attributes a Threads rule to ClearURLs.
 
 * **Tooling:** Local APK builds align native ZIP entries before signing and check the final signature and alignment with the existing key. Release receipts now record ELF segment alignment, ZIP alignment and native payload preservation separately from vendor incompatibilities.

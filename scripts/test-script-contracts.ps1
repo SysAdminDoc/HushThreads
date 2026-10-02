@@ -5374,6 +5374,109 @@ Assert-Throws { Find-MachineNames -Root (Join-Path ([System.IO.Path]::GetTempPat
 
 Write-Host '[scripts] tracked-file machine name contracts passed'
 
+# --- upstream drift ----------------------------------------------------------------------------
+#
+# upstream-drift.ps1 lists the ported files Hushfacebook changed after the recorded commit. Two
+# fixture repositories stand in: an upstream with Facebook's names and a tree with Threads' names
+# and its own provenance.json. A Facebook-only change, a change to a file a single-file original
+# rule takes back, and a file added here all leave the answer at 0; a renamed file's change and a
+# deletion are listed with exit 1; a file a rule names with no upstream counterpart, and an
+# upstream that can't be read, exit 2 instead of reading as either answer.
+
+$driftRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('hushthreads-drift-' + [guid]::NewGuid().ToString('N'))
+try {
+    $driftUpstream = Join-Path $driftRoot 'upstream'
+    $driftLocal = Join-Path $driftRoot 'local'
+    $sharedDir = 'extensions/shared/library/src/main/java/app/morphe/extension/shared'
+    $facebookSettings = 'extensions/facebook/src/main/java/app/morphe/extension/facebook/settings'
+    $threadsSettings = 'extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings'
+    function Write-DriftFile {
+        param([string]$Repository, [string]$Path, [string]$Text)
+        $full = Join-Path $Repository $Path
+        New-Item -ItemType Directory -Path (Split-Path -Parent $full) -Force | Out-Null
+        [System.IO.File]::WriteAllText($full, $Text)
+    }
+    function Save-DriftCommit {
+        param([string]$Repository, [string]$Message)
+        Invoke-FixtureGit -Root $Repository -Arguments @('add', '-A') | Out-Null
+        Invoke-FixtureGit -Root $Repository -Arguments @('-c', 'user.name=Contracts', '-c', 'user.email=contracts@example.invalid',
+            '-c', 'core.hooksPath=', 'commit', '--quiet', '--no-verify', '-m', $Message) | Out-Null
+        return "$(Invoke-FixtureGit -Root $Repository -Arguments @('rev-parse', 'HEAD') | Select-Object -First 1)".Trim()
+    }
+    function Invoke-Drift {
+        param([string]$Ref, [string]$Provenance = (Join-Path $driftLocal 'provenance.json'), [string]$UpstreamRepo = $driftUpstream)
+        $output = @(& $shell -NoProfile -File (Join-Path $PSScriptRoot 'upstream-drift.ps1') -Root $driftLocal -Provenance $Provenance `
+            -Upstream 'https://example.invalid/Upstream' -UpstreamRepo $UpstreamRepo -Ref $Ref 2>&1 | ForEach-Object { "$_" })
+        return [pscustomobject]@{ Exit = $LASTEXITCODE; Text = ($output -join "`n") }
+    }
+    $shell = (Get-Process -Id $PID).Path
+
+    foreach ($repository in $driftUpstream, $driftLocal) {
+        New-Item -ItemType Directory -Path $repository -Force | Out-Null
+        Invoke-FixtureGit -Root $repository -Arguments @('init', '--quiet') | Out-Null
+    }
+    foreach ($path in "$sharedDir/Utils.java", "$sharedDir/settings/Setting.java", "$sharedDir/settings/Local.java",
+            "$facebookSettings/HushfacebookPreferenceFragment.java", "$facebookSettings/FacebookOnly.java") {
+        Write-DriftFile $driftUpstream $path 'class A {}'
+    }
+    $recorded = Save-DriftCommit $driftUpstream 'recorded'
+
+    foreach ($path in "$sharedDir/Utils.java", "$sharedDir/settings/Setting.java", "$sharedDir/settings/Local.java",
+            "$sharedDir/settings/AddedHere.java", "$threadsSettings/HushThreadsPreferenceFragment.java", "$threadsSettings/Orphan.java") {
+        Write-DriftFile $driftLocal $path 'class B {}'
+    }
+    $portedRule = { param($paths) [ordered]@{ paths = $paths; origin = 'ported'; upstream = 'https://example.invalid/Upstream'; commit = $recorded } }
+    $driftRules = @(
+        (& $portedRule @("$sharedDir/Utils.java", "$sharedDir/settings/**")),
+        (& $portedRule @("$threadsSettings/HushThreadsPreferenceFragment.java")),
+        [ordered]@{ paths = @("$sharedDir/settings/Local.java"); origin = 'original'; upstream = 'https://example.invalid/Local' })
+    [System.IO.File]::WriteAllText((Join-Path $driftLocal 'provenance.json'), (@{ rules = $driftRules } | ConvertTo-Json -Depth 6))
+    $orphanRules = @($driftRules[0], (& $portedRule @("$threadsSettings/Orphan.java")), $driftRules[2])
+    $orphanProvenance = Join-Path $driftRoot 'orphan-provenance.json'
+    [System.IO.File]::WriteAllText($orphanProvenance, (@{ rules = $orphanRules } | ConvertTo-Json -Depth 6))
+    Save-DriftCommit $driftLocal 'local' | Out-Null
+
+    $same = Invoke-Drift $recorded
+    Assert-True ($same.Exit -eq 0 -and $same.Text -like '*Checked 3 ported files*' -and $same.Text -like '*No ported file changed*') `
+        "The drift check didn't read an unchanged upstream as clean: exit $($same.Exit), $($same.Text)"
+    Assert-True ($same.Text -like "*added here, not in upstream: $sharedDir/settings/AddedHere.java*") `
+        "A file added under a ported directory wasn't listed as added here: $($same.Text)"
+
+    Write-DriftFile $driftUpstream "$facebookSettings/FacebookOnly.java" 'class A { int x; }'
+    Write-DriftFile $driftUpstream "$sharedDir/settings/Local.java" 'class A { int x; }'
+    Write-DriftFile $driftUpstream "$sharedDir/settings/NewUpstream.java" 'class A {}'
+    $unrelated = Save-DriftCommit $driftUpstream 'unrelated'
+    $quiet = Invoke-Drift $unrelated
+    Assert-True ($quiet.Exit -eq 0 -and $quiet.Text -notlike '*changed upstream:*' -and $quiet.Text -like '*No ported file changed*') `
+        "A Facebook-only change or one to a file an original rule takes back read as drift: exit $($quiet.Exit), $($quiet.Text)"
+
+    Write-DriftFile $driftUpstream "$facebookSettings/HushfacebookPreferenceFragment.java" 'class A { int y; }'
+    $renamed = Save-DriftCommit $driftUpstream 'renamed file changed'
+    $one = Invoke-Drift $renamed
+    Assert-True ($one.Exit -eq 1 -and
+        $one.Text -like "*changed upstream: $facebookSettings/HushfacebookPreferenceFragment.java (here: $threadsSettings/HushThreadsPreferenceFragment.java)*" -and
+        $one.Text -like '*1 ported file(s) changed*') `
+        "A change to a renamed ported file wasn't listed with exit 1: exit $($one.Exit), $($one.Text)"
+
+    Invoke-FixtureGit -Root $driftUpstream -Arguments @('rm', '--quiet', "$sharedDir/settings/Setting.java") | Out-Null
+    $deleted = Save-DriftCommit $driftUpstream 'deleted'
+    $two = Invoke-Drift $deleted
+    Assert-True ($two.Exit -eq 1 -and $two.Text -like "*deleted upstream: $sharedDir/settings/Setting.java*" -and
+        $two.Text -like '*2 ported file(s) changed*') `
+        "An upstream deletion wasn't listed beside the change: exit $($two.Exit), $($two.Text)"
+
+    $orphan = Invoke-Drift $recorded -Provenance $orphanProvenance
+    Assert-True ($orphan.Exit -eq 2 -and $orphan.Text -like "*Orphan.java is named in provenance.json*") `
+        "A named file with no upstream counterpart didn't stop the check: exit $($orphan.Exit), $($orphan.Text)"
+    $unreadable = Invoke-Drift 'HEAD' -UpstreamRepo (Join-Path $driftRoot 'absent')
+    Assert-True ($unreadable.Exit -eq 2 -and $unreadable.Text -like '*upstream-drift:*') `
+        "An upstream that couldn't be read didn't exit 2: exit $($unreadable.Exit), $($unreadable.Text)"
+} finally {
+    Remove-Item -LiteralPath $driftRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Write-Host '[scripts] upstream drift contracts passed'
+
 $global:LASTEXITCODE = 0
 Write-Host '[scripts] report, target, Java and guarded replacement contracts passed'
 
