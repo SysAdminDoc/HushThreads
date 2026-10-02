@@ -9,22 +9,30 @@ import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.threads.misc.extension.SETTINGS_STATUS
+import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.getReference
+import app.morphe.util.literalReads
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -32,7 +40,7 @@ import org.junit.Test
 import java.io.File
 
 /**
- * Block background-return feed refresh on each declared build: each of Threads' three return
+ * Block background-return feed refresh on each declared build: each of Threads' four return
  * checks is found exactly once, and each asks the extension at the one place its answer is made.
  */
 class ReturnRefreshFixtureTest {
@@ -64,9 +72,9 @@ class ReturnRefreshFixtureTest {
             val handler = FixtureDex.methodsWhere(build, { true }) { it.holdsString(BADGE_DECISION) }
             assertEquals(build.name, listOf(BARCELONA_ACTIVITY), handler.map { it.definingClass })
             // The swap to background posts compares the warm-start threshold once more, in the same class.
-            val thresholds = warm.single().wideLiterals()
+            val threshold = warm.single().warmStartThreshold()
             val swaps = FixtureDex.classes(build, setOf(warm.single().definingClass)).values.single().methods
-                .flatMap { it.cachedPostsSites(thresholds) }
+                .flatMap { it.cachedPostsSites(threshold) }
             assertEquals(build.name, 1, swaps.size)
         }
     }
@@ -126,6 +134,24 @@ class ReturnRefreshFixtureTest {
     }
 
     @Test
+    fun `both warm-start answers reach Threads' decision only through the hooked store`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val warm = fixture(build).warm
+            val site = warm.warmStartSite()
+            val body = warm.implementation!!.instructions.toList()
+            val logged = body.indexOfFirst { it.getReference<StringReference>()?.string == TOO_SHORT }
+            fun answer(value: Int) = (logged downTo 0).first {
+                body[it].opcode == Opcode.CONST_4 && (body[it] as OneRegisterInstruction).registerA == site.register &&
+                    (body[it] as NarrowLiteralInstruction).narrowLiteral == value
+            }
+            for ((label, index) in listOf("true" to answer(1), "false" to answer(0))) {
+                val stores = warm.literalReads(index).filter { body[it].opcode == Opcode.IPUT_BOOLEAN }
+                assertEquals("$build $label", listOf(site.store), stores)
+            }
+        }
+    }
+
+    @Test
     fun `a warm-start check that logs twice or loses its answer is refused`() {
         for (build in Fixtures.declaredBuilds()) {
             val fixture = fixture(build)
@@ -147,14 +173,11 @@ class ReturnRefreshFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val fixture = fixture(build)
             val site = fixture.cached
-            val threshold = fixture.cached.method.implementation!!.instructions.toList()
-                .subList(maxOf(0, site.join - 12), site.join)
-                .filter { it.opcode == Opcode.CONST_WIDE }
-                .map { (it as WideLiteralInstruction).wideLiteral }
-                .single { it in fixture.warm.wideLiterals() }
+            val threshold = fixture.warm.warmStartThreshold()
 
+            // At the join itself, so the if-gez still lands where it should and only the write is wrong.
             val overwritten = context(fixture)
-            overwritten.mutableMethod(site.method).addInstructions(site.join, "const/4 v${site.register}, 0x1")
+            overwritten.mutableMethod(site.method).addInstructionsAtControlFlowLabel(site.join, "const/4 v${site.register}, 0x1")
             val lost = assertThrows("$build overwritten", PatchException::class.java) { blockReturnRefreshPatch.execute(overwritten) }
             assertTrue(lost.message.orEmpty(), lost.message.orEmpty().contains("found 0"))
 
@@ -162,8 +185,10 @@ class ReturnRefreshFixtureTest {
             twice.mutableMethod(site.method).addInstructions(
                 0,
                 """
-                    const-wide v0, ${threshold}L
-                    cmp-long v2, v0, v0
+                    const-wide v0, ${threshold.key}L
+                    invoke-interface { v6, v0, v1 }, ${threshold.getter}
+                    move-result-wide v0
+                    cmp-long v2, v4, v0
                     const/4 v3, 0x1
                     if-gez v2, :again
                     const/4 v3, 0x0
@@ -175,6 +200,101 @@ class ReturnRefreshFixtureTest {
             )
             val second = assertThrows("$build second", PatchException::class.java) { blockReturnRefreshPatch.execute(twice) }
             assertTrue(second.message.orEmpty(), second.message.orEmpty().contains("found 2"))
+
+            // A path from the method's entry skips the key, so this one doesn't ask the threshold.
+            val unset = context(fixture)
+            unset.mutableMethod(site.method).addInstructions(
+                0,
+                """
+                    if-eqz v3, :ask
+                    const-wide v0, ${threshold.key}L
+                    :ask
+                    invoke-interface { v6, v0, v1 }, ${threshold.getter}
+                    move-result-wide v0
+                    cmp-long v2, v4, v0
+                    const/4 v3, 0x1
+                    if-gez v2, :again
+                    const/4 v3, 0x0
+                    :again
+                    if-eqz v3, :done
+                    :done
+                    nop
+                """,
+            )
+            blockReturnRefreshPatch.execute(unset)
+        }
+    }
+
+    @Test
+    fun `a swap that compares the other way, branches on something else or asks another key or getter is refused`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val fixture = fixture(build)
+            val site = fixture.cached
+            val stock = site.method.implementation!!.instructions.toList()
+            val compare = site.join - 4
+            val comparison = stock[compare] as ThreeRegisterInstruction
+            assertEquals(build.name, Opcode.CMP_LONG, comparison.opcode)
+            val taken = setOf(comparison.registerA, comparison.registerB, comparison.registerB + 1, comparison.registerC,
+                comparison.registerC + 1, site.register)
+            val elsewhere = (0..15).first { it !in taken }
+            val call = stock[compare - 2] as FiveRegisterInstruction
+            val key = call.registerD
+            val getter = call.getReference<MethodReference>()!!
+            val cases = mapOf<String, (MutableMethod) -> Unit>(
+                "reversed" to { it.replaceInstruction(compare,
+                    "cmp-long v${comparison.registerA}, v${comparison.registerC}, v${comparison.registerB}") },
+                "other result" to { it.replaceInstruction(compare,
+                    "cmp-long v$elsewhere, v${comparison.registerB}, v${comparison.registerC}") },
+                "other key" to { it.addInstructions(compare - 2, "const-wide v$key, 0x1L") },
+                "other getter" to { it.replaceInstruction(compare - 2,
+                    "invoke-interface { v${call.registerC}, v$key, v${call.registerE} }, ${getter.definingClass}->other(J)J") },
+                "key moved in from another register" to { it.addInstructions(compare - 2, "move-wide v$key, v$elsewhere") },
+            )
+            for ((label, change) in cases) {
+                val context = context(fixture)
+                change(context.mutableMethod(site.method))
+                val error = assertThrows("$build $label", PatchException::class.java) { blockReturnRefreshPatch.execute(context) }
+                assertTrue("$build $label: ${error.message}", error.message.orEmpty().contains("found 0"))
+            }
+        }
+    }
+
+    @Test
+    fun `the warm-start threshold is one key on every path, and the swap has to ask that one`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val fixture = fixture(build)
+            val threshold = fixture.warm.warmStartThreshold()
+            assertTrue(build.name, threshold.getter.startsWith("Lcom/facebook/mobileconfig/factory/MobileConfigUnsafeContext;->"))
+            val stock = fixture.warm.implementation!!.instructions.toList()
+            val logged = stock.indexOfFirst { it.getReference<StringReference>()?.string == TOO_SHORT }
+            val compare = (logged downTo 0).first { stock[it].opcode == Opcode.CMP_LONG }
+            val call = compare - 2
+            val key = (stock[call] as FiveRegisterInstruction).registerD
+            // Both builds load the key far above the call, across the branches that reach it.
+            assertTrue(build.name, (call - 6 until call).none {
+                stock[it].opcode == Opcode.CONST_WIDE && (stock[it] as OneRegisterInstruction).registerA == key
+            })
+            val answer = (stock[compare] as ThreeRegisterInstruction).registerA
+
+            // Every path asks another key: the warm check still applies, the swap no longer matches it.
+            val other = context(fixture)
+            other.mutableMethod(fixture.warm).addInstructions(call, "const-wide v$key, 0x1L")
+            val unmatched = assertThrows("$build other key", PatchException::class.java) { blockReturnRefreshPatch.execute(other) }
+            assertTrue(unmatched.message.orEmpty(), unmatched.message.orEmpty().contains("found 0"))
+
+            // One path asks another key, so the threshold is no single number.
+            val split = context(fixture)
+            split.mutableMethod(fixture.warm).addInstructionsWithLabels(
+                call,
+                """
+                    if-eqz v$answer, :keep
+                    const-wide v$key, 0x1L
+                    :keep
+                    nop
+                """,
+            )
+            val error = assertThrows("$build split", PatchException::class.java) { blockReturnRefreshPatch.execute(split) }
+            assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("isn't one MobileConfig key"))
         }
     }
 
@@ -209,7 +329,7 @@ class ReturnRefreshFixtureTest {
         val classes = (warmClasses + activity + decisionClass).distinctBy { it.type }
         val warm = warmClasses.flatMap { it.methods }.single { it.holdsString(TOO_SHORT) }
         val cached = warmClasses.single { it.type == warm.definingClass }.methods
-            .flatMap { it.cachedPostsSites(warm.wideLiterals()) }.single()
+            .flatMap { it.cachedPostsSites(warm.warmStartThreshold()) }.single()
         return Fixture(
             classes,
             warm,

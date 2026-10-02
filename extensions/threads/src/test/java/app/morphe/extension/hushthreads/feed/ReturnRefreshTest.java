@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 import android.os.SystemClock;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +40,8 @@ import app.morphe.extension.shared.settings.preference.LogBufferManager;
 public class ReturnRefreshTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
-    @After public void restore() {
+    /** Before as well as after, so a test that stopped half way, or another class, leaves nothing behind. */
+    @Before @After public void restore() {
         PauseForTests.resume();
         Settings.BLOCK_RETURN_REFRESH.resetToDefault();
         Settings.RETURN_REFRESH_NO_LIMIT.resetToDefault();
@@ -78,9 +80,10 @@ public class ReturnRefreshTest {
     }
 
     /**
-     * Threads checks up to three times as it comes back: the hot-start decision and the reset to
-     * main feed from onStart, then the feed screen's warm-start check. Whichever comes first
-     * decides, and the others of the same return get its answer.
+     * Threads checks up to four times as it comes back: the hot-start decision and the reset to
+     * main feed from onStart, then the feed screen's warm-start check and For you's swap to the
+     * posts fetched in the background. Whichever comes first decides, and the others of the same
+     * return get its answer.
      */
     @Test public void everyCheckOfOneReturnGetsTheSameAnswer() {
         long back = 1_000 + 7 * 60 * 1000;

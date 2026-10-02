@@ -194,7 +194,7 @@
       "commit": "d12e61b41319bab835f540793682dc106e889412",
       "via": [],
       "license": "GPL-3.0-only",
-      "changes": "Renamed for Threads, with Facebook's four return checks (the resume callback, warm start, foreground auto-scroll and teardown while away) replaced by Threads' three: the hot-start decision, the reset to main feed and the feed screen's warm-start check."
+      "changes": "Renamed for Threads, with Facebook's four return checks (the resume callback, warm start, foreground auto-scroll and teardown while away) replaced by Threads' four (the hot-start decision, the reset to main feed, the feed screen's warm-start check and For you's swap to posts fetched in the background)."
     },
     {
       "paths": [
@@ -206,7 +206,7 @@
         "https://github.com/SysAdminDoc/Hushfacebook"
       ],
       "license": "GPL-3.0-only",
-      "changes": "Block background-return feed refresh: Threads' hot-start decision, reset to main feed and warm-start check, found in 449 and 448, each asking the extension. Hushfacebook's patch of the same name was the behavior reference."
+      "changes": "Block background-return feed refresh finds Threads' hot-start decision, reset to main feed, warm-start check and For you's swap to background posts in 449 and 448, and has each ask the extension. Hushfacebook's patch of the same name was the behavior reference."
     },
     {
       "paths": [
