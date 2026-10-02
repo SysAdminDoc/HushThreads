@@ -351,6 +351,41 @@ exit /b 19
         $env:HUSHTHREADS_DEVICE_LEASE_DIR = $leaseRoot
         $env:HUSHTHREADS_DEVICE_LEASE_TOKEN = $leaseToken
         $env:HUSHTHREADS_DEVICE_IDENTITY = 'FixtureModel'
+        # Another process cannot replace or delete the owned lease between validation and ADB.
+        foreach ($commandThrows in @($false, $true)) {
+            Write-TestDeviceLease
+            $script:commandHeldLease = $false
+            $duringCommand = {
+                param($adbPath, $command)
+                if ($command[2] -ceq 'get-serialno') { return [pscustomobject]@{ExitCode = 0; Output = @('READY')} }
+                if ($command[2] -ceq 'shell' -and $command[3] -ceq 'getprop') {
+                    return [pscustomobject]@{ExitCode = 0; Output = @('FixtureModel')}
+                }
+                $leasePath = Join-Path $leaseRoot 'READY.json'
+                foreach ($operation in @('write', 'delete')) {
+                    $blocked = $false
+                    try {
+                        if ($operation -eq 'write') {
+                            $other = [IO.File]::Open($leasePath, [IO.FileMode]::Open, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite)
+                            $other.Dispose()
+                        } else { [IO.File]::Delete($leasePath) }
+                    } catch [IO.IOException] { $blocked = $true }
+                    Assert-True $blocked "The owned lease allowed a competing $operation during ADB."
+                }
+                $script:commandHeldLease = $true
+                if ($commandThrows) { throw 'fixture device command failed' }
+                return [pscustomobject]@{ExitCode = 7; Output = @('fixture command')}
+            }
+            if ($commandThrows) {
+                Assert-Throws { Invoke-HushThreadsAdbCommand -Adb $fakeAdb -RequireLease -Invoker $duringCommand -Arguments @('-s', 'READY', 'shell', 'true') } '*fixture device command failed*' 'A leased command exception was swallowed.'
+            } else {
+                $guarded = Invoke-HushThreadsAdbCommand -Adb $fakeAdb -RequireLease -Invoker $duringCommand -Arguments @('-s', 'READY', 'shell', 'true')
+                Assert-True ($guarded.ExitCode -eq 7 -and $guarded.Output[0] -ceq 'fixture command') 'The leased ADB result changed.'
+            }
+            Assert-True $script:commandHeldLease 'The leased command did not execute.'
+            $released = [IO.File]::Open((Join-Path $leaseRoot 'READY.json'), [IO.FileMode]::Open, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
+            $released.Dispose()
+        }
         foreach ($variant in @('missing', 'foreign', 'expired')) {
             Write-TestDeviceLease -Variant $variant
             if ($variant -eq 'missing') { Remove-Item -LiteralPath (Join-Path $leaseRoot 'READY.json') -Force }

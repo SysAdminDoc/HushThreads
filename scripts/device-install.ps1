@@ -14,7 +14,7 @@ function Invoke-HushThreadsAdbCommand {
 
     if ($RequireLease) {
         if ($Arguments.Count -lt 3 -or $Arguments[0] -cne '-s') { throw 'A leased ADB command needs an exact -s serial.' }
-        Assert-HushThreadsDeviceLease -Adb $Adb -Serial $Arguments[1] -AdbInvoker $Invoker
+        return (Assert-HushThreadsDeviceLease -Adb $Adb -Serial $Arguments[1] -AdbInvoker $Invoker -Operation { Invoke-HushThreadsAdbCommand -Adb $Adb -Arguments $Arguments -Invoker $Invoker })
     }
     if ($Invoker) {
         $result = & $Invoker $Adb $Arguments
@@ -40,7 +40,8 @@ function Assert-HushThreadsDeviceLease {
         [string]$OwnershipToken = $env:HUSHTHREADS_DEVICE_LEASE_TOKEN,
         [string]$ExpectedIdentity = $env:HUSHTHREADS_DEVICE_IDENTITY,
         [string]$LeaseDirectory = $env:HUSHTHREADS_DEVICE_LEASE_DIR,
-        [scriptblock]$AdbInvoker
+        [scriptblock]$AdbInvoker,
+        [scriptblock]$Operation
     )
 
     if ($Serial -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$') { throw 'Invalid device lease serial.' }
@@ -94,6 +95,7 @@ function Assert-HushThreadsDeviceLease {
         $stream.SetLength(0)
         $stream.Write($bytes, 0, $bytes.Length)
         $stream.Flush($true)
+        if ($Operation) { return (& $Operation) }
     } finally { $stream.Dispose() }
 }
 

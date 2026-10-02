@@ -74,14 +74,6 @@ try {
             } elseif ($operation -eq 'push') {
                 [void]$state.RemotePaths.Add($Arguments[4])
                 if ($FailureStage -eq 'push') { $exitCode = 11 }
-                if ($FailureStage -in @('lease-expire-after-push', 'lease-transfer-after-push')) {
-                    $path = Join-Path $env:HUSHTHREADS_DEVICE_LEASE_DIR 'SERIAL.json'
-                    $record = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
-                    if ($FailureStage -eq 'lease-expire-after-push') {
-                        $record.expiresUtc = [DateTimeOffset]::UtcNow.AddMinutes(-1).ToString('o')
-                    } else { $record.ownershipToken = 'another-chat' }
-                    [IO.File]::WriteAllText($path, ($record | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
-                }
             } elseif ($operation -eq 'shell' -and $Arguments[3] -like '*&& mkdir -p*') {
                 $directory = ($Arguments[3] -split 'mkdir -p ', 2)[1]
                 [void]$state.RemotePaths.Add($directory)
@@ -210,6 +202,21 @@ try {
         'A cleanup failure after successful verification was accepted.'
     Assert-BothCleanupCalls -State $successWithCleanupFailure.State -Context 'success cleanup failure'
 
+    # Ownership can change between commands, after the command's exclusive handle is released.
+    $leasedCommandBody = (Get-Item Function:\Invoke-HushThreadsAdbCommand).ScriptBlock
+    function Invoke-HushThreadsAdbCommand {
+        param([string]$Adb, [string[]]$Arguments, [scriptblock]$Invoker, [switch]$RequireLease)
+        $result = & $leasedCommandBody @PSBoundParameters
+        if ($RequireLease -and $Arguments[2] -ceq 'push') {
+            $record = Get-Content -LiteralPath $leasePath -Raw | ConvertFrom-Json
+            if ($stage -eq 'lease-expire-after-push') {
+                $record.expiresUtc = [DateTimeOffset]::UtcNow.AddMinutes(-1).ToString('o')
+            } else { $record.ownershipToken = 'another-chat' }
+            [IO.File]::WriteAllText($leasePath, ($record | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
+        }
+        return $result
+    }
+    try {
     foreach ($stage in @('lease-expire-after-push', 'lease-transfer-after-push')) {
         $lease.expiresUtc = [DateTimeOffset]::UtcNow.AddMinutes(20).ToString('o')
         [IO.File]::WriteAllText($leasePath, ($lease | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
@@ -222,6 +229,7 @@ try {
         Assert-True ($afterPush.Count -eq 0) "$stage changed or cleaned the device after losing its lease."
         Assert-True ($fake.State.RemotePaths.Count -eq 1) "$stage ran unleased cleanup."
     }
+    } finally { Set-Item Function:\Invoke-HushThreadsAdbCommand -Value $leasedCommandBody }
 
     # As the verifier runs them (script-wiring.ps1), so help text, log lines, functions nothing
     # calls and dead branches can't stand in for the calls: the helper dot-sourced, and a tally of

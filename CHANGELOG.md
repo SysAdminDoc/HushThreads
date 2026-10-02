@@ -6,7 +6,7 @@ Every HushThreads release, newest first.
 
 * **Threads:** Link cleaning now rejects an unrelated constructor or a wide write that overwrites the response name. Casts keep tracking the same response object, including a cast through Object.
 
-* **Tooling:** Device install and verifier scripts now check and renew an owned lease and verify the selected phone or emulator profile. Signing conflicts preserve installed apps. Replacement uninstall requests are refused before building.
+* **Tooling:** Device install and verifier scripts now check and renew an owned lease and verify the selected phone or emulator profile. The lease file stays exclusively open while each command runs. Signing conflicts preserve installed apps. Replacement uninstall requests are refused before building.
 * **Threads:** Privacy settings and exported reports now list the matched and missing analytics address kinds. Partial coverage stays visible when the switch is off or HushThreads is paused. The guide describes the covered address paths rather than claiming every event log is blocked.
 * **Tooling:** Settings tests initialize their context before accessing patch switches, so their order doesn't affect the result.
 
