@@ -35,6 +35,25 @@ class PatchContractsTest {
         assertTrue(ambiguous.message.orEmpty().contains("found 2"))
     }
 
+    @Test
+    fun `ambiguous selectors list their candidates and empty ones list none`() {
+        val ambiguous = assertThrows(PatchException::class.java) {
+            listOf("LX/first;->a()V", "LX/second;->b()V").singleOrPatchException("Test patch: getter")
+        }
+        assertTrue(ambiguous.message, ambiguous.message.orEmpty().contains("Candidates: LX/first;->a()V, LX/second;->b()V"))
+
+        val instructions = assertThrows(PatchException::class.java) {
+            listOf(ImmutableInstruction11x(Opcode.RETURN_OBJECT, 0), ImmutableInstruction11n(Opcode.CONST_4, 1, 0))
+                .withIndex().toList().singleOrPatchException("Test patch: store")
+        }
+        assertTrue(instructions.message, instructions.message.orEmpty().contains("Candidates: 0: return-object, 1: const/4"))
+
+        val empty = assertThrows(PatchException::class.java) {
+            emptyList<String>().singleOrPatchException("Test patch: getter")
+        }
+        assertTrue(empty.message, !empty.message.orEmpty().contains("Candidates"))
+    }
+
     /**
      * R8 outlines a lambda body once per call site, so 46.9.3 carries the playback speed menu's
      * list factory twice on one class with identical instructions. Refusing on the count takes
