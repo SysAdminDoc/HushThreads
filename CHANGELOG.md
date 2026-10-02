@@ -6,6 +6,7 @@ Every HushThreads release, newest first.
 
 Source builds only. The published bundle remains at 0.0.3.
 
+* **Threads:** Safe mode and the ways into settings were checked on a Galaxy S22 with Android 16 and Threads 449. Three crashes in a row within a minute of starting paused HushThreads on the next start, a force-stop before them didn't count toward it, and the report showed every hook taking Threads' own path with the saved switches kept. Resume and a restart brought every hook back, and the account stayed signed in. The launcher shortcut and Configure in Threads on the App info page both opened settings, every page went Back to the one it came from, and every control had a name TalkBack can read. No Android 9 phone was on hand, so Android 9 is covered by tests only.
 * **Threads:** The Pause, Resume and Undo button beside HushThreads' status is at least 48 dp tall now. It took its height from the two lines of text next to it, which left it 39.5 dp tall on a Galaxy S22.
 * **Tooling:** The injected-register device check doesn't clear the phone's log anymore. It writes a marker of its own before dex2oat runs and counts only the verifier lines that follow it. If the log has rolled past that marker by the time it's read, the check stops with an error instead of guessing.
 * **Tooling:** The settings file test resets the release check it turns on, so the release check tests start from a phone that never checked in any suite order.
