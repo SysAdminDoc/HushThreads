@@ -38,6 +38,8 @@ This project has no connection to Meta or to the Morphe project. Neither endorse
 
 Threads releases a new version about once a week, and each one renames most of its code. Every patch here finds what it changes by names Threads keeps (its post model, the feed cache, JSON parser names, strings and manifest components) rather than by the names that change. When one can't find what it needs, patching stops with a message naming it, instead of producing an app that quietly does nothing. Disable analytics works down three kinds of target. It stops only when a build has none of them, and names each missing one in the patch log.
 
+Hide ads and Sanitize sharing links also stop on competing inner targets. The failure lists the candidates so a changed build can be checked before installing it.
+
 ## Keep your signing key
 
 Morphe Manager signs the patched Threads with a key it makes on your phone. Android installs an update over your patched Threads only when the update carries that same key, so the key is what lets you update without losing Threads' data.
