@@ -4,6 +4,8 @@ Every HushThreads release, newest first.
 
 ## Unreleased
 
+* **Threads:** Diagnostics count each removed ad post and each shared link that actually changes, separately from hook calls. Disabled, paused and failed operations add no outcome. Counts remain bounded and survive clear/undo without overflowing.
+
 * **Tooling:** Concurrent builds now isolate split-bundle inputs before merging. Device builds use the same merge path, preserve the original archive and clean temporary inputs after success or failure.
 
 * **Tooling:** APK verification now checks the selected feed, link, analytics and signature mutations against the stock build. Missing, replaced or miswired hooks fail even when the DEX structure is valid. Omitted features don't create false failures.
