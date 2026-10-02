@@ -2025,6 +2025,10 @@ public class DexDiff {
      */
     private static void featureBody(Method stock, Method patched, int prefix,
             Map<Integer, Integer> insertions, String callee) {
+        requireFeature(stock.getAccessFlags() == patched.getAccessFlags(),
+                featureSig(stock) + " changed its method access flags");
+        requireFeature(stock.getImplementation() != null && patched.getImplementation() != null,
+                featureSig(stock) + " lost its executable implementation");
         Layout old = new Layout(stock.getImplementation()), now = new Layout(patched.getImplementation());
         requireFeature(stock.getImplementation().getRegisterCount() == patched.getImplementation().getRegisterCount(),
                 featureSig(stock) + " changed its register allocation");
@@ -2064,6 +2068,37 @@ public class DexDiff {
                 }
             }
         }
+        List<? extends TryBlock<? extends ExceptionHandler>> oldTries = stock.getImplementation().getTryBlocks();
+        List<? extends TryBlock<? extends ExceptionHandler>> newTries = patched.getImplementation().getTryBlocks();
+        List<List<String>> protectedRanges = new ArrayList<>();
+        for (int side = 0; side < 2; side++) {
+            List<String> ranges = new ArrayList<>(), previousHandlers = null;
+            int start = -1, end = -1;
+            for (TryBlock<? extends ExceptionHandler> block : side == 0 ? oldTries : newTries) {
+                Integer from = block.getStartCodeAddress(), to = from + block.getCodeUnitCount();
+                if (side == 0) { from = relocated.get(from); to = relocated.get(to); }
+                requireFeature(from != null && to != null, featureSig(stock) + " lost an exception boundary");
+                List<String> handlers = new ArrayList<>();
+                for (ExceptionHandler handler : block.getExceptionHandlers()) {
+                    Integer target = handler.getHandlerCodeAddress();
+                    if (side == 0) target = relocated.get(target);
+                    requireFeature(target != null, featureSig(stock) + " lost an exception target");
+                    handlers.add(handler.getExceptionType() + "@" + target);
+                }
+                // A relocated protected span can exceed DEX's unsigned-short try-item limit.
+                // Adjacent pieces are equivalent only when their ordered handlers are identical.
+                if (from == end && handlers.equals(previousHandlers)) {
+                    end = to;
+                } else {
+                    if (previousHandlers != null) ranges.add(start + ":" + end + ":" + previousHandlers);
+                    start = from; end = to; previousHandlers = handlers;
+                }
+            }
+            if (previousHandlers != null) ranges.add(start + ":" + end + ":" + previousHandlers);
+            protectedRanges.add(ranges);
+        }
+        requireFeature(protectedRanges.get(0).equals(protectedRanges.get(1)),
+                featureSig(stock) + " changed a protected range or ordered exception handlers");
     }
 
     private static void featureHostCalls(Map<String, List<Method>> methods, String callee, Map<String, Integer> expected) {
@@ -2105,6 +2140,7 @@ public class DexDiff {
                 "itemMedia does not call the feed item's stock Media getter");
         Method declared = featureMethod(clean, featureSig(mediaGetter));
         requireFeature(!AccessFlags.STATIC.isSet(declared.getAccessFlags()), "itemMedia's getter is not an instance method");
+        featureBody(declared, featureMethod(patched, featureSig(declared)), 0, Map.of(), "");
         int input = getter.getImplementation().getRegisterCount() - 1;
         requireFeature(((TwoRegisterInstruction) g.get(0)).getRegisterA() == 0
                 && ((TwoRegisterInstruction) g.get(0)).getRegisterB() == input
@@ -2135,7 +2171,19 @@ public class DexDiff {
                         && (int) ((WideLiteralInstruction) i).getWideLiteral() == 0x8669a9b0)
                 && instructions(m).stream().anyMatch(i -> i instanceof WideLiteralInstruction
                         && (int) ((WideLiteralInstruction) i).getWideLiteral() == "injected".hashCode()), "injected ad check");
-        requireFeature(!callSites(instructions(adMethod), featureSig(injected)).isEmpty(), "isAd doesn't ask the injected ad check");
+        List<Instruction> predicate = instructions(adMethod);
+        List<Integer> checks = callSites(predicate, featureSig(injected));
+        requireFeature(checks.size() == 1 && checks.get(0) == predicate.size() - 3
+                && isStaticInvoke(predicate.get(predicate.size() - 3).getOpcode())
+                && predicate.get(predicate.size() - 2).getOpcode() == Opcode.MOVE_RESULT
+                && predicate.get(predicate.size() - 1).getOpcode() == Opcode.RETURN
+                && ((OneRegisterInstruction) predicate.get(predicate.size() - 2)).getRegisterA()
+                        == ((OneRegisterInstruction) predicate.get(predicate.size() - 1)).getRegisterA()
+                && adMethod.getImplementation().getTryBlocks().isEmpty()
+                && predicate.subList(0, predicate.size() - 1).stream().allMatch(i -> i.getOpcode().canContinue()
+                        && !(i instanceof OffsetInstruction)), "isAd does not directly return the injected ad result");
+        featureBody(adMethod, featureMethod(patched, featureSig(adMethod)), 0, Map.of(), "");
+        featureBody(injected, featureMethod(patched, featureSig(injected)), 0, Map.of(), "");
         int adInput = ad.getImplementation().getRegisterCount() - 1;
         requireFeature(((OneRegisterInstruction) a.get(0)).getRegisterA() == adInput
                 && Arrays.equals(invokeRegisters(a.get(1)), new int[]{adInput})
@@ -2306,6 +2354,10 @@ public class DexDiff {
         for (String feature : rules) {
             try {
                 boolean hasStatus = patched.containsKey(STATUS + feature + "()Z");
+                if (!hasStatus && selected != null && !selected.contains(feature)) {
+                    System.out.println("[diff] threads-feature " + feature + ": omitted");
+                    continue;
+                }
                 if (!hasStatus && selected == null && !hasPayload) {
                     System.out.println("[diff] threads-feature " + feature + ": no feature payload");
                     continue;

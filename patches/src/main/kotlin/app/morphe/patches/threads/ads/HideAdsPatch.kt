@@ -23,6 +23,7 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
@@ -90,17 +91,27 @@ val hideAdsPatch = bytecodePatch(
                 !AccessFlags.STATIC.isSet(it.accessFlags)
         }.singleOrPatchException("$PATCH: declaration of $itemMedia")
 
-        // Media's own ad check: an instance boolean method, no parameters, that asks the injected check.
+        // Media's own ad check directly returns the injected check, without an alternate exit.
         val injected = InjectedAdCheckFingerprint.method
         val isAd = mutableClassDefBy(MEDIA).methods.filter { method ->
-            method.returnType == "Z" && method.parameterTypes.isEmpty() &&
-                !AccessFlags.STATIC.isSet(method.accessFlags) &&
-                method.implementation?.instructions?.any { instruction ->
-                    instruction.getReference<MethodReference>()?.let {
-                        it.definingClass == injected.definingClass && it.name == injected.name
-                    } == true
-                } == true
-        }.singleOrPatchException("$PATCH: Media's own boolean method that asks the injected check")
+            if (method.returnType != "Z" || method.parameterTypes.isNotEmpty() || AccessFlags.STATIC.isSet(method.accessFlags)) {
+                return@filter false
+            }
+            val body = method.implementation?.instructions?.toList() ?: return@filter false
+            val calls = body.mapIndexedNotNull { index, instruction ->
+                instruction.getReference<MethodReference>()?.takeIf {
+                    it.definingClass == injected.definingClass && it.name == injected.name &&
+                        it.returnType == injected.returnType &&
+                        it.parameterTypes.map(CharSequence::toString) == injected.parameterTypes.map(CharSequence::toString)
+                }?.let { index }
+            }
+            body.size >= 3 && calls.singleOrNull() == body.size - 3 &&
+                body[body.size - 3].opcode in setOf(Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE) &&
+                body[body.size - 2].opcode == Opcode.MOVE_RESULT && body.last().opcode == Opcode.RETURN &&
+                (body[body.size - 2] as OneRegisterInstruction).registerA == (body.last() as OneRegisterInstruction).registerA &&
+                method.implementation!!.tryBlocks.isEmpty() &&
+                body.dropLast(1).all { it.opcode.canContinue() && it !is OffsetInstruction }
+        }.singleOrPatchException("$PATCH: Media's own boolean method that directly returns the injected check")
 
         writeStub(
             FEED_ADS, "itemMedia", 2,

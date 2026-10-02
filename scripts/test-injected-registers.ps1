@@ -554,6 +554,9 @@ try {
     Assert-True ((Get-Findings $good).Fails.Count -eq 0) "The good build printed a FAIL line.`n$($good.Output -join "`n")"
     Assert-True (($good.Output -join "`n") -match 'structural findings: 0') `
         "The good build did not report its structural count.`n$($good.Output -join "`n")"
+    $withoutPayload = Invoke-DexDiff -Clean $cleanApk -Patched (New-DexApk -Name 'good-explicit-none' -Entries ([ordered]@{
+        'classes.dex' = (Get-Dex 'good') })) -Allowlist $emptyAllowlist -Name 'good-explicit-none' -Contracts $contracts -Features 'none'
+    Assert-True ($withoutPayload.ExitCode -eq 0) 'An explicitly empty selection required absent unselected feature statuses.'
     # The settings patch sends each of these ShortcutManager calls to SettingsEntry, and the fixture's
     # publisher makes each one from a method of its own (Caller). Every no-call rule in the contract
     # file has to be one of them, or a rule with no bad build below would pass on "0 call sites".
@@ -607,19 +610,49 @@ try {
             Assert-True (($checked.Output -join [Environment]::NewLine) -match [regex]::Escape("threads-feature ${feature}: $state")) "Feature $feature did not report $state."
         }
     }
-    $featureFaults = @('feed-missing', 'feed-replaced', 'feed-register', 'item-stub', 'ad-target',
+    $discardedClean = New-DexApk -Name 'features-ad-discarded-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-ad-discarded-clean') })
+    $featureFaults = @('feed-missing', 'feed-replaced', 'feed-register', 'item-stub', 'ad-target', 'ad-discarded', 'ad-body', 'ad-helper-body', 'getter-body', 'ad-helper-native', 'getter-static',
         'link-missing', 'link-replaced', 'link-register', 'pigeon-missing', 'pigeon-replaced', 'pigeon-bypass',
         'default-missing', 'mqtt-missing', 'trust-missing', 'trust-replaced', 'trust-fallback',
         'status-missing', 'status-false', 'zero-mask', 'unknown-mask')
     foreach ($fault in $featureFaults) {
         $case = "features-bad-$fault"
         $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
-        $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $featureCases['features-good']
+        $stock = if ($fault -ceq 'ad-discarded') { $discardedClean } else { $featureClean }
+        $checked = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $featureCases['features-good']
         $findings = Get-Findings $checked
         Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
             @($findings.Categories | Where-Object { $_ -cne 'contract' }).Count -eq 0) "$fault was not rejected solely by a semantic contract."
-        $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        $structural = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
+    $exceptionClean = New-DexApk -Name 'features-exception-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-exception-clean') })
+    foreach ($case in @('features-exception-good', 'features-exception-bad-range', 'features-exception-bad-type', 'features-exception-bad-target', 'features-exception-bad-order')) {
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $checked = Invoke-DexDiff -Clean $exceptionClean -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features 'disableAnalytics'
+        $findings = Get-Findings $checked
+        if ($case -ceq 'features-exception-good') {
+            Assert-True ($checked.ExitCode -eq 0) 'Correctly relocated typed/catch-all handlers failed.'
+        } else {
+            Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+                @($findings.Categories | Where-Object { $_ -cne 'contract' }).Count -eq 0) "$case did not fail solely as a semantic contract."
+            $structural = Invoke-DexDiff -Clean $exceptionClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+            Assert-True ($structural.ExitCode -eq 0) "$case was not structurally valid."
+        }
+    }
+    $splitClean = New-DexApk -Name 'features-exception-split-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-exception-split-clean') })
+    foreach ($case in @('features-exception-split-good', 'features-exception-split-gap')) {
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $checked = Invoke-DexDiff -Clean $splitClean -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features 'disableAnalytics'
+        $findings = Get-Findings $checked
+        if ($case -ceq 'features-exception-split-good') {
+            Assert-True ($checked.ExitCode -eq 0 -and $findings.Fails.Count -eq 0) 'Correctly split relocation beyond 65,535 protected units failed.'
+        } else {
+            Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+                @($findings.Categories | Where-Object { $_ -cne 'contract' }).Count -eq 0) 'A gap between relocated protected ranges passed.'
+        }
+        $structural = Invoke-DexDiff -Clean $splitClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$case was not structurally valid."
     }
     $noDefaultClean = New-DexApk -Name 'features-no-default-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-no-default-clean') })
     foreach ($case in @('features-no-default-pigeon', 'features-bad-default-coverage')) {
@@ -638,7 +671,7 @@ try {
     $featureGood = New-DexApk -Name 'features-all-selected' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-good') })
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-feature-rule' -Contracts $missingFeatureRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideAds') 'A selected family with no contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed (14 good selections, 21 structurally valid corruptions, missing rule refused)"
+    Write-Host "[scripts] selected feature contracts passed (17 good selections, 32 structurally valid corruptions, missing rule refused)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'

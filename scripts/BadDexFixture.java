@@ -1,8 +1,11 @@
 import com.android.tools.smali.dexlib2.AccessFlags;
+import com.android.tools.smali.dexlib2.DexFileFactory;
 import com.android.tools.smali.dexlib2.Opcode;
 import com.android.tools.smali.dexlib2.Opcodes;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedMethodImplementation;
 import com.android.tools.smali.dexlib2.iface.ClassDef;
 import com.android.tools.smali.dexlib2.iface.Method;
+import com.android.tools.smali.dexlib2.iface.MethodImplementation;
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction;
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef;
 import com.android.tools.smali.dexlib2.immutable.ImmutableDexFile;
@@ -38,6 +41,8 @@ import com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReferenc
 import com.android.tools.smali.dexlib2.writer.pool.DexPool;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,6 +51,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.Adler32;
 
 /**
  * Writes the dex files scripts/test-injected-registers.ps1 holds DexDiff.java to: a clean host,
@@ -722,7 +728,10 @@ public class BadDexFixture {
         classes.add(featureClass(FEATURE_MEDIA, OBJECT, List.of(),
                 define(FEATURE_MEDIA, "sponsored", "Z", false, body(2,
                         new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), invoke(INJECTED_AD, 0), op(Opcode.MOVE_RESULT, 0), op(Opcode.RETURN, 0))),
-                define(FEATURE_MEDIA, "other", "Z", false, body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0)))));
+                define(FEATURE_MEDIA, "other", "Z", false, fault.equals("ad-discarded") ? body(2,
+                        new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), invoke(INJECTED_AD, 0), op(Opcode.MOVE_RESULT, 0),
+                        new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0))
+                        : body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0)))));
 
         List<Instruction> parser = new ArrayList<>(List.of(string(2, "permalink"), string(0, "XDTPermalinkResponse"),
                 type(Opcode.NEW_INSTANCE, 1, FEATURE_RESPONSE),
@@ -823,7 +832,7 @@ public class BadDexFixture {
                 type(Opcode.CHECK_CAST, 1, FEATURE_ITEM), virtual(ITEM_MEDIA, 1), op(Opcode.MOVE_RESULT_OBJECT, 0),
                 op(Opcode.RETURN_OBJECT, 0), new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0));
         ImmutableMethodImplementation adCheck = ads ? body(2, type(Opcode.CHECK_CAST, 1, FEATURE_MEDIA),
-                virtual(fault.equals("ad-target") ? method(FEATURE_MEDIA, "other", "Z") : MEDIA_AD, 1), op(Opcode.MOVE_RESULT, 0), op(Opcode.RETURN, 0))
+                virtual(fault.equals("ad-target") || fault.equals("ad-discarded") ? method(FEATURE_MEDIA, "other", "Z") : MEDIA_AD, 1), op(Opcode.MOVE_RESULT, 0), op(Opcode.RETURN, 0))
                 : body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0));
         classes.add(featureClass(FEATURE_ADS, OBJECT, List.of(),
                 define(FEATURE_ADS, "filter", SHORTCUT_LIST, true, body(1, op(Opcode.RETURN_OBJECT, 0)), SHORTCUT_LIST),
@@ -834,6 +843,80 @@ public class BadDexFixture {
                 body(1, op(Opcode.RETURN_OBJECT, 0)), "Ljava/lang/String;")));
         classes.add(featureClass(FEATURE_TRUST, OBJECT, List.of(), define(FEATURE_TRUST, "originalSigners", SHORTCUT_LIST, true,
                 body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0)), PACKAGE_INFO)));
+        if (patched && (fault.equals("ad-body") || fault.equals("ad-helper-body") || fault.equals("getter-body")
+                || fault.equals("ad-helper-native") || fault.equals("getter-static"))) {
+            String owner = fault.equals("ad-body") ? FEATURE_MEDIA : fault.startsWith("ad-helper-") ? "Lfixture/AdFlag;" : FEATURE_ITEM;
+            String name = fault.equals("ad-body") ? "sponsored" : fault.startsWith("ad-helper-") ? "injected" : "media";
+            for (int c = 0; c < classes.size(); c++) {
+                ClassDef original = classes.get(c);
+                if (!original.getType().equals(owner)) continue;
+                List<Method> methods = new ArrayList<>();
+                for (Method method : original.getMethods()) {
+                    boolean target = method.getName().equals(name);
+                    MethodImplementation implementation = target && fault.endsWith("-body")
+                            ? body(method.getImplementation().getRegisterCount(), new ImmutableInstruction11n(Opcode.CONST_4, 0, 0),
+                                    op(method.getReturnType().equals("Z") ? Opcode.RETURN : Opcode.RETURN_OBJECT, 0))
+                            : method.getImplementation();
+                    // The getter already returns null; an extra no-op still makes the body substitution observable.
+                    if (fault.equals("getter-body") && method.getName().equals(name)) implementation = body(2,
+                            op(Opcode.NOP), new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0));
+                    int accessFlags = method.getAccessFlags();
+                    if (target && fault.equals("getter-static")) accessFlags |= AccessFlags.STATIC.getValue();
+                    if (target && fault.equals("ad-helper-native")) {
+                        accessFlags |= AccessFlags.NATIVE.getValue();
+                        implementation = null;
+                    }
+                    methods.add(new ImmutableMethod(owner, method.getName(), method.getParameters(), method.getReturnType(),
+                            accessFlags, method.getAnnotations(), method.getHiddenApiRestrictions(), implementation));
+                }
+                classes.set(c, featureClass(owner, original.getSuperclass(), List.of(), methods.toArray(new Method[0])));
+            }
+        }
+        return classes;
+    }
+
+    /** A real return wrapper must preserve the stock protected span and ordered catch targets. */
+    private static List<ClassDef> featureExceptionBuild(boolean patched, String fault) {
+        boolean split = fault.startsWith("split");
+        List<ClassDef> classes = featureBuild(patched, Set.of("disableAnalytics"), 1, "");
+        List<Instruction> original = List.of(string(0, "/pigeon_nest"), string(1, "/logging_client_events"),
+                invoke(method("Ljava/lang/String;", "valueOf", "Ljava/lang/String;", OBJECT), 2),
+                op(Opcode.MOVE_RESULT_OBJECT, 0), op(Opcode.RETURN_OBJECT, 0),
+                op(Opcode.MOVE_EXCEPTION, 0), string(0, "first catch"), op(Opcode.RETURN_OBJECT, 0),
+                op(Opcode.MOVE_EXCEPTION, 0), string(0, "second catch"), op(Opcode.RETURN_OBJECT, 0));
+        List<Instruction> code = new ArrayList<>();
+        int[] addresses = new int[original.size()];
+        int address = 0;
+        for (int i = 0; i < original.size(); i++) {
+            if (split && i == 4) for (int n = 0; n < 65530; n++) {
+                code.add(op(Opcode.NOP));
+                address++;
+            }
+            addresses[i] = address;
+            if (patched && original.get(i).getOpcode() == Opcode.RETURN_OBJECT) {
+                code.add(invoke(ANALYTICS_ENDPOINT, 0));
+                code.add(op(Opcode.MOVE_RESULT_OBJECT, 0));
+                address += 4;
+            }
+            code.add(original.get(i));
+            address += original.get(i).getCodeUnits();
+        }
+        List<ImmutableExceptionHandler> handlers = List.of(
+                new ImmutableExceptionHandler(fault.equals("type") ? "Ljava/lang/IllegalArgumentException;" : "Ljava/io/IOException;",
+                        addresses[fault.equals("target") ? 8 : 5]),
+                new ImmutableExceptionHandler("Ljava/lang/RuntimeException;", addresses[8]),
+                new ImmutableExceptionHandler(null, addresses[fault.equals("target") ? 5 : 8]));
+        if (fault.equals("order")) handlers = List.of(handlers.get(1), handlers.get(0), handlers.get(2));
+        int end = fault.equals("range") ? addresses[3] : addresses[5];
+        List<ImmutableTryBlock> ranges = split && patched
+                ? List.of(new ImmutableTryBlock(addresses[2], 32767, handlers),
+                        new ImmutableTryBlock(addresses[2] + 32768, end - addresses[2] - 32768, handlers))
+                : List.of(new ImmutableTryBlock(addresses[2], end - addresses[2], handlers));
+        Method addressMethod = define("Lfixture/Pigeon;", "address", "Ljava/lang/String;", true,
+                new ImmutableMethodImplementation(4, code, ranges, null), "Ljava/lang/String;", "Z");
+        for (int c = 0; c < classes.size(); c++) if (classes.get(c).getType().equals("Lfixture/Pigeon;")) {
+            classes.set(c, featureClass("Lfixture/Pigeon;", OBJECT, List.of(), addressMethod));
+        }
         return classes;
     }
 
@@ -852,7 +935,7 @@ public class BadDexFixture {
         dexes.put("features-omitted", featureBuild(true, Set.of(), 0, ""));
         for (String feature : allFeatures) dexes.put("features-only-" + feature, featureBuild(true, Set.of(feature), 7, ""));
         for (int mask = 1; mask <= 7; mask++) dexes.put("features-mask-" + mask, featureBuild(true, Set.of("disableAnalytics"), mask, ""));
-        for (String fault : List.of("feed-missing", "feed-replaced", "feed-register", "item-stub", "ad-target",
+        for (String fault : List.of("feed-missing", "feed-replaced", "feed-register", "item-stub", "ad-target", "ad-discarded", "ad-body", "ad-helper-body", "getter-body", "ad-helper-native", "getter-static",
                 "link-missing", "link-replaced", "link-register", "pigeon-missing", "pigeon-replaced", "pigeon-bypass",
                 "default-missing", "mqtt-missing", "trust-missing", "trust-replaced", "trust-fallback", "status-missing", "status-false")) {
             dexes.put("features-bad-" + fault, featureBuild(true, allFeatures, 7, fault));
@@ -862,6 +945,15 @@ public class BadDexFixture {
         dexes.put("features-no-default-clean", featureBuild(false, Set.of(), 0, "default-coverage-missing"));
         dexes.put("features-no-default-pigeon", featureBuild(true, Set.of("disableAnalytics"), 1, "default-coverage-missing"));
         dexes.put("features-bad-default-coverage", featureBuild(true, Set.of("disableAnalytics"), 3, "default-coverage-missing"));
+        dexes.put("features-ad-discarded-clean", featureBuild(false, Set.of(), 0, "ad-discarded"));
+        dexes.put("features-exception-clean", featureExceptionBuild(false, ""));
+        dexes.put("features-exception-good", featureExceptionBuild(true, ""));
+        for (String fault : List.of("range", "type", "target", "order")) {
+            dexes.put("features-exception-bad-" + fault, featureExceptionBuild(true, fault));
+        }
+        dexes.put("features-exception-split-clean", featureExceptionBuild(false, "split"));
+        dexes.put("features-exception-split-good", featureExceptionBuild(true, "split"));
+        dexes.put("features-exception-split-gap", featureExceptionBuild(true, "split-gap"));
         dexes.put("clean", clean(cleanHost()));
         // The clean build with one host method fewer, so its classes.dex isn't the clean one byte
         // for byte: what a merge that changed the base's code would hand over.
@@ -1165,6 +1257,39 @@ public class BadDexFixture {
         for (Map.Entry<String, List<ClassDef>> e : dexes.entrySet()) {
             File dex = new File(out, e.getKey() + ".dex");
             DexPool.writeTo(dex.getPath(), new ImmutableDexFile(Opcodes.forApi(30), e.getValue()));
+            if (e.getKey().equals("features-exception-split-good")) {
+                // The pinned writer coalesces adjacent identical ranges past DEX's unsigned-short
+                // limit. Close its one-unit gap after writing; the gap corruption stays unchanged.
+                var loaded = DexFileFactory.loadDexFile(dex, Opcodes.forApi(30));
+                DexBackedMethodImplementation body = null;
+                for (ClassDef c : loaded.getClasses()) if (c.getType().equals("Lfixture/Pigeon;")) {
+                    for (Method m : c.getMethods()) if (m.getName().equals("address")) {
+                        body = (DexBackedMethodImplementation) m.getImplementation();
+                    }
+                }
+                if (body == null) throw new IllegalStateException("Split-range fixture has no PIGEON method");
+                var ranges = body.getTryBlocks();
+                if (ranges.size() != 2 || ranges.get(0).getStartCodeAddress() != 4
+                        || ranges.get(0).getCodeUnitCount() != 32767 || ranges.get(1).getStartCodeAddress() != 32772
+                        || ranges.get(1).getCodeUnitCount() != 32771
+                        || !ranges.get(0).getExceptionHandlers().equals(ranges.get(1).getExceptionHandlers())) {
+                    throw new IllegalStateException("Split-range fixture has unexpected serialized ranges");
+                }
+                var field = DexBackedMethodImplementation.class.getDeclaredField("codeOffset");
+                field.setAccessible(true);
+                int units = body.getInstructionsSize();
+                int length = field.getInt(body) + 16 + units * 2 + (units & 1) * 2 + 4;
+                byte[] bytes = Files.readAllBytes(dex.toPath());
+                bytes[length] = 0;
+                bytes[length + 1] = (byte) 0x80;
+                var sha1 = MessageDigest.getInstance("SHA-1");
+                sha1.update(bytes, 32, bytes.length - 32);
+                System.arraycopy(sha1.digest(), 0, bytes, 12, 20);
+                var checksum = new Adler32();
+                checksum.update(bytes, 12, bytes.length - 12);
+                for (int n = 0; n < 4; n++) bytes[8 + n] = (byte) (checksum.getValue() >>> (n * 8));
+                Files.write(dex.toPath(), bytes);
+            }
         }
         System.out.println("[fixture] wrote " + dexes.size() + " dex files to " + out.getPath());
     }

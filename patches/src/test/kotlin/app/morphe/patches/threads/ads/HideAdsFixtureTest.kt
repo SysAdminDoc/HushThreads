@@ -153,6 +153,33 @@ class HideAdsFixtureTest {
         }
     }
 
+    @Test
+    fun `discarding the injected result or bypassing it rejects the Media predicate`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val injected = FixtureDex.methodsWhere(build, { true }) { it.isInjectedCheck() }.single()
+            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, MEDIA, injected.definingClass))
+            val merge = classes.getValue(FEED_CACHE).methods.single { it.isFeedMerge() }
+            val getter = merge.instructions().mapNotNull { it.mediaGetter() }.distinct().single()
+            val item = FixtureDex.classes(build, setOf(getter.definingClass)).getValue(getter.definingClass)
+            val predicate = classes.getValue(MEDIA).methods.single { method ->
+                method.returnType == "Z" && method.parameterTypes.isEmpty() &&
+                    !AccessFlags.STATIC.isSet(method.accessFlags) &&
+                    method.instructions().any { it.calls(injected.definingClass, injected.name) }
+            }
+            for (bypass in listOf(false, true)) {
+                FeedPageMergeFingerprint.clearMatch()
+                InjectedAdCheckFingerprint.clearMatch()
+                val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item)
+                val mutable = context.mutableClassDefBy(MEDIA).methods.single { it.sameSignatureAs(predicate) }
+                val result = (predicate.instructions().last() as OneRegisterInstruction).registerA
+                if (bypass) mutable.addInstructions(0, "const/4 v$result, 0x0\nreturn v$result")
+                else mutable.addInstructions(predicate.instructions().lastIndex, "const/4 v$result, 0x0")
+                val error = assertThrows(PatchException::class.java) { hideAdsPatch.execute(context) }
+                assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("directly returns"))
+            }
+        }
+    }
+
     /** The fingerprint's shape, read by hand: static, boolean, one object, both hashes. */
     private fun Method.isInjectedCheck(): Boolean {
         if (!AccessFlags.STATIC.isSet(accessFlags) || returnType != "Z" || parameterTypes.size != 1) return false
