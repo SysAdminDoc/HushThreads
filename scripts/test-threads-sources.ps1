@@ -83,10 +83,10 @@ foreach ($package in Get-SourcePackages) {
 # NOTICE line and provenance rule the adopted one needs.
 $catalogBuilds = @((Get-PatchTarget -PatchList ([IO.File]::ReadAllText((Join-Path $Root 'patches-list.json')) | ConvertFrom-Json)).PackageVersions)
 Assert-True ($catalogBuilds.Count -ge 1) 'The catalog declares no Threads build, so the two-fixture cases would prove nothing.'
-# Two-fixture evidence is two builds, every declared one among them. Threads declares one, so the
-# fixture adds the build before it.
-$olderBuild = '448.0.0.54.85'
-Assert-True ($catalogBuilds -notcontains $olderBuild) "The catalog declares $olderBuild, so the fixture's second build is no second build."
+# Two-fixture evidence includes every declared build. Only a single-build catalog needs a
+# synthetic second build in these rule fixtures; no compatibility is claimed for that value.
+$fixtureBuilds = @($catalogBuilds)
+if ($fixtureBuilds.Count -lt 2) { $fixtureBuilds += '0.0.0.0.1' }
 $fixtureLicenseHash = 'a' * 64
 $fixtureAdoptedRepository = 'https://github.com/fixture-owner/adopted-patches'
 $fixtureAdoptedCommit = 'ad' * 20
@@ -105,7 +105,7 @@ function Add-RuleFixtures {
         ([pscustomobject]@{ spdx = 'GPL-3.0'; url = "$fixtureAdoptedRepository/blob/main/LICENSE"; sha256 = $fixtureLicenseHash }) 'adopted' $null @()
     $adopted | Add-Member -NotePropertyName adopted -NotePropertyValue ([pscustomobject]@{ commit = $fixtureAdoptedCommit
         fixtures = [pscustomobject]@{ receipt = 'https://github.com/SysAdminDoc/HushThreads/releases/download/v9.9.9/release-receipt-9.9.9.json'
-            builds = @($catalogBuilds + $olderBuild) } })
+            builds = @($fixtureBuilds) } })
     $unlicensed = New-RuleFixtureEntry 'fixture-unlicensed' $fixtureUnlicensedRepository 'xposed-module' $null 'behavior-only' $null @('someone/unlicensed-module')
     $contaminated = New-RuleFixtureEntry 'fixture-contaminated' 'https://github.com/fixture-owner/contaminated-patches' 'morphe-patches' `
         ([pscustomobject]@{ spdx = 'GPL-3.0'; url = 'https://github.com/fixture-owner/contaminated-patches/blob/main/LICENSE'; sha256 = $fixtureLicenseHash }) `
@@ -361,8 +361,8 @@ New-Item -ItemType Directory -Path (Join-Path $fixtureRoot 'sources'), (Join-Pat
 Copy-Item -LiteralPath (Join-Path $Root 'patches-list.json') -Destination (Join-Path $fixtureRoot 'patches-list.json')
 $adoptedCommit = 'ad' * 20
 $declaredBuilds = $catalogBuilds
-# The adopted source's two fixtures: every declared build, and the one before when Threads declares one.
-$adoptedBuilds = @($catalogBuilds + $olderBuild)
+# Every declared build, with a synthetic second build only for a single-build catalog.
+$adoptedBuilds = @($fixtureBuilds)
 [IO.File]::WriteAllText((Join-Path $fixtureRoot 'NOTICE'), "Fixture NOTICE`n  alpha  https://github.com/fixture-owner/alpha-patches`n")
 [IO.File]::WriteAllText((Join-Path $fixtureRoot 'provenance.json'), (@{ rules = @(@{ paths = @('patches/**'); origin = 'ported'
     upstream = 'https://github.com/fixture-owner/alpha-patches'; commit = $adoptedCommit; license = 'GPL-3.0'; via = @() }) } | ConvertTo-Json -Depth 6))

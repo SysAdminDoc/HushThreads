@@ -34,9 +34,16 @@ This project has no connection to Meta or to the Morphe project. Neither endorse
 3. Get Threads 449.0.0.54.82 (`com.instagram.barcelona`) for arm64-v8a, version code 511908382 (120-640dpi, Android 9+). That's the build these patches are checked against. Morphe Manager warns about other builds of the same version.
 4. In Morphe Manager, pick that file, keep the default patch selection or change it, and patch.
 
+Source builds on main declare both of these arm64-v8a variants. The published v0.0.3 bundle declares only 449.
+
+| Threads version | Version code | Android floor |
+|---|---|---|
+| 449.0.0.54.82 | 511908382 | Android 9 |
+| 448.0.0.54.85 | 511808302 | Android 9 |
+
 <p><img src="assets/patch-selection.png" width="300" alt="Morphe Manager with the six HushThreads patches selected and Morphe's own patches left off"></p>
 
-Threads releases a new version about once a week, and each one renames most of its code. Every patch here finds what it changes by names Threads keeps (its post model, the feed cache, JSON parser names, strings and manifest components) rather than by the names that change. When one can't find what it needs, patching stops with a message naming it, instead of producing an app that quietly does nothing. Disable analytics checks three address kinds: PIGEON (the logger's URL builder), DEFAULT (direct event-log URL returns) and MQTT (the analytics endpoint setting). It stops when none match. The patch log, Privacy settings and exported diagnostics identify matched and missing kinds. The supported 449 build matches all three. This doesn't establish that every telemetry path is covered.
+Threads releases a new version about once a week, and each one renames most of its code. Every patch here finds what it changes by names Threads keeps (its post model, the feed cache, JSON parser names, strings and manifest components) rather than by the names that change. When one can't find what it needs, patching stops with a message naming it, instead of producing an app that quietly does nothing. Disable analytics checks three address kinds: PIGEON (the logger's URL builder), DEFAULT (direct event-log URL returns) and MQTT (the analytics endpoint setting). It stops when none match. The patch log, Privacy settings and exported diagnostics identify matched and missing kinds. Both declared builds match all three. This doesn't establish that every telemetry path is covered.
 
 Hide ads and Sanitize sharing links also stop on competing inner targets. The failure lists the candidates so a changed build can be checked before installing it.
 
@@ -77,6 +84,8 @@ Diagnostics list hook calls separately from removed ad posts and shared links th
 Tap Log in with Instagram and enter your Instagram username and password. On 2026-10-01, this reached a live feed for one account on Threads 449.0.0.54.82 with the published 0.0.2 bundle and all six tested source 0.0.3 configurations. The source checks covered settings plus Restore screens, each privacy patch added separately, and the full bundle. These checks ran on Android 16 beside signed-in stock Instagram 449.0.0.52.84.
 
 Stock Threads and the full 0.0.2 and source 0.0.3 bundles also reached the feed through manual sign-in with Instagram absent.
+
+On 2026-10-02, source builds declared both 448.0.0.54.85 and 449.0.0.54.82. Same-key updates between them preserved the signed-in account and switches on Android 16. Settings and live feeds passed on both. This checks a retained session; fresh password entry on 448 wasn't tested.
 
 Threads can show Save your login info twice. Tap Not now on each prompt if you don't want to save it.
 

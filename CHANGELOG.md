@@ -4,6 +4,8 @@ Every HushThreads release, newest first.
 
 ## Unreleased
 
+* **Threads:** Source builds now declare stable arm64 Threads 448.0.0.54.85 alongside 449.0.0.54.82. All six patches pass unforced verification on both, and same-key updates preserve a signed-in session through settings and live-feed checks.
+
 * **Threads:** Diagnostics count each removed ad post and each shared link that actually changes, separately from hook calls. Disabled, paused and failed operations add no outcome. Counts remain bounded and survive clear/undo without overflowing.
 
 * **Tooling:** Concurrent builds now isolate split-bundle inputs before merging. Device builds use the same merge path, preserve the original archive and clean temporary inputs after success or failure.
