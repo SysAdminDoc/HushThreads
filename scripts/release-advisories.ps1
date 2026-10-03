@@ -16,8 +16,9 @@
 
     High or critical means OSV's own label says so (the GitHub advisory database's, which every
     Maven advisory there carries) or a CVSS 3 vector scores 7.0 or more, whichever is worse. An
-    advisory with neither is held as serious until somebody reads it: "OSV couldn't say" is not
-    "fine". Moderate and low advisories are printed and let through.
+    advisory with neither, or with any unsupported or malformed vector, is held until somebody
+    reads it. A lower label can't dismiss a CVSS 4 vector this gate doesn't score. Moderate and
+    low advisories with fully supported severity data are printed and let through.
 
     An advisory can be accepted in scripts/advisory-exceptions.txt for one package, until a date
     at most 90 days out, with the reason it doesn't apply to what the bundle does with that
@@ -112,8 +113,10 @@ function Get-Cvss3BaseScore {
     if ("$Vector" -notmatch '^CVSS:3\.[01]/') { return $null }
     $metrics = @{}
     foreach ($part in @($Vector -split '/' | Select-Object -Skip 1)) {
+        if ($part -cnotmatch '^[A-Z]{1,3}:[A-Z]$') { return $null }
         $pair = $part -split ':', 2
-        if ($pair.Count -eq 2) { $metrics[$pair[0]] = $pair[1] }
+        if ($metrics.ContainsKey($pair[0])) { return $null }
+        $metrics[$pair[0]] = $pair[1]
     }
     # A metric the vector leaves out reads as '', which neither check below lets through.
     $scopeChanged = $metrics['S'] -ceq 'C'
@@ -126,6 +129,19 @@ function Get-Cvss3BaseScore {
         C  = @{ H = 0.56; L = 0.22; N = 0.0 }
         I  = @{ H = 0.56; L = 0.22; N = 0.0 }
         A  = @{ H = 0.56; L = 0.22; N = 0.0 }
+    }
+    # Optional temporal/environmental metrics don't change the base score, but still have to
+    # be valid CVSS 3 metrics. Otherwise the gate would rate a malformed vector as trustworthy.
+    $optional = @{
+        E = 'XUPFH'; RL = 'XOTWU'; RC = 'XURC'; CR = 'XHML'; IR = 'XHML'; AR = 'XHML'
+        MAV = 'XNALP'; MAC = 'XLH'; MPR = 'XNLH'; MUI = 'XNR'; MS = 'XUC'
+        MC = 'XHLN'; MI = 'XHLN'; MA = 'XHLN'
+    }
+    foreach ($name in $metrics.Keys) {
+        if ($name -ceq 'S' -or $weights.ContainsKey($name)) { continue }
+        if (-not $optional.ContainsKey($name) -or $optional[$name].IndexOf([string]$metrics[$name]) -lt 0) {
+            return $null
+        }
     }
     $value = @{}
     foreach ($name in $weights.Keys) {
@@ -159,30 +175,43 @@ function Get-AdvisorySeverity {
     .DESCRIPTION
         The worse of OSV's own label (database_specific.severity) and the level each CVSS 3 vector
         scores to: CRITICAL from 9.0, HIGH from 7.0, MODERATE from 4.0, LOW above 0. Serious is
-        HIGH or CRITICAL, or UNRATED, for an advisory with neither a label nor a vector this can
-        score: a CVSS 4 vector alone, say.
+        HIGH or CRITICAL, or UNRATED for incomplete severity data. Any unsupported or malformed
+        vector requires review even beside a LOW/MODERATE label or a lower supported vector.
+        CVSS 4 isn't sent to the CVSS 3 calculator.
     #>
     param([Parameter(Mandatory = $true)]$Advisory)
 
     $rank = @{ NONE = 0; LOW = 1; MODERATE = 2; HIGH = 3; CRITICAL = 4 }
     $level = $null
     $why = $null
+    $review = $false
     $label = "$($Advisory.database_specific.severity)".Trim().ToUpperInvariant()
     if ($label -eq 'MEDIUM') { $label = 'MODERATE' }
     if ($label -and $rank.ContainsKey($label)) {
         $level = $label
         $why = "OSV rates it $label"
+    } elseif ($label) {
+        $review = $true
     }
     foreach ($entry in @($Advisory.severity | Where-Object { $null -ne $_ })) {
-        if ("$($entry.type)" -ne 'CVSS_V3') { continue }
-        $score = Get-Cvss3BaseScore -Vector ([string]$entry.score)
-        if ($null -eq $score) { continue }
+        $vector = [string]$entry.score
+        if ("$($entry.type)" -cne 'CVSS_V3' -or $vector -cnotmatch '^CVSS:3\.[01]/') {
+            $review = $true
+            continue
+        }
+        $score = Get-Cvss3BaseScore -Vector $vector
+        if ($null -eq $score) { $review = $true; continue }
         $scored = if ($score -ge 9.0) { 'CRITICAL' } elseif ($score -ge 7.0) { 'HIGH' } elseif ($score -ge 4.0) {
             'MODERATE' } elseif ($score -gt 0) { 'LOW' } else { 'NONE' }
         if ($null -eq $level -or $rank[$scored] -gt $rank[$level]) {
             $level = $scored
             $why = "its CVSS 3 vector scores $score"
         }
+    }
+    if ($review) {
+        $held = if ($null -ne $level -and $rank[$level] -ge 3) { $level } else { 'UNRATED' }
+        return [pscustomobject]@{ Level = $held; Serious = $true
+            Why = 'OSV gives it no severity this check can fully read. An unsupported or malformed label/vector requires review' }
     }
     if ($null -eq $level) {
         return [pscustomobject]@{ Level = 'UNRATED'; Serious = $true

@@ -1503,6 +1503,9 @@ try {
     }
     foreach ($unscored in @('CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N',
             'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H', 'CVSS:3.1/AV:X/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H',
+            'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/AV:P',
+            'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/XX:N',
+            'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:Z',
             'CVSS:3.1/AV:n/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:u/C:H/I:H/A:H')) {
         Assert-True ($null -eq (Get-Cvss3BaseScore -Vector $unscored)) "$unscored was given a CVSS 3 score."
     }
@@ -1525,6 +1528,47 @@ try {
         $severity = Get-AdvisorySeverity -Advisory ($rated.Json | ConvertFrom-Json)
         Assert-True ($severity.Level -eq $rated.Level -and $severity.Serious -eq $rated.Serious -and $severity.Why -like $rated.Why) `
             "$($rated.Name) was rated $($severity.Level), serious $($severity.Serious), because $($severity.Why)."
+    }
+
+    # The old cases covered an unlabelled v4 vector only. LOW/MODERATE labels and a lower v3
+    # vector used to hide FIRST's 8.3 HIGH example. Unsupported data must stay held for review.
+    $highV4 = 'CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:H/VI:L/VA:L/SC:N/SI:N/SA:N'
+    $lowV3 = 'CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N'
+    foreach ($label in 'LOW', 'MODERATE', 'HIGH', 'CRITICAL', '') {
+        foreach ($withV3 in $false, $true) {
+            $vectors = @([pscustomobject]@{ type = 'CVSS_V4'; score = $highV4 })
+            if ($withV3) { $vectors += [pscustomobject]@{ type = 'CVSS_V3'; score = $lowV3 } }
+            $advisory = [pscustomobject]@{ database_specific = [pscustomobject]@{ severity = $label }; severity = $vectors }
+            $severity = Get-AdvisorySeverity -Advisory $advisory
+            $expected = if ($label -in 'HIGH', 'CRITICAL') { $label } else { 'UNRATED' }
+            Assert-True ($severity.Serious -and $severity.Level -eq $expected -and $severity.Why -like '*requires review*') `
+                "A $label label and optional lower v3 vector bypassed the v4 hold: $severity"
+            $finding = [pscustomobject]@{ Package = 'com.example:review'; Version = '1.0'; Advisory = 'GHSA-review-vector'; Aliases = @(); Summary = 'Fixture'; Severity = $severity }
+            $gate = Test-AdvisoryFindings -Findings @($finding) -Exceptions @()
+            Assert-True (-not $gate.Valid -and @($gate.Refused).Count -eq 1 -and @($gate.Minor).Count -eq 0) `
+                'The advisory gate passed an unsupported v4 finding.'
+        }
+    }
+    foreach ($bad in @(
+            [pscustomobject]@{ type = 'CVSS_V3'; score = 'CVSS:3.1/AV:N' },
+            [pscustomobject]@{ type = 'CVSS_V3'; score = 'CVSS:4.0/AV:N' },
+            [pscustomobject]@{ type = 'CVSS_V4'; score = 'not a vector' },
+            [pscustomobject]@{ type = 'future'; score = $lowV3 })) {
+        $severity = Get-AdvisorySeverity -Advisory ([pscustomobject]@{ database_specific = [pscustomobject]@{ severity = 'LOW' }; severity = @($bad) })
+        Assert-True ($severity.Serious -and $severity.Level -eq 'UNRATED') 'A lower label hid malformed or unsupported severity data.'
+    }
+    $criticalVector = Get-AdvisorySeverity -Advisory ([pscustomobject]@{
+        database_specific = [pscustomobject]@{ severity = 'LOW' }
+        severity = @([pscustomobject]@{ type = 'CVSS_V3'; score = 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H' }) })
+    Assert-True ($criticalVector.Level -eq 'CRITICAL' -and $criticalVector.Serious) 'A LOW label hid a supported CRITICAL vector.'
+    & {
+        function Get-Cvss3BaseScore { param([string]$Vector); throw 'An unsupported vector reached the CVSS 3 calculator.' }
+        foreach ($type in 'CVSS_V3', 'CVSS_V4') {
+            $severity = Get-AdvisorySeverity -Advisory ([pscustomobject]@{
+                database_specific = [pscustomobject]@{ severity = 'LOW' }
+                severity = @([pscustomobject]@{ type = $type; score = $highV4 }) })
+            Assert-True $severity.Serious 'An unsupported v4 vector escaped review.'
+        }
     }
 
     # The exception list. Each broken line stops the read and names itself.

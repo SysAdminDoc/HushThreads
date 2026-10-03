@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** The release advisory gate holds unsupported or malformed severity data for review even beside a lower label or score. CVSS 4 findings can no longer pass under LOW/MODERATE labels. Supported HIGH/CRITICAL ratings remain visible. CVSS 3 vectors with duplicate metrics or invalid optional values are refused as unreadable instead of receiving a score.
+
 * **Threads:** Release checks use a separate TLS connection that sends no cookies and leaves Threads' shared cookie handler and store untouched. Response cookies are discarded. GitHub host checks, opt-in behavior, Pause, redirect limits and bounded responses still apply.
 * **Tooling:** Release transport tests capture the transmitted request, including changing and header-dependent cookie handlers. The old preflight test required deleting shared GitHub cookies, which contradicted preserving the store. Nine wire tests pass on native Android 9 and 17, and both platforms read the live release endpoint with their normal TLS trust and hostname checks.
 
