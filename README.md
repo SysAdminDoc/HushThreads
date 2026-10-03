@@ -206,6 +206,8 @@ Local APK verification inspects every ELF's load segments and checks uncompresse
 
 Use [Issues](https://github.com/SysAdminDoc/HushThreads/issues) for bugs and [Discussions](https://github.com/SysAdminDoc/HushThreads/discussions) for questions. Include the Threads version, version code and ABI, Morphe Manager and HushThreads versions, selected patches, reproduction steps and expected/actual behavior. Attach diagnostics or relevant screenshots after removing private messages and account details. Reports stay open until you or another user confirms the fix works.
 
+Current source builds redact filesystem paths from exported events and saved crashes, including paths with spaces and escaped forms. Stack-trace filenames and current signing-certificate hashes remain available for troubleshooting. Review an export before sharing it.
+
 ## When Threads updates
 
 Retain the new stable arm64 bundle and verify its identity and publisher signatures. Explore an undeclared build with:

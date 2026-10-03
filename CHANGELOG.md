@@ -4,6 +4,9 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** Diagnostic exports redact filesystem paths from buffered events and saved Java/native crashes, including quoted paths with spaces, escaped forms and file URLs. Stack-trace filenames, package names and current signing-certificate hashes remain useful.
+* **Tooling:** Clipboard and saved-file tests cover every diagnostic section on Android 9, 11 and 16 with Debug logging on and off. The earlier tests only checked request addresses and credentials. Long quoted values now avoid regex stack overflow, and the Windows file-write fixture only uses the new-file field on Android versions that have it.
+
 * **Tooling:** Package-specific advisory ratings now follow OSV's listed-version/range union with Maven version ordering. Introduced, fixed, last-affected and limit boundaries are checked across unsorted intervals. Known nonmatching ranges no longer cause a false hold, and unreadable range metadata requires review. Previous package tests covered listed versions but never excluded an unaffected range.
 
 * **Tooling:** Advisory objects and rating fields are checked before reading them. Arrays in scalar fields and nested severity/affected arrays require review, including package metadata without optional severity. Query containers, IDs, aliases, summaries and page tokens keep their JSON types and UTF-8 values. Malformed withdrawals stop the check instead of discarding an advisory. Valid UTC timestamp strings work on PowerShell 7.5+ and Windows PowerShell 5.1. Supported HIGH/CRITICAL ratings remain visible. Earlier fixtures missed shapes PowerShell could coerce or silently skip.

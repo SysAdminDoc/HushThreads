@@ -16,6 +16,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.Signature;
 import android.content.pm.SigningInfo;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.MediaStore;
 
 import org.junit.After;
@@ -33,8 +34,14 @@ import org.robolectric.shadows.ShadowSigningInfo;
 import org.robolectric.shadow.api.Shadow;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import app.morphe.extension.hushthreads.misc.Analytics;
@@ -42,6 +49,7 @@ import app.morphe.extension.hushthreads.misc.ThreadsSignature;
 import app.morphe.extension.shared.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.diagnostics.HookStatus;
+import app.morphe.extension.shared.diagnostics.DiagnosticCategory;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.HushThreadsPause;
 import app.morphe.extension.shared.settings.PauseForTests;
@@ -85,6 +93,23 @@ public class SupportReportTest {
     private static String[] bothExports() throws Exception {
         Context context = RuntimeEnvironment.getApplication();
         String copied = copyReport();
+
+        if (Build.VERSION.SDK_INT < 29) {
+            File folder = new File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "Morphe");
+            Set<String> previous = new HashSet<>();
+            File[] files = folder.listFiles();
+            if (files != null) for (File file : files) previous.add(file.getName());
+            LogBufferManager.exportToFile();
+            Utils.awaitBackgroundTasksForTests();
+            ShadowLooper.idleMainLooper();
+            List<File> created = new ArrayList<>();
+            files = folder.listFiles();
+            if (files != null) for (File file : files) {
+                if (!previous.contains(file.getName()) && file.getName().endsWith(".txt")) created.add(file);
+            }
+            assertTrue("exactly one new report was saved", created.size() == 1);
+            return new String[]{copied, new String(Files.readAllBytes(created.get(0).toPath()), StandardCharsets.UTF_8)};
+        }
 
         LogBufferManagerExportTest.Downloads downloads = Robolectric.setupContentProvider(
                 LogBufferManagerExportTest.Downloads.class, MediaStore.AUTHORITY);
@@ -292,5 +317,45 @@ public class SupportReportTest {
         Shadows.shadowOf(context.getPackageManager()).setInstallSourceInfo(
                 context.getPackageName(), null, "a".repeat(201));
         assertTrue(copyReport().contains("\ninstalling_package: unknown (invalid package name)\n"));
+    }
+
+    @Test @Config(sdk = {28, 30, 36})
+    public void bothExportsRemovePathsFromEventsAndBothCrashSections() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        currentSigners(new Signature("01020304"));
+        for (boolean debug : new boolean[]{false, true}) {
+            LogBufferManager.clearLogBuffer();
+            BaseSettings.DEBUG.save(debug);
+            BaseSettings.DEBUG_LOG_FILTERS.save("all");
+            LogBufferManager.appendEvent(DiagnosticCategory.OTHER, "FileProbe", "ERROR",
+                    "Android file: /storage/emulated/0/Download/private android report.txt\n"
+                            + "Unix file: /home/example/Private folder/private unix report.txt\n"
+                            + "URI: file:///storage/emulated/0/Download/private uri report.txt\n"
+                            + "Windows file: C:\\Users\\Example Name\\private windows report.txt\n"
+                            + "UNC file: \\\\server\\Shared Files\\private unc report.txt\n"
+                            + "{\"path\":\"\\/storage\\/emulated\\/0\\/private escaped report.txt\"}");
+            LogBufferManager.persistCrashReport(context,
+                    "java.io.FileNotFoundException: /storage/emulated/0/Download/private java report.txt\n"
+                            + "\tat app.morphe.extension.hushthreads.settings.ReleaseTransport.get(ReleaseTransport.java:120)\n");
+            LogBufferManager.persistNpthCrashReport(context,
+                    "backtrace:\n#00 pc 0000000000012345 /data/app/example/lib/arm64/private native library.so\n"
+                            + "map: \"C:\\\\Users\\\\Example Name\\\\private map file.txt\"\n");
+            for (String report : bothExports()) {
+                assertTrue(report, report.contains("[SELECTED EVENTS]"));
+                assertTrue(report, report.contains("[LATEST JAVA CRASH]"));
+                assertTrue(report, report.contains("[LATEST NATIVE CRASH SIGNAL]"));
+                assertTrue(report, report.contains("[path omitted]"));
+                for (String value : new String[]{"private android", "private unix", "private uri",
+                        "private windows", "private unc", "private escaped", "private java", "private native",
+                        "private map", "Example Name", "/storage/", "/home/", "/data/app/"}) {
+                    assertFalse(value + " escaped into " + report, report.contains(value));
+                }
+                assertTrue(report, report.contains("ReleaseTransport.get(ReleaseTransport.java:120)"));
+                assertTrue(report, report.contains("\napp: " + context.getPackageName() + " "));
+                assertTrue(report, report.contains("\ncurrent_signer_sha256: "
+                        + "9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a\n"));
+                assertTrue(report, report.contains("\ndebug_logging: " + (debug ? "on" : "off") + "\n"));
+            }
+        }
     }
 }
