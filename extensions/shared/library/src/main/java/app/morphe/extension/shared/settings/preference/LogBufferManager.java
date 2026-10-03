@@ -1,5 +1,5 @@
 /*
- * Forked from https://github.com/SysAdminDoc/Hushfacebook at c15d4f79 (GPL-3.0),
+ * Forked from https://github.com/SysAdminDoc/Hushfacebook at a788c516 (GPL-3.0),
  * modified for HushThreads (Threads), 2026.
  *
  * Modified for Hushfacebook (Facebook), 2026.
@@ -468,7 +468,8 @@ public final class LogBufferManager {
                 .append("android: ").append(androidLine()).append('\n')
                 .append("abi: ").append(abiLine()).append('\n')
                 .append("hushthreads_bundle: ").append(Utils.getPatchesReleaseVersion().isEmpty()
-                        ? "unknown" : Utils.getPatchesReleaseVersion()).append('\n');
+                        ? "unknown" : Utils.getPatchesReleaseVersion()).append('\n')
+                .append("patch_build: ").append(Utils.getPatchesBuildIdentity()).append('\n');
         Context context = Utils.getContext();
         String installer = "unknown (not recorded)";
         String initiating = "unknown (API below 30)";

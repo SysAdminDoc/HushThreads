@@ -1,5 +1,5 @@
 /*
- * Forked from https://github.com/SysAdminDoc/Hushfacebook at c15d4f79 (GPL-3.0),
+ * Forked from https://github.com/SysAdminDoc/Hushfacebook at a788c516 (GPL-3.0),
  * modified for HushThreads (Threads), 2026.
  *
  * Copyright 2026 Hushfacebook contributors
@@ -357,7 +357,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
 
         PreferenceCategory about = category(screen, L10n.t("About"));
         about.addPreference(mark(info(context, L10n.t("Version"), L10n.f("HushThreads %1$s on Threads %2$s",
-                L10n.isolate(Utils.getPatchesReleaseVersion()), L10n.isolate(Utils.getAppVersionName()))), SettingsIcons.ABOUT));
+                L10n.isolate(Utils.getPatchesReleaseVersion()), L10n.isolate(Utils.getAppVersionName()))
+                + "\n" + L10n.f("Build %1$s", L10n.isolate(Utils.getPatchesBuildIdentity()))), SettingsIcons.ABOUT));
 
         Preference source = new Row(context);
         source.setTitle(L10n.t("Source code and issues"));
@@ -556,7 +557,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                     ? L10n.f("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.", file, folder)
                     : L10n.f("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                     file, folder);
-            statusCard.setSummary(left);
+            statusCard.setSummary(left + "\n" + L10n.f("Build %1$s", L10n.isolate(buildIdentitySummary())));
             // Resume can be tapped on a category page too, where the card isn't in view.
             Utils.showToastLong(left);
             return;
@@ -587,8 +588,20 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         } else {
             status = L10n.t("HushThreads turns back on when Threads restarts.");
         }
+        status += "\n" + L10n.f("Build %1$s", L10n.isolate(buildIdentitySummary()));
         String release = ReleaseCheck.statusLine();
         card.setSummary(release == null ? status : status + "\n" + release);
+    }
+
+    /** Keep the complete payload hash and source state here; About carries the full provenance. */
+    static String buildIdentitySummary() {
+        String identity = Utils.getPatchesBuildIdentity();
+        int source = identity.indexOf("; source=");
+        if (!identity.startsWith("sha256=") || source != "sha256=".length() + 64) return identity;
+        int end = identity.indexOf(';', source + 2);
+        int commit = identity.indexOf(':', source + 2);
+        if (commit >= 0 && (end < 0 || commit < end)) end = commit;
+        return end < 0 ? identity : identity.substring(0, end);
     }
 
     /**

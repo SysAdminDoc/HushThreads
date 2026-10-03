@@ -210,6 +210,8 @@ Current source builds redact filesystem paths from exported events and saved cra
 
 The settings overview shows which default patches were left out of your build. Reports also include Android's selections for the app's declared web domains. Android 9 through 11 explicitly report that this platform detail isn't available.
 
+Current source builds show the bundle's payload hash and source state in the overview. About and both report exports include the full source record. The identity covers the packaged code and extension bytes. Repacking identical contents keeps it stable. Changed or damaged contents can't retain the old identity. Source metadata distinguishes a clean commit, modified inputs and an archive with unknown source. This checks consistency, not the publisher's signature.
+
 ## When Threads updates
 
 Retain the new stable arm64 bundle and verify its identity and publisher signatures. Explore an undeclared build with:

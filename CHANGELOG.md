@@ -4,6 +4,10 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** The overview, About and support reports identify the exact packaged bundle, including its payload hash and clean, modified or unknown source state. Identical repacks keep the same identity. Missing or damaged current metadata remains unverified.
+* **Threads:** The overview keeps the full payload hash with a compact source state. About and exports retain the complete source record. At large text sizes, Pause, Resume and Undo appear above the summary so build details can't push recovery off the screen.
+* **Tooling:** Bundle and receipt checks verify the packaged identity before accepting source claims. Existing display tests expected version-only text and placed recovery below the summary, which could hide it behind the new build details. Assertions now cover the payload field and accessible action placement, alongside tampering, archive, loaded-bundle and export checks.
+
 * **Threads:** The settings overview names any default patches omitted from a build. Diagnostic exports include the app's declared web domains and Android's current link selections, with an explicit unavailable state on older versions.
 * **Tooling:** Shared fixes and the Turkish GitHub wording correction are ported with per-file provenance. Tests cover missing defaults, Unicode domains and both report exports. An older analytics test expected only one report line and missed the new default-selection disclosure; its analytics assertions remain intact. Android 9 also exercises the saved-file report through its actual legacy destination.
 

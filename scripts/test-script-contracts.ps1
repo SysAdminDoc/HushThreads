@@ -504,6 +504,12 @@ foreach ($name in $consumerScripts) {
     Assert-True ($text -match 'AllowedDependencyNames') `
         "$name does not pass declared dependency names into result validation."
 }
+$verifyAllText = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'verify-all-patches.ps1') -Raw
+Assert-True ($verifyAllText -match 'IdentityApkCheck\.java' -and $verifyAllText -match '\$Bundle\s+\$out') `
+    'verify-all-patches.ps1 does not prove the final APK carries the defining bundle identity.'
+$deviceText = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'patch-for-device.ps1') -Raw
+Assert-True ($deviceText -match 'IdentityApkCheck\.java' -and $deviceText -match '\$bundle\s+\$out') `
+    'patch-for-device.ps1 does not prove the signed APK carries the defining bundle identity.'
 
 # --- release receipt -------------------------------------------------------------------------
 
@@ -616,7 +622,7 @@ try {
     $commitSeconds = 1700000000L
     function New-TestBundle {
         param([string]$Path, [string]$Version = '9.9.9', [long]$Timestamp = 1700000000000L,
-            [string]$Patcher = '1.12.0', [hashtable]$Entries = @{})
+            [string]$Patcher = '1.12.0', [hashtable]$Entries = @{}, [hashtable]$Source = @{})
         if (Test-Path -LiteralPath $Path) { Remove-Item -LiteralPath $Path -Force }
         $archive = [System.IO.Compression.ZipFile]::Open(
             $Path, [System.IO.Compression.ZipArchiveMode]::Create)
@@ -625,7 +631,9 @@ try {
             $writer = New-Object System.IO.StreamWriter($entry.Open())
             try {
                 $writer.Write("Manifest-Version: 1.0`nVersion: $Version`n" +
-                    "Timestamp: $Timestamp`nPatcher-Version: $Patcher`n`n")
+                    "Timestamp: $Timestamp`nPatcher-Version: $Patcher`n")
+                foreach ($name in @($Source.Keys | Sort-Object)) { $writer.Write("${name}: $($Source[$name])`n") }
+                $writer.Write("`n")
             } finally { $writer.Dispose() }
             foreach ($name in @($Entries.Keys | Sort-Object)) {
                 $writer = New-Object System.IO.StreamWriter($archive.CreateEntry($name).Open())
@@ -737,15 +745,83 @@ try {
     }
 
     function Test-TestReceipt {
-        param($Receipt, [string[]]$Approved = @(), [int]$Schema = (Get-ReleaseReceiptSchemaVersion))
+        param($Receipt, [string[]]$Approved = @(), [int]$Schema = (Get-ReleaseReceiptSchemaVersion), [string]$BundlePath = $bundle)
         return Test-ReleaseReceipt -Receipt $Receipt -ExpectedVersion '9.9.9' `
             -ExpectedPatchNames @('Alpha', 'Beta') -ExpectedPatcherVersion '1.12.0' `
             -ExpectedManagerFloor '1.29.0' -ExpectedPackageName 'com.example.host' -ExpectedPackageVersions $declaredBuilds `
-            -ExpectedPackageVersionCodes $declaredCodes -BundlePath $bundle -ApprovedManifestDelta $Approved -ExpectedSchemaVersion $Schema
+            -ExpectedPackageVersionCodes $declaredCodes -BundlePath $BundlePath -ApprovedManifestDelta $Approved -ExpectedSchemaVersion $Schema
     }
 
     $valid = Test-TestReceipt -Receipt (New-TestReceipt)
     Assert-True $valid.Valid "A complete receipt was refused: $($valid.Reason)"
+
+    # New source fields must be covered by the payload digest. Legacy release bytes stay valid.
+    Assert-True (-not (Get-BundleIdentityFacts -BundlePath $bundle).Present) 'A legacy bundle fabricated build identity.'
+    $identityRoot = Join-Path $allowlistRoot 'identity'
+    New-Item -ItemType Directory -Path $identityRoot -Force | Out-Null
+    $identityBundle = Join-Path $identityRoot 'patches-9.9.9.mpp'
+    function New-IdentityBundle([string]$State = 'clean', [string]$Commit = $template.release.commit) {
+        $source = @{
+            'HushThreads-Source-State' = $State; 'HushThreads-Source-Commit' = $Commit
+            'HushThreads-Source-Tree' = ('a' * 40); 'HushThreads-Input-SHA256' = ('b' * 64)
+        }
+        if ($State -ceq 'unknown') { $source['HushThreads-Source-Commit'] = 'unknown'; $source['HushThreads-Source-Tree'] = 'unknown' }
+        New-TestBundle -Path $identityBundle -Source $source -Entries @{
+            'classes.dex' = "dex`n035 payload"; 'META-INF/hushthreads-build.identity' = 'placeholder'
+        }
+        $zip = [IO.Compression.ZipFile]::OpenRead($identityBundle)
+        try { $payload = Get-BundlePayloadSha256 -Archive $zip } finally { $zip.Dispose() }
+        $zip = [IO.Compression.ZipFile]::Open($identityBundle, [IO.Compression.ZipArchiveMode]::Update)
+        try {
+            $zip.GetEntry('META-INF/hushthreads-build.identity').Delete()
+            $writer = [IO.StreamWriter]::new($zip.CreateEntry('META-INF/hushthreads-build.identity').Open())
+            try { $writer.Write("hushthreads-bundle-1`n$payload`n") } finally { $writer.Dispose() }
+        } finally { $zip.Dispose() }
+    }
+    function Test-IdentityReceipt {
+        $receipt = New-TestReceipt
+        $receipt.bundle.sha256 = Get-Sha256Hex -Path $identityBundle
+        $receipt.bundle.sizeBytes = (Get-Item -LiteralPath $identityBundle).Length
+        return Test-TestReceipt -Receipt $receipt -BundlePath $identityBundle
+    }
+    New-IdentityBundle
+    $identity = Get-BundleIdentityFacts -BundlePath $identityBundle
+    Assert-True ($identity.Present -and $identity.Valid -and $identity.SourceState -ceq 'clean' -and
+        $identity.SourceCommit -ceq $template.release.commit) 'Bound clean identity was not read.'
+    Assert-True (Test-IdentityReceipt).Valid 'A receipt refused its bound clean bundle identity.'
+    $identitySbom = [pscustomobject]@{
+        Path = (Join-Path $identityRoot 'patches-9.9.9.cdx.json'); BundleName = 'patches-9.9.9.mpp'
+        BundleSha256 = (Get-Sha256Hex -Path $identityBundle); BundleVersion = '9.9.9'
+        Timestamp = '2023-11-14T22:13:20Z'; Payloads = @()
+    }
+    $answer = Test-ReleaseSbom -Sbom $identitySbom -BundlePath $identityBundle -BundleName 'patches-9.9.9.mpp'
+    Assert-True $answer.Valid "An SBOM refused its bound clean bundle identity: $($answer.Reason)"
+    foreach ($state in @('dirty', 'unknown')) {
+        New-IdentityBundle -State $state
+        Assert-True (Get-BundleIdentityFacts -BundlePath $identityBundle).Valid "Honest $state identity was rejected by the reader."
+        $answer = Test-IdentityReceipt
+        Assert-True (-not $answer.Valid -and $answer.Reason -like '*build identity*') "A release accepted $state source identity."
+        $identitySbom.BundleSha256 = Get-Sha256Hex -Path $identityBundle
+        $answer = Test-ReleaseSbom -Sbom $identitySbom -BundlePath $identityBundle -BundleName 'patches-9.9.9.mpp'
+        Assert-True (-not $answer.Valid -and $answer.Reason -like '*build identity*') "An SBOM accepted $state source identity."
+    }
+    New-IdentityBundle -Commit ('c' * 40)
+    $answer = Test-IdentityReceipt
+    Assert-True (-not $answer.Valid -and $answer.Reason -like '*build identity*') 'A receipt accepted another producer commit.'
+    New-IdentityBundle
+    $zip = [IO.Compression.ZipFile]::Open($identityBundle, [IO.Compression.ZipArchiveMode]::Update)
+    try {
+        $zip.GetEntry('classes.dex').Delete()
+        $writer = [IO.StreamWriter]::new($zip.CreateEntry('classes.dex').Open())
+        try { $writer.Write('changed payload') } finally { $writer.Dispose() }
+    } finally { $zip.Dispose() }
+    Assert-True (-not (Get-BundleIdentityFacts -BundlePath $identityBundle).Valid) 'Copied metadata verified a changed payload.'
+    Assert-True (-not (Test-IdentityReceipt).Valid) 'A rehashed receipt accepted stale build identity.'
+    New-IdentityBundle
+    $zip = [IO.Compression.ZipFile]::Open($identityBundle, [IO.Compression.ZipArchiveMode]::Update)
+    try { $zip.GetEntry('META-INF/hushthreads-build.identity').Delete() } finally { $zip.Dispose() }
+    $identity = Get-BundleIdentityFacts -BundlePath $identityBundle
+    Assert-True ($identity.Present -and -not $identity.Valid) 'Removing identity downgraded a new bundle to legacy.'
 
     # Every fact the receipt exists to pin, put in front of the check one at a time. A gate that
     # has never been shown to fail is a gate nobody has tested.
@@ -4622,6 +4698,7 @@ try {
         'rem -Xmx -cp <jar> <tool>.java and the tool''s arguments.',
         'if /i "%~nx1"=="NativePageCheck.java" goto native',
         'if /i "%~nx3"=="SignAlignedApk.java" goto sign',
+        'if /i "%~nx3"=="IdentityApkCheck.java" goto identity',
         'if /i "%~nx4"=="MergeSplits.java" goto merge',
         'if /i "%~nx4"=="ResourceTableCheck.java" goto resources',
         'if /i "%~nx4"=="DexDiff.java" goto dexdiff',
@@ -4694,6 +4771,9 @@ try {
         'if exist "!HERE!sign-fails.txt" (echo injected signing failure 1>&2 & exit /b 14)',
         'copy /y "%~4" "%~5" >nul || exit /b 12',
         'copy /y "%~4.xmltree" "%~5.xmltree" >nul || exit /b 13',
+        'exit /b 0',
+        ':identity',
+        'echo verify-all.apk: exact verified identity and all three runtime readers preserved',
         'exit /b 0',
         ':dexdiff',
         'echo [diff] structural findings: 0',

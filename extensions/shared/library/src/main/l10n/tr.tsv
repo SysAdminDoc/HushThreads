@@ -1,5 +1,6 @@
 # Turkish for HushThreads: the English key, a tab, the translation. One row per string.
 # After editing, run python scripts/gen-l10n.py from the repository root.
+Build %1$s	Derleme %1$s
 %1$d item in that file isn't a setting this version of HushThreads knows, so it'll be left out.	O dosyadaki %1$d öğe, HushThreads'un bu sürümünün tanıdığı ayarlardan değil, bu yüzden atlanacak.
 %1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.	O dosyadaki %1$d öğe, HushThreads'un bu sürümünün tanıdığı ayarlardan değil, bu yüzden atlanacak.
 %1$d switch will change.	%1$d anahtar değişecek.

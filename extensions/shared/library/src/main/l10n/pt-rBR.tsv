@@ -1,5 +1,6 @@
 # Brazilian Portuguese for HushThreads: the English key, a tab, the translation. One row per string.
 # After editing, run python scripts/gen-l10n.py from the repository root.
+Build %1$s	Compilação %1$s
 %1$d item in that file isn't a setting this version of HushThreads knows, so it'll be left out.	%1$d item desse arquivo não é uma configuração conhecida por esta versão do HushThreads e será ignorado.
 %1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.	%1$d itens desse arquivo não são configurações conhecidas por esta versão do HushThreads e serão ignorados.
 %1$d switch will change.	%1$d opção será alterada.

@@ -1,5 +1,6 @@
 # German for HushThreads: the English key, a tab, the translation. One row per string.
 # After editing, run python scripts/gen-l10n.py from the repository root.
+Build %1$s	Build %1$s
 %1$d item in that file isn't a setting this version of HushThreads knows, so it'll be left out.	%1$d Eintrag in dieser Datei ist keine Einstellung, die diese Version von HushThreads kennt, und wird deshalb ausgelassen.
 %1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.	%1$d Einträge in dieser Datei sind keine Einstellungen, die diese Version von HushThreads kennt, und werden deshalb ausgelassen.
 %1$d switch will change.	%1$d Schalter wird geändert.

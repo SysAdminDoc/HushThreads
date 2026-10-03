@@ -170,8 +170,11 @@ public class SettingsNavigationTest {
             layout(dialog.getView());
             assertTrue(BaseSettings.PAUSED.savedValue());
             assertEquals("Resume", statusAction().getText().toString());
-            String line = String.valueOf(((Preference) list().getItemAtPosition(0)).getSummary());
+            String[] lines = String.valueOf(((Preference) list().getItemAtPosition(0)).getSummary()).split("\n", 2);
+            String line = lines[0];
             assertTrue(line, line.contains("couldn't be removed") && line.endsWith("then tap Resume again."));
+            assertEquals(app.morphe.extension.shared.L10n.f("Build %1$s",
+                    app.morphe.extension.shared.L10n.isolate(app.morphe.extension.shared.Utils.getPatchesBuildIdentity())), lines[1]);
         } finally {
             held.delete();
             marker.delete();
@@ -343,15 +346,18 @@ public class SettingsNavigationTest {
         recreate();
         layout(dialog.getView());
         TextView summary = list().getChildAt(0).findViewById(android.R.id.summary);
-        assertEquals("Your choices are saved. Tap Resume, then restart Threads.", String.valueOf(summary.getText()));
+        String[] lines = summary.getText().toString().split("\n", 2);
+        assertEquals("Your choices are saved. Tap Resume, then restart Threads.", lines[0]);
+        assertEquals(app.morphe.extension.shared.L10n.f("Build %1$s",
+                app.morphe.extension.shared.L10n.isolate(app.morphe.extension.shared.Utils.getPatchesBuildIdentity())), lines[1]);
     }
 
     /**
      * At twice the text size the button beside the status text left the name too little room and
-     * "HushThreads" broke inside the word. From one and a half times, the button goes under the text.
+     * "HushThreads" broke inside the word. Large text gets a full column, with recovery before the summary.
      */
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    public void atLargeTextTheStatusActionSitsUnderItsText() {
+    public void atLargeTextTheStatusActionSitsBetweenItsTitleAndSummary() {
         org.robolectric.RuntimeEnvironment.setFontScale(2f);
         try {
             recreate();
@@ -368,7 +374,8 @@ public class SettingsNavigationTest {
             android.widget.Button action = firstButton(row);
             assertNotNull("no Pause button in the status row", action);
             assertEquals(summary.getParent(), action.getParent());
-            assertTrue("the button isn't under the text", action.getTop() >= summary.getBottom());
+            assertTrue("the button isn't under the title", action.getTop() >= title.getBottom());
+            assertTrue("the summary covers the button", summary.getTop() >= action.getBottom());
             assertEquals("Pause", action.getText().toString());
         } finally {
             org.robolectric.RuntimeEnvironment.setFontScale(1f);

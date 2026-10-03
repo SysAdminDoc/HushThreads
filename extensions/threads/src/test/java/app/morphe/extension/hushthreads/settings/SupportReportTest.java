@@ -154,6 +154,7 @@ public class SupportReportTest {
         assertTrue("no ABI: " + report, report.contains("\nabi: app "));
         assertTrue("no HushThreads bundle version: " + report, report.contains("\nhushthreads_bundle: "));
         assertFalse("bundle mislabeled as Manager: " + report, report.contains("\nmorphe: "));
+        assertTrue(report, report.contains("\npatch_build: unknown\n"));
         for (String fact : new String[]{"installing_package", "initiating_package", "originating_package",
                 "current_signer_classification", "current_signer_sha256"}) {
             assertTrue("missing installation fact: " + report, report.contains("\n" + fact + ": "));
