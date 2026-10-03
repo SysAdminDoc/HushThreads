@@ -1,7 +1,7 @@
 ![HushThreads. Keep the thread. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.8-000000" alt="Version 0.0.8"></a>
+  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.9-000000" alt="Version 0.0.9"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Threads-449.0.0.54.82-000000" alt="Threads 449.0.0.54.82">
@@ -14,7 +14,7 @@ HushThreads is a Morphe patch bundle for Android that takes the ads out of Threa
 
 The latest release is [v0.0.4](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.4), with 10 patches.
 
-The source build is v0.0.8. It hasn't been released yet.
+The source build is v0.0.9. It hasn't been released yet.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -62,7 +62,7 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-HushThreads v0.0.8 has 10 patches. All but Block background-return feed refresh and Disable video autoplay are selected by default.
+HushThreads v0.0.9 has 10 patches. All but Block background-return feed refresh and Disable video autoplay are selected by default.
 
 | Patch | What it does |
 |---|---|

@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+## 0.0.9 (2026-10-03)
+
 * **Threads:** A Galaxy S23 Ultra report confirmed Hide suggested users removes the live Suggested Users block on Threads 449 with HushThreads 0.0.4. The README now records that live confirmation instead of saying the rule hadn't been observed on a real feed.
 
 * **Threads:** The overview, About and support reports identify the exact packaged bundle, including its payload hash and clean, modified or unknown source state. Identical repacks keep the same identity. Missing or damaged current metadata remains unverified.
