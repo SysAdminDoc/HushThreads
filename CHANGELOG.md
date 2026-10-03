@@ -4,6 +4,9 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** Release checks use a separate TLS connection that sends no cookies and leaves Threads' shared cookie handler and store untouched. Response cookies are discarded. GitHub host checks, opt-in behavior, Pause, redirect limits and bounded responses still apply.
+* **Tooling:** Release transport tests capture the transmitted request, including changing and header-dependent cookie handlers. The old preflight test required deleting shared GitHub cookies, which contradicted preserving the store. Nine wire tests pass on native Android 9 and 17, and both platforms read the live release endpoint with their normal TLS trust and hostname checks.
+
 ## 0.0.8 (2026-10-03)
 
 * **Threads:** Restore screens on re-signed builds also recognizes Threads' local reads of an Instagram installed with the same current signing key. The provider lookup verifies exact package names, separate UID ownership and the installed certificate. Other keys, shared UIDs and unrelated Binder callers keep the original answer. This repairs the consumer check that rejected Instagram before requesting sign-in information. On Android 17 with Threads 449 and same-key HushGram 0.0.4, selecting Instagram's account tile reached the feed without a password. A control with Instagram disabled required manual sign-in, which also passed. Both apps' data and keys were preserved.
