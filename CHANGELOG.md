@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+## 0.0.10 (2026-10-03)
+
 * **Threads:** HushThreads now builds on Morphe patcher 1.15.0, so it needs Morphe Manager 1.33.0 or newer. Manager 1.32.0 asks for an update before it loads the bundle.
 * **Tooling:** smali now matches the commit patcher 1.15.0 asks for. The old pin was one commit behind it but sorted higher, so Gradle had been compiling and testing against the older dexlib2. The fixture gates move to desktop CLI 1.18.0.
 * **Tooling:** The localization guard also catches a settings row built through a qualified `HushThreadsPreferenceFragment` call in another source file. Before, it only looked for the row helpers inside the fragment itself, so an untranslated title elsewhere passed.
