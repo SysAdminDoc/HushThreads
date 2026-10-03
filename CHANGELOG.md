@@ -1,6 +1,12 @@
 # Changelog
 
-Every HushThreads release, newest first.
+Changes in the source build, then released versions.
+
+## Unreleased
+
+## 0.0.5 (2026-10-02)
+
+* **Threads:** Hide ads and Hide suggested users diagnostics count successfully checked feed pages and items, even when Threads sends nothing to remove. Disabled, paused and failed checks don't count. Removal counts still record only items taken out of a completed page.
 
 ## 0.0.4 (2026-10-02)
 
