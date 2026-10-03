@@ -165,13 +165,14 @@ Before external code ships, mark its source adopted with the exact commit, compa
 
 ## Building and checking
 
-Use JDK 21, the Android SDK and PowerShell. Set `JAVA_HOME` and `ANDROID_HOME`, or configure the SDK in `local.properties`. GitHub Packages requires `GITHUB_ACTOR` and `GITHUB_TOKEN` with `read:packages`.
+Use JDK 21, the Android SDK and PowerShell 7.5 or newer (Windows PowerShell 5.1 also works). Set `JAVA_HOME` and `ANDROID_HOME`, or configure the SDK in `local.properties`. GitHub Packages requires `GITHUB_ACTOR` and `GITHUB_TOKEN` with `read:packages`.
 
 Declared arm64 builds: 449.0.0.54.82 / 511908382 and 448.0.0.54.85 / 511808302.
 
 ```powershell
 $env:HUSHTHREADS_FIXTURE_DIR = '<fixture folder>'
 $env:HUSHTHREADS_DESKTOP_JAR = '<Morphe desktop JAR>'
+./gradlew.bat prepareAdvisoryTool
 ./gradlew.bat :patches:generatePatchesList
 ./gradlew.bat :patches:buildAndroid
 ./gradlew.bat :patches:test :extensions:threads:testDebugUnitTest
@@ -183,7 +184,13 @@ Generate the patch list before building. The bundle, SHA-256 and CycloneDX SBOM 
 
 Run verification on every retained build. It checks every selected patch, approved manifest changes, merged stock resources and injected DEX structure and feature contracts. Split merges use private input directories. Concurrent runs need separate outputs. Plain APKs are used directly.
 
-Run `scripts/build-release-receipt.ps1` and `scripts/validate-release-facts.ps1` after the tests, lints and fixture verification. OSV checks every bundled library. HIGH/CRITICAL labels, CVSS 3 scores of 7.0 or higher, and unrated advisories stop release. Both advisory-wide vectors and ratings for the queried package count. Unrelated package ratings and entries that list only other versions don't count. Unsupported or malformed severity data also stays held for review, including CVSS 4 vectors beside a LOW/MODERATE label or a lower CVSS 3 score. The gate doesn't score CVSS 4 as CVSS 3. Exceptions in `scripts/advisory-exceptions.txt` need a package, advisory, reason and expiry within 90 days. Expired or unmatched exceptions fail.
+Run `scripts/build-release-receipt.ps1` and `scripts/validate-release-facts.ps1` after the tests, lints and fixture verification. OSV checks every bundled library. HIGH/CRITICAL labels, CVSS 3 scores of 7.0 or higher, and unrated advisories stop release. Both advisory-wide vectors and ratings for the queried package and version count. Listed versions and ECOSYSTEM ranges form a union, with Maven ordering for range boundaries. Unrelated packages and known nonmatching versions don't contribute ratings.
+
+Unsupported or malformed data stays held for review. That includes invalid field types, unreadable ranges and CVSS 4 vectors beside a lower supported rating. The gate doesn't score CVSS 4 as CVSS 3. Exceptions in `scripts/advisory-exceptions.txt` need a package, advisory, reason and expiry within 90 days. Expired or unmatched exceptions fail.
+
+Query responses must contain readable advisory IDs, aliases and page tokens. Withdrawals require valid UTC timestamps. Malformed withdrawals stop the check instead of discarding the advisory. UTF-8 text and timestamp-shaped strings keep their original values during parsing.
+
+`prepareAdvisoryTool` resolves a pinned, hash-verified Maven comparator for these checks. The bundle build and push hook also prepare it. It's a build tool and isn't carried in the bundle or its SBOM.
 
 Run `scripts/audit-threads-sources.ps1` when sources change. It stamps a clean census. Releases require a census no more than 14 days old. `scripts/test-threads-sources.ps1` checks the ledger and source documentation.
 

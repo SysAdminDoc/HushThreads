@@ -1418,7 +1418,7 @@ Write-Host '[scripts] release receipt schema, manifest reading and validation co
 #
 # The gate that asks OSV about the libraries a release's SBOM lists and refuses a release carrying
 # a high or critical advisory. OSV's answers are recorded here as it gave them on 2026-09-25,
-# trimmed to the fields the gate reads, and a stand-in for Invoke-RestMethod answers from them by
+# trimmed to the fields the gate reads, and a stand-in for Invoke-WebRequest answers from them by
 # package URL, so no case needs the network. A package URL it has no answer for fails the way an
 # OSV this machine can't reach does. gson 2.8.8 is the deliberately vulnerable library:
 # GHSA-4jrv-ppp4-jm57 (CVE-2022-25647), which OSV and GitHub rate HIGH.
@@ -1444,9 +1444,17 @@ $osvRecorded = @{
 $osvAnswers = $osvRecorded
 $osvAsked = New-Object System.Collections.Generic.List[string]
 $osvStandIn = {
-    function Invoke-RestMethod {
-        param($Uri, $Method, $ContentType, $Body, $TimeoutSec)
-        $query = $Body | ConvertFrom-Json
+    $osvPreviousWebRequest = Get-Command Invoke-WebRequest
+    if ($osvPreviousWebRequest.CommandType -eq 'Function') { $osvPreviousWebRequest = $osvPreviousWebRequest.ScriptBlock }
+    function Invoke-WebRequest {
+        param($Uri, $Method, $ContentType, $Body, $TimeoutSec, $OutFile, $MaximumRedirection,
+            [switch]$PassThru, [switch]$UseBasicParsing)
+        if ("$Uri" -ne 'https://api.osv.dev/v1/query') { return (& $osvPreviousWebRequest @PSBoundParameters) }
+        if (-not $UseBasicParsing) { throw 'The OSV query used the interactive HTML parser.' }
+        if ($Body -isnot [byte[]] -or $ContentType -ne 'application/json; charset=utf-8') { throw 'The OSV query did not send explicit UTF-8 JSON.' }
+        $jsonArguments = @{}
+        if ((Get-Command ConvertFrom-Json).Parameters.ContainsKey('DateKind')) { $jsonArguments['DateKind'] = 'String' }
+        $query = [Text.UTF8Encoding]::new($false, $true).GetString($Body) | ConvertFrom-Json @jsonArguments
         $key = [string]$query.package.purl
         if ($query.page_token) { $key += " page $($query.page_token)" }
         $osvAsked.Add($key)
@@ -1454,8 +1462,11 @@ $osvStandIn = {
             throw "Unable to connect to the remote server (a stand-in for api.osv.dev with no answer for $key)"
         }
         $answer = $osvAnswers[$key]
-        if ($answer -is [string] -and $answer.StartsWith('{')) { return ($answer | ConvertFrom-Json) }
-        return $answer
+        if ($answer -isnot [string]) { throw 'An OSV fixture must supply the original JSON text.' }
+        # Mimic 5.1's wrong default decoding to prove the gate reads original UTF-8 bytes instead.
+        $bytes = [Text.Encoding]::UTF8.GetBytes($answer)
+        return [pscustomobject]@{ StatusCode = 200; Content = [Text.Encoding]::GetEncoding(28591).GetString($bytes);
+            RawContentStream = [IO.MemoryStream]::new($bytes, $false) }
     }
 }
 $advisoryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("hushthreads-advisories-" + [guid]::NewGuid().ToString('N'))
@@ -1676,8 +1687,32 @@ try {
         @{ Name = 'matching null'; Affected = '[{' + $packageIdentity + ',"severity":null}]'; Level = 'UNRATED' },
         @{ Name = 'matching null entry'; Affected = '[{' + $packageIdentity + ',"severity":[null]}]'; Level = 'UNRATED' },
         @{ Name = 'matching object'; Affected = '[{' + $packageIdentity + ',"severity":{"type":"CVSS_V3","score":"' + $lowV3 + '"}}]'; Level = 'UNRATED' },
+        @{ Name = 'matching array-valued type'; Affected = '[{' + $packageIdentity + ',"severity":[{"type":["CVSS_V3"],"score":"' + $lowV3 + '"}]}]'; Level = 'UNRATED' },
+        @{ Name = 'matching array-valued score'; Affected = '[{' + $packageIdentity + ',"severity":[{"type":"CVSS_V3","score":["' + $lowV3 + '"]}]}]'; Level = 'UNRATED' },
+        @{ Name = 'matching nested severity'; Affected = '[{' + $packageIdentity + ',"severity":[' + $packageLow + ']}]'; Level = 'UNRATED' },
+        @{ Name = 'nested affected'; Affected = '[[{' + $packageIdentity + ',"severity":null}]]'; Level = 'UNRATED' },
+        @{ Name = 'array-valued package name'; Affected = '[{"package":{"ecosystem":"Maven","name":["com.example:review"]},"severity":' + $packageLow + '}]'; Level = 'UNRATED' },
+        @{ Name = 'array-valued ecosystem'; Affected = '[{"package":{"ecosystem":["Maven"],"name":"com.example:review"},"severity":' + $packageLow + '}]'; Level = 'UNRATED' },
+        @{ Name = 'top-level array-valued type'; Affected = '[]'; Top = ',"severity":[{"type":["CVSS_V3"],"score":"' + $lowV3 + '"}]'; Level = 'UNRATED' },
+        @{ Name = 'top-level array-valued score'; Affected = '[]'; Top = ',"severity":[{"type":"CVSS_V3","score":["' + $lowV3 + '"]}]'; Level = 'UNRATED' },
+        @{ Name = 'top-level nested severity'; Affected = '[]'; Top = ',"severity":[' + $packageLow + ']'; Level = 'UNRATED' },
+        @{ Name = 'null database'; Affected = '[]'; Database = 'null'; Top = ',"severity":' + $packageLow; Level = 'UNRATED' },
+        @{ Name = 'array-valued database'; Affected = '[]'; Database = '[{"severity":"LOW"}]'; Top = ',"severity":' + $packageLow; Level = 'UNRATED' },
+        @{ Name = 'scalar database'; Affected = '[]'; Database = '"LOW"'; Top = ',"severity":' + $packageLow; Level = 'UNRATED' },
+        @{ Name = 'null database label'; Affected = '[]'; Database = '{"severity":null}'; Top = ',"severity":' + $packageLow; Level = 'UNRATED' },
+        @{ Name = 'array-valued database label'; Affected = '[]'; Database = '{"severity":["LOW"]}'; Top = ',"severity":' + $packageLow; Level = 'UNRATED' },
+        @{ Name = 'boolean database label'; Affected = '[]'; Database = '{"severity":false}'; Top = ',"severity":' + $packageLow; Level = 'UNRATED' },
+        @{ Name = 'empty database label'; Affected = '[]'; Database = '{"severity":""}'; Top = ',"severity":' + $packageLow; Level = 'UNRATED' },
+        @{ Name = 'missing database label'; Affected = '[]'; Database = '{}'; Top = ',"severity":' + $packageLow; Level = 'LOW' },
+        @{ Name = 'CRITICAL beside malformed top-level member'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageCritical + '}]'; Top = ',"severity":[' + $packageLow + ']'; Level = 'CRITICAL' },
+        @{ Name = 'HIGH beside malformed database'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageHigh + '}]'; Database = '{"severity":["LOW"]}'; Level = 'HIGH' },
         @{ Name = 'matching empty'; Affected = '[{' + $packageIdentity + ',"severity":[]}]'; Level = 'LOW' },
         @{ Name = 'matching absent'; Affected = '[{' + $packageIdentity + '}]'; Level = 'LOW' },
+        @{ Name = 'unreadable ranges without severity'; Affected = '[{"package":{"ecosystem":"Maven","name":"com.example:review"},"ranges":[{"type":"ECOSYSTEM","events":"unreadable"}]}]'; Level = 'UNRATED' },
+        @{ Name = 'unreadable ranges with empty severity'; Affected = '[{"package":{"ecosystem":"Maven","name":"com.example:review"},"ranges":[{"type":"ECOSYSTEM","events":"unreadable"}],"severity":[]}]'; Level = 'UNRATED' },
+        @{ Name = 'nested versions without severity'; Affected = '[{"package":{"ecosystem":"Maven","name":"com.example:review"},"versions":[["1.0"]]}]'; Level = 'UNRATED' },
+        @{ Name = 'array-valued package without severity'; Affected = '[{"package":{"ecosystem":"Maven","name":["com.example:review"]},"versions":["1.0"]}]'; Level = 'UNRATED' },
+        @{ Name = 'known nonmatching range without severity'; Affected = '[{"package":{"ecosystem":"Maven","name":"com.example:review"},"ranges":[{"type":"ECOSYSTEM","events":[{"introduced":"2.0"},{"fixed":"3.0"}]}]}]'; Level = 'LOW' },
         @{ Name = 'unrelated HIGH'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageLow + '},{' + $otherIdentity + ',"severity":' + $packageHigh + '}]'; Level = 'LOW' },
         @{ Name = 'unrelated unsupported'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageLow + '},{' + $otherIdentity + ',"severity":' + $packageV4 + '}]'; Level = 'LOW' },
         @{ Name = 'case-sensitive name'; Affected = '[{' + $packageIdentity.Replace('com.example:review', 'com.example:Review') + ',"severity":' + $packageHigh + '}]'; Level = 'LOW' },
@@ -1691,7 +1726,8 @@ try {
         @{ Name = 'top-level CRITICAL beside local LOW'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageLow + '}]'; Top = ',"severity":' + $packageCritical; Level = 'CRITICAL' },
         @{ Name = 'top-level unsupported beside local LOW'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageLow + '}]'; Top = ',"severity":' + $packageV4; Level = 'UNRATED' })
     foreach ($case in $packageCases) {
-        $json = '{"id":"GHSA-package-fixture","aliases":["CVE-2099-0001"],"database_specific":{"severity":"LOW"},"affected":' + $case.Affected + $case.Top + '}'
+        $database = if ($case.ContainsKey('Database')) { $case.Database } else { '{"severity":"LOW"}' }
+        $json = '{"id":"GHSA-package-fixture","aliases":["CVE-2099-0001"],"database_specific":' + $database + ',"affected":' + $case.Affected + $case.Top + '}'
         $osvAnswers = @{ $packagePurl = '{"vulns":[' + $json + ']}' }
         try {
             $findings = @(& { . $osvStandIn; Get-SbomAdvisories -Sbom (New-GateSbom @($packagePurl)) })
@@ -1711,6 +1747,150 @@ try {
         } finally {
             $osvAnswers = $osvRecorded
         }
+    }
+
+    # Earlier package fixtures never excluded a known nonmatching ECOSYSTEM range. Use
+    # OSV's union semantics and Maven ordering at the complete query and release gate.
+    & {
+    $low = @{ type = 'CVSS_V3'; score = 'CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N' }
+    $critical = @{ type = 'CVSS_V3'; score = 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H' }
+    $identity = @{ ecosystem = 'Maven'; name = 'com.example:review' }
+    $rangeCases = New-Object System.Collections.Generic.List[object]
+$cases = @(
+    @{ Name = 'before introduction'; Version = '1.0'; Events = @(@{ introduced = '2.0' }, @{ fixed = '3.0' }); Applies = $false },
+    @{ Name = 'introduced inclusive'; Version = '2.0'; Events = @(@{ introduced = '2.0' }, @{ fixed = '3.0' }); Applies = $true },
+    @{ Name = 'fixed exclusive'; Version = '3.0'; Events = @(@{ introduced = '2.0' }, @{ fixed = '3.0' }); Applies = $false },
+    @{ Name = 'just before fixed'; Version = '2.99'; Events = @(@{ introduced = '2.0' }, @{ fixed = '3.0' }); Applies = $true },
+    @{ Name = 'introduced zero'; Version = '0-alpha'; Events = @(@{ introduced = '0' }, @{ fixed = '2.0' }); Applies = $true },
+    @{ Name = 'unfixed'; Version = '1000.0'; Events = @(@{ introduced = '0' }); Applies = $true },
+    @{ Name = 'last affected inclusive'; Version = '2.0'; Events = @(@{ introduced = '0' }, @{ last_affected = '2.0' }); Applies = $true },
+    @{ Name = 'after last affected'; Version = '2.0.1'; Events = @(@{ introduced = '0' }, @{ last_affected = '2.0' }); Applies = $false },
+    @{ Name = 'limit exclusive'; Version = '2.0'; Events = @(@{ introduced = '0' }, @{ limit = '2.0' }); Applies = $false },
+    @{ Name = 'before limit'; Version = '1.99'; Events = @(@{ introduced = '0' }, @{ limit = '2.0' }); Applies = $true },
+    @{ Name = 'multiple limits union'; Version = '3.0'; Events = @(@{ introduced = '0' }, @{ limit = '2.0' }, @{ limit = '4.0' }); Applies = $true },
+    @{ Name = 'at greatest limit'; Version = '4.0'; Events = @(@{ introduced = '0' }, @{ limit = '2.0' }, @{ limit = '4.0' }); Applies = $false },
+    @{ Name = 'infinite limit'; Version = '1000.0'; Events = @(@{ introduced = '0' }, @{ limit = '*' }); Applies = $true },
+    @{ Name = 'star in limit is infinity'; Version = '1000.0'; Events = @(@{ introduced = '0' }, @{ limit = '2.*' }); Applies = $true },
+    @{ Name = 'infinity retains fixes'; Version = '3.0'; Events = @(@{ introduced = '2.0' }, @{ fixed = '3.0' }, @{ limit = '*' }); Applies = $false },
+    @{ Name = 'unsorted events'; Version = '1.5'; Events = @(@{ fixed = '2.0' }, @{ introduced = '1.0' }); Applies = $true },
+    @{ Name = 'unsorted fixed boundary'; Version = '2.0'; Events = @(@{ fixed = '2.0' }, @{ introduced = '1.0' }); Applies = $false },
+    @{ Name = 'first of multiple intervals'; Version = '1.5'; Events = @(@{ fixed = '4.0' }, @{ introduced = '3.0' }, @{ fixed = '2.0' }, @{ introduced = '1.0' }); Applies = $true },
+    @{ Name = 'between intervals'; Version = '2.5'; Events = @(@{ fixed = '4.0' }, @{ introduced = '3.0' }, @{ fixed = '2.0' }, @{ introduced = '1.0' }); Applies = $false },
+    @{ Name = 'second interval'; Version = '3.5'; Events = @(@{ fixed = '4.0' }, @{ introduced = '3.0' }, @{ fixed = '2.0' }, @{ introduced = '1.0' }); Applies = $true },
+    @{ Name = 'past multiple intervals'; Version = '4.0'; Events = @(@{ fixed = '4.0' }, @{ introduced = '3.0' }, @{ fixed = '2.0' }, @{ introduced = '1.0' }); Applies = $false },
+    @{ Name = 'numeric major'; Version = '10'; Events = @(@{ introduced = '2' }, @{ fixed = '11' }); Applies = $true },
+    @{ Name = 'numeric component'; Version = '1.10'; Events = @(@{ introduced = '1.2' }, @{ fixed = '1.11' }); Applies = $true },
+    @{ Name = 'beta'; Version = '1.0-beta'; Events = @(@{ introduced = '1.0-alpha' }, @{ fixed = '1.0' }); Applies = $true },
+    @{ Name = 'release candidate'; Version = '1.0-rc1'; Events = @(@{ introduced = '1.0-alpha' }, @{ fixed = '1.0' }); Applies = $true },
+    @{ Name = 'snapshot'; Version = '1.0-SNAPSHOT'; Events = @(@{ introduced = '1.0-alpha' }, @{ fixed = '1.0' }); Applies = $true },
+    @{ Name = 'general availability alias'; Version = '1.0-ga'; Events = @(@{ introduced = '1.0-alpha' }, @{ fixed = '1.0' }); Applies = $false },
+    @{ Name = 'final alias'; Version = '1.0-final'; Events = @(@{ introduced = '1.0-alpha' }, @{ fixed = '1.0' }); Applies = $false },
+    @{ Name = 'release alias'; Version = '1.0-release'; Events = @(@{ introduced = '1.0-alpha' }, @{ fixed = '1.0' }); Applies = $false },
+    @{ Name = 'cr alias'; Version = '1.0-cr1'; Events = @(@{ introduced = '1.0-rc1' }, @{ fixed = '1.0' }); Applies = $true },
+    @{ Name = 'service pack'; Version = '1.0-sp1'; Events = @(@{ introduced = '1.0' }, @{ fixed = '1.0-sp2' }); Applies = $true },
+    @{ Name = 'digit qualifier transition'; Version = '1.0a2'; Events = @(@{ introduced = '1.0alpha1' }, @{ fixed = '1.0beta1' }); Applies = $true },
+    @{ Name = 'unknown qualifier'; Version = '1.0-custom'; Events = @(@{ introduced = '1.0-sp' }, @{ fixed = '1.0-zebra' }); Applies = $true },
+    @{ Name = 'dot and hyphen'; Version = '1.0-RC3'; Events = @(@{ introduced = '1.0.RC2' }, @{ fixed = '1.0.1' }); Applies = $true },
+    @{ Name = 'normalized zeros'; Version = '1.0.0'; Events = @(@{ introduced = '1' }, @{ fixed = '1.1' }); Applies = $true },
+    @{ Name = 'listed versions union'; Version = '1.0'; Versions = @('1.0'); Events = @(@{ introduced = '2.0' }, @{ fixed = '3.0' }); Applies = $true },
+    @{ Name = 'range fills versions union'; Version = '1.0'; Versions = @('2.0'); Events = @(@{ introduced = '0' }, @{ fixed = '2.0' }); Applies = $true },
+    @{ Name = 'multiple ranges union'; Version = '1.0'; Events = @(@{ introduced = '2.0' }, @{ fixed = '3.0' }); Additional = @{ type = 'ECOSYSTEM'; events = @(@{ introduced = '0' }, @{ fixed = '2.0' }) }; Applies = $true },
+    @{ Name = 'arbitrary precision components'; Version = '1.999999999999999999999999999999'; Events = @(@{ introduced = '1.999999999999999999999999999998' }, @{ fixed = '1.1000000000000000000000000000000' }); Applies = $true }
+)
+foreach ($case in $cases) {
+    $scope = @{ package = $identity; severity = @($critical); ranges = @(@{ type = 'ECOSYSTEM'; events = $case.Events }) }
+    if ($case.ContainsKey('Versions')) { $scope.versions = $case.Versions }
+    if ($case.ContainsKey('Additional')) { $scope.ranges += $case.Additional }
+    $rangeCases.Add(@{ Name = $case.Name; Version = $case.Version; Scope = $scope
+        Level = $(if ($case.Applies) { 'CRITICAL' } else { 'LOW' }); Review = $false })
+}
+$badRanges = @(
+    $null, 5, 'range', @(@{ type = 'ECOSYSTEM'; events = @(@{ introduced = '0' }) }),
+    @{ type = 'SEMVER'; events = @(@{ introduced = '0' }) }, @{ type = 'GIT'; events = @(@{ introduced = '0' }) },
+    @{ type = @('ECOSYSTEM'); events = @(@{ introduced = '0' }) },
+    @{ type = 'ecosystem'; events = @(@{ introduced = '0' }) }, @{ events = @(@{ introduced = '0' }) },
+    @{ type = 'ECOSYSTEM'; events = $null }, @{ type = 'ECOSYSTEM'; events = @() },
+    @{ type = 'ECOSYSTEM'; events = @{ introduced = '0' } },
+    @{ type = 'ECOSYSTEM'; events = @($null) }, @{ type = 'ECOSYSTEM'; events = @(@{}) },
+    @{ type = 'ECOSYSTEM'; events = @(,@(@{ introduced = '0' })) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ introduced = '0'; fixed = '2.0' }) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ introduced = $null }) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ introduced = @('0') }) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ introduced = 0 }) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ introduced = '' }) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ introduced = '1.0 beta' }) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ Introduced = '0' }) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ introduced = '0' }, @{ unknown = '2.0' }) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ introduced = '0' }, @{ fixed = '2.0' }, @{ last_affected = '3.0' }) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ fixed = '2.0' }) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ introduced = '*' }) },
+    @{ type = 'ECOSYSTEM'; events = @(@{ introduced = '0' }, @{ limit = $null }) }
+)
+foreach ($range in $badRanges) {
+    foreach ($withListed in $false, $true) {
+        $scope = @{ package = $identity; severity = @($critical); ranges = @(,$range) }
+        if ($withListed) { $scope.versions = @('1.0') }
+        $rangeCases.Add(@{ Name = 'malformed range with listed=' + $withListed; Version = '1.0'; Scope = $scope
+            Level = $(if ($withListed) { 'CRITICAL' } else { 'UNRATED' }); Review = $true })
+    }
+}
+foreach ($ranges in @($null, 'ranges', @{ type = 'ECOSYSTEM'; events = @(@{ introduced = '0' }) })) {
+    $rangeCases.Add(@{ Name = 'non-array ranges'; Version = '1.0'; Review = $true; Level = 'CRITICAL'
+        Scope = @{ package = $identity; versions = @('1.0'); ranges = $ranges; severity = @($critical) } })
+}
+foreach ($bad in @(@{ versions = $null }, @{ versions = '1.0' }, @{ versions = @($null) },
+        @{ versions = @(1.0) }, @{ versions = @(,@('1.0')) }, @{ versions = @('1.0 beta') })) {
+    $bad.package = $identity
+    $bad.severity = @($critical)
+    $rangeCases.Add(@{ Name = 'malformed versions'; Version = '1.0'; Review = $true; Level = 'UNRATED'; Scope = $bad })
+}
+foreach ($scope in @(@{ versions = @('2.0') }, @{ versions = @(); ranges = @() }, @{ versions = @('1.0'); ranges = @() }, @{})) {
+    $missing = $scope.Count -eq 0
+    $matched = $scope.versions -ccontains '1.0'
+    $scope.package = $identity
+    $scope.severity = @($critical)
+    $rangeCases.Add(@{ Name = 'optional version metadata'; Version = '1.0'; Review = $missing; Scope = $scope
+        Level = $(if ($missing) { 'UNRATED' } elseif ($matched) { 'CRITICAL' } else { 'LOW' }) })
+}
+foreach ($other in @(@{ ecosystem = 'Maven'; name = 'com.example:other' }, @{ ecosystem = 'npm'; name = 'com.example:review' })) {
+    $rangeCases.Add(@{ Name = 'unrelated malformed range'; Version = '1.0'; Review = $false; Level = 'LOW'
+        Scope = @{ package = $other; ranges = @(@{ type = 'GIT'; events = @() }); severity = @($critical) } })
+}
+foreach ($name in 'com.example:review', '*', 'com.example:other') {
+    $rangeCases.Add(@{ Name = 'unknown Maven repository scope ' + $name; Version = '1.0'
+        Review = $name -cne 'com.example:other'; Level = $(if ($name -ceq 'com.example:other') { 'LOW' } else { 'UNRATED' })
+        Scope = @{ package = @{ ecosystem = 'Maven:https://unknown.example'; name = $name }; versions = @('1.0'); severity = @($critical) } })
+}
+# This is the original false hold, without a database label to provide the correct LOW rating.
+$rangeCases.Add(@{ Name = 'queried package LOW beside a later CRITICAL interval'; Version = '1.0'; Review = $false; Level = 'LOW'
+    Scope = @{ package = $identity; ranges = @(@{ type = 'ECOSYSTEM'; events = @(@{ introduced = '2.0' }, @{ fixed = '3.0' }) }); severity = @($critical) }
+    Base = @{ package = $identity; versions = @('1.0'); severity = @($low) } })
+foreach ($case in $rangeCases) {
+    $purl = 'pkg:maven/com.example/review@' + $case.Version
+    $advisory = @{ id = 'GHSA-range-fixture'; aliases = @('CVE-2099-0002'); affected = @($case.Scope) }
+    if ($case.ContainsKey('Base')) { $advisory.affected += $case.Base }
+    else { $advisory.database_specific = @{ severity = 'LOW' } }
+    $json = $advisory | ConvertTo-Json -Depth 20 -Compress
+    $osvAnswers = @{ $purl = '{"vulns":[' + $json + ']}' }
+    try {
+        $findings = @(& { . $osvStandIn; Get-SbomAdvisories -Sbom (New-GateSbom @($purl)) })
+        $serious = $case.Level -in 'CRITICAL', 'UNRATED'
+        Assert-True ($findings.Count -eq 1 -and $findings[0].Severity.Level -ceq $case.Level -and
+            $findings[0].Severity.Serious -eq $serious) "OSV range $($case.Name) was misread: $($findings | ConvertTo-Json -Depth 6 -Compress)"
+        Assert-True (($findings[0].Severity.Why -like '*requires review*') -eq $case.Review) "OSV range $($case.Name) lost its review state."
+        if ($serious) {
+            Assert-Throws { Invoke-Gate @($purl) } "*GHSA-range-fixture ($($case.Level)*" "The gate passed OSV range $($case.Name)."
+            $said = Invoke-Gate @($purl) @("CVE-2099-0002 com.example:review $later $why")
+            Assert-True ($said -like '*accepted: GHSA-range-fixture*') 'A dated range exception was not honored.'
+        } else {
+            $said = Invoke-Gate @($purl)
+            Assert-True ($said -like '*below high, let through: GHSA-range-fixture (LOW*') "The gate held OSV range $($case.Name)."
+        }
+    } finally {
+        $osvAnswers = $osvRecorded
+    }
+}
+Write-Host "[scripts] $($rangeCases.Count) complete Maven range gate cases passed"
     }
 
     # Exceptions: by OSV's id or an alias, for the one package, until the date.
@@ -1733,6 +1913,36 @@ try {
     $unreadable = @(
         @{ Name = 'a page of HTML'; Answer = '<html>Service Unavailable</html>'; Pattern = '*isn''t a query result*' },
         @{ Name = 'an advisory with no id'; Answer = '{"vulns":[{"summary":"no id"}]}'; Pattern = '*has no id*' })
+    foreach ($json in 'null', '[]', '[{}]', '[{"vulns":[]}]', '"answer"', '1') {
+        $unreadable += @{ Name = "query=$json"; Answer = $json; Pattern = '*isn''t a query result*' }
+    }
+    # Older query tests checked missing IDs only. Coerced member types and truthy withdrawals
+    # could discard a critical advisory or accept an unreadable answer as an empty result.
+    foreach ($json in 'null', '{}', '"empty"', '1') {
+        $unreadable += @{ Name = "vulns=$json"; Answer = "{`"vulns`":$json}"; Pattern = '*malformed vulnerability list*' }
+    }
+    foreach ($json in 'null', '[]', '[{"id":"GHSA-nested"}]', '"advisory"', '1') {
+        $unreadable += @{ Name = "advisory=$json"; Answer = "{`"vulns`":[$json]}"; Pattern = '*malformed advisory object*' }
+    }
+    foreach ($json in 'null', '1', '{}', '["GHSA-array"]', '" "') {
+        $unreadable += @{ Name = "id=$json"; Answer = "{`"vulns`": [{`"id`":$json}]}"; Pattern = '*has no id*' }
+    }
+    foreach ($json in 'null', '"CVE-2026-1"', '{}', '[null]', '[["CVE-2026-1"]]', '[1]', '[" "]') {
+        $unreadable += @{ Name = "aliases=$json"; Answer = "{`"vulns`": [{`"id`":`"GHSA-types`",`"aliases`":$json}]}"; Pattern = '*malformed advisory alias*' }
+    }
+    foreach ($json in 'null', '1', '{}', '["summary"]') {
+        $unreadable += @{ Name = "summary=$json"; Answer = "{`"vulns`": [{`"id`":`"GHSA-types`",`"summary`":$json}]}"; Pattern = '*malformed advisory summary*' }
+    }
+    foreach ($json in 'null', '1', '{}', '["p2"]', 'false') {
+        $unreadable += @{ Name = "next_page_token=$json"; Answer = "{`"next_page_token`":$json}"; Pattern = '*malformed page token*' }
+    }
+    foreach ($json in 'null', 'true', '1', '{}', '[]', '["2026-09-01T00:00:00Z"]', '"false"',
+            '"2026-02-29T00:00:00Z"', '"2026-04-31T00:00:00Z"', '"2026-09-01T24:00:00Z"',
+            '"2026-09-01T00:00:00+00:00"', '"2026-09-01T00:00:00.Z"', '"2026-09-01T00:00:60Z"') {
+        $unreadable += @{ Name = "withdrawn=$json";
+            Answer = "{`"vulns`": [{`"id`":`"GHSA-types`",`"withdrawn`":$json,`"database_specific`":{`"severity`":`"CRITICAL`"}}]}";
+            Pattern = '*malformed withdrawn timestamp*' }
+    }
     foreach ($odd in $unreadable) {
         $osvAnswers = @{ $cleanPurl = $odd.Answer }
         try {
@@ -1741,14 +1951,51 @@ try {
             $osvAnswers = $osvRecorded
         }
     }
+    foreach ($answer in '{}', '{"vulns":[]}', '{"vulns":[],"next_page_token":""}') {
+        $osvAnswers = @{ $cleanPurl = $answer }
+        try {
+            Assert-True ((Invoke-Gate @($cleanPurl)) -like '*OSV has no advisory*') `
+                "A valid empty query result was refused: $answer"
+        } finally { $osvAnswers = $osvRecorded }
+    }
+    foreach ($fields in '', ',"aliases":[]', ',"summary":""', ',"aliases":[],"summary":""',
+            ',"summary":"2026-09-01T00:00:00Z"', ',"aliases":["2026-09-01T00:00:00Z"]') {
+        $osvAnswers = @{ $cleanPurl = '{"vulns":[{"id":"GHSA-valid-types","database_specific":{"severity":"LOW"}' + $fields + '}]}' }
+        try {
+            Assert-True ((Invoke-Gate @($cleanPurl)) -like '*GHSA-valid-types (LOW*') `
+                "Valid missing or empty optional fields were refused: $fields"
+        } finally { $osvAnswers = $osvRecorded }
+    }
+    $unicode = 'R' + [char]0x00e9 + 'sum' + [char]0x00e9 + ' ' + [char]0x96ea
+    $osvAnswers = @{ $cleanPurl = '{"vulns":[{"id":"GHSA-' + $unicode + '","aliases":["CVE-' + $unicode +
+        '"],"summary":"' + $unicode + '","database_specific":{"severity":"HIGH"}}]}' }
+    try {
+        $findings = @(& { . $osvStandIn; Get-SbomAdvisories -Sbom (New-GateSbom @($cleanPurl)) })
+        Assert-True ($findings.Count -eq 1 -and $findings[0].Advisory -ceq "GHSA-$unicode" -and
+            $findings[0].Aliases[0] -ceq "CVE-$unicode" -and $findings[0].Summary -ceq $unicode) `
+            'UTF-8 advisory IDs, aliases or summaries changed during parsing.'
+        Assert-Throws { Invoke-Gate @($cleanPurl) } "*GHSA-$unicode (HIGH*" 'A Unicode HIGH advisory did not hold the complete gate.'
+    } finally { $osvAnswers = $osvRecorded }
     # The second page of an answer is read, and an advisory OSV withdrew is not one.
     $osvAnswers = @{ $gsonPurl = '{"next_page_token":"p2"}'; "$gsonPurl page p2" = "{`"vulns`":[$gsonAdvisory]}" }
     try {
         Assert-Throws { Invoke-Gate @($gsonPurl) } '*GHSA-4jrv-ppp4-jm57 (HIGH*' 'The gate stopped at the first page of an answer.'
         Assert-True (($osvAsked -join ', ') -eq "$gsonPurl, $gsonPurl page p2") "The gate did not ask for the second page: $($osvAsked -join ', ')"
+        foreach ($pageToken in '2026-09-01T00:00:00Z', $unicode) {
+            $osvAnswers = @{ $gsonPurl = '{"next_page_token":"' + $pageToken + '"}';
+                "$gsonPurl page $pageToken" = "{`"vulns`":[$gsonAdvisory]}" }
+            Assert-Throws { Invoke-Gate @($gsonPurl) } '*GHSA-4jrv-ppp4-jm57 (HIGH*' 'A valid page token changed during the UTF-8 query.'
+            Assert-True (($osvAsked -join ', ') -ceq "$gsonPurl, $gsonPurl page $pageToken") 'The query did not preserve its page token.'
+        }
         $osvAnswers = @{ $gsonPurl = "{`"vulns`":[$($gsonAdvisory.Replace('{"id"', '{"withdrawn":"2026-09-01T00:00:00Z","id"'))]}" }
         $said = Invoke-Gate @($gsonPurl)
         Assert-True ($said -like '*OSV has no advisory*') "A withdrawn advisory refused the release: $said"
+        foreach ($timestamp in '2026-09-01T00:00:00.253296471Z', '2024-02-29T23:59:59Z',
+                '0000-02-29T00:00:00Z', '2016-12-31T23:59:60Z', '2026-09-01t00:00:00z') {
+            $osvAnswers = @{ $gsonPurl = '{"vulns":[{"id":"GHSA-valid-withdrawal","database_specific":{"severity":"CRITICAL"},"withdrawn":"' + $timestamp + '"}]}' }
+            Assert-True ((Invoke-Gate @($gsonPurl)) -like '*OSV has no advisory*') `
+                "A valid UTC withdrawal was refused: $timestamp"
+        }
     } finally {
         $osvAnswers = $osvRecorded
     }
@@ -2544,6 +2791,44 @@ try {
     Invoke-Hook -Paths @('scripts/patch-report.ps1')
     Assert-True (Test-Path -LiteralPath $contractsMarker) `
         'A push that changed a script outside every named suite skipped the script contract tests.'
+
+    # Existing routing fixtures had no advisory comparator, so they couldn't prove that a
+    # fresh checkout prepares it before a script suite or either release-facts route.
+    $prepareMarker = Join-Path $hookRoot 'advisory-prepare-ran.txt'
+    $bridgeStub = Join-Path $hookRoot 'scripts/MavenAdvisoryRanges.java'
+    $savedContractsStub = Get-Content -LiteralPath (Join-Path $hookRoot 'scripts/test-script-contracts.ps1') -Raw
+    $savedFactsStub = Get-Content -LiteralPath (Join-Path $hookRoot 'scripts/validate-release-facts.ps1') -Raw
+    $savedBuildStub = Get-Content -LiteralPath $routingBuild -Raw
+    try {
+        Set-Content -LiteralPath $bridgeStub -Encoding ASCII -Value 'class MavenAdvisoryRanges {}'
+        Set-Content -LiteralPath $routingBuild -Encoding UTF8 -Value @(
+            'param([string]$ProjectDir, [string[]]$Tasks)',
+            'if ($Tasks.Count -ne 1 -or $Tasks[0] -ne "prepareAdvisoryTool") { throw "Wrong comparator task" }',
+            "Add-Content -LiteralPath '$prepareMarker' -Value `$ProjectDir",
+            'exit 0')
+        $requirePreparation = "if (-not (Test-Path -LiteralPath '$prepareMarker')) { throw 'Comparator was not prepared' }"
+        Set-Content -LiteralPath (Join-Path $hookRoot 'scripts/test-script-contracts.ps1') -Encoding UTF8 -Value @(
+            'param([string]$Root)', $requirePreparation,
+            "Set-Content -LiteralPath '$contractsMarker' -Value 'ran'", 'exit 0')
+        Set-Content -LiteralPath (Join-Path $hookRoot 'scripts/validate-release-facts.ps1') -Encoding UTF8 -Value `
+            $savedFactsStub.Replace('Set-Content -LiteralPath', ($requirePreparation + "`nSet-Content -LiteralPath"))
+        foreach ($path in 'scripts/patch-report.ps1', 'scripts/manifest-delta-allowlist.txt', 'patches-bundle.json') {
+            Remove-Item -LiteralPath $prepareMarker -Force -ErrorAction SilentlyContinue
+            Invoke-Hook -Paths @($path)
+            $preparedRoots = @(Get-Content -LiteralPath $prepareMarker)
+            Assert-True ($preparedRoots.Count -gt 0 -and @($preparedRoots | Where-Object { $_ -ne $hookRoot }).Count -eq 0) `
+                "The comparator for $path was not prepared in the gated checkout."
+        }
+        Set-Content -LiteralPath $routingBuild -Encoding ASCII -Value 'exit 19'
+        Assert-Throws { Invoke-Hook -Paths @('scripts/patch-report.ps1') } '*comparator could not be prepared*' `
+            'A failed comparator preparation did not stop the push.'
+        Assert-True (-not (Test-Path -LiteralPath $contractsMarker)) 'The script suite ran after comparator preparation failed.'
+    } finally {
+        Set-Content -LiteralPath (Join-Path $hookRoot 'scripts/test-script-contracts.ps1') -Encoding UTF8 -NoNewline -Value $savedContractsStub
+        Set-Content -LiteralPath (Join-Path $hookRoot 'scripts/validate-release-facts.ps1') -Encoding UTF8 -NoNewline -Value $savedFactsStub
+        Set-Content -LiteralPath $routingBuild -Encoding UTF8 -NoNewline -Value $savedBuildStub
+        Remove-Item -LiteralPath $bridgeStub, $prepareMarker -Force -ErrorAction SilentlyContinue
+    }
     $contractsStubPath = Join-Path $hookRoot 'scripts/test-script-contracts.ps1'
     $contractsStubText = Get-Content -LiteralPath $contractsStubPath -Raw
     Remove-Item -LiteralPath $contractsStubPath -Force
@@ -5171,10 +5456,36 @@ try {
         $parkedSbom = [System.IO.Path]::ChangeExtension($parkedBundle, '.cdx.json')
         $otherBuilds = @('patches-9.9.8.mpp', 'patches-9.9.9.mpp' | ForEach-Object { Join-Path $releaseBuilds $_ })
         $releaseDescription = [string]($releaseIndexText | ConvertFrom-Json).description
+        # This fixture has no Gradle project. Its old hook tests couldn't prove comparator
+        # preparation. Copy only the normally prepared, metadata-verified tool through a build
+        # stand-in and require the hook to invoke it before checking the published asset.
+        $verifiedComparator = Join-Path $Root 'build/advisory-tool/maven-artifact.jar'
+        Assert-True (Test-Path -LiteralPath $verifiedComparator -PathType Leaf) 'Prepare the advisory tool before running script contracts.'
+        $comparatorHash = (Get-FileHash -LiteralPath $verifiedComparator -Algorithm SHA256).Hash.ToLowerInvariant()
+        [xml]$verification = Get-Content -LiteralPath (Join-Path $Root 'gradle/verification-metadata.xml') -Raw
+        $verificationNamespaces = [Xml.XmlNamespaceManager]::new($verification.NameTable)
+        $verificationNamespaces.AddNamespace('v', $verification.DocumentElement.NamespaceURI)
+        Assert-True ($verification.SelectNodes("//v:component[@group='org.apache.maven' and @name='maven-artifact']/v:artifact/v:sha256[@value='$comparatorHash']", $verificationNamespaces).Count -eq 1) `
+            'The release fixture comparator does not match dependency verification metadata.'
+        $indexBuildMarker = Join-Path $releaseRoot 'index-comparator-prepared.txt'
+        $indexBuildWrapper = Join-Path $releaseRoot 'index-build-wrapper.ps1'
+        Set-Content -LiteralPath $indexBuildWrapper -Encoding UTF8 -Value @(
+            'param([string]$ProjectDir, [string[]]$Tasks)',
+            '$ErrorActionPreference = ''Stop''',
+            'if ($Tasks.Count -ne 1 -or $Tasks[0] -ne ''prepareAdvisoryTool'') { throw ''Unexpected release fixture build task.'' }',
+            "if (`$ProjectDir -ne '$releaseRepo') { throw 'The comparator was prepared outside the gated release checkout.' }",
+            "if ((Get-FileHash -LiteralPath '$verifiedComparator' -Algorithm SHA256).Hash.ToLowerInvariant() -ne '$comparatorHash') { throw 'The verified source comparator changed.' }",
+            '$directory = Join-Path $ProjectDir ''build/advisory-tool''',
+            'New-Item -ItemType Directory -Path $directory -Force | Out-Null',
+            "Copy-Item -LiteralPath '$verifiedComparator' -Destination (Join-Path `$directory 'maven-artifact.jar') -Force",
+            "if ((Get-FileHash -LiteralPath (Join-Path `$directory 'maven-artifact.jar') -Algorithm SHA256).Hash.ToLowerInvariant() -ne '$comparatorHash') { throw 'The prepared comparator hash changed.' }",
+            "Add-Content -LiteralPath '$indexBuildMarker' -Value `$ProjectDir",
+            'exit 0')
         function Invoke-IndexPushHook {
             $saved = @{}
             foreach ($variable in @(Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_*' -or $_.Name -in @('TMP', 'TEMP',
-                    'HUSHTHREADS_DESKTOP_JAR', 'HUSHTHREADS_JAVA', 'HUSHTHREADS_SKIP_PRE_PUSH') })) {
+                    'HUSHTHREADS_DESKTOP_JAR', 'HUSHTHREADS_JAVA', 'HUSHTHREADS_SKIP_PRE_PUSH',
+                    'HUSHTHREADS_BUILD_WRAPPER', 'GITHUB_ACTOR', 'GITHUB_TOKEN') })) {
                 $saved[$variable.Name] = $variable.Value
                 Remove-Item -LiteralPath ('Env:\' + $variable.Name) -ErrorAction SilentlyContinue
             }
@@ -5182,6 +5493,10 @@ try {
             $env:TEMP = $hookTemp
             $env:HUSHTHREADS_DESKTOP_JAR = $stubJar
             $env:HUSHTHREADS_JAVA = $listJava
+            $env:HUSHTHREADS_BUILD_WRAPPER = $indexBuildWrapper
+            $env:GITHUB_ACTOR = 'contract'
+            $env:GITHUB_TOKEN = 'contract'
+            $preparedBefore = if (Test-Path -LiteralPath $indexBuildMarker) { @(Get-Content -LiteralPath $indexBuildMarker).Count } else { 0 }
             try {
                 . $publishedStandIns
                 . $osvStandIn
@@ -5189,9 +5504,12 @@ try {
                 $said = @(& $prePushScript -Root $releaseRepo -ChangedPaths @('patches-bundle.json') 3>&1 6>&1 |
                     ForEach-Object { "$_" }) -join "`n"
                 if ($LASTEXITCODE -ne 0) { throw "The index push exited $LASTEXITCODE`: $said" }
+                Assert-True (@(Get-Content -LiteralPath $indexBuildMarker).Count -eq ($preparedBefore + 1)) `
+                    'The published-index gate did not prepare its verified comparator.'
                 return $said
             } finally {
-                foreach ($name in @('TMP', 'TEMP', 'HUSHTHREADS_DESKTOP_JAR', 'HUSHTHREADS_JAVA')) {
+                foreach ($name in @('TMP', 'TEMP', 'HUSHTHREADS_DESKTOP_JAR', 'HUSHTHREADS_JAVA',
+                        'HUSHTHREADS_BUILD_WRAPPER', 'GITHUB_ACTOR', 'GITHUB_TOKEN')) {
                     Remove-Item -LiteralPath ('Env:\' + $name) -ErrorAction SilentlyContinue
                 }
                 foreach ($name in $saved.Keys) { Set-Item -LiteralPath ('Env:\' + $name) -Value $saved[$name] }

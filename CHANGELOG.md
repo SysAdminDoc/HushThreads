@@ -4,9 +4,13 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** Package-specific advisory ratings now follow OSV's listed-version/range union with Maven version ordering. Introduced, fixed, last-affected and limit boundaries are checked across unsorted intervals. Known nonmatching ranges no longer cause a false hold, and unreadable range metadata requires review. Previous package tests covered listed versions but never excluded an unaffected range.
+
+* **Tooling:** Advisory objects and rating fields are checked before reading them. Arrays in scalar fields and nested severity/affected arrays require review, including package metadata without optional severity. Query containers, IDs, aliases, summaries and page tokens keep their JSON types and UTF-8 values. Malformed withdrawals stop the check instead of discarding an advisory. Valid UTC timestamp strings work on PowerShell 7.5+ and Windows PowerShell 5.1. Supported HIGH/CRITICAL ratings remain visible. Earlier fixtures missed shapes PowerShell could coerce or silently skip.
+
 * **Tooling:** Release checks include OSV's package-specific severity for the queried library, including ecosystem-wide ratings. Unrelated packages and entries listing only other versions are excluded. Malformed or unsupported ratings still require review. Previous tests used advisory-wide vectors and missed a package-specific HIGH rating hidden by a LOW database label.
 
-* **Tooling:** The release-check deadline covers name resolution, TLS handshakes and request writes as well as response reads. A stalled resolver leaves bounded background work, and expired waiting requests are removed. Earlier transport tests checked body reads but missed slow connection phases.
+* **Tooling:** The release-check deadline covers name resolution, TLS handshakes and request writes as well as response reads. A stalled resolver leaves bounded background work, and expired waiting requests are removed. Earlier transport tests checked body reads but missed slow connection phases. Thirteen transport checks pass on native Android 9 and 17, and both platforms read the live release endpoint with the shared cookie store unchanged.
 
 * **Tooling:** Explicit null severity entries and malformed non-array severity fields require advisory review. A missing optional field or a valid empty array stays distinct. Existing tests covered unreadable vectors but missed null entries that the pipeline silently removed.
 

@@ -853,6 +853,7 @@ tasks {
         output.set(layout.buildDirectory.file("release/$releaseSbomName"))
     }
     named("buildAndroid") {
+        dependsOn(rootProject.tasks.named("prepareAdvisoryTool"))
         // Resolved at configuration time. Reaching for project inside doLast is what the
         // configuration cache refuses, and Gradle 10 turns that refusal into an error.
         val bundleFile = layout.buildDirectory.file("libs/$releaseBundleName")
