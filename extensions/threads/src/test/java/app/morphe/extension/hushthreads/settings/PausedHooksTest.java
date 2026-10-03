@@ -126,6 +126,13 @@ public class PausedHooksTest {
                 () -> {
                     String shared = "https://www.threads.com/share/BAXudaEdTE/";
                     return !shared.equals(LinkCleaner.postLink(shared, "zuck", "C8abc"));
+                },
+                () -> {
+                    // A share coroutine's post waits in the extension for its link.
+                    Object coroutine = new Object();
+                    Object post = new Object();
+                    LinkCleaner.rememberPost(coroutine, post);
+                    return LinkCleaner.rememberedPost(coroutine) == post;
                 }));
         // A tapped web link goes to the phone's browser instead of Threads' own.
         probes.put(PatchFamily.EXTERNAL_BROWSER, Collections.singletonList(

@@ -48,7 +48,15 @@ import java.io.File
  * object keeps it.
  */
 class SanitizeSharingLinksFixtureTest {
-    private val sanitize = "$EXTENSION_PACKAGE/misc/LinkCleaner;->sanitizeShared(Ljava/lang/String;)Ljava/lang/String;"
+    private companion object {
+        /** Send and WhatsApp status or Instagram story: each fetches the link and is resumed without its post. */
+        val RESUMED = listOf(
+            "Lcom/instagram/barcelona/share/viewmodel/usecases/SendUseCase;",
+            "Lcom/instagram/barcelona/share/usecase/CreateWAStatusOrIGStoryUseCase;",
+        )
+    }
+
+    private val sanitize ="$EXTENSION_PACKAGE/misc/LinkCleaner;->sanitizeShared(Ljava/lang/String;)Ljava/lang/String;"
 
     @Test
     fun `the extension's link cleaner takes and answers a string`() {
@@ -131,7 +139,7 @@ class SanitizeSharingLinksFixtureTest {
         val copy = "${share}usecase/CopyToClipboardUseCase\$copyLink\$result\$1;"
         val shareToApp = "${share}usecase/ShareToAppUseCase\$shareToApp\$result\$1;"
         val instagram = "${share}usecase/ShareToInstagramFeedUseCase\$shareToInstagramFeed\$result\$1\$1;"
-        val kept = listOf("${share}viewmodel/usecases/SendUseCase;", "${share}usecase/CreateWAStatusOrIGStoryUseCase;")
+        val kept = RESUMED
         for (build in Fixtures.declaredBuilds()) {
             clearMatches()
             val where = build.name
@@ -191,12 +199,191 @@ class SanitizeSharingLinksFixtureTest {
                     assertEquals("$where $type: one call per read", reads.size, patched.count { it.method()?.toString() == POST_LINK })
                 }
             }
-            for (type in kept) {
-                val untouched = context.classDefByOrNull(type) ?: continue
-                assertTrue("$where: $type is left alone", untouched.methods.none { m -> m.instructions().any { it.method()?.toString() == POST_LINK } })
+        }
+    }
+
+    @Test
+    fun `each declared build keeps the post against its continuation where Send and the story share fetch the link`() {
+        for (build in Fixtures.declaredBuilds()) {
+            clearMatches()
+            val where = build.name
+            val classes = parserClasses(build)
+            val reads = linkReader(classes)
+            val stocks = RESUMED.map { type -> classes.single { it.type == type }.methods.single { reads(it).isNotEmpty() } }
+
+            val context = PatchContexts.of(ExtensionDex.classes() + classes)
+            sanitizeSharingLinksPatch.execute(context)
+
+            for (stock in stocks) {
+                val name = "$where ${stock.definingClass}"
+                val body = stock.instructions()
+                val call = body.indices.single { body[it].isPlainFetchCall() }
+                val arguments = (body[call] as FiveRegisterInstruction).let { listOf(it.registerC, it.registerD, it.registerE, it.registerF, it.registerG) }
+                val coroutine = arguments[4]
+                val last = stock.implementation!!.registerCount - 1
+                assertTrue("$name: v$coroutine holds the continuation the method was called with",
+                    body.any { it.opcode == Opcode.MOVE_OBJECT && (it as TwoRegisterInstruction).registerA == coroutine && it.registerB == last })
+                assertTrue("$name: and the post is a parameter it gets back null on resume", arguments[2] > last - stock.parameterTypes.size)
+
+                val patched = context.mutableClassDefBy(stock.definingClass).methods
+                    .single { it.name == stock.name && it.parameterTypes == stock.parameterTypes }.instructions()
+                val stockReads = reads(stock)
+                assertEquals("$name: one call before the fetch, fifteen after each read", body.counted() + 1 + 15 * stockReads.size, patched.counted())
+                assertEquals("$name: the post goes in just before the fetch", REMEMBER_POST, patched[call].method().toString())
+                assertEquals(listOf(coroutine, arguments[2]), (patched[call] as FiveRegisterInstruction).let { listOf(it.registerC, it.registerD) })
+                assertEquals("$name: then the fetch as it was", body[call].method().toString(), patched[call + 1].method().toString())
+                for ((n, read) in stockReads.withIndex()) {
+                    val at = read + 2 + (if (read > call) 1 else 0) + 15 * n
+                    assertRecall("$name read $read", stock, read, patched, at, coroutine)
+                }
             }
         }
     }
+
+    @Test
+    fun `each declared build with quick sends keeps the post against their coroutine before it empties its post field`() {
+        var seen = 0
+        for (build in Fixtures.declaredBuilds()) {
+            clearMatches()
+            val where = build.name
+            val classes = parserClasses(build)
+            // 448 resolves no link for WhatsApp quick sends.
+            val stock = quickSends(classes) ?: continue
+            seen++
+            val body = stock.instructions()
+            val self = stock.implementation!!.registerCount - 2
+            val stockReads = linkReader(classes)(stock)
+            val cast = (0 until stockReads.first()).last { body[it].opcode == Opcode.CHECK_CAST && body[it].type() == MEDIA }
+            val load = body[cast - 1] as TwoRegisterInstruction
+            val post = (body[cast] as OneRegisterInstruction).registerA
+            assertEquals("$where: the post comes out of the coroutine's own field", listOf(Opcode.IGET_OBJECT, post, self),
+                listOf(body[cast - 1].opcode, load.registerA, load.registerB))
+            assertTrue("$where: which it empties before it waits",
+                body.any { it.opcode == Opcode.IPUT_OBJECT && it.field() == body[cast - 1].field() })
+
+            val context = PatchContexts.of(ExtensionDex.classes() + classes)
+            sanitizeSharingLinksPatch.execute(context)
+
+            val patched = context.mutableClassDefBy(stock.definingClass).methods.single { it.name == stock.name }.instructions()
+            assertEquals("$where: one call after the cast, fifteen after each read", body.counted() + 1 + 15 * stockReads.size, patched.counted())
+            assertEquals("$where: the post goes in right after its cast", REMEMBER_POST, patched[cast + 1].method().toString())
+            assertEquals(listOf(self, post), (patched[cast + 1] as FiveRegisterInstruction).let { listOf(it.registerC, it.registerD) })
+            for ((n, read) in stockReads.withIndex()) {
+                assertRecall("$where read $read", stock, read, patched, read + 3 + 15 * n, self)
+            }
+        }
+        assertTrue("a declared build has quick sends", seen > 0)
+    }
+
+    @Test
+    fun `a coroutine whose key or post the hook can't trust is refused`() {
+        val send = RESUMED.first()
+        for (build in Fixtures.declaredBuilds()) {
+            val classes = parserClasses(build)
+            val reads = linkReader(classes)
+            val sendStock = classes.single { it.type == send }.methods.single { reads(it).isNotEmpty() }
+            val sendBody = sendStock.instructions()
+            val call = sendBody.indices.single { sendBody[it].isPlainFetchCall() }
+            val coroutine = (sendBody[call] as FiveRegisterInstruction).registerG
+            val copy = sendBody.indexOfFirst { it.opcode == Opcode.MOVE_OBJECT && (it as TwoRegisterInstruction).registerA == coroutine }
+            val quick = quickSends(classes)
+            val cases = mutableListOf(
+                Triple("key overwritten", send, "writes something other than its continuation"),
+                Triple("key copied from the post", send, "copies something other than its continuation"),
+            )
+            if (quick != null) {
+                cases += Triple("no cast", quick.definingClass, "without one cast of its own post field")
+                cases += Triple("this overwritten", quick.definingClass, "writes over this")
+            }
+            for ((label, type, expected) in cases) {
+                clearMatches()
+                val context = PatchContexts.of(ExtensionDex.classes() + classes)
+                val mutable = context.mutableClassDefBy(type).methods.single { reads(it).isNotEmpty() }
+                when (label) {
+                    "key overwritten" -> mutable.addInstructions(reads(sendStock).first(), "const/4 v$coroutine, 0x0")
+                    "key copied from the post" ->
+                        mutable.replaceInstruction(copy, "move-object v$coroutine, v${(sendBody[call] as FiveRegisterInstruction).registerE}")
+                    "no cast" -> {
+                        val body = quick!!.instructions()
+                        mutable.replaceInstruction((0 until reads(quick).first()).last { body[it].opcode == Opcode.CHECK_CAST && body[it].type() == MEDIA }, "nop")
+                    }
+                    else -> mutable.addInstructions(0, "const/16 v${quick!!.implementation!!.registerCount - 2}, 0x0")
+                }
+                val error = assertThrows(label, PatchException::class.java) { sanitizeSharingLinksPatch.execute(context) }.message.orEmpty()
+                assertTrue("$label: $error", error.contains(expected))
+            }
+            clearMatches()
+            val error = assertThrows(PatchException::class.java) {
+                sanitizeSharingLinksPatch.execute(PatchContexts.of(ExtensionDex.classes() + classes.filter { it.type !in RESUMED }))
+            }.message.orEmpty()
+            assertTrue(error, error.contains("so Send would keep short links"))
+            if (quick == null) continue
+            // Without quick sends the rest still goes in.
+            clearMatches()
+            val context = PatchContexts.of(ExtensionDex.classes() + classes.filter { it.type != quick.definingClass })
+            sanitizeSharingLinksPatch.execute(context)
+            assertTrue(context.mutableClassDefBy(send).methods.any { m -> m.instructions().any { it.method()?.toString() == REMEMBER_POST } })
+        }
+    }
+
+    /**
+     * The fifteen instructions after [read] at [at] in [patched]: the post kept against [key] comes
+     * back, cast to a post, then the fetch's hook runs with it, in registers [stock] doesn't read there.
+     */
+    private fun assertRecall(where: String, stock: Method, read: Int, patched: List<Instruction>, at: Int, key: Int) {
+        val link = (stock.instructions()[read + 1] as OneRegisterInstruction).registerA
+        val block = patched.subList(at, at + 15)
+        assertEquals("$where: hook shape",
+            listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.CHECK_CAST, Opcode.CONST_4, Opcode.CONST_4, Opcode.IF_EQZ,
+                Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ,
+                Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT),
+            block.map { it.opcode })
+        assertEquals("$where: the kept post comes back", REMEMBERED_POST, block[0].method().toString())
+        assertEquals("$where: for the coroutine", listOf(key), (block[0] as FiveRegisterInstruction).let { listOf(it.registerC).take(it.registerCount) })
+        val post = (block[1] as OneRegisterInstruction).registerA
+        assertEquals("$where: cast to a post", listOf(post, MEDIA), listOf((block[2] as OneRegisterInstruction).registerA, block[2].type()))
+        val code = (block[3] as OneRegisterInstruction).registerA
+        val name = (block[4] as OneRegisterInstruction).registerA
+        assertTrue("$where: three scratch registers apart from the link and the key", setOf(post, code, name, link, key).size == 5)
+        val live = RegisterLiveness.of(stock).liveInto(read + 2)
+        assertTrue("$where: nothing reads the scratch registers after the read", listOf(post, code, name).none { it in live })
+        assertEquals("$where: a missing post skips to the call", at + 13, patched.target(at + 5))
+        assertEquals(post, (block[5] as OneRegisterInstruction).registerA)
+        assertEquals(post, (block[6] as FiveRegisterInstruction).registerC)
+        assertEquals(post, (block[8] as FiveRegisterInstruction).registerC)
+        assertEquals("$where: no author skips to the call", at + 13, patched.target(at + 10))
+        assertEquals(POST_LINK, block[13].method().toString())
+        assertEquals(listOf(link, name, code), (block[13] as FiveRegisterInstruction).let { listOf(it.registerC, it.registerD, it.registerE) })
+        assertEquals("$where: the post's own link replaces the read one", link, (block[14] as OneRegisterInstruction).registerA)
+        assertEquals("$where: then the method goes on as it did", stock.instructions()[read + 2].opcode, patched[at + 15].opcode)
+    }
+
+    /** The reads of the answer's link getter in a method, by the getter the share sheet's fetch reads. */
+    private fun linkReader(classes: List<ClassDef>): (Method) -> List<Int> {
+        val getter = fetchOf(classes).let { it.body[it.reads.first()].method()!! }
+        return { method ->
+            method.instructions().indices.filter { index ->
+                method.instructions()[index].method()?.let { it.name == getter.name && it.definingClass == getter.definingClass } == true
+            }
+        }
+    }
+
+    /** WhatsApp quick sends' coroutine body, the one that names its share source and reads the link. */
+    private fun quickSends(classes: List<ClassDef>): Method? {
+        val reads = linkReader(classes)
+        return classes.flatMap { it.methods }.singleOrNull { method ->
+            method.name == "invokeSuspend" && reads(method).isNotEmpty() && method.instructions().any { it.string() == "quick_sends" }
+        }
+    }
+
+    private fun Instruction.isPlainFetchCall(): Boolean = method()?.let {
+        it.definingClass == PERMALINK_REPOSITORY && it.parameterTypes.size == 4 && it.parameterTypes[1].toString() == MEDIA
+    } == true
+
+    /** Instructions apart from nops: a stock body carries the nop that aligns a switch's data, a patched one adds it back when written. */
+    private fun List<Instruction>.counted(): Int = count { it.opcode != Opcode.NOP }
+
+    private fun Instruction.type(): String? = ((this as? ReferenceInstruction)?.reference as? TypeReference)?.type
 
     @Test
     fun `a holder that writes over this before its read is refused`() {
@@ -216,17 +403,25 @@ class SanitizeSharingLinksFixtureTest {
     }
 
     @Test
-    fun `a holder with two post fields is left alone, since either could be the post`() {
+    fun `a holder with two post fields keeps the post it fetched instead, since either field could be the post`() {
         val copy = "Lcom/instagram/barcelona/share/usecase/CopyToClipboardUseCase\$copyLink\$result\$1;"
         for (build in Fixtures.declaredBuilds()) {
             clearMatches()
-            val context = PatchContexts.of(ExtensionDex.classes() + parserClasses(build))
+            val classes = parserClasses(build)
+            val reads = linkReader(classes)
+            val context = PatchContexts.of(ExtensionDex.classes() + classes)
             context.mutableClassDefBy(copy).instanceFields.add(
                 MutableField(ImmutableField(copy, "secondPost", MEDIA, AccessFlags.PUBLIC.value, null, null, null)),
             )
+            val stock = classes.single { it.type == copy }.methods.single { reads(it).isNotEmpty() }
             sanitizeSharingLinksPatch.execute(context)
-            assertTrue("${build.name}: Copy link's holder isn't hooked",
-                context.mutableClassDefBy(copy).methods.none { m -> m.instructions().any { it.method()?.toString() == POST_LINK } })
+            val patched = context.mutableClassDefBy(copy).methods.single { it.name == stock.name && it.parameterTypes == stock.parameterTypes }.instructions()
+            fun count(call: String) = patched.count { it.method()?.toString() == call }
+            assertEquals("${build.name}: no post field read", 0,
+                patched.counted() - stock.instructions().counted() - 1 - 15 * reads(stock).size)
+            assertEquals("${build.name}: the fetched post kept once", 1, count(REMEMBER_POST))
+            assertEquals("${build.name}: and recalled at each read", listOf(reads(stock).size, reads(stock).size),
+                listOf(count(REMEMBERED_POST), count(POST_LINK)))
         }
     }
 

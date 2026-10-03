@@ -14,7 +14,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 
 import app.morphe.extension.hushthreads.settings.FamilyNames;
@@ -114,6 +116,43 @@ public final class LinkCleaner {
         HookStatus.counted(FamilyNames.SANITIZE_SHARING_LINKS,
                 own.equals(url) ? "short links kept, no author or code" : "short links replaced");
         return own;
+    }
+
+    /**
+     * The post each share coroutine fetched a link for, by the coroutine. Send, WhatsApp status and
+     * Instagram story, and WhatsApp quick sends let go of the post while they wait for its link,
+     * then come back as the same coroutine object, so the post waits here against that object for
+     * as long as it lives.
+     */
+    private static final Map<Object, Object> POSTS = Collections.synchronizedMap(new WeakHashMap<>());
+
+    /**
+     * Injected just before a share coroutine waits for a post's link, with the coroutine and the
+     * post. Keeps nothing for a null post, or while the switch is off, HushThreads is paused or the
+     * settings aren't ready yet. Never throws.
+     */
+    public static void rememberPost(Object coroutine, Object post) {
+        if (coroutine == null || post == null) return;
+        try {
+            if (!Utils.settingsReady() || !Settings.SANITIZE_SHARING_LINKS.get()) return;
+            POSTS.put(coroutine, post);
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.SANITIZE_SHARING_LINKS, "post kept for a share", t);
+        }
+    }
+
+    /**
+     * Injected where that coroutine reads the link, before {@link #postLink}: the post kept for it,
+     * or null, which leaves the link as it came. Never throws.
+     */
+    public static Object rememberedPost(Object coroutine) {
+        if (coroutine == null) return null;
+        try {
+            return POSTS.get(coroutine);
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.SANITIZE_SHARING_LINKS, "post kept for a share", t);
+            return null;
+        }
     }
 
     /**

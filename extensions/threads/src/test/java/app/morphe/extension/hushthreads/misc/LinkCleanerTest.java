@@ -181,6 +181,74 @@ public class LinkCleanerTest {
         assertTrue(report, !report.contains("private-marker") && !report.contains("https://"));
     }
 
+    @Test
+    public void aPostKeptForAShareComesBackForThatShareOnly() {
+        Object send = new Object();
+        Object story = new Object();
+        Object sendPost = new Object();
+        Object storyPost = new Object();
+        LinkCleaner.rememberPost(send, sendPost);
+        LinkCleaner.rememberPost(story, storyPost);
+        assertSame(sendPost, LinkCleaner.rememberedPost(send));
+        assertSame(storyPost, LinkCleaner.rememberedPost(story));
+        assertNull(LinkCleaner.rememberedPost(new Object()));
+        assertNull(LinkCleaner.rememberedPost(null));
+        // Quick sends pass their emptied post field again when they resume: that keeps the post.
+        LinkCleaner.rememberPost(send, null);
+        assertSame(sendPost, LinkCleaner.rememberedPost(send));
+        LinkCleaner.rememberPost(null, sendPost);
+        assertEquals(Collections.emptyList(), HookStatus.report());
+    }
+
+    @Test
+    public void aShareThatEndsLetsGoOfItsPost() throws Exception {
+        Object coroutine = new Object();
+        java.lang.ref.WeakReference<Object> gone = new java.lang.ref.WeakReference<>(coroutine);
+        LinkCleaner.rememberPost(coroutine, new Object());
+        coroutine = null;
+        for (int i = 0; i < 50 && gone.get() != null; i++) {
+            System.gc();
+            Thread.sleep(10);
+        }
+        assertNull("the kept post held its coroutine", gone.get());
+    }
+
+    @Test
+    public void nothingIsKeptWhileOffNotReadyOrPaused() throws Exception {
+        Object coroutine = new Object();
+        Settings.SANITIZE_SHARING_LINKS.save(false);
+        LinkCleaner.rememberPost(coroutine, new Object());
+        assertNull(LinkCleaner.rememberedPost(coroutine));
+        Settings.SANITIZE_SHARING_LINKS.save(true);
+        SettingsContextRule.withoutContext(() -> LinkCleaner.rememberPost(coroutine, new Object()));
+        assertNull(LinkCleaner.rememberedPost(coroutine));
+        java.lang.reflect.Method pause = Setting.class.getDeclaredMethod("setPausedForProcess", boolean.class);
+        pause.setAccessible(true);
+        try {
+            pause.invoke(null, true);
+            LinkCleaner.rememberPost(coroutine, new Object());
+        } finally {
+            pause.invoke(null, false);
+        }
+        assertNull(LinkCleaner.rememberedPost(coroutine));
+        assertEquals(Collections.emptyList(), HookStatus.report());
+    }
+
+    @Test
+    @Config(shadows = ThrowingSettingsRead.class, instrumentedPackages = "app.morphe.extension.shared")
+    public void aSettingsReadFailureKeepsNoPost() {
+        Object coroutine = new Object();
+        try {
+            ThrowingSettingsRead.fail = true;
+            LinkCleaner.rememberPost(coroutine, new Object());
+        } finally {
+            ThrowingSettingsRead.fail = false;
+        }
+        assertNull(LinkCleaner.rememberedPost(coroutine));
+        String report = HookStatus.report().toString();
+        assertTrue(report, report.contains("post kept for a share"));
+    }
+
     @Implements(Utils.class)
     public static class ThrowingSettingsRead {
         static boolean fail;

@@ -689,6 +689,11 @@ public class BadDexFixture {
     private static final String FEATURE_SHARE = "Lfixture/ShareResult;";
     private static final ImmutableMethodReference POST_LINKER = method(FEATURE_LINKS, "postLink", "Ljava/lang/String;", "Ljava/lang/String;", OBJECT, "Ljava/lang/String;");
     private static final ImmutableMethodReference LINK_GETTER = method(FEATURE_RESPONSE, "link", "Ljava/lang/String;");
+    private static final String FEATURE_SEND = "Lfixture/Send;";
+    private static final String FEATURE_QUICK = "Lfixture/QuickSends;";
+    private static final ImmutableMethodReference PLAIN_FETCH = method(FEATURE_REPOSITORY, "plain", OBJECT, OBJECT, FEATURE_MEDIA, OBJECT, OBJECT);
+    private static final ImmutableMethodReference POST_KEEPER = method(FEATURE_LINKS, "rememberPost", "V", OBJECT, OBJECT);
+    private static final ImmutableMethodReference POST_RECALL = method(FEATURE_LINKS, "rememberedPost", OBJECT, OBJECT);
     private static final String FEATURE_BROWSER = "Lapp/morphe/extension/hushthreads/misc/ExternalBrowser;";
     private static final String CONTEXT = "Landroid/content/Context;";
     private static final ImmutableMethodReference LINK_OPENER = method(FEATURE_BROWSER, "open", "Z", CONTEXT, "Ljava/lang/String;");
@@ -725,6 +730,40 @@ public class BadDexFixture {
                 ifEqz(1, 6),
                 virtual(USERNAME, 1), op(Opcode.MOVE_RESULT_OBJECT, 1),
                 invoke(POST_LINKER, fault.equals("post-link-register") ? 0 : link, 1, 0), op(Opcode.MOVE_RESULT_OBJECT, link));
+    }
+
+    /**
+     * A resumed share's hook after a read into [link]: the post kept against [key] back into v7,
+     * cast to a post, then the share-link hook. Faults named [prefix] plus recall-key, recall-cast or
+     * post-link-bypass break only this copy.
+     */
+    private static List<Instruction> recallHook(int key, int link, String fault, String prefix) {
+        List<Instruction> hook = new ArrayList<>(List.of(invoke(POST_RECALL, fault.equals(prefix + "recall-key") ? link : key),
+                op(Opcode.MOVE_RESULT_OBJECT, 7), type(Opcode.CHECK_CAST, 7, fault.equals(prefix + "recall-cast") ? FEATURE_USER : FEATURE_MEDIA)));
+        hook.addAll(postLinkHook(link, fault.equals(prefix + "post-link-bypass") ? "post-link-bypass" : ""));
+        return hook;
+    }
+
+    /**
+     * [body] behind a one-case packed switch on v4, like the switch over a lambda's kind that Threads'
+     * quick sends case sits in. The payload is aligned with a nop when [body] leaves it odd, so the
+     * hooks, which add an odd number of code units, take that nop away again.
+     */
+    private static Instruction[] switched(List<Instruction> body) {
+        List<Instruction> rest = new ArrayList<>(List.of(new ImmutableInstruction11n(Opcode.CONST_4, 2, 0), op(Opcode.RETURN_OBJECT, 2)));
+        rest.addAll(body);
+        // const/4 at 0 and the switch at 1 take four units, the null return two, so the case starts at 6.
+        int payload = 4;
+        for (Instruction i : rest) payload += i.getCodeUnits();
+        if (payload % 2 != 0) {
+            rest.add(op(Opcode.NOP));
+            payload++;
+        }
+        List<Instruction> all = new ArrayList<>(List.of(new ImmutableInstruction11n(Opcode.CONST_4, 4, 0),
+                new ImmutableInstruction31t(Opcode.PACKED_SWITCH, 4, payload - 1)));
+        all.addAll(rest);
+        all.add(new ImmutablePackedSwitchPayload(Collections.singletonList(new ImmutableSwitchElement(0, 6 - 1))));
+        return all.toArray(new Instruction[0]);
     }
 
     private static Instruction virtual(ImmutableMethodReference callee, int... registers) {
@@ -1454,7 +1493,9 @@ public class BadDexFixture {
                 objectField(Opcode.IPUT_OBJECT, 2, 1, FEATURE_SHARE, "link", "Ljava/lang/String;"),
                 objectField(Opcode.IPUT_OBJECT, 7, 1, FEATURE_SHARE, "post", FEATURE_MEDIA), op(Opcode.RETURN_OBJECT, 1)));
         classes.add(featureClass(FEATURE_REPOSITORY, OBJECT, List.of(), define(FEATURE_REPOSITORY, "fetch", OBJECT, false,
-                body(10, fetch.toArray(new Instruction[0])), OBJECT, FEATURE_MEDIA, OBJECT, OBJECT)));
+                body(10, fetch.toArray(new Instruction[0])), OBJECT, FEATURE_MEDIA, OBJECT, OBJECT),
+                define(FEATURE_REPOSITORY, "plain", OBJECT, false, body(6, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0)),
+                        OBJECT, FEATURE_MEDIA, OBJECT, OBJECT)));
         classes.add(featureClass(FEATURE_SHARE, OBJECT, List.of(featureField(FEATURE_SHARE, "raw", "Ljava/lang/String;"),
                 featureField(FEATURE_SHARE, "link", "Ljava/lang/String;"), featureField(FEATURE_SHARE, "post", FEATURE_MEDIA)),
                 define(FEATURE_SHARE, "<init>", "V", false, body(1, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)))));
@@ -1471,6 +1512,31 @@ public class BadDexFixture {
         copied.add(op(Opcode.RETURN_OBJECT, 2));
         classes.add(featureClass(FEATURE_HOLDER, OBJECT, List.of(featureField(FEATURE_HOLDER, "post", FEATURE_MEDIA)),
                 define(FEATURE_HOLDER, "copied", OBJECT, false, body(10, copied.toArray(new Instruction[0])), OBJECT)));
+        // Send: a static use case hands the plain fetch its post and its continuation, then reads the
+        // link after resuming without the post. v0..v7 locals, the use case in v8, the post in v9 and
+        // the continuation in v10, copied into v5.
+        List<Instruction> send = new ArrayList<>(List.of(new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 5, 10),
+                type(Opcode.NEW_INSTANCE, 2, FEATURE_REPOSITORY)));
+        if (links && !fault.equals("resume-remember-missing")) send.add(invoke(POST_KEEPER, fault.equals("resume-remember-key") ? 8 : 5, 9));
+        send.addAll(List.of(virtual(PLAIN_FETCH, 2, 8, 9, 8, 5), op(Opcode.MOVE_RESULT_OBJECT, 3),
+                type(Opcode.CHECK_CAST, 3, FEATURE_RESPONSE), virtual(LINK_GETTER, 3), op(Opcode.MOVE_RESULT_OBJECT, 4)));
+        if (links && !fault.equals("resume-recall-missing")) send.addAll(recallHook(5, 4, fault, "resume-"));
+        send.add(op(Opcode.RETURN_OBJECT, 4));
+        classes.add(featureClass(FEATURE_SEND, OBJECT, List.of(), define(FEATURE_SEND, "send", OBJECT, true,
+                body(11, send.toArray(new Instruction[0])), FEATURE_SEND, FEATURE_MEDIA, OBJECT)));
+        // Quick sends: a coroutine body takes its post out of its own Object field and empties the
+        // field before it waits, in one case of a switch. v0..v7 locals, this in v8 and the resumed
+        // result in v9.
+        List<Instruction> quick = new ArrayList<>(List.of(objectField(Opcode.IGET_OBJECT, 6, 8, FEATURE_QUICK, "post", OBJECT),
+                type(Opcode.CHECK_CAST, 6, FEATURE_MEDIA)));
+        if (links && !fault.equals("quick-remember-missing")) quick.add(invoke(POST_KEEPER, 8, fault.equals("quick-remember-post") ? 9 : 6));
+        quick.addAll(List.of(new ImmutableInstruction11n(Opcode.CONST_4, 5, 0), objectField(Opcode.IPUT_OBJECT, 5, 8, FEATURE_QUICK, "post", OBJECT),
+                new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 3, 9), type(Opcode.CHECK_CAST, 3, FEATURE_RESPONSE),
+                virtual(LINK_GETTER, 3), op(Opcode.MOVE_RESULT_OBJECT, 2)));
+        if (links && !fault.equals("quick-recall-missing")) quick.addAll(recallHook(8, 2, fault, "quick-"));
+        quick.add(op(Opcode.RETURN_OBJECT, 2));
+        classes.add(featureClass(FEATURE_QUICK, OBJECT, List.of(featureField(FEATURE_QUICK, "post", OBJECT)),
+                define(FEATURE_QUICK, "invokeSuspend", OBJECT, false, body(10, switched(quick)), OBJECT)));
         classes.add(featureClass(FEATURE_USER, OBJECT, List.of(), pandoGetter(FEATURE_USER, "username", "Ljava/lang/String;", "username")));
         classes.add(featureClass(FEATURE_PARENT, OBJECT, List.of(), define(FEATURE_PARENT, "<init>", "V", false,
                 body(2, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), "Ljava/lang/String;")));
@@ -1711,6 +1777,8 @@ public class BadDexFixture {
         for (String fault : List.of("feed-missing", "feed-replaced", "feed-register", "feed-duplicate", "item-stub", "ad-target", "ad-discarded", "ad-body", "ad-helper-body", "getter-body", "ad-helper-native", "getter-static",
                 "link-missing", "link-replaced", "link-register", "post-link-missing", "post-link-register", "post-link-getter", "post-link-bypass",
                 "holder-link-missing", "holder-link-receiver", "holder-link-field", "holder-post-link-register", "holder-post-link-bypass",
+                "resume-remember-missing", "resume-remember-key", "resume-recall-missing", "resume-recall-key", "resume-recall-cast",
+                "resume-post-link-bypass", "quick-remember-missing", "quick-remember-post", "quick-recall-key", "quick-post-link-bypass",
                 "browser-missing", "browser-register", "browser-bypass", "browser-clobber",
                 "pigeon-missing", "pigeon-replaced", "pigeon-bypass",
                 "default-missing", "mqtt-missing", "trust-missing", "trust-replaced", "trust-fallback", "status-missing", "status-false")) {

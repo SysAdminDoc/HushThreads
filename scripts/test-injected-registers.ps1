@@ -653,6 +653,8 @@ try {
     $featureFaults = @('feed-missing', 'feed-replaced', 'feed-register', 'feed-duplicate', 'item-stub', 'ad-target', 'ad-discarded', 'ad-body', 'ad-helper-body', 'getter-body', 'ad-helper-native', 'getter-static',
         'link-missing', 'link-replaced', 'link-register', 'post-link-missing', 'post-link-register', 'post-link-getter', 'post-link-bypass',
         'holder-link-missing', 'holder-link-receiver', 'holder-link-field', 'holder-post-link-register', 'holder-post-link-bypass',
+        'resume-remember-missing', 'resume-remember-key', 'resume-recall-missing', 'resume-recall-key', 'resume-recall-cast',
+        'resume-post-link-bypass', 'quick-remember-missing', 'quick-remember-post', 'quick-recall-key', 'quick-post-link-bypass',
         'browser-missing', 'browser-register', 'browser-bypass', 'browser-clobber',
         'pigeon-missing', 'pigeon-replaced', 'pigeon-bypass',
         'default-missing', 'mqtt-missing', 'trust-missing', 'trust-replaced', 'trust-fallback',

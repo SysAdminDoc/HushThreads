@@ -1932,6 +1932,8 @@ public class DexDiff {
     private static final String FILTER_PAGE = ADS + "filter(Ljava/util/List;)Ljava/util/List;";
     private static final String CLEAN_LINK = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->sanitizeShared(Ljava/lang/String;)Ljava/lang/String;";
     private static final String POST_LINK = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->postLink(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;";
+    private static final String REMEMBER_POST = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->rememberPost(Ljava/lang/Object;Ljava/lang/Object;)V";
+    private static final String REMEMBERED_POST = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->rememberedPost(Ljava/lang/Object;)Ljava/lang/Object;";
     private static final String OPEN_LINK = "Lapp/morphe/extension/hushthreads/misc/ExternalBrowser;->open(Landroid/content/Context;Ljava/lang/String;)Z";
     /** What only Threads' browser launcher logs, the string Open links in browser finds it by. */
     private static final String LAUNCHER_MESSAGE = "ThreadsBrowserLauncher: cookie injection failed; system WebView unavailable";
@@ -2068,6 +2070,14 @@ public class DexDiff {
         int at = prefix;
         for (int k = 0; k < old.instructions.size(); k++) {
             requireFeature(at < now.instructions.size(), featureSig(stock) + " lost original instruction " + k);
+            // The nop that aligns a payload comes and goes with the length of the code inserted above it.
+            boolean oldPad = alignsPayload(old.instructions, k);
+            if (oldPad && !alignsPayload(now.instructions, at)) {
+                relocated.put(old.addresses.get(k), now.addresses.get(at));
+                operations[k] = at;
+                continue;
+            }
+            if (!oldPad && alignsPayload(now.instructions, at)) at++;
             relocated.put(old.addresses.get(k), now.addresses.get(at));
             Integer register = insertions.get(k);
             if (register != null) {
@@ -2144,6 +2154,13 @@ public class DexDiff {
         }
         requireFeature(protectedRanges.get(0).equals(protectedRanges.get(1)),
                 featureSig(stock) + " changed a protected range or ordered exception handlers");
+    }
+
+    /** Whether [body] at [index] is the nop dex puts before a payload to align it. */
+    private static boolean alignsPayload(List<Instruction> body, int index) {
+        if (index + 1 >= body.size() || body.get(index).getOpcode() != Opcode.NOP) return false;
+        Opcode next = body.get(index + 1).getOpcode();
+        return next == Opcode.PACKED_SWITCH_PAYLOAD || next == Opcode.SPARSE_SWITCH_PAYLOAD || next == Opcode.ARRAY_PAYLOAD;
     }
 
     private static void featureHostCalls(Map<String, List<Method>> methods, String callee, Map<String, Integer> expected) {
@@ -2984,7 +3001,98 @@ public class DexDiff {
             calls.put(featureSig(m), holderReads.size());
         }
         requireFeature(calls.size() > 1, "nothing that holds a post reads the permalink");
+
+        // Send, WhatsApp status or Instagram story, and WhatsApp quick sends read the link in a
+        // coroutine that has let go of its post. The post goes to the extension against the
+        // coroutine before the wait, and comes back out for the same hook after each read.
+        Map<String, Integer> remembers = new TreeMap<>(), recalls = new TreeMap<>();
+        boolean fetcher = false;
+        for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+            String type = m.getDefiningClass();
+            if (m.getImplementation() == null || calls.containsKey(featureSig(m)) || type.equals(PERMALINK_REPOSITORY)
+                    || type.startsWith("Lapp/morphe/extension/")) continue;
+            List<Instruction> stock = instructions(m);
+            List<Integer> stockReads = linkReads(stock, owners, getters);
+            if (stockReads.isEmpty()) continue;
+            List<Integer> fetches = new ArrayList<>();
+            for (int k = 0; k < stock.size(); k++) if (plainFetch(stock.get(k), fetch)) fetches.add(k);
+            int self = m.getImplementation().getRegisterCount() - 2;
+            Map<Integer, FeatureBlock> resumed = new HashMap<>();
+            final int key;
+            if (!fetches.isEmpty()) {
+                // The receiver, then the four arguments: the post is the second and the continuation the last.
+                key = invokeRegisters(stock.get(fetches.get(0)))[4];
+                for (int call : fetches) {
+                    int[] arguments = invokeRegisters(stock.get(call));
+                    requireFeature(arguments[4] == key, featureSig(m) + " hands the plain fetch more than one continuation");
+                    resumed.put(call, (now, at) -> featureRemember(now, at, key, arguments[2]));
+                }
+                fetcher = true;
+            } else if (m.getName().equals("invokeSuspend") && !AccessFlags.STATIC.isSet(m.getAccessFlags())
+                    && m.getParameterTypes().size() == 1 && m.getParameterTypes().get(0).toString().equals("Ljava/lang/Object;")
+                    && m.getReturnType().equals("Ljava/lang/Object;")) {
+                key = self;
+                for (int read : stockReads) {
+                    int cast = read - 1;
+                    while (cast > 0 && !ownPostCast(stock, cast, self, type)) cast--;
+                    requireFeature(cast > 0, featureSig(m) + " reads the permalink with no cast of its own post field before it");
+                    int kept = registerA(stock.get(cast));
+                    resumed.put(cast + 1, (now, at) -> featureRemember(now, at, self, kept));
+                }
+            } else {
+                continue;
+            }
+            remembers.put(featureSig(m), resumed.size());
+            for (int read : stockReads) {
+                int value = registerA(stock.get(read + 1));
+                resumed.put(read + 2, (now, at) -> featureResumeLink(clean, now, at, value, key));
+            }
+            featureBody(m, featureMethod(patched, featureSig(m)), 0, Map.of(), POST_LINK, null, resumed);
+            recalls.put(featureSig(m), stockReads.size());
+            calls.put(featureSig(m), stockReads.size());
+        }
+        requireFeature(fetcher, "nothing outside a holder hands the plain fetch a post and reads the permalink");
         featureHostCalls(patched, POST_LINK, calls);
+        featureHostCalls(patched, REMEMBER_POST, remembers);
+        featureHostCalls(patched, REMEMBERED_POST, recalls);
+    }
+
+    /** A call to the repository's plain fetch: a post in, the answer out, and not [own], the fetch hooked inside. */
+    private static boolean plainFetch(Instruction i, Method own) {
+        if ((i.getOpcode() != Opcode.INVOKE_VIRTUAL && i.getOpcode() != Opcode.INVOKE_VIRTUAL_RANGE)
+                || !(((ReferenceInstruction) i).getReference() instanceof MethodReference)) return false;
+        MethodReference call = (MethodReference) ((ReferenceInstruction) i).getReference();
+        return call.getDefiningClass().equals(PERMALINK_REPOSITORY) && call.getReturnType().equals("Ljava/lang/Object;")
+                && call.getParameterTypes().size() == 4 && call.getParameterTypes().get(1).toString().equals(MEDIA)
+                && !featureSig(call).equals(featureSig(own));
+    }
+
+    /** Whether [body] at [k] casts to a post what the instruction before read out of [owner]'s own field through this in [self]. */
+    private static boolean ownPostCast(List<Instruction> body, int k, int self, String owner) {
+        if (body.get(k).getOpcode() != Opcode.CHECK_CAST || !reference(body.get(k)).equals(MEDIA)
+                || body.get(k - 1).getOpcode() != Opcode.IGET_OBJECT) return false;
+        TwoRegisterInstruction load = (TwoRegisterInstruction) body.get(k - 1);
+        return load.getRegisterB() == self && load.getRegisterA() == registerA(body.get(k))
+                && ((FieldReference) ((ReferenceInstruction) load).getReference()).getDefiningClass().equals(owner);
+    }
+
+    /** The post going to the extension against the coroutine in [key], just before the share waits. */
+    private static int featureRemember(List<Instruction> body, int at, int key, int post) {
+        requireFeature(at < body.size() && isStaticInvoke(body.get(at).getOpcode()) && reference(body.get(at)).equals(REMEMBER_POST)
+                && Arrays.equals(invokeRegisters(body.get(at)), new int[]{key, post}), "missing or miswired " + REMEMBER_POST + " at instruction " + at);
+        return 1;
+    }
+
+    /** A resumed share's hook: the post kept against [key] back out of the extension, cast to a post, then the fetch's hook with it. */
+    private static int featureResumeLink(Map<String, List<Method>> clean, List<Instruction> body, int at, int link, int key) {
+        requireFeature(at + 3 <= body.size() && isStaticInvoke(body.get(at).getOpcode()) && reference(body.get(at)).equals(REMEMBERED_POST)
+                && Arrays.equals(invokeRegisters(body.get(at)), new int[]{key}) && body.get(at + 1).getOpcode() == Opcode.MOVE_RESULT_OBJECT,
+                "missing or miswired " + REMEMBERED_POST + " at instruction " + at);
+        int post = registerA(body.get(at + 1));
+        requireFeature(post != key && post != link && body.get(at + 2).getOpcode() == Opcode.CHECK_CAST
+                && registerA(body.get(at + 2)) == post && reference(body.get(at + 2)).equals(MEDIA),
+                "resumed link hook doesn't cast the post it got back at " + (at + 2));
+        return 3 + featurePostLink(clean, body, at + 3, link, post);
     }
 
     /** The reads of the permalink in [body]: a call to one of [getters] on [owners], and its result. */
@@ -3265,6 +3373,8 @@ public class DexDiff {
             case "sanitizeSharingLinks":
                 featureHostCalls(patched, CLEAN_LINK, Map.of());
                 featureHostCalls(patched, POST_LINK, Map.of());
+                featureHostCalls(patched, REMEMBER_POST, Map.of());
+                featureHostCalls(patched, REMEMBERED_POST, Map.of());
                 featurePreserveTargets(clean, patched, m -> holds(m, "permalink", "XDTPermalinkResponse")
                         || m.getDefiningClass().equals(PERMALINK_REPOSITORY));
                 break;
