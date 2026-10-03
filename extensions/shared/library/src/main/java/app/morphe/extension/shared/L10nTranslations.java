@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(344);
+        Map<String, String> table = new HashMap<>(350);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -317,6 +317,8 @@ public final class L10nTranslations {
                 "Unterst\u00fctzte Links");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Entfernt Tracking-Tags wie xmt und slof aus den Beitragslinks, die du kopierst oder teilst. Ein kurzer Teilen-Link wird zum eigenen Link des Beitrags.");
+        table.put("Tap to play videos",
+                "Videos per Tippen abspielen");
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -383,6 +385,10 @@ public final class L10nTranslations {
                 "Version");
         table.put("Version %1$s for Threads %2$s",
                 "Version %1$s f\u00fcr Threads %2$s");
+        table.put("Videos in your feed",
+                "Videos in deinem Feed");
+        table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
+                "Videos in deinem Feed warten auf ein Tippen, statt beim Scrollen abzuspielen.");
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Weblinks, die du antippst, \u00f6ffnen sich in deinem Standardbrowser oder in der App f\u00fcr diese Seite, ohne den Klick-Tracker von Threads. Seiten von Threads, Instagram und andere Meta-Seiten \u00f6ffnen sich weiter in Threads.");
         table.put("Where you left off in your feed",
@@ -408,7 +414,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(344);
+        Map<String, String> table = new HashMap<>(350);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -678,6 +684,8 @@ public final class L10nTranslations {
                 "Enlaces compatibles");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Quita las etiquetas de seguimiento, como xmt y slof, de los enlaces de publicaciones que copias o compartes. Un enlace corto para compartir pasa a ser el enlace propio de la publicaci\u00f3n.");
+        table.put("Tap to play videos",
+                "Tocar para reproducir videos");
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -744,6 +752,10 @@ public final class L10nTranslations {
                 "Versi\u00f3n");
         table.put("Version %1$s for Threads %2$s",
                 "Versi\u00f3n %1$s para Threads %2$s");
+        table.put("Videos in your feed",
+                "Videos de tu feed");
+        table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
+                "Los videos de tu feed esperan a que los toques en lugar de reproducirse mientras te desplazas.");
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Los enlaces web que tocas se abren en tu navegador predeterminado, o en la app de ese sitio, sin el rastreador de clics de Threads. Las p\u00e1ginas de Threads, Instagram y otras de Meta siguen abri\u00e9ndose en Threads.");
         table.put("Where you left off in your feed",
@@ -769,7 +781,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(344);
+        Map<String, String> table = new HashMap<>(350);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1039,6 +1051,8 @@ public final class L10nTranslations {
                 "Tautan yang didukung");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Menghapus tag pelacakan seperti xmt dan slof dari tautan postingan yang Anda salin atau bagikan. Tautan berbagi pendek diganti dengan tautan postingan itu sendiri.");
+        table.put("Tap to play videos",
+                "Ketuk untuk memutar video");
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushThreads lagi.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1105,6 +1119,10 @@ public final class L10nTranslations {
                 "Versi");
         table.put("Version %1$s for Threads %2$s",
                 "Versi %1$s untuk Threads %2$s");
+        table.put("Videos in your feed",
+                "Video di feed Anda");
+        table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
+                "Video di feed Anda menunggu diketuk, bukan diputar saat Anda menggulir.");
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Tautan web yang Anda ketuk terbuka di browser default Anda, atau aplikasi untuk situs itu, tanpa pelacak klik Threads. Halaman Threads, Instagram, dan halaman Meta lainnya tetap terbuka di Threads.");
         table.put("Where you left off in your feed",
@@ -1130,7 +1148,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(344);
+        Map<String, String> table = new HashMap<>(350);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1400,6 +1418,8 @@ public final class L10nTranslations {
                 "Links compat\u00edveis");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Remove dos links de publica\u00e7\u00f5es que voc\u00ea copia ou compartilha as tags de rastreamento, como xmt e slof. Um link curto de compartilhamento vira o link da pr\u00f3pria publica\u00e7\u00e3o.");
+        table.put("Tap to play videos",
+                "Tocar para reproduzir v\u00eddeos");
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1466,6 +1486,10 @@ public final class L10nTranslations {
                 "Vers\u00e3o");
         table.put("Version %1$s for Threads %2$s",
                 "Vers\u00e3o %1$s para o Threads %2$s");
+        table.put("Videos in your feed",
+                "V\u00eddeos do seu feed");
+        table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
+                "Os v\u00eddeos do seu feed esperam um toque em vez de come\u00e7ar a tocar enquanto voc\u00ea rola a tela.");
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Links da web que voc\u00ea toca abrem no seu navegador padr\u00e3o, ou no app desse site, sem o rastreador de cliques do Threads. P\u00e1ginas do Threads, do Instagram e outras da Meta continuam abrindo no Threads.");
         table.put("Where you left off in your feed",
@@ -1491,7 +1515,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(344);
+        Map<String, String> table = new HashMap<>(350);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -1761,6 +1785,8 @@ public final class L10nTranslations {
                 "Desteklenen ba\u011flant\u0131lar");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Kopyalad\u0131\u011f\u0131n veya payla\u015ft\u0131\u011f\u0131n g\u00f6nderi ba\u011flant\u0131lar\u0131ndan xmt ve slof gibi izleme etiketlerini kald\u0131r\u0131r. K\u0131sa payla\u015f\u0131m ba\u011flant\u0131s\u0131, g\u00f6nderinin kendi ba\u011flant\u0131s\u0131na d\u00f6n\u00fc\u015f\u00fcr.");
+        table.put("Tap to play videos",
+                "Videolar\u0131 dokunarak oynat");
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1827,6 +1853,10 @@ public final class L10nTranslations {
                 "S\u00fcr\u00fcm");
         table.put("Version %1$s for Threads %2$s",
                 "Threads %2$s i\u00e7in %1$s s\u00fcr\u00fcm\u00fc");
+        table.put("Videos in your feed",
+                "Ak\u0131\u015ftaki videolar");
+        table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
+                "Ak\u0131\u015ftaki videolar, kayd\u0131r\u0131rken kendili\u011finden oynamak yerine dokunman\u0131 bekler.");
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Dokundu\u011fun web ba\u011flant\u0131lar\u0131, Threads'in t\u0131klama izleyicisi olmadan varsay\u0131lan taray\u0131c\u0131nda veya o sitenin uygulamas\u0131nda a\u00e7\u0131l\u0131r. Threads, Instagram ve di\u011fer Meta sayfalar\u0131 yine Threads'te a\u00e7\u0131l\u0131r.");
         table.put("Where you left off in your feed",

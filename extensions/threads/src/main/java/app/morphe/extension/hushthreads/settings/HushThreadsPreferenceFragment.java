@@ -224,7 +224,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         Set<PatchFamily> build = PatchFamily.inThisBuild();
 
         if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_SUGGESTED_USERS)
-                || build.contains(PatchFamily.RETURN_REFRESH)) {
+                || build.contains(PatchFamily.RETURN_REFRESH) || build.contains(PatchFamily.VIDEO_AUTOPLAY)) {
             PreferenceCategory feed = category(screen, L10n.t("Feed"));
             if (build.contains(PatchFamily.HIDE_ADS)) feed.addPreference(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
                     L10n.t("Sponsored posts come out of For you and Following before Threads shows them, so no gap is "
@@ -240,6 +240,10 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 feed.addPreference(toggle(context, Settings.RETURN_REFRESH_NO_LIMIT,
                         L10n.t("No time limit"),
                         L10n.t("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.")));
+            }
+            if (build.contains(PatchFamily.VIDEO_AUTOPLAY)) {
+                feed.addPreference(toggle(context, Settings.DISABLE_VIDEO_AUTOPLAY, L10n.t("Tap to play videos"),
+                        L10n.t("Videos in your feed wait for a tap instead of playing as you scroll.")));
             }
         }
 

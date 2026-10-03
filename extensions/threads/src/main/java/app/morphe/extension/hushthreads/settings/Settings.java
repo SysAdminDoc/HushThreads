@@ -47,6 +47,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_return_refresh_no_limit", FALSE);
 
     /**
+     * Feed videos wait for a tap: the video a feed post would start as you scroll stays on its
+     * cover frame, and a tap opens it full screen, where it plays.
+     */
+    public static final BooleanSetting DISABLE_VIDEO_AUTOPLAY =
+            new BooleanSetting("hushthreads_disable_video_autoplay", TRUE);
+
+    /**
      * The tracking keys come off the post links Threads hands out when you copy or share one
      * (xmt, slof, igsh and the rest), with the rest of the link left as the server wrote it.
      */

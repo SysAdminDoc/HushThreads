@@ -60,12 +60,13 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-Source v0.0.4 builds contain 9 patches. All but Block background-return feed refresh are selected by default. The published v0.0.3 bundle contains 6 patches and has none of Hide suggested users, Block background-return feed refresh or Open links in browser.
+Source v0.0.4 builds contain 10 patches. All but Block background-return feed refresh and Disable video autoplay are selected by default. The published v0.0.3 bundle contains 6 patches and has none of Hide suggested users, Block background-return feed refresh, Disable video autoplay or Open links in browser.
 
 | Patch | What it does |
 |---|---|
 | `Block background-return feed refresh` | Keeps your place in the feed when you come back to Threads within ten minutes, or after any time away with No time limit on. Pull to refresh and a fresh launch still load new posts. |
 | `Disable analytics` | Redirects matched Pigeon, default event-log and MQTT analytics addresses. Settings show which address kinds were patched. Other telemetry may remain. |
+| `Disable video autoplay` | Videos in feed posts don't play by themselves as you scroll. Tap one to watch it full screen. |
 | `Hide ads` | Takes sponsored posts out of your Threads feed before they're shown. |
 | `Hide suggested users` | Removes verified server cards suggesting accounts to follow. Ordinary posts, reposts and unknown card types stay. |
 | `HushThreads settings` | Adds HushThreads settings to Threads. Long-press Threads' launcher icon, or open Additional settings in the app on Threads' App info page, to turn features on or off, pause HushThreads, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
@@ -77,6 +78,8 @@ Source v0.0.4 builds contain 9 patches. All but Block background-return feed ref
 The feed controls share one page filter. Each selected rule has its own switch and removal count. Pause restores the original page, and a failed card check keeps the whole page. Hide suggested users passes fixture checks on both source-supported builds. It hasn't been seen taking a real card out of a live feed yet, because the test account wasn't shown any.
 
 Block background-return feed refresh answers the four checks Threads makes as it comes back: the background refresh of For you, the reset to the main feed after a long absence, the feed's own reload and scroll to the top, and the swap to posts it fetched while you were away. The first check after you come back decides, and every other check within ten seconds gets the same answer. Its hooks pass fixture checks on both source-supported builds. On a Galaxy S22 with Threads 449, five minutes away kept the same posts on screen, while the same trip with the switch off reloaded the feed. Pull to refresh still loaded new posts, and eleven minutes away let Threads refresh as usual. The 448 build has only been checked against its code so far.
+
+Disable video autoplay holds the video that a post in your feed, a profile or a thread would start as you scroll. It stays on its cover frame until you tap it, and the full-screen viewer that opens plays it with its usual controls. Ad cards and trend previews still play as Threads decides, and so do Instagram videos shown inside a post. Threads may still load a video ahead of time. Its hook passes fixture checks on both source-supported builds. On an Android 16 emulator with Threads 449, feed videos stayed still with the switch on and played as usual with it off, and a tapped video played in the viewer. It hasn't been tried on a phone or on 448 yet.
 
 ## Settings
 

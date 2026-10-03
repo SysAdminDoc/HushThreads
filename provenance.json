@@ -223,6 +223,16 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/VideoAutoplay.java"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Disable video autoplay: whether a feed post's video is the one Threads picked to play, turned to false while the switch is on, and left as Threads gave it when the switch is off, HushThreads is paused or the settings aren't ready."
+    },
+    {
+      "paths": [
         "patches/src/main/kotlin/app/morphe/patches/threads/feed/**"
       ],
       "origin": "original",
@@ -231,7 +241,7 @@
         "https://github.com/SysAdminDoc/Hushfacebook"
       ],
       "license": "GPL-3.0-only",
-      "changes": "Block background-return feed refresh finds Threads' hot-start decision, reset to main feed, warm-start check and For you's swap to background posts in 449 and 448, and has each ask the extension. Hushfacebook's patch of the same name was the behavior reference."
+      "changes": "Block background-return feed refresh finds Threads' hot-start decision, reset to main feed, warm-start check and For you's swap to background posts in 449 and 448, and has each ask the extension. Hushfacebook's patch of the same name was the behavior reference. Disable video autoplay finds PostVideo and its playback effect by their Compose source notes in 449 and 448, checks that PostVideo plays by its fifth boolean, and has each single-media and carousel post call ask the extension for that flag first. It was found by reading both builds and a method trace of 449, and uses no outside code."
     },
     {
       "paths": [

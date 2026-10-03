@@ -78,6 +78,7 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_ADS, "Hide ads");
         ROW_TITLES.put(PatchFamily.HIDE_SUGGESTED_USERS, "Hide suggested users");
         ROW_TITLES.put(PatchFamily.RETURN_REFRESH, "Keep feed position on return");
+        ROW_TITLES.put(PatchFamily.VIDEO_AUTOPLAY, "Tap to play videos");
         ROW_TITLES.put(PatchFamily.SANITIZE_SHARING_LINKS, "Remove tracking from shared links");
         ROW_TITLES.put(PatchFamily.EXTERNAL_BROWSER, "Open links in your browser");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop analytics uploads");
@@ -182,7 +183,7 @@ public class HushThreadsPreferenceFragmentTest {
                 List<String> sections = sections(page);
                 List<String> expected = new ArrayList<>();
                 if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_SUGGESTED_USERS)
-                        || build.contains(PatchFamily.RETURN_REFRESH)) {
+                        || build.contains(PatchFamily.RETURN_REFRESH) || build.contains(PatchFamily.VIDEO_AUTOPLAY)) {
                     expected.add("Feed");
                 }
                 if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS) || build.contains(PatchFamily.EXTERNAL_BROWSER)
@@ -218,6 +219,9 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("No time limit", String.valueOf(page.findPreference(Settings.RETURN_REFRESH_NO_LIMIT.key).getTitle()));
             assertEquals("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh "
                     + "start still load new posts.", String.valueOf(page.findPreference(Settings.RETURN_REFRESH_NO_LIMIT.key).getSummary()));
+            assertEquals("Tap to play videos", String.valueOf(page.findPreference(Settings.DISABLE_VIDEO_AUTOPLAY.key).getTitle()));
+            assertEquals("Videos in your feed wait for a tap instead of playing as you scroll.",
+                    String.valueOf(page.findPreference(Settings.DISABLE_VIDEO_AUTOPLAY.key).getSummary()));
             assertEquals("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share "
                     + "link becomes the post's own link.", String.valueOf(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key).getSummary()));
             assertEquals("Open links in your browser", String.valueOf(page.findPreference(Settings.OPEN_LINKS_EXTERNALLY.key).getTitle()));
@@ -229,7 +233,7 @@ public class HushThreadsPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
             // Every selected feed/privacy switch ships on.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS, Settings.BLOCK_RETURN_REFRESH,
-                    Settings.SANITIZE_SHARING_LINKS, Settings.OPEN_LINKS_EXTERNALLY, Settings.DISABLE_ANALYTICS)) {
+                    Settings.DISABLE_VIDEO_AUTOPLAY, Settings.SANITIZE_SHARING_LINKS, Settings.OPEN_LINKS_EXTERNALLY, Settings.DISABLE_ANALYTICS)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             // The time limit holds until someone lifts it.

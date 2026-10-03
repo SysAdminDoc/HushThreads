@@ -34,6 +34,7 @@ import java.util.Set;
 import app.morphe.extension.hushthreads.ads.FeedAds;
 import app.morphe.extension.hushthreads.ads.ShadowFeedAds;
 import app.morphe.extension.hushthreads.feed.ReturnRefresh;
+import app.morphe.extension.hushthreads.feed.VideoAutoplay;
 import app.morphe.extension.hushthreads.misc.Analytics;
 import app.morphe.extension.hushthreads.misc.ExternalBrowser;
 import app.morphe.extension.hushthreads.misc.LinkCleaner;
@@ -114,6 +115,8 @@ public class PausedHooksTest {
                     ReturnRefresh.uiHidden();
                     return !ReturnRefresh.cachedPosts(true);
                 }));
+        // A feed video Threads would play by itself waits for a tap.
+        probes.put(PatchFamily.VIDEO_AUTOPLAY, Collections.singletonList(() -> !VideoAutoplay.play(true)));
         // A shared post link loses the tracking tags Threads added to it, and a short one becomes the post's own.
         probes.put(PatchFamily.SANITIZE_SHARING_LINKS, Arrays.asList(
                 () -> {

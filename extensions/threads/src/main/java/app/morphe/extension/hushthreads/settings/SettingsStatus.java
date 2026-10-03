@@ -33,6 +33,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean disableVideoAutoplay() {
+        return false;
+    }
+
     public static boolean sanitizeSharingLinks() {
         return false;
     }
