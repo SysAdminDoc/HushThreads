@@ -4,6 +4,10 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+## 0.0.8 (2026-10-03)
+
+* **Threads:** Restore screens on re-signed builds also recognizes Threads' local reads of an Instagram installed with the same current signing key. The provider lookup verifies exact package names, separate UID ownership and the installed certificate. Other keys, shared UIDs and unrelated Binder callers keep the original answer. This repairs the consumer check that rejected Instagram before requesting sign-in information. On Android 17 with Threads 449 and same-key HushGram 0.0.4, selecting Instagram's account tile reached the feed without a password. A control with Instagram disabled required manual sign-in, which also passed. Both apps' data and keys were preserved.
+
 ## 0.0.7 (2026-10-03)
 
 * **Threads:** The bug report form includes Shizuku installs. The sign-in guide corrects the Android 17 report's install method and records successful settings-only and full-bundle password checks with Shizuku's installer identity and session options. Same-key Instagram provider access passed, but Continue as still wasn't offered. The reported password failures remain open.

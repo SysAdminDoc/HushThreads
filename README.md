@@ -1,7 +1,7 @@
 ![HushThreads. Keep the thread. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.7-000000" alt="Version 0.0.7"></a>
+  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.8-000000" alt="Version 0.0.8"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Threads-449.0.0.54.82-000000" alt="Threads 449.0.0.54.82">
@@ -14,7 +14,7 @@ HushThreads is a Morphe patch bundle for Android that takes the ads out of Threa
 
 The latest release is [v0.0.4](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.4), with 10 patches.
 
-The source build is v0.0.7. It hasn't been released yet.
+The source build is v0.0.8. It hasn't been released yet.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -62,7 +62,7 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-HushThreads v0.0.7 has 10 patches. All but Block background-return feed refresh and Disable video autoplay are selected by default.
+HushThreads v0.0.8 has 10 patches. All but Block background-return feed refresh and Disable video autoplay are selected by default.
 
 | Patch | What it does |
 |---|---|
@@ -74,7 +74,7 @@ HushThreads v0.0.7 has 10 patches. All but Block background-return feed refresh 
 | `HushThreads settings` | Adds HushThreads settings to Threads. Long-press Threads' launcher icon, or open Additional settings in the app on Threads' App info page, to turn features on or off, pause HushThreads, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
 | `Open links in browser` | Opens the web links you tap in your default browser instead of Threads' own, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads. |
 | `Remove the advertising ID` | Stops Threads getting your phone's advertising ID from Google Play services. Threads gets a string of zeros in its place. |
-| `Restore screens on re-signed builds` | Lets Threads trust itself again on a re-signed build, the way it trusts its Meta-signed self, and lets an Instagram you patch with this build's own key call into it the same as the real Instagram would. A Root Mount install doesn't need this patch. |
+| `Restore screens on re-signed builds` | Lets Threads trust itself again on a re-signed build and share sign-in information with an Instagram installed with this build's own key. Both apps keep their current signing keys. A Root Mount install doesn't need this patch. |
 | `Sanitize sharing links` | Takes Threads' tracking tags, such as xmt, off the links you share or copy, and turns a short share link into the post's own link. The post a link opens stays the same. |
 
 The feed controls share one page filter. Each selected rule has its own switch and removal count. Diagnostics also count the pages and items each enabled rule finished checking, including pages without matches. Disabled, paused and failed checks don't add to those counts. These are page checks, so checking the same page again adds another check. Pause restores the original page, and a failed card check keeps the whole page. Hide suggested users passes fixture checks on both source-supported builds. It hasn't been seen taking a real card out of a live feed yet, because the test account wasn't shown any.
@@ -104,13 +104,13 @@ On 2026-10-02, source builds declared both 448.0.0.54.85 and 449.0.0.54.82. Same
 
 Threads can show Save your login info twice. Tap Not now on each prompt if you don't want to save it.
 
-Stock Threads recovered that Instagram session automatically after its data was cleared. The patched builds offered the manual form, with no Continue as option. The same-key patched Instagram check on 2026-09-29 also offered only the manual form.
+In the earlier Android 16 comparison, stock Threads recovered the Instagram session automatically after its data was cleared. The published and older source builds offered the manual form, with no Continue as option. The same-key patched Instagram check on 2026-09-29 also offered only the manual form.
 
 With a Root Mount install you can sign in on stock Threads first. The mounted build uses stock Threads' data, so it keeps that session. On 2026-10-02, on Android 16, a mounted build with only HushThreads settings kept a stock session, and signing out and back in on it reached the feed too.
 
 On 2026-10-03, re-signed settings-only and full source 0.0.5 builds reached the feed on Android 17 with 16 KB pages and Instagram absent. They used the installer identity and session options from Morphe Manager 1.33.0's non-root Shizuku path. This checks one account in an emulator; the reported password failure hasn't reproduced there.
 
-Signed-in HushGram 0.0.4 with the same signing key returned one account row to Threads through each of Instagram's access and family providers on that emulator. The family provider had every column Threads' reader requires. Threads still offered the manual form after logout and a fresh launch. Provider access alone hasn't restored Continue as.
+Source 0.0.8 repairs a second sign-in check inside Threads. On the same Android 17 emulator, signed-in HushGram 0.0.4 with the same current signing key appeared as an Instagram account tile after Threads logged out. Selecting it reached the live feed without entering a password. With Instagram temporarily disabled, Threads offered only manual sign-in, which also reached the feed. Restoring Instagram brought the account tile back. This checks one account on Threads 449; other accounts and fresh sign-in on 448 still need testing.
 
 [The password-login failure reported on 2026-10-01](https://github.com/SysAdminDoc/HushThreads/discussions/2) and [the one on Android 17 with Shizuku](https://github.com/SysAdminDoc/HushThreads/issues/3) remain unresolved. The Android 17 reporter corrected the install method from Root Mount to Shizuku. These successful checks haven't identified the reports' cause or established login for every account.
 
