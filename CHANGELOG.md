@@ -4,6 +4,10 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+## 0.0.7 (2026-10-03)
+
+* **Threads:** The bug report form includes Shizuku installs. The sign-in guide corrects the Android 17 report's install method and records successful settings-only and full-bundle password checks with Shizuku's installer identity and session options. Same-key Instagram provider access passed, but Continue as still wasn't offered. The reported password failures remain open.
+
 ## 0.0.6 (2026-10-03)
 
 * **Threads:** The build's source guard parses Kotlin and Java import declarations to catch direct Guava imports with legal whitespace, comments, aliases or static imports. Examples in strings and comments, similar package names and an infix function named import remain allowed. The parsers are test dependencies and aren't included in the patch bundle.

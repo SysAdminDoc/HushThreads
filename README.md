@@ -1,7 +1,7 @@
 ![HushThreads. Keep the thread. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.6-000000" alt="Version 0.0.6"></a>
+  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.7-000000" alt="Version 0.0.7"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Threads-449.0.0.54.82-000000" alt="Threads 449.0.0.54.82">
@@ -14,7 +14,7 @@ HushThreads is a Morphe patch bundle for Android that takes the ads out of Threa
 
 The latest release is [v0.0.4](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.4), with 10 patches.
 
-The source build is v0.0.6. It hasn't been released yet.
+The source build is v0.0.7. It hasn't been released yet.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -52,7 +52,7 @@ Hide ads, Hide suggested users and Sanitize sharing links also stop on competing
 
 ## Keep your signing key
 
-Morphe Manager signs the patched Threads with a key it makes on your phone. Android installs an update over your patched Threads only when the update carries that same key, so the key is what lets you update without losing Threads' data.
+Morphe Manager signs the patched Threads with a key it makes on your phone. Standard and Shizuku installs use that re-signed APK. Android installs an update over your patched Threads only when the update carries that same key, so the key is what lets you update without losing Threads' data.
 
 - **Back it up right after your first patch.** In Morphe Manager, open Settings, then System, then Import & export, then Signing key, and tap Export. Keep the `Morphe.keystore` file somewhere private, because anyone who has it can sign an APK your phone will accept as an update.
 - **On a new phone, import it before you patch anything.** Reinstalling Morphe Manager or clearing its storage makes a new key, and without your exported copy nothing you patched earlier can be updated in place.
@@ -62,7 +62,7 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-HushThreads v0.0.6 has 10 patches. All but Block background-return feed refresh and Disable video autoplay are selected by default.
+HushThreads v0.0.7 has 10 patches. All but Block background-return feed refresh and Disable video autoplay are selected by default.
 
 | Patch | What it does |
 |---|---|
@@ -108,7 +108,11 @@ Stock Threads recovered that Instagram session automatically after its data was 
 
 With a Root Mount install you can sign in on stock Threads first. The mounted build uses stock Threads' data, so it keeps that session. On 2026-10-02, on Android 16, a mounted build with only HushThreads settings kept a stock session, and signing out and back in on it reached the feed too.
 
-[The password-login failure reported on 2026-10-01](https://github.com/SysAdminDoc/HushThreads/discussions/2) and [the one on Android 17 with Root Mount](https://github.com/SysAdminDoc/HushThreads/issues/3) remain unresolved. These successful checks haven't identified their cause or established login for every account.
+On 2026-10-03, re-signed settings-only and full source 0.0.5 builds reached the feed on Android 17 with 16 KB pages and Instagram absent. They used the installer identity and session options from Morphe Manager 1.33.0's non-root Shizuku path. This checks one account in an emulator; the reported password failure hasn't reproduced there.
+
+Signed-in HushGram 0.0.4 with the same signing key returned one account row to Threads through each of Instagram's access and family providers on that emulator. The family provider had every column Threads' reader requires. Threads still offered the manual form after logout and a fresh launch. Provider access alone hasn't restored Continue as.
+
+[The password-login failure reported on 2026-10-01](https://github.com/SysAdminDoc/HushThreads/discussions/2) and [the one on Android 17 with Shizuku](https://github.com/SysAdminDoc/HushThreads/issues/3) remain unresolved. The Android 17 reporter corrected the install method from Root Mount to Shizuku. These successful checks haven't identified the reports' cause or established login for every account.
 
 ## Your Threads account
 

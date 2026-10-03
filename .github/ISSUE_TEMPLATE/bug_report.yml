@@ -49,8 +49,10 @@ body:
     id: install_method
     attributes:
       label: How was it installed?
+      description: For Shizuku, say in Anything else whether it used wireless debugging or root and whether Morphe's Play Store installer option was on.
       options:
         - Standard install (re-signed)
+        - Shizuku (re-signed)
         - Root Mount
         - I don't know
     validations:
