@@ -1534,6 +1534,25 @@ try {
     # vector used to hide FIRST's 8.3 HIGH example. Unsupported data must stay held for review.
     $highV4 = 'CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:H/VI:L/VA:L/SC:N/SI:N/SA:N'
     $lowV3 = 'CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N'
+    # Null array entries were filtered away, so the hold never saw malformed input.
+    foreach ($label in 'LOW', 'MODERATE', 'HIGH', 'CRITICAL') {
+        foreach ($json in '[null]', ('[null,{"type":"CVSS_V3","score":"' + $lowV3 + '"}]'),
+                ('[{"type":"CVSS_V3","score":"' + $lowV3 + '"},null]'), 'null',
+                ('{"type":"CVSS_V3","score":"' + $lowV3 + '"}')) {
+            $advisory = ('{"database_specific":{"severity":"' + $label + '"},"severity":' + $json + '}') | ConvertFrom-Json
+            $severity = Get-AdvisorySeverity -Advisory $advisory
+            $expected = if ($label -in 'HIGH', 'CRITICAL') { $label } else { 'UNRATED' }
+            Assert-True ($severity.Serious -and $severity.Level -eq $expected) 'Null or non-array severity escaped review.'
+            $finding = [pscustomobject]@{ Package = 'com.example:review'; Version = '1.0'; Advisory = 'GHSA-null-severity'; Aliases = @(); Summary = 'Fixture'; Severity = $severity }
+            $gate = Test-AdvisoryFindings -Findings @($finding) -Exceptions @()
+            Assert-True (-not $gate.Valid -and @($gate.Refused).Count -eq 1) 'The gate passed malformed severity data.'
+        }
+    }
+    foreach ($json in '{"database_specific":{"severity":"LOW"}}',
+            '{"database_specific":{"severity":"LOW"},"severity":[]}') {
+        $severity = Get-AdvisorySeverity -Advisory ($json | ConvertFrom-Json)
+        Assert-True (-not $severity.Serious -and $severity.Level -eq 'LOW') 'Missing or empty optional severity was treated as malformed.'
+    }
     foreach ($label in 'LOW', 'MODERATE', 'HIGH', 'CRITICAL', '') {
         foreach ($withV3 in $false, $true) {
             $vectors = @([pscustomobject]@{ type = 'CVSS_V4'; score = $highV4 })

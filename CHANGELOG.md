@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** Explicit null severity entries and malformed non-array severity fields require advisory review. A missing optional field or a valid empty array stays distinct. Existing tests covered unreadable vectors but missed null entries that the pipeline silently removed.
+
 * **Threads:** Support reports label the HushThreads bundle explicitly and include bounded hashes of the installed app's current signing certificates and available installer details. Android 9 uses the legacy installer API. Missing facts and query failures remain explicit. No certificate contents, signing keys or other apps' details are exported. Manager version and installation method still need to be supplied with a report.
 * **Tooling:** Support-report tests now exercise Android 9 and newer install-source APIs, current versus past certificates, missing or excessive signer data and unsafe source names through the exports. The previous version assertion accepted the misleading morphe label and didn't check these installation facts. The reporting guide also clarifies Android 9's saved-file location.
 

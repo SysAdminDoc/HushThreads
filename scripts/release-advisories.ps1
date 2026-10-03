@@ -193,7 +193,12 @@ function Get-AdvisorySeverity {
     } elseif ($label) {
         $review = $true
     }
-    foreach ($entry in @($Advisory.severity | Where-Object { $null -ne $_ })) {
+    $hasSeverity = if ($Advisory -is [System.Collections.IDictionary]) {
+        $Advisory.Contains('severity')
+    } else { $null -ne $Advisory.PSObject.Properties['severity'] }
+    if ($hasSeverity -and $Advisory.severity -isnot [array]) { $review = $true }
+    foreach ($entry in $Advisory.severity) {
+        if ($null -eq $entry) { $review = $true; continue }
         $vector = [string]$entry.score
         if ("$($entry.type)" -cne 'CVSS_V3' -or $vector -cnotmatch '^CVSS:3\.[01]/') {
             $review = $true
