@@ -332,6 +332,7 @@ public final class LogBufferManager {
 
         /** One line per fact, or an empty list to say nothing. */
         List<String> lines();
+
     }
 
     private static final List<ReportSection> REPORT_SECTIONS = new CopyOnWriteArrayList<>();
@@ -542,6 +543,35 @@ public final class LogBufferManager {
         // Most hooks log nothing without Debug logging, so a report with no events says why.
         report.append("debug_logging: ").append(BaseSettings.DEBUG.get() ? "on" : "off").append('\n');
 
+        // Ported from Hushfacebook 4d1fec1e with the c7059151 combining-mark correction.
+        StringBuilder appState = new StringBuilder();
+        StringBuilder patchState = new StringBuilder();
+        for (ReportSection section : REPORT_SECTIONS) {
+            boolean always = "SUPPORTED LINKS".equals(section.title());
+            if (!always && !includeAll && !selected.contains(
+                    app.morphe.extension.shared.diagnostics.DiagnosticCategory.PATCH_ERRORS.value)) continue;
+            List<String> lines;
+            try {
+                lines = section.lines();
+                if (lines == null || lines.isEmpty()) continue;
+            } catch (Throwable failure) {
+                lines = Collections.singletonList("could not be read: " + failure);
+            }
+            StringBuilder sectionText = always ? appState : patchState;
+            sectionText.append("\n[").append(section.title()).append("]\n");
+            for (String line : lines) {
+                int arrow = line == null ? -1 : line.lastIndexOf(" -> ");
+                String host = arrow < 0 ? "" : line.substring(0, arrow);
+                String state = arrow < 0 ? "" : line.substring(arrow + 4);
+                boolean domainState = always
+                        && host.matches("[\\p{L}\\p{M}\\p{N}_.*-]+")
+                        && (state.equals("verified") || state.equals("selected") || state.equals("none") || state.equals("unknown"));
+                sectionText.append(domainState ? line : DiagnosticRedactor.redact(line)).append('\n');
+            }
+        }
+        report.append(appState);
+
+
         if (!crash.isEmpty()) {
             report.append("\n[LATEST JAVA CRASH]\n").append(crash);
         }
@@ -554,22 +584,7 @@ public final class LogBufferManager {
         // The same choice as Hook status: what the bundle has been told to do is a fact about
         // the patches, and it is what a report from a phone with an override that changed
         // nothing has been missing.
-        if (includeAll || selected.contains(
-                app.morphe.extension.shared.diagnostics.DiagnosticCategory.PATCH_ERRORS.value)) {
-            for (ReportSection section : REPORT_SECTIONS) {
-                List<String> lines;
-                try {
-                    lines = section.lines();
-                } catch (Throwable failure) {
-                    lines = Collections.singletonList("could not be read: " + failure);
-                }
-                if (lines == null || lines.isEmpty()) continue;
-                report.append("\n[").append(section.title()).append("]\n");
-                for (String line : lines) {
-                    report.append(DiagnosticRedactor.redact(line)).append('\n');
-                }
-            }
-        }
+        report.append(patchState);
         String lastExit = lastExitLine(includeAll, selected);
         if (!lastExit.isEmpty()) {
             report.append("\n[LAST EXIT]\n").append(lastExit).append('\n');

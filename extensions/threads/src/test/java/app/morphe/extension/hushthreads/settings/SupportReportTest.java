@@ -7,6 +7,18 @@
  */
 package app.morphe.extension.hushthreads.settings;
 
+import android.content.pm.verify.domain.DomainVerificationManager;
+import android.content.pm.verify.domain.DomainVerificationUserState;
+import android.os.Process;
+import android.os.UserHandle;
+import org.robolectric.shadows.ShadowContextImpl;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import java.lang.reflect.Proxy;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -150,6 +162,59 @@ public class SupportReportTest {
         assertTrue("no patch list: " + report, report.contains("\n[PATCHES]\n"));
         assertTrue(report, report.contains("\nHide ads: on (hushthreads_hide_ads=on)\n"));
         assertFalse("events without Debug logging: " + report, report.contains("[SELECTED EVENTS]"));
+    }
+
+    // Ported file/clipboard contracts from Hushfacebook 4d1fec1e and c7059151.
+    @Test @Config(sdk = 31)
+    public void bothExportsContainSortedDomainsWithoutChangingTheAppsLinkOwnership() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        Map<String, Integer> hosts = new LinkedHashMap<>();
+        hosts.put("www.threads.com", DomainVerificationUserState.DOMAIN_STATE_SELECTED);
+        hosts.put("m.threads.com", DomainVerificationUserState.DOMAIN_STATE_NONE);
+        hosts.put("z\u0301.threads.com", DomainVerificationUserState.DOMAIN_STATE_SELECTED);
+        DomainVerificationUserState user = ReflectionHelpers.callConstructor(DomainVerificationUserState.class,
+                ClassParameter.from(UUID.class, UUID.randomUUID()), ClassParameter.from(String.class, context.getPackageName()),
+                ClassParameter.from(UserHandle.class, Process.myUserHandle()), ClassParameter.from(boolean.class, false),
+                ClassParameter.from(Map.class, hosts));
+        Class<?> binder = Class.forName("android.content.pm.verify.domain.IDomainVerificationManager");
+        AtomicInteger reads = new AtomicInteger();
+        Object service = Proxy.newProxyInstance(binder.getClassLoader(), new Class<?>[]{binder}, (proxy, method, args) -> {
+            assertTrue("ownership-changing or unrelated API call", method.getName().equals("getDomainVerificationUserState"));
+            assertTrue("another package was queried", context.getPackageName().equals(args[0]));
+            reads.incrementAndGet();
+            return user;
+        });
+        DomainVerificationManager manager = ReflectionHelpers.callConstructor(DomainVerificationManager.class,
+                ClassParameter.from(Context.class, context), ClassParameter.from(binder, service));
+        ShadowContextImpl shadow = Shadow.extract(RuntimeEnvironment.getApplication().getBaseContext());
+        shadow.setSystemService(Context.DOMAIN_VERIFICATION_SERVICE, manager);
+        PatchFamily.registerDiagnostics();
+        for (String report : bothExports()) {
+            assertBuildFacts(report);
+            assertTrue(report, report.contains("\nlink_handling_allowed: false\nm.threads.com -> none\nwww.threads.com -> selected\n"));
+            assertTrue("combining-mark domain omitted or redacted", report.contains("\nz\u0301.threads.com -> selected\n"));
+            assertTrue("duplicate supported-link section", report.indexOf("[SUPPORTED LINKS]") == report.lastIndexOf("[SUPPORTED LINKS]"));
+            assertFalse(report.contains("http://") || report.contains("https://") || report.contains("certificate:"));
+        }
+        BaseSettings.DEBUG_LOG_FILTERS.save("feed");
+        LogBufferManager.persistCrashReport(context, "java.io.IOException: " + "long trace ".repeat(10_000));
+        for (String report : bothExports()) {
+            assertTrue("event filters or a long crash hid link state", report.contains(
+                    "\nlink_handling_allowed: false\nm.threads.com -> none\nwww.threads.com -> selected\n"));
+            assertFalse("patch sections ignored the selected filter", report.contains("[PATCHES]"));
+            assertTrue("combining-mark domain omitted or redacted", report.contains("\nz\u0301.threads.com -> selected\n"));
+            assertTrue("link state follows a potentially truncated crash", report.indexOf("[SUPPORTED LINKS]") < report.indexOf("[LATEST JAVA CRASH]"));
+        }
+        assertTrue("both report paths must query the live state", reads.get() >= 2);
+    }
+
+    @Test @Config(sdk = {28, 30})
+    public void androidBelow31KeepsTheNotReportedStateWithAnEventsOnlyFilter() throws Exception {
+        BaseSettings.DEBUG_LOG_FILTERS.save("feed");
+        for (String report : bothExports()) {
+            assertTrue(report.contains("[SUPPORTED LINKS]\navailability: not_reported (API below 31)"));
+            assertFalse(report.contains("[PATCHES]"));
+        }
     }
 
     @Test

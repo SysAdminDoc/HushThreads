@@ -4,6 +4,9 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** The settings overview names any default patches omitted from a build. Diagnostic exports include the app's declared web domains and Android's current link selections, with an explicit unavailable state on older versions.
+* **Tooling:** Shared fixes and the Turkish GitHub wording correction are ported with per-file provenance. Tests cover missing defaults, Unicode domains and both report exports. An older analytics test expected only one report line and missed the new default-selection disclosure; its analytics assertions remain intact. Android 9 also exercises the saved-file report through its actual legacy destination.
+
 * **Threads:** Diagnostic exports redact filesystem paths from buffered events and saved Java/native crashes, including quoted paths with spaces, escaped forms and file URLs. Stack-trace filenames, package names and current signing-certificate hashes remain useful.
 * **Tooling:** Clipboard and saved-file tests cover every diagnostic section on Android 9, 11 and 16 with Debug logging on and off. The earlier tests only checked request addresses and credentials. Long quoted values now avoid regex stack overflow, and the Windows file-write fixture only uses the new-file field on Android versions that have it.
 

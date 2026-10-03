@@ -872,4 +872,41 @@ public class SettingsNavigationTest {
         }
         return null;
     }
+
+    // Disclosure behavior ported from Hushfacebook 814acd23.
+    @Test public void theOverviewNamesTheDefaultPatchesABuildLacks() {
+        assertFalse(contains(HushThreadsPreferenceFragment.MISSING_DEFAULTS));
+        controller.close();
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        PatchFamily.inBuildForTests.remove(PatchFamily.VIDEO_AUTOPLAY);
+        PatchFamily.inBuildForTests.remove(PatchFamily.HIDE_SUGGESTED_USERS);
+        controller = Robolectric.buildActivity(Activity.class).setup().visible();
+        dialog = SettingsL10nTest.show(controller.get());
+        page = page(dialog);
+        Map<String, Object> before = savedValues();
+
+        assertEquals(6, list().getCount());
+        assertEquals(1, position(HushThreadsPreferenceFragment.MISSING_DEFAULTS));
+        Preference row = (Preference) list().getItemAtPosition(1);
+        assertEquals("1 default patch isn't in this build", String.valueOf(row.getTitle()));
+        assertEquals("Tap to see which.", String.valueOf(row.getSummary()));
+        tap(HushThreadsPreferenceFragment.MISSING_DEFAULTS);
+        assertEquals("Not in this build: " + L10n.isolate("Hide suggested users") + ". Morphe Manager selects it by "
+                + "default. Patch again with it selected to get what it does.", String.valueOf(row.getSummary()));
+        tap(HushThreadsPreferenceFragment.MISSING_DEFAULTS);
+        assertEquals("Tap to see which.", String.valueOf(row.getSummary()));
+        assertEquals(before, savedValues());
+
+        controller.close();
+        PatchFamily.inBuildForTests.remove(PatchFamily.HIDE_ADS);
+        controller = Robolectric.buildActivity(Activity.class).setup().visible();
+        dialog = SettingsL10nTest.show(controller.get());
+        page = page(dialog);
+        row = (Preference) list().getItemAtPosition(1);
+        assertEquals("2 default patches aren't in this build", String.valueOf(row.getTitle()));
+        tap(HushThreadsPreferenceFragment.MISSING_DEFAULTS);
+        assertEquals("Not in this build: " + L10n.isolate("Hide ads") + " and "
+                + L10n.isolate("Hide suggested users") + ". Morphe Manager selects them by default. Patch again with "
+                + "them selected to get what they do.", String.valueOf(row.getSummary()));
+    }
 }

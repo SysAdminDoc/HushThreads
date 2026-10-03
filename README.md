@@ -208,6 +208,8 @@ Use [Issues](https://github.com/SysAdminDoc/HushThreads/issues) for bugs and [Di
 
 Current source builds redact filesystem paths from exported events and saved crashes, including paths with spaces and escaped forms. Stack-trace filenames and current signing-certificate hashes remain available for troubleshooting. Review an export before sharing it.
 
+The settings overview shows which default patches were left out of your build. Reports also include Android's selections for the app's declared web domains. Android 9 through 11 explicitly report that this platform detail isn't available.
+
 ## When Threads updates
 
 Retain the new stable arm64 bundle and verify its identity and publisher signatures. Explore an undeclared build with:
