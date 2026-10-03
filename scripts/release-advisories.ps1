@@ -173,13 +173,13 @@ function Get-AdvisorySeverity {
     .SYNOPSIS
         How serious an OSV advisory is: @{ Level; Serious; Why }.
     .DESCRIPTION
-        The worse of OSV's own label (database_specific.severity) and the level each CVSS 3 vector
+        The worse of OSV's own label (database_specific.severity) and the level each applicable CVSS 3 vector
         scores to: CRITICAL from 9.0, HIGH from 7.0, MODERATE from 4.0, LOW above 0. Serious is
         HIGH or CRITICAL, or UNRATED for incomplete severity data. Any unsupported or malformed
         vector requires review even beside a LOW/MODERATE label or a lower supported vector.
         CVSS 4 isn't sent to the CVSS 3 calculator.
     #>
-    param([Parameter(Mandatory = $true)]$Advisory)
+    param([Parameter(Mandatory = $true)]$Advisory, $Library)
 
     $rank = @{ NONE = 0; LOW = 1; MODERATE = 2; HIGH = 3; CRITICAL = 4 }
     $level = $null
@@ -193,24 +193,49 @@ function Get-AdvisorySeverity {
     } elseif ($label) {
         $review = $true
     }
-    $hasSeverity = if ($Advisory -is [System.Collections.IDictionary]) {
-        $Advisory.Contains('severity')
-    } else { $null -ne $Advisory.PSObject.Properties['severity'] }
-    if ($hasSeverity -and $Advisory.severity -isnot [array]) { $review = $true }
-    foreach ($entry in $Advisory.severity) {
-        if ($null -eq $entry) { $review = $true; continue }
-        $vector = [string]$entry.score
-        if ("$($entry.type)" -cne 'CVSS_V3' -or $vector -cnotmatch '^CVSS:3\.[01]/') {
-            $review = $true
-            continue
-        }
-        $score = Get-Cvss3BaseScore -Vector $vector
-        if ($null -eq $score) { $review = $true; continue }
-        $scored = if ($score -ge 9.0) { 'CRITICAL' } elseif ($score -ge 7.0) { 'HIGH' } elseif ($score -ge 4.0) {
-            'MODERATE' } elseif ($score -gt 0) { 'LOW' } else { 'NONE' }
-        if ($null -eq $level -or $rank[$scored] -gt $rank[$level]) {
-            $level = $scored
-            $why = "its CVSS 3 vector scores $score"
+    $scopes = New-Object System.Collections.Generic.List[object]
+    $scopes.Add($Advisory)
+    $hasAffected = if ($Advisory -is [System.Collections.IDictionary]) {
+        $Advisory.Contains('affected')
+    } else { $null -ne $Advisory.PSObject.Properties['affected'] }
+    if ($hasAffected -and $Advisory.affected -isnot [array]) { $review = $true }
+    foreach ($affected in $Advisory.affected) {
+        if ($null -eq $affected) { $review = $true; continue }
+        $hasSeverity = if ($affected -is [System.Collections.IDictionary]) {
+            $affected.Contains('severity')
+        } else { $null -ne $affected.PSObject.Properties['severity'] }
+        if (-not $hasSeverity) { continue }
+        if ($null -eq $Library -or [string]::IsNullOrWhiteSpace([string]$affected.package.ecosystem) -or
+                [string]::IsNullOrWhiteSpace([string]$affected.package.name)) { $review = $true; continue }
+        # OSV identifies Maven packages by their case-sensitive ecosystem and group:name.
+        if ($affected.package.ecosystem -cne 'Maven' -or
+                ($affected.package.name -cne "$($Library.Group):$($Library.Name)" -and $affected.package.name -cne '*')) { continue }
+        # A versions-only entry for another version isn't this query's affected package.
+        # Ranges can also include this version, so keep uncertain range entries for review.
+        if (-not $affected.ranges -and $affected.versions -is [array] -and $affected.versions.Count -gt 0 -and
+                $affected.versions -cnotcontains [string]$Library.Version) { continue }
+        $scopes.Add($affected)
+    }
+    foreach ($scope in $scopes) {
+        $hasSeverity = if ($scope -is [System.Collections.IDictionary]) {
+            $scope.Contains('severity')
+        } else { $null -ne $scope.PSObject.Properties['severity'] }
+        if ($hasSeverity -and $scope.severity -isnot [array]) { $review = $true }
+        foreach ($entry in $scope.severity) {
+            if ($null -eq $entry) { $review = $true; continue }
+            $vector = [string]$entry.score
+            if ("$($entry.type)" -cne 'CVSS_V3' -or $vector -cnotmatch '^CVSS:3\.[01]/') {
+                $review = $true
+                continue
+            }
+            $score = Get-Cvss3BaseScore -Vector $vector
+            if ($null -eq $score) { $review = $true; continue }
+            $scored = if ($score -ge 9.0) { 'CRITICAL' } elseif ($score -ge 7.0) { 'HIGH' } elseif ($score -ge 4.0) {
+                'MODERATE' } elseif ($score -gt 0) { 'LOW' } else { 'NONE' }
+            if ($null -eq $level -or $rank[$scored] -gt $rank[$level]) {
+                $level = $scored
+                $why = "its CVSS 3 vector scores $score"
+            }
         }
     }
     if ($review) {
@@ -289,7 +314,7 @@ function Get-SbomAdvisories {
                 Advisory = [string]$advisory.id
                 Aliases  = @($advisory.aliases | Where-Object { $_ } | ForEach-Object { [string]$_ })
                 Summary  = "$($advisory.summary)".Trim()
-                Severity = Get-AdvisorySeverity -Advisory $advisory
+                Severity = Get-AdvisorySeverity -Advisory $advisory -Library $library
             })
         }
     }

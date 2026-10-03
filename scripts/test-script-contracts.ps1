@@ -1659,6 +1659,60 @@ try {
         $osvAnswers = $osvRecorded
     }
 
+    # Earlier gate fixtures used only top-level severity. Package-specific vectors could be
+    # hidden by a LOW database label, or incorrectly borrowed from an unrelated package.
+    $packagePurl = 'pkg:maven/com.example/review@1.0'
+    $packageIdentity = '"package":{"ecosystem":"Maven","name":"com.example:review"},"versions":["1.0"]'
+    $packageHigh = '[{"type":"CVSS_V3","score":"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"}]'
+    $packageCritical = $packageHigh.Replace('C:H/I:N/A:N', 'C:H/I:H/A:H')
+    $packageLow = '[{"type":"CVSS_V3","score":"' + $lowV3 + '"}]'
+    $packageV4 = '[{"type":"CVSS_V4","score":"' + $highV4 + '"}]'
+    $otherIdentity = $packageIdentity.Replace('com.example:review', 'com.example:unrelated')
+    $packageCases = @(
+        @{ Name = 'matching HIGH'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageHigh + '}]'; Level = 'HIGH' },
+        @{ Name = 'matching CRITICAL'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageCritical + '}]'; Level = 'CRITICAL' },
+        @{ Name = 'matching unsupported'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageV4 + '}]'; Level = 'UNRATED' },
+        @{ Name = 'matching truncated'; Affected = '[{' + $packageIdentity + ',"severity":[{"type":"CVSS_V3","score":"CVSS:3.1/AV:N"}]}]'; Level = 'UNRATED' },
+        @{ Name = 'matching null'; Affected = '[{' + $packageIdentity + ',"severity":null}]'; Level = 'UNRATED' },
+        @{ Name = 'matching null entry'; Affected = '[{' + $packageIdentity + ',"severity":[null]}]'; Level = 'UNRATED' },
+        @{ Name = 'matching object'; Affected = '[{' + $packageIdentity + ',"severity":{"type":"CVSS_V3","score":"' + $lowV3 + '"}}]'; Level = 'UNRATED' },
+        @{ Name = 'matching empty'; Affected = '[{' + $packageIdentity + ',"severity":[]}]'; Level = 'LOW' },
+        @{ Name = 'matching absent'; Affected = '[{' + $packageIdentity + '}]'; Level = 'LOW' },
+        @{ Name = 'unrelated HIGH'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageLow + '},{' + $otherIdentity + ',"severity":' + $packageHigh + '}]'; Level = 'LOW' },
+        @{ Name = 'unrelated unsupported'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageLow + '},{' + $otherIdentity + ',"severity":' + $packageV4 + '}]'; Level = 'LOW' },
+        @{ Name = 'case-sensitive name'; Affected = '[{' + $packageIdentity.Replace('com.example:review', 'com.example:Review') + ',"severity":' + $packageHigh + '}]'; Level = 'LOW' },
+        @{ Name = 'different ecosystem'; Affected = '[{' + $packageIdentity.Replace('"Maven"', '"npm"') + ',"severity":' + $packageHigh + '}]'; Level = 'LOW' },
+        @{ Name = 'ecosystem wildcard'; Affected = '[{' + $packageIdentity.Replace('com.example:review', '*') + ',"severity":' + $packageHigh + '}]'; Level = 'HIGH' },
+        @{ Name = 'another listed version'; Affected = '[{' + $packageIdentity.Replace('"1.0"', '"0.9"') + ',"severity":' + $packageHigh + '}]'; Level = 'LOW' },
+        @{ Name = 'range as well as another version'; Affected = '[{' + $packageIdentity.Replace('"1.0"', '"0.9"') + ',"ranges":[{"type":"ECOSYSTEM","events":[{"introduced":"0"}]}],"severity":' + $packageHigh + '}]'; Level = 'HIGH' },
+        @{ Name = 'unknown package'; Affected = '[{"severity":' + $packageHigh + '}]'; Level = 'UNRATED' },
+        @{ Name = 'null affected entry'; Affected = '[null]'; Level = 'UNRATED' },
+        @{ Name = 'non-array affected'; Affected = '{' + $packageIdentity + ',"severity":' + $packageHigh + '}'; Level = 'HIGH' },
+        @{ Name = 'top-level CRITICAL beside local LOW'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageLow + '}]'; Top = ',"severity":' + $packageCritical; Level = 'CRITICAL' },
+        @{ Name = 'top-level unsupported beside local LOW'; Affected = '[{' + $packageIdentity + ',"severity":' + $packageLow + '}]'; Top = ',"severity":' + $packageV4; Level = 'UNRATED' })
+    foreach ($case in $packageCases) {
+        $json = '{"id":"GHSA-package-fixture","aliases":["CVE-2099-0001"],"database_specific":{"severity":"LOW"},"affected":' + $case.Affected + $case.Top + '}'
+        $osvAnswers = @{ $packagePurl = '{"vulns":[' + $json + ']}' }
+        try {
+            $findings = @(& { . $osvStandIn; Get-SbomAdvisories -Sbom (New-GateSbom @($packagePurl)) })
+            $serious = $case.Level -in 'HIGH', 'CRITICAL', 'UNRATED'
+            Assert-True ($findings.Count -eq 1 -and $findings[0].Severity.Level -eq $case.Level -and
+                $findings[0].Severity.Serious -eq $serious) "Package severity $($case.Name) was misread."
+            if ($serious) {
+                Assert-Throws { Invoke-Gate @($packagePurl) } "*GHSA-package-fixture ($($case.Level)*" `
+                    "The gate passed package severity $($case.Name)."
+                $said = Invoke-Gate @($packagePurl) @("CVE-2099-0001 com.example:review $later $why")
+                Assert-True ($said -like '*accepted: GHSA-package-fixture*') 'A dated package exception was not honored.'
+            } else {
+                $said = Invoke-Gate @($packagePurl)
+                Assert-True ($said -like '*below high, let through: GHSA-package-fixture (LOW*') `
+                    "The gate held unrelated package severity $($case.Name)."
+            }
+        } finally {
+            $osvAnswers = $osvRecorded
+        }
+    }
+
     # Exceptions: by OSV's id or an alias, for the one package, until the date.
     foreach ($named in @('GHSA-4jrv-ppp4-jm57', 'CVE-2022-25647', 'ghsa-4jrv-ppp4-jm57')) {
         $said = Invoke-Gate @($gsonPurl) @("$named com.google.code.gson:gson $later $why")

@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** Release checks include OSV's package-specific severity for the queried library, including ecosystem-wide ratings. Unrelated packages and entries listing only other versions are excluded. Malformed or unsupported ratings still require review. Previous tests used advisory-wide vectors and missed a package-specific HIGH rating hidden by a LOW database label.
+
 * **Tooling:** The release-check deadline covers name resolution, TLS handshakes and request writes as well as response reads. A stalled resolver leaves bounded background work, and expired waiting requests are removed. Earlier transport tests checked body reads but missed slow connection phases.
 
 * **Tooling:** Explicit null severity entries and malformed non-array severity fields require advisory review. A missing optional field or a valid empty array stays distinct. Existing tests covered unreadable vectors but missed null entries that the pipeline silently removed.
