@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** The release-check deadline covers name resolution, TLS handshakes and request writes as well as response reads. A stalled resolver leaves bounded background work, and expired waiting requests are removed. Earlier transport tests checked body reads but missed slow connection phases.
+
 * **Tooling:** Explicit null severity entries and malformed non-array severity fields require advisory review. A missing optional field or a valid empty array stays distinct. Existing tests covered unreadable vectors but missed null entries that the pipeline silently removed.
 
 * **Threads:** Support reports label the HushThreads bundle explicitly and include bounded hashes of the installed app's current signing certificates and available installer details. Android 9 uses the legacy installer API. Missing facts and query failures remain explicit. No certificate contents, signing keys or other apps' details are exported. Manager version and installation method still need to be supplied with a report.

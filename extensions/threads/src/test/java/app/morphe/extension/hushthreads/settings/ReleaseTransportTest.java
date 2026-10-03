@@ -18,6 +18,11 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpCookie;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +33,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -222,6 +229,136 @@ public class ReleaseTransportTest {
             });
             assertTrue(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started) < 1800);
         }
+    }
+
+    @Test
+    public void trickledTlsRecordCannotExtendHandshakeOrSendALateGet() throws Exception {
+        CountDownLatch firstRecord = new CountDownLatch(1);
+        try (Server server = new Server("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n{}");
+             ServerSocket listener = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))) {
+            Thread relay = new Thread(() -> {
+                Thread upload = null;
+                try (Socket client = listener.accept();
+                     Socket upstream = new Socket("127.0.0.1", server.listener.getLocalPort())) {
+                    upstream.setSoTimeout(3000);
+                    upload = new Thread(() -> {
+                        try {
+                            byte[] buffer = new byte[4096];
+                            int count;
+                            while ((count = client.getInputStream().read(buffer)) >= 0) {
+                                upstream.getOutputStream().write(buffer, 0, count);
+                            }
+                        } catch (IOException expectedOnCancellation) { }
+                    }, "release-relay-upload");
+                    upload.setDaemon(true);
+                    upload.start();
+                    // SO_TIMEOUT alone restarts at each raw read inside a TLS provider's record loop.
+                    for (int i = 0; i < 5; i++) {
+                        int octet = upstream.getInputStream().read();
+                        if (octet < 0) throw new IOException("missing TLS record");
+                        client.getOutputStream().write(octet);
+                        client.getOutputStream().flush();
+                        firstRecord.countDown();
+                        Thread.sleep(180);
+                    }
+                    byte[] buffer = new byte[4096];
+                    int count;
+                    while ((count = upstream.getInputStream().read(buffer)) >= 0) {
+                        client.getOutputStream().write(buffer, 0, count);
+                    }
+                } catch (IOException | InterruptedException expectedOnCancellation) {
+                    // Both sides close when the deadline ends the client's handshake.
+                } finally {
+                    if (upload != null) {
+                        upload.interrupt();
+                        try { upload.join(3000); } catch (InterruptedException ignored) { }
+                    }
+                }
+            }, "release-relay-download");
+            relay.setDaemon(true);
+            relay.start();
+            try {
+                long started = System.nanoTime();
+                URL address = new URL("https://localhost:" + listener.getLocalPort() + "/latest");
+                assertThrows(SocketTimeoutException.class, () -> transport.get(address, headers(),
+                        started + TimeUnit.MILLISECONDS.toNanos(500)));
+                long elapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started);
+                assertTrue("deadline took " + elapsed + "ms", elapsed < 900);
+                assertTrue("the fixture reached the TLS record", firstRecord.await(1, TimeUnit.SECONDS));
+            } finally {
+                listener.close();
+                relay.interrupt();
+                relay.join(5000);
+                assertFalse("relay stopped", relay.isAlive());
+            }
+            assertThrows("no GET reached the TLS server after expiry", ExecutionException.class,
+                    () -> server.request.get(3, TimeUnit.SECONDS));
+        }
+    }
+
+    @Test
+    public void heldDnsReturnsOnDeadlineWithBoundedLeftoverWork() throws Exception {
+        CountDownLatch entered = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicInteger lookups = new AtomicInteger();
+        ReleaseTransport held = new ReleaseTransport(context.getSocketFactory(), url -> {
+            lookups.incrementAndGet();
+            entered.countDown();
+            while (release.getCount() != 0) {
+                try { release.await(); } catch (InterruptedException ignoredLikeNativeDns) { }
+            }
+            return new InetSocketAddress("127.0.0.1", url.getPort());
+        });
+        try (Server server = new Server("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n{}")) {
+            try {
+                long started = System.nanoTime();
+                assertThrows(SocketTimeoutException.class, () -> held.get(server.url(), headers(),
+                        started + TimeUnit.MILLISECONDS.toNanos(300)));
+                assertTrue("held lookup returned within budget", TimeUnit.NANOSECONDS.toMillis(
+                        System.nanoTime() - started) < 800);
+                assertEquals("lookup really entered", 0, entered.getCount());
+                for (int i = 0; i < 5; i++) {
+                    long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(40);
+                    assertThrows(SocketTimeoutException.class, () -> held.get(server.url(), headers(), deadline));
+                    assertTrue("expired requests don't accumulate", ReleaseTransport.CONNECTIONS.getQueue().isEmpty());
+                }
+                assertEquals("only one resolver can remain stuck", 1, lookups.get());
+                assertEquals(1, ReleaseTransport.CONNECTIONS.getLargestPoolSize());
+            } finally {
+                release.countDown();
+            }
+            // The abandoned lookup cannot connect after it returns. Only this fresh request arrives.
+            try (ReleaseCheck.Exchange answer = get(server)) { assertEquals("{}", body(answer)); }
+            assertTrue(server.request.get(3, TimeUnit.SECONDS).startsWith("GET "));
+        }
+    }
+
+    @Test
+    public void failedDnsReleasesItsWorkerWithoutChangingCookies() throws Exception {
+        CookieHandler handler = throwingHandler();
+        CookieHandler.setDefault(handler);
+        ReleaseTransport unresolved = new ReleaseTransport(context.getSocketFactory(), url ->
+                InetSocketAddress.createUnresolved("release-test.invalid", url.getPort()));
+        try (Server server = new Server("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n{}")) {
+            assertThrows(UnknownHostException.class, () -> unresolved.get(server.url(), headers(), deadline()));
+            assertSame(handler, CookieHandler.getDefault());
+            try (ReleaseCheck.Exchange answer = get(server)) { assertEquals("{}", body(answer)); }
+        }
+    }
+
+    @Test
+    public void refusedOrExpiredRequestsDoNotStartDns() throws Exception {
+        AtomicInteger lookups = new AtomicInteger();
+        ReleaseTransport counted = new ReleaseTransport(context.getSocketFactory(), url -> {
+            lookups.incrementAndGet();
+            return new InetSocketAddress("127.0.0.1", url.getPort());
+        });
+        Map<String, String> unsafe = headers();
+        unsafe.put("Cookie", "private");
+        URL url = new URL("https://localhost:1/");
+        assertThrows(ReleaseTransport.Refused.class, () -> counted.get(url, unsafe, deadline()));
+        assertThrows(SocketTimeoutException.class, () -> counted.get(url, headers(), System.nanoTime() - 1));
+        assertEquals(0, lookups.get());
     }
 
     private static CookieHandler throwingHandler() {

@@ -13,6 +13,8 @@ import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -23,7 +25,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
@@ -39,14 +50,36 @@ final class ReleaseTransport implements ReleaseCheck.Transport {
     static final int READ_TIMEOUT_MS = 10_000;
     private static final int MAX_LINE_BYTES = 8 * 1024;
     private static final int MAX_METADATA_BYTES = 64 * 1024;
+    // DNS may ignore interruption. One worker and one waiting request bound that leftover work.
+    static final ThreadPoolExecutor CONNECTIONS = new ThreadPoolExecutor(1, 1,
+            30, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1), task -> {
+                Thread thread = new Thread(task, "hushthreads-release-connect");
+                thread.setDaemon(true);
+                return thread;
+            });
+    private static final ScheduledThreadPoolExecutor DEADLINES = new ScheduledThreadPoolExecutor(1, task -> {
+        Thread thread = new Thread(task, "hushthreads-release-deadline");
+        thread.setDaemon(true);
+        return thread;
+    });
+    static {
+        CONNECTIONS.allowCoreThreadTimeOut(true);
+        DEADLINES.setRemoveOnCancelPolicy(true);
+    }
     private final SSLSocketFactory sockets;
+    private final Function<URL, InetSocketAddress> addresses;
 
     ReleaseTransport() {
         this((SSLSocketFactory) SSLSocketFactory.getDefault());
     }
 
     ReleaseTransport(SSLSocketFactory sockets) {
+        this(sockets, url -> new InetSocketAddress(url.getHost(), url.getPort() == -1 ? 443 : url.getPort()));
+    }
+
+    ReleaseTransport(SSLSocketFactory sockets, Function<URL, InetSocketAddress> addresses) {
         this.sockets = sockets;
+        this.addresses = addresses;
     }
 
     /** A request refused before it went out. The message names no address. */
@@ -58,31 +91,6 @@ final class ReleaseTransport implements ReleaseCheck.Transport {
 
     @Override
     public ReleaseCheck.Exchange get(URL url, Map<String, String> headers, long deadline) throws IOException {
-        String request = request(url, headers);
-        int port = url.getPort() == -1 ? 443 : url.getPort();
-        Socket connection = new Socket();
-        try {
-            connection.connect(new InetSocketAddress(url.getHost(), port), timeout(deadline, CONNECT_TIMEOUT_MS));
-            SSLSocket tls = (SSLSocket) sockets.createSocket(connection, url.getHost(), port, true);
-            connection = tls;
-            SSLParameters parameters = tls.getSSLParameters();
-            parameters.setEndpointIdentificationAlgorithm("HTTPS");
-            tls.setSSLParameters(parameters);
-            tls.setSoTimeout(timeout(deadline, READ_TIMEOUT_MS));
-            tls.startHandshake();
-            tls.getOutputStream().write(request.getBytes(StandardCharsets.US_ASCII));
-            return new Answer(tls, deadline);
-        } catch (IOException | RuntimeException failure) {
-            try {
-                connection.close();
-            } catch (IOException closing) {
-                failure.addSuppressed(closing);
-            }
-            throw failure;
-        }
-    }
-
-    private static String request(URL url, Map<String, String> headers) throws IOException {
         if (!"https".equalsIgnoreCase(url.getProtocol()) || url.getUserInfo() != null) {
             throw new Refused("the address isn't an anonymous HTTPS request");
         }
@@ -115,7 +123,73 @@ final class ReleaseTransport implements ReleaseCheck.Transport {
             }
             request.append(name).append(": ").append(value).append("\r\n");
         }
-        return request.append("\r\n").toString();
+        byte[] wire = request.append("\r\n").toString().getBytes(StandardCharsets.US_ASCII);
+        timeout(deadline, CONNECT_TIMEOUT_MS);
+        int port = url.getPort() == -1 ? 443 : url.getPort();
+        Socket connection = new Socket();
+        ScheduledFuture<?> expiry = DEADLINES.schedule(() -> {
+            try {
+                // Close the plain socket, without waiting for a TLS provider's handshake/write lock.
+                connection.close();
+            } catch (IOException ignored) {
+                // The request still has its timed wait and per-read deadline checks.
+            }
+        }, Math.max(0, deadline - System.nanoTime()), TimeUnit.NANOSECONDS);
+        FutureTask<Answer> work = new FutureTask<>(() -> {
+            SSLSocket tls = null;
+            try {
+                InetSocketAddress address = addresses.apply(url);
+                connection.connect(address, timeout(deadline, CONNECT_TIMEOUT_MS));
+                tls = (SSLSocket) sockets.createSocket(connection, url.getHost(), port, true);
+                SSLParameters parameters = tls.getSSLParameters();
+                parameters.setEndpointIdentificationAlgorithm("HTTPS");
+                tls.setSSLParameters(parameters);
+                tls.setSoTimeout(timeout(deadline, READ_TIMEOUT_MS));
+                tls.startHandshake();
+                OutputStream output = tls.getOutputStream();
+                timeout(deadline, READ_TIMEOUT_MS);
+                output.write(wire);
+                timeout(deadline, READ_TIMEOUT_MS);
+                return new Answer(tls, connection, deadline, expiry);
+            } catch (IOException | RuntimeException failure) {
+                try { connection.close(); } catch (IOException closing) { failure.addSuppressed(closing); }
+                if (tls != null) {
+                    try { tls.close(); } catch (IOException closing) { failure.addSuppressed(closing); }
+                }
+                throw failure;
+            }
+        });
+        Answer answer = null;
+        boolean handedOff = false;
+        try {
+            CONNECTIONS.execute(work);
+            answer = work.get(Math.max(0, deadline - System.nanoTime()), TimeUnit.NANOSECONDS);
+            timeout(deadline, READ_TIMEOUT_MS);
+            handedOff = true;
+            return answer;
+        } catch (TimeoutException ended) {
+            throw new SocketTimeoutException("the check ran out of time");
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new InterruptedIOException("the check was interrupted");
+        } catch (RejectedExecutionException busy) {
+            throw new Refused("a previous release connection is still waiting");
+        } catch (ExecutionException failed) {
+            timeout(deadline, READ_TIMEOUT_MS);
+            Throwable cause = failed.getCause();
+            if (cause instanceof IOException) throw (IOException) cause;
+            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
+            if (cause instanceof Error) throw (Error) cause;
+            throw new IOException("the release connection failed", cause);
+        } finally {
+            if (!handedOff) {
+                expiry.cancel(false);
+                try { connection.close(); } catch (IOException ignored) { }
+                work.cancel(true);
+                CONNECTIONS.remove(work);
+                if (answer != null) answer.close();
+            }
+        }
     }
 
     private static boolean ascii(String text) {
@@ -134,7 +208,9 @@ final class ReleaseTransport implements ReleaseCheck.Transport {
 
     private static final class Answer extends InputStream implements ReleaseCheck.Exchange {
         private final SSLSocket socket;
+        private final Socket connection;
         private final long deadline;
+        private final ScheduledFuture<?> expiry;
         private final InputStream input;
         private final Map<String, String> headers = new LinkedHashMap<>();
         private final int status;
@@ -145,9 +221,11 @@ final class ReleaseTransport implements ReleaseCheck.Transport {
         private boolean chunkEnd;
         private boolean finished;
 
-        Answer(SSLSocket socket, long deadline) throws IOException {
+        Answer(SSLSocket socket, Socket connection, long deadline, ScheduledFuture<?> expiry) throws IOException {
             this.socket = socket;
+            this.connection = connection;
             this.deadline = deadline;
+            this.expiry = expiry;
             input = new BufferedInputStream(socket.getInputStream(), 8 * 1024);
             String first = line();
             if (!first.matches("HTTP/1\\.[01] [1-5][0-9]{2}( .*)?")) throw new IOException("invalid HTTP status");
@@ -206,8 +284,15 @@ final class ReleaseTransport implements ReleaseCheck.Transport {
         }
 
         private int octet() throws IOException {
-            socket.setSoTimeout(timeout(deadline, READ_TIMEOUT_MS));
-            int c = input.read();
+            int c;
+            try {
+                socket.setSoTimeout(timeout(deadline, READ_TIMEOUT_MS));
+                c = input.read();
+            } catch (IOException failure) {
+                timeout(deadline, READ_TIMEOUT_MS);
+                throw failure;
+            }
+            timeout(deadline, READ_TIMEOUT_MS);
             if (c < 0) throw new EOFException("truncated HTTP response");
             return c;
         }
@@ -262,8 +347,15 @@ final class ReleaseTransport implements ReleaseCheck.Transport {
                 finished = true;
                 return -1;
             }
-            socket.setSoTimeout(timeout(deadline, READ_TIMEOUT_MS));
-            int read = input.read(bytes, offset, remaining < 0 ? count : (int) Math.min(remaining, count));
+            int read;
+            try {
+                socket.setSoTimeout(timeout(deadline, READ_TIMEOUT_MS));
+                read = input.read(bytes, offset, remaining < 0 ? count : (int) Math.min(remaining, count));
+            } catch (IOException failure) {
+                timeout(deadline, READ_TIMEOUT_MS);
+                throw failure;
+            }
+            timeout(deadline, READ_TIMEOUT_MS);
             if (read < 0) {
                 if (remaining >= 0) throw new EOFException("truncated HTTP body");
                 finished = true;
@@ -276,6 +368,8 @@ final class ReleaseTransport implements ReleaseCheck.Transport {
         @Override
         public void close() {
             finished = true;
+            expiry.cancel(false);
+            try { connection.close(); } catch (IOException ignored) { }
             try {
                 socket.close();
             } catch (IOException ignored) {
