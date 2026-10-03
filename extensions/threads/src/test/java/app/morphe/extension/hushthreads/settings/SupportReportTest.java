@@ -12,6 +12,9 @@ import static org.junit.Assert.assertTrue;
 
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.Signature;
+import android.content.pm.SigningInfo;
 import android.os.Build;
 import android.provider.MediaStore;
 
@@ -26,6 +29,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowSigningInfo;
+import org.robolectric.shadow.api.Shadow;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -33,6 +38,7 @@ import java.util.EnumSet;
 import java.util.regex.Pattern;
 
 import app.morphe.extension.hushthreads.misc.Analytics;
+import app.morphe.extension.hushthreads.misc.ThreadsSignature;
 import app.morphe.extension.shared.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.diagnostics.HookStatus;
@@ -46,7 +52,7 @@ import app.morphe.extension.shared.settings.preference.LogBufferManagerExportTes
  * Bug reports used to come without a report: with nothing logged and no hook missing anything, the
  * export said there was nothing to report and told the reader to turn on Debug logging. A report
  * asked for now always carries the facts a maintainer asks for first: the app's package, version
- * code, Android API and profile, ABI, HushThreads's version, whether it's paused, which patches
+ * code, Android API and user, ABI, HushThreads's version, whether it's paused, which patches
  * the build carries and what each hook has counted. Debug logging stays off here, both exports
  * are read, and nothing is sent anywhere.
  */
@@ -78,11 +84,7 @@ public class SupportReportTest {
     /** The clipboard copy and the saved file of one report, in that order. */
     private static String[] bothExports() throws Exception {
         Context context = RuntimeEnvironment.getApplication();
-        ClipboardManager clipboard = context.getSystemService(ClipboardManager.class);
-        LogBufferManager.exportToClipboard();
-        Utils.awaitBackgroundTasksForTests();
-        ShadowLooper.idleMainLooper();
-        String copied = String.valueOf(clipboard.getPrimaryClip().getItemAt(0).getText());
+        String copied = copyReport();
 
         LogBufferManagerExportTest.Downloads downloads = Robolectric.setupContentProvider(
                 LogBufferManagerExportTest.Downloads.class, MediaStore.AUTHORITY);
@@ -95,6 +97,15 @@ public class SupportReportTest {
         return new String[]{copied, body.toString(StandardCharsets.UTF_8.name())};
     }
 
+    private static String copyReport() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        ClipboardManager clipboard = context.getSystemService(ClipboardManager.class);
+        LogBufferManager.exportToClipboard();
+        Utils.awaitBackgroundTasksForTests();
+        ShadowLooper.idleMainLooper();
+        return String.valueOf(clipboard.getPrimaryClip().getItemAt(0).getText());
+    }
+
     /** What every report asked for carries, whatever went right or wrong. */
     private static void assertBuildFacts(String report) {
         String packageName = RuntimeEnvironment.getApplication().getPackageName();
@@ -104,7 +115,12 @@ public class SupportReportTest {
         assertTrue("no API level or profile: " + report, report.contains(
                 "\nandroid: API " + Build.VERSION.SDK_INT + " (" + Build.VERSION.RELEASE + "), user "));
         assertTrue("no ABI: " + report, report.contains("\nabi: app "));
-        assertTrue("no HushThreads version: " + report, report.contains("\nmorphe: "));
+        assertTrue("no HushThreads bundle version: " + report, report.contains("\nhushthreads_bundle: "));
+        assertFalse("bundle mislabeled as Manager: " + report, report.contains("\nmorphe: "));
+        for (String fact : new String[]{"installing_package", "initiating_package", "originating_package",
+                "current_signer_classification", "current_signer_sha256"}) {
+            assertTrue("missing installation fact: " + report, report.contains("\n" + fact + ": "));
+        }
         assertTrue("Debug logging's state is missing: " + report, report.contains("\ndebug_logging: off\n"));
         assertTrue("no patch list: " + report, report.contains("\n[PATCHES]\n"));
         assertTrue(report, report.contains("\nHide ads: on (hushthreads_hide_ads=on)\n"));
@@ -142,5 +158,139 @@ public class SupportReportTest {
             assertTrue(report, report.contains("\nhushthreads: paused (switch)"));
             assertTrue(report, report.contains("\nHide ads: disabled while paused (saved hushthreads_hide_ads=on)\n"));
         }
+    }
+
+    private static PackageInfo currentSigners(Signature... certificates) {
+        Context context = RuntimeEnvironment.getApplication();
+        PackageInfo installed = Shadows.shadowOf(context.getPackageManager())
+                .getInternalMutablePackageInfo(context.getPackageName());
+        SigningInfo signing = new SigningInfo();
+        ((ShadowSigningInfo) Shadow.extract(signing)).setSignatures(certificates);
+        installed.signingInfo = signing;
+        return installed;
+    }
+
+    @Test @Config(sdk = {28, 30})
+    public void reportsCurrentSignersWithoutPastCertificatesOrUnrelatedApps() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        PackageInfo installed = currentSigners(new Signature("01020304"));
+        ((ShadowSigningInfo) Shadow.extract(installed.signingInfo))
+                .setPastSigningCertificates(new Signature[]{new Signature("05060708")});
+        PackageInfo unrelated = new PackageInfo();
+        unrelated.packageName = "private.unrelated.app";
+        unrelated.signatures = new Signature[]{new Signature("05060708")};
+        Shadows.shadowOf(context.getPackageManager()).installPackage(unrelated);
+        for (String report : Build.VERSION.SDK_INT >= 29 ? bothExports() : new String[]{copyReport()}) {
+            assertTrue(report, report.contains("\ncurrent_signer_classification: non-Meta current certificate\n"));
+            assertTrue(report, report.contains("\ncurrent_signer_sha256: "
+                    + "9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a\n"));
+            assertFalse(report, report.contains("private.unrelated.app"));
+            assertFalse(report, report.contains("55e5509f8052998294266ee5b50cb592938191fb5d67f73cac2e60b0276b1bdd"));
+            assertFalse(report, report.contains("01020304"));
+            assertFalse(report, report.contains("05060708"));
+        }
+    }
+
+    @Test @Config(sdk = 28)
+    public void android9ReportsOnlyTheAvailableInstaller() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        context.getPackageManager().setInstallerPackageName(
+                context.getPackageName(), "com.android.shell");
+        String report = copyReport();
+        assertTrue(report, report.contains("\ninstalling_package: com.android.shell\n"));
+        assertTrue(report, report.contains("\ninitiating_package: unknown (API below 30)\n"));
+        assertTrue(report, report.contains("\noriginating_package: unknown (API below 30)\n"));
+        assertFalse(report, report.contains("Shizuku"));
+        assertFalse(report, report.contains("work profile"));
+    }
+
+    @Test
+    public void android11ReportsInstallerAndInitiatorSeparately() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        Shadows.shadowOf(context.getPackageManager()).setInstallSourceInfo(
+                context.getPackageName(), "app.morphe.manager", "com.android.shell");
+        for (String report : bothExports()) {
+            assertTrue(report, report.contains("\ninstalling_package: com.android.shell\n"));
+            assertTrue(report, report.contains("\ninitiating_package: app.morphe.manager\n"));
+            assertTrue(report, report.contains("\noriginating_package: unknown (not recorded)\n"));
+            assertFalse(report, report.contains("Shizuku"));
+        }
+    }
+
+    @Test @Config(sdk = 36)
+    public void reportsAvailableOriginWithoutLookingUpThatApp() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        Shadows.shadowOf(context.getPackageManager()).setInstallSourceInfo(context.getPackageName(),
+                "app.morphe.manager", null, "com.example.source", "com.android.shell", null, 0);
+        String report = copyReport();
+        assertTrue(report, report.contains("\noriginating_package: com.example.source\n"));
+    }
+
+    @Test
+    public void recognizesTheKnownMetaCertificateWithoutExportingIt() throws Exception {
+        PackageInfo meta = new PackageInfo();
+        meta.packageName = "com.instagram.barcelona";
+        meta.applicationInfo = new android.content.pm.ApplicationInfo();
+        meta.applicationInfo.packageName = meta.packageName;
+        meta.applicationInfo.uid = android.os.Process.myUid();
+        Signature certificate = ThreadsSignature.originalSigners(meta).get(0);
+        currentSigners(certificate);
+        String report = copyReport();
+        assertTrue(report, report.contains("\ncurrent_signer_classification: known Meta Threads certificate\n"));
+        assertTrue(report, report.contains("\ncurrent_signer_sha256: "
+                + "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432\n"));
+        assertFalse(report, report.contains(certificate.toCharsString()));
+        assertFalse(report, report.contains("Meta Platforms"));
+        assertFalse(report, report.contains(RuntimeEnvironment.getApplication().getFilesDir().getAbsolutePath()));
+    }
+
+    @Test @Config(sdk = {28, 30})
+    public void missingAndMultipleCertificatesAreExplicit() throws Exception {
+        currentSigners().signingInfo = null;
+        assertTrue(copyReport().contains("\ncurrent_signer_sha256: unknown (missing current certificates)\n"));
+        currentSigners();
+        assertTrue(copyReport().contains("\ncurrent_signer_sha256: unknown (missing current certificates)\n"));
+        currentSigners(new Signature("01020304"), new Signature("05060708"));
+        String report = copyReport();
+        assertTrue(report, report.contains("\ncurrent_signer_classification: multiple current certificates\n"));
+        assertTrue(report, Pattern.compile("\ncurrent_signer_sha256: [a-f0-9]{64},[a-f0-9]{64}\n")
+                .matcher(report).find());
+    }
+
+    @Test
+    public void oversizedAndInvalidCertificatesNeverLeakPartialData() throws Exception {
+        Signature valid = new Signature("01020304");
+        currentSigners(valid, valid, valid, valid, valid);
+        assertTrue(copyReport().contains("\ncurrent_signer_sha256: unknown (too many current certificates)\n"));
+        currentSigners(valid, null);
+        assertTrue(copyReport().contains("\ncurrent_signer_sha256: unknown (invalid current certificate)\n"));
+        currentSigners(new Signature(new byte[65_537]));
+        assertTrue(copyReport().contains("\ncurrent_signer_sha256: unknown (invalid current certificate)\n"));
+    }
+
+    @Test @Config(sdk = {28, 30})
+    public void unavailableSourceAndCertificateQueriesDoNotStopTheExport() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        Shadows.shadowOf(context.getPackageManager()).removePackage(context.getPackageName());
+        String report = copyReport();
+        assertTrue(report, report.contains("\ncurrent_signer_sha256: unknown (error)\n"));
+        assertTrue(report, report.contains("\ninstalling_package: unknown ("));
+        assertFalse(report, report.contains(context.getFilesDir().getAbsolutePath()));
+    }
+
+    @Test
+    public void untrustedSourceNamesAreBoundedAndCannotInjectReportFields() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        Shadows.shadowOf(context.getPackageManager()).setInstallSourceInfo(
+                context.getPackageName(), "/data/private/account.token", "com.android.shell\npassword=secret");
+        BaseSettings.DEBUG_LOG_FILTERS.save("crashes");
+        String report = copyReport();
+        assertTrue(report, report.contains("\ninstalling_package: unknown (invalid package name)\n"));
+        assertTrue(report, report.contains("\ninitiating_package: unknown (invalid package name)\n"));
+        assertFalse(report, report.contains("account.token"));
+        assertFalse(report, report.contains("password"));
+        Shadows.shadowOf(context.getPackageManager()).setInstallSourceInfo(
+                context.getPackageName(), null, "a".repeat(201));
+        assertTrue(copyReport().contains("\ninstalling_package: unknown (invalid package name)\n"));
     }
 }

@@ -17,6 +17,10 @@ import android.app.ApplicationExitInfo;
 import android.content.ContentValues;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.pm.InstallSourceInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -31,6 +35,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -461,7 +466,71 @@ public final class LogBufferManager {
                 .append(" (").append(Utils.getAppVersionCode()).append(")\n")
                 .append("android: ").append(androidLine()).append('\n')
                 .append("abi: ").append(abiLine()).append('\n')
-                .append("morphe: ").append(Utils.getPatchesReleaseVersion()).append('\n');
+                .append("hushthreads_bundle: ").append(Utils.getPatchesReleaseVersion().isEmpty()
+                        ? "unknown" : Utils.getPatchesReleaseVersion()).append('\n');
+        Context context = Utils.getContext();
+        String installer = "unknown (not recorded)";
+        String initiating = "unknown (API below 30)";
+        String originating = "unknown (API below 30)";
+        try {
+            PackageManager packages = context.getPackageManager();
+            if (Build.VERSION.SDK_INT >= 30) {
+                InstallSourceInfo source = packages.getInstallSourceInfo(context.getPackageName());
+                installer = reportPackageName(source.getInstallingPackageName());
+                initiating = reportPackageName(source.getInitiatingPackageName());
+                originating = reportPackageName(source.getOriginatingPackageName());
+            } else {
+                installer = reportPackageName(packages.getInstallerPackageName(context.getPackageName()));
+            }
+        } catch (Exception unreadable) {
+            installer = "unknown (error)";
+            if (Build.VERSION.SDK_INT >= 30) initiating = originating = "unknown (error)";
+        }
+        report.append("installing_package: ").append(installer).append('\n')
+                .append("initiating_package: ").append(initiating).append('\n')
+                .append("originating_package: ").append(originating).append('\n');
+        String signerClass = "unknown (missing current certificates)";
+        String signerHashes = "unknown (missing current certificates)";
+        try {
+            // Query only this installed package. The restored Meta certificate and signing history
+            // answer different questions and must never stand in for its current APK signers.
+            PackageInfo installed = context.getPackageManager().getPackageInfo(
+                    context.getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES);
+            Signature[] signers = installed.signingInfo == null ? null
+                    : installed.signingInfo.getApkContentsSigners();
+            if (signers != null && signers.length > 4) {
+                signerClass = signerHashes = "unknown (too many current certificates)";
+            } else if (signers != null && signers.length > 0) {
+                StringBuilder hashes = new StringBuilder();
+                boolean complete = true;
+                for (Signature signer : signers) {
+                    byte[] certificate = signer == null ? null : signer.toByteArray();
+                    if (certificate == null || certificate.length == 0 || certificate.length > 65_536) {
+                        complete = false;
+                        break;
+                    }
+                    if (hashes.length() > 0) hashes.append(',');
+                    for (byte b : MessageDigest.getInstance("SHA-256").digest(certificate)) {
+                        hashes.append(String.format(Locale.ROOT, "%02x", b & 0xff));
+                    }
+                }
+                if (complete) {
+                    signerHashes = hashes.toString();
+                    // These are the current certificates verified in the declared Threads APKs,
+                    // including the API33+ rotation. A match isn't a claim about install method.
+                    signerClass = signers.length > 1 ? "multiple current certificates"
+                            : signerHashes.equals("5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432")
+                            || signerHashes.equals("8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500")
+                            ? "known Meta Threads certificate" : "non-Meta current certificate";
+                } else {
+                    signerClass = signerHashes = "unknown (invalid current certificate)";
+                }
+            }
+        } catch (Exception unreadable) {
+            signerClass = signerHashes = "unknown (error)";
+        }
+        report.append("current_signer_classification: ").append(signerClass).append('\n')
+                .append("current_signer_sha256: ").append(signerHashes).append('\n');
         if (paused) {
             report.append("hushthreads: paused (")
                     .append(HushThreadsPause.reason().name().toLowerCase(java.util.Locale.ROOT))
@@ -506,6 +575,14 @@ public final class LogBufferManager {
             report.append("\n[LAST EXIT]\n").append(lastExit).append('\n');
         }
         return new Export(report.toString(), events);
+    }
+
+    private static String reportPackageName(String name) {
+        if (name == null) return "unknown (not recorded)";
+        if (name.length() > 200 || !name.matches("[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)*")) {
+            return "unknown (invalid package name)";
+        }
+        return name;
     }
 
     /**

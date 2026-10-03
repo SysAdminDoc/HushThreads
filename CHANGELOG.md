@@ -4,6 +4,9 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** Support reports label the HushThreads bundle explicitly and include bounded hashes of the installed app's current signing certificates and available installer details. Android 9 uses the legacy installer API. Missing facts and query failures remain explicit. No certificate contents, signing keys or other apps' details are exported. Manager version and installation method still need to be supplied with a report.
+* **Tooling:** Support-report tests now exercise Android 9 and newer install-source APIs, current versus past certificates, missing or excessive signer data and unsafe source names through the exports. The previous version assertion accepted the misleading morphe label and didn't check these installation facts. The reporting guide also clarifies Android 9's saved-file location.
+
 * **Tooling:** The release advisory gate holds unsupported or malformed severity data for review even beside a lower label or score. CVSS 4 findings can no longer pass under LOW/MODERATE labels. Supported HIGH/CRITICAL ratings remain visible. CVSS 3 vectors with duplicate metrics or invalid optional values are refused as unreadable instead of receiving a score.
 
 * **Threads:** Release checks use a separate TLS connection that sends no cookies and leaves Threads' shared cookie handler and store untouched. Response cookies are discarded. GitHub host checks, opt-in behavior, Pause, redirect limits and bounded responses still apply.

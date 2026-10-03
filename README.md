@@ -94,6 +94,8 @@ If Threads crashes within a minute of starting three times in a row, HushThreads
 
 Diagnostics list hook calls separately from removed feed items, shared links that changed and links sent to your browser. Unchanged, disabled, paused or failed operations add no removal or change count. Reports keep these totals without saving the posts or URLs.
 
+Reports name the HushThreads bundle and include the installed app's current certificate SHA-256 hashes. They distinguish known Meta Threads certificates, other current certificates and multiple signers. Available installer, initiator and originating package names help compare installations. Android 9 provides only the installer name. Missing or unreadable facts say unknown. These names don't prove Shizuku, Root Mount or a work profile, so include your Manager version and installation method when reporting a problem. No certificate contents, signing keys or other apps' details are exported.
+
 ## Signing in
 
 Tap Log in with Instagram and enter your Instagram username and password. On 2026-10-01, this reached a live feed for one account on Threads 449.0.0.54.82 with the published 0.0.2 bundle and all six tested source 0.0.3 configurations. The source checks covered settings plus Restore screens, each privacy patch added separately, and the full bundle. These checks ran on Android 16 beside signed-in stock Instagram 449.0.0.52.84.
@@ -108,7 +110,7 @@ In the earlier Android 16 comparison, stock Threads recovered the Instagram sess
 
 With a Root Mount install you can sign in on stock Threads first. The mounted build uses stock Threads' data, so it keeps that session. On 2026-10-02, on Android 16, a mounted build with only HushThreads settings kept a stock session, and signing out and back in on it reached the feed too.
 
-On 2026-10-03, re-signed settings-only and full source 0.0.5 builds reached the feed on Android 17 with 16 KB pages and Instagram absent. They used the installer identity and session options from Morphe Manager 1.33.0's non-root Shizuku path. This checks one account in an emulator; the reported password failure hasn't reproduced there.
+On 2026-10-03, re-signed settings-only and full source 0.0.5 builds reached the feed on Android 17 with 16 KB pages and Instagram absent. They used the installer identity and session options from Morphe Manager 1.33.0's non-root Shizuku path. This checks one account in an emulator. The reported password failure hasn't reproduced there.
 
 Source 0.0.8 repairs a second sign-in check inside Threads. On the same Android 17 emulator, signed-in HushGram 0.0.4 with the same current signing key appeared as an Instagram account tile after Threads logged out. Selecting it reached the live feed without entering a password. With Instagram temporarily disabled, Threads offered only manual sign-in, which also reached the feed. Restoring Instagram brought the account tile back. This checks one account on Threads 449; other accounts and fresh sign-in on 448 still need testing.
 
@@ -151,7 +153,7 @@ HushThreads' build, settings, diagnostics and safety checks came from [Hushfaceb
 | [kareemlukitomo/morphe-patches](https://github.com/kareemlukitomo/morphe-patches) | GPL candidate that changes the Threads share domain. |
 | [chirag127/morphe-patches](https://github.com/chirag127/morphe-patches) | Rejected. Its Threads patches are stubs. |
 | [revanced-troubleshooting-guide](https://github.com/SodaWithoutSparkles/revanced-troubleshooting-guide) | Rejected. It stores catalogs without an independent patch body. |
-| [yt-revanced-icon](https://github.com/kairusds/yt-revanced-icon) and [rvmm-config-gen](https://github.com/user2user1/rvmm-config-gen) | Catalogs recorded as behavior-only. The former lacks a license; the latter uses AGPL-3.0, outside the ledger's accepted license list. |
+| [yt-revanced-icon](https://github.com/kairusds/yt-revanced-icon) and [rvmm-config-gen](https://github.com/user2user1/rvmm-config-gen) | Catalogs recorded as behavior-only. The former lacks a license. The latter uses AGPL-3.0, outside the ledger's accepted license list. |
 
 The census remains dated 2026-09-29. Repository entries and all five discovery indexes were checked on 2026-10-02. All five list HushThreads. GitLab code search wasn't run.
 
@@ -189,9 +191,9 @@ Run `scripts/audit-threads-sources.ps1` when sources change. It stamps a clean c
 
 Device scripts require `HUSHTHREADS_DEVICE_SERIAL` and an exclusive lease. Set `HUSHTHREADS_DEVICE_LEASE_DIR`, `HUSHTHREADS_DEVICE_LEASE_TOKEN` and `HUSHTHREADS_DEVICE_IDENTITY`. Release the lease after testing. Signing conflicts require the installed key. Replacement installs are refused to preserve apps and accounts.
 
-Local APK verification inspects every ELF's load segments and checks uncompressed native ZIP entries with the SDK's 16 KB alignment check. ZIP alignment determines load compatibility when Android loads libraries directly from the APK; extracted libraries still have their ZIP verdict recorded. Builds remove stale ZIP alignment declarations, align the unsigned APK, then sign and check the final APK. No native payload is rewritten. Receipts separate unchanged vendor ELF incompatibilities from packaging defects. These static checks don't establish runtime support on a 16 KB-page device.
+Local APK verification inspects every ELF's load segments and checks uncompressed native ZIP entries with the SDK's 16 KB alignment check. ZIP alignment determines load compatibility when Android loads libraries directly from the APK. Extracted libraries still have their ZIP verdict recorded. Builds remove stale ZIP alignment declarations, align the unsigned APK, then sign and check the final APK. No native payload is rewritten. Receipts separate unchanged vendor ELF incompatibilities from packaging defects. These static checks don't establish runtime support on a 16 KB-page device.
 
-`scripts/patch-for-device.ps1` reads existing BKS, JKS and PKCS12 keys without converting them. `HUSHTHREADS_SIDELOAD_KEYSTORE_PASSWORD` supplies the store password; an explicitly empty value in PowerShell 7 selects an unprotected store. Set `HUSHTHREADS_SIDELOAD_KEY_PASSWORD` when the private entry uses a different password. Both travel through the process environment. The documented local test-key fallback applies only when the store password variable is unset.
+`scripts/patch-for-device.ps1` reads existing BKS, JKS and PKCS12 keys without converting them. `HUSHTHREADS_SIDELOAD_KEYSTORE_PASSWORD` supplies the store password. An explicitly empty value in PowerShell 7 selects an unprotected store. Set `HUSHTHREADS_SIDELOAD_KEY_PASSWORD` when the private entry uses a different password. Both travel through the process environment. The documented local test-key fallback applies only when the store password variable is unset.
 
 ## Reporting a problem
 
