@@ -714,6 +714,8 @@ dependencies {
     // as well as the compile one.
     testImplementation("junit:junit:4.13.2")
     testImplementation(libs.morphe.patcher)
+    // GuavaPatchSourceGuardTest reads Kotlin import directives with the build's own parser.
+    testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:${libs.versions.kotlin.stdlib.get()}")
     // Reads the signing certificate of every retained fixture. The patcher already brings this
     // exact version at run time; this puts it on the test compile classpath as well.
     testImplementation("com.android.tools.build:apksig:9.1.1")

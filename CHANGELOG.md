@@ -4,6 +4,10 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+## 0.0.6 (2026-10-03)
+
+* **Threads:** The build's source guard parses Kotlin and Java import declarations to catch direct Guava imports with legal whitespace, comments, aliases or static imports. Examples in strings and comments, similar package names and an infix function named import remain allowed. The parsers are test dependencies and aren't included in the patch bundle.
+
 ## 0.0.5 (2026-10-02)
 
 * **Threads:** Hide ads and Hide suggested users diagnostics count successfully checked feed pages and items, even when Threads sends nothing to remove. Disabled, paused and failed checks don't count. Removal counts still record only items taken out of a completed page.
