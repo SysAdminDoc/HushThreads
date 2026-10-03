@@ -12,7 +12,7 @@
 
 HushThreads is a Morphe patch bundle for Android that takes the ads out of Threads, cleans the links you share and cuts down what the app reports back to Meta.
 
-The latest release is [v0.0.3](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.3), with 6 patches.
+The latest release is [v0.0.4](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.4), with 10 patches.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -35,7 +35,7 @@ This project has no connection to Meta or to the Morphe project. Neither endorse
 3. Get Threads 449.0.0.54.82 (`com.instagram.barcelona`) for arm64-v8a, version code 511908382 (120-640dpi, Android 9+). That's the build these patches are checked against. Morphe Manager warns about other builds of the same version.
 4. In Morphe Manager, pick that file, keep the default patch selection or change it, and patch.
 
-Source builds on main declare both of these arm64-v8a variants. The published v0.0.3 bundle declares only 449.
+HushThreads v0.0.4 works with both of these arm64-v8a variants.
 
 | Threads version | Version code | Android floor |
 |---|---|---|
@@ -60,7 +60,7 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-Source v0.0.4 builds contain 10 patches. All but Block background-return feed refresh and Disable video autoplay are selected by default. The published v0.0.3 bundle contains 6 patches and has none of Hide suggested users, Block background-return feed refresh, Disable video autoplay or Open links in browser.
+HushThreads v0.0.4 has 10 patches. All but Block background-return feed refresh and Disable video autoplay are selected by default.
 
 | Patch | What it does |
 |---|---|
