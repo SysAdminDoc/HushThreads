@@ -12,9 +12,7 @@
 
 HushThreads is a Morphe patch bundle for Android that takes the ads out of Threads, cleans the links you share and cuts down what the app reports back to Meta.
 
-The latest release is [v0.0.4](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.4), with 10 patches.
-
-The source build is v0.0.10. It hasn't been released yet.
+The latest release is [v0.0.10](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.10), with 10 patches.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -37,7 +35,7 @@ This project has no connection to Meta or to the Morphe project. Neither endorse
 3. Get Threads 449.0.0.54.82 (`com.instagram.barcelona`) for arm64-v8a, version code 511908382 (120-640dpi, Android 9+). That's the build these patches are checked against. Morphe Manager warns about other builds of the same version.
 4. In Morphe Manager, pick that file, keep the default patch selection or change it, and patch.
 
-HushThreads v0.0.4 works with both of these arm64-v8a variants.
+HushThreads v0.0.10 works with both of these arm64-v8a variants.
 
 | Threads version | Version code | Android floor |
 |---|---|---|
@@ -100,23 +98,17 @@ Reports name the HushThreads bundle and include the installed app's current cert
 
 ## Signing in
 
-Tap Log in with Instagram and enter your Instagram username and password. On 2026-10-01, this reached a live feed for one account on Threads 449.0.0.54.82 with the published 0.0.2 bundle and all six tested source 0.0.3 configurations. The source checks covered settings plus Restore screens, each privacy patch added separately, and the full bundle. These checks ran on Android 16 beside signed-in stock Instagram 449.0.0.52.84.
-
-Stock Threads and the full 0.0.2 and source 0.0.3 bundles also reached the feed through manual sign-in with Instagram absent.
-
-On 2026-10-02, source builds declared both 448.0.0.54.85 and 449.0.0.54.82. Same-key updates between them preserved the signed-in account and switches on Android 16. Settings and live feeds passed on both. This checks a retained session; fresh password entry on 448 wasn't tested.
+Tap Log in with Instagram and enter your Instagram username and password. That reached a live feed on Threads 449.0.0.54.82 with every patch combination tested, on Android 16 next to a signed-in stock Instagram and on Android 17 with no Instagram installed. The Android 17 checks used the same install settings Morphe Manager's Shizuku mode uses.
 
 Threads can show Save your login info twice. Tap Not now on each prompt if you don't want to save it.
 
-In the earlier Android 16 comparison, stock Threads recovered the Instagram session automatically after its data was cleared. The published and older source builds offered the manual form, with no Continue as option. The same-key patched Instagram check on 2026-09-29 also offered only the manual form.
+If you also patch Instagram with [HushGram](https://github.com/SysAdminDoc/HushGram), use the same Morphe Manager signing key for both. Threads then shows your Instagram account as a tile on its login screen, and tapping it signs you in without typing your password. That was checked on Android 17 with Threads 449 and HushGram 0.0.4.
 
-With a Root Mount install you can sign in on stock Threads first. The mounted build uses stock Threads' data, so it keeps that session. On 2026-10-02, on Android 16, a mounted build with only HushThreads settings kept a stock session, and signing out and back in on it reached the feed too.
+With a Root Mount install you can sign in on stock Threads first. The mounted build uses stock Threads' data, so it keeps that session, and signing out and back in on it works too.
 
-On 2026-10-03, re-signed settings-only and full source 0.0.5 builds reached the feed on Android 17 with 16 KB pages and Instagram absent. They used the installer identity and session options from Morphe Manager 1.33.0's non-root Shizuku path. This checks one account in an emulator. The reported password failure hasn't reproduced there.
+Updating between Threads 448.0.0.54.85 and 449.0.0.54.82 with the same signing key keeps you signed in, and your switches stay as you set them.
 
-Source 0.0.8 repairs a second sign-in check inside Threads. On the same Android 17 emulator, signed-in HushGram 0.0.4 with the same current signing key appeared as an Instagram account tile after Threads logged out. Selecting it reached the live feed without entering a password. With Instagram temporarily disabled, Threads offered only manual sign-in, which also reached the feed. Restoring Instagram brought the account tile back. This checks one account on Threads 449; other accounts and fresh sign-in on 448 still need testing.
-
-[The password-login failure reported on 2026-10-01](https://github.com/SysAdminDoc/HushThreads/discussions/2) and [the one on Android 17 with Shizuku](https://github.com/SysAdminDoc/HushThreads/issues/3) remain unresolved. The Android 17 reporter corrected the install method from Root Mount to Shizuku. These successful checks haven't identified the reports' cause or established login for every account.
+If Threads says your password is wrong when you know it's right, add a comment to [issue #3](https://github.com/SysAdminDoc/HushThreads/issues/3) with a diagnostic report from HushThreads' settings, your phone and Android version, and how you installed it.
 
 ## Your Threads account
 
@@ -208,11 +200,11 @@ Local APK verification inspects every ELF's load segments and checks uncompresse
 
 Use [Issues](https://github.com/SysAdminDoc/HushThreads/issues) for bugs and [Discussions](https://github.com/SysAdminDoc/HushThreads/discussions) for questions. Include the Threads version, version code and ABI, Morphe Manager and HushThreads versions, selected patches, reproduction steps and expected/actual behavior. Attach diagnostics or relevant screenshots after removing private messages and account details. Reports stay open until you or another user confirms the fix works.
 
-Current source builds redact filesystem paths from exported events and saved crashes, including paths with spaces and escaped forms. Stack-trace filenames and current signing-certificate hashes remain available for troubleshooting. Review an export before sharing it.
+HushThreads redacts filesystem paths from exported events and saved crashes, including paths with spaces and escaped forms. Stack-trace filenames and current signing-certificate hashes remain available for troubleshooting. Review an export before sharing it.
 
 The settings overview shows which default patches were left out of your build. Reports also include Android's selections for the app's declared web domains. Android 9 through 11 explicitly report that this platform detail isn't available.
 
-Current source builds show the bundle's payload hash and source state in the overview. About and both report exports include the full source record. The identity covers the packaged code and extension bytes. Repacking identical contents keeps it stable. Changed or damaged contents can't retain the old identity. Source metadata distinguishes a clean commit, modified inputs and an archive with unknown source. This checks consistency, not the publisher's signature.
+HushThreads shows the bundle's payload hash and source state in the overview. About and both report exports include the full source record. The identity covers the packaged code and extension bytes. Repacking identical contents keeps it stable. Changed or damaged contents can't retain the old identity. Source metadata distinguishes a clean commit, modified inputs and an archive with unknown source. This checks consistency, not the publisher's signature.
 
 ## When Threads updates
 

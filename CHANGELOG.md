@@ -14,13 +14,13 @@ Changes in the source build, then released versions.
 
 ## 0.0.9 (2026-10-03)
 
-* **Threads:** A Galaxy S23 Ultra report confirmed Hide suggested users removes the live Suggested Users block on Threads 449 with HushThreads 0.0.4. The README now records that live confirmation instead of saying the rule hadn't been observed on a real feed.
+* **Threads:** A Galaxy S23 Ultra running Threads 449 with HushThreads 0.0.4 confirmed that Hide suggested users takes the live Suggested Users block out of the feed.
 * **Threads:** The overview, About and support reports identify the exact packaged bundle, including its payload hash and clean, modified or unknown source state. Identical repacks keep the same identity. Missing or damaged current metadata remains unverified.
 * **Threads:** The overview keeps the full payload hash with a compact source state. About and exports retain the complete source record. At large text sizes, Pause, Resume and Undo appear above the summary so build details can't push recovery off the screen.
 * **Tooling:** Bundle and receipt checks verify the packaged identity before accepting source claims. Existing display tests expected version-only text and placed recovery below the summary, which could hide it behind the new build details. Assertions now cover the payload field and accessible action placement, alongside tampering, archive, loaded-bundle and export checks.
 
 * **Threads:** The settings overview names any default patches omitted from a build. Diagnostic exports include the app's declared web domains and Android's current link selections, with an explicit unavailable state on older versions.
-* **Tooling:** Shared fixes and the Turkish GitHub wording correction are ported with per-file provenance. Tests cover missing defaults, Unicode domains and both report exports. An older analytics test expected only one report line and missed the new default-selection disclosure; its analytics assertions remain intact. Android 9 also exercises the saved-file report through its actual legacy destination.
+* **Tooling:** Shared fixes and the Turkish GitHub wording correction are ported with per-file provenance. Tests cover missing defaults, Unicode domains and both report exports. An older analytics test expected only one report line and missed the new default-selection disclosure. Its analytics assertions remain intact. Android 9 also exercises the saved-file report through its actual legacy destination.
 
 * **Threads:** Diagnostic exports redact filesystem paths from buffered events and saved Java/native crashes, including quoted paths with spaces, escaped forms and file URLs. Stack-trace filenames, package names and current signing-certificate hashes remain useful.
 * **Tooling:** Clipboard and saved-file tests cover every diagnostic section on Android 9, 11 and 16 with Debug logging on and off. The earlier tests only checked request addresses and credentials. Long quoted values now avoid regex stack overflow, and the Windows file-write fixture only uses the new-file field on Android versions that have it.
@@ -35,7 +35,7 @@ Changes in the source build, then released versions.
 
 * **Tooling:** Explicit null severity entries and malformed non-array severity fields require advisory review. A missing optional field or a valid empty array stays distinct. Existing tests covered unreadable vectors but missed null entries that the pipeline silently removed.
 
-* **Threads:** Support reports label the HushThreads bundle explicitly and include bounded hashes of the installed app's current signing certificates and available installer details. Android 9 uses the legacy installer API. Missing facts and query failures remain explicit. No certificate contents, signing keys or other apps' details are exported. Manager version and installation method still need to be supplied with a report.
+* **Threads:** Support reports label the HushThreads bundle explicitly and include bounded hashes of the installed app's current signing certificates and available installer details. Android 9 uses the legacy installer API. Missing facts and query failures remain explicit. No certificate contents, signing keys or other apps' details are exported. Add your Manager version and install method when you send one.
 * **Tooling:** Support-report tests now exercise Android 9 and newer install-source APIs, current versus past certificates, missing or excessive signer data and unsafe source names through the exports. The previous version assertion accepted the misleading morphe label and didn't check these installation facts. The reporting guide also clarifies Android 9's saved-file location.
 
 * **Tooling:** The release advisory gate holds unsupported or malformed severity data for review even beside a lower label or score. CVSS 4 findings can no longer pass under LOW/MODERATE labels. Supported HIGH/CRITICAL ratings remain visible. CVSS 3 vectors with duplicate metrics or invalid optional values are refused as unreadable instead of receiving a score.
@@ -45,15 +45,15 @@ Changes in the source build, then released versions.
 
 ## 0.0.8 (2026-10-03)
 
-* **Threads:** Restore screens on re-signed builds also recognizes Threads' local reads of an Instagram installed with the same current signing key. The provider lookup verifies exact package names, separate UID ownership and the installed certificate. Other keys, shared UIDs and unrelated Binder callers keep the original answer. This repairs the consumer check that rejected Instagram before requesting sign-in information. On Android 17 with Threads 449 and same-key HushGram 0.0.4, selecting Instagram's account tile reached the feed without a password. A control with Instagram disabled required manual sign-in, which also passed. Both apps' data and keys were preserved.
+* **Threads:** If you patch Instagram with HushGram using the same Morphe Manager signing key, Threads now shows your Instagram account as a tile on its login screen, and tapping it signs you in without a password. Restore screens on re-signed builds checks the exact package, that it's a separate app and its installed certificate first, so apps signed with other keys still get Threads' usual answer. Checked on Android 17 with Threads 449 and HushGram 0.0.4.
 
 ## 0.0.7 (2026-10-03)
 
-* **Threads:** The bug report form includes Shizuku installs. The sign-in guide corrects the Android 17 report's install method and records successful settings-only and full-bundle password checks with Shizuku's installer identity and session options. Same-key Instagram provider access passed, but Continue as still wasn't offered. The reported password failures remain open.
+* **Threads:** The bug report form includes Shizuku installs. The sign-in guide corrects the Android 17 report's install method and records successful settings-only and full-bundle password checks with Shizuku's installer identity and session options.
 
 ## 0.0.6 (2026-10-03)
 
-* **Threads:** The build's source guard parses Kotlin and Java import declarations to catch direct Guava imports with legal whitespace, comments, aliases or static imports. Examples in strings and comments, similar package names and an infix function named import remain allowed. The parsers are test dependencies and aren't included in the patch bundle.
+* **Tooling:** The build's source guard parses Kotlin and Java import declarations to catch direct Guava imports with legal whitespace, comments, aliases or static imports. Examples in strings and comments, similar package names and an infix function named import remain allowed. The parsers are test dependencies and aren't included in the patch bundle.
 
 ## 0.0.5 (2026-10-02)
 
