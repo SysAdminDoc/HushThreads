@@ -103,15 +103,15 @@ Reports name the HushThreads bundle and include the installed app's current cert
 
 ## Signing in
 
-Tap Log in with Instagram and enter your Instagram username and password. That reached a live feed on Threads 449.0.0.54.82 with every patch combination tested, on Android 16 next to a signed-in stock Instagram and on Android 17 with no Instagram installed. The Android 17 checks used the same install settings Morphe Manager's Shizuku mode uses.
+Tap Log in with Instagram and enter your Instagram username and password. That reached a live feed on Threads 449.0.0.54.82 with every patch combination tested, on Android 16 next to a signed-in stock Instagram and on Android 17 with no Instagram installed. The Android 17 checks used the same install settings Morphe Manager's Shizuku mode uses. On Threads 448.0.0.54.85 it reached the feed on Android 16 with no Instagram installed, both with only the settings patch and with all 11, and again after signing out and back in.
 
 Threads can show Save your login info twice. Tap Not now on each prompt if you don't want to save it.
 
-If you also patch Instagram with [HushGram](https://github.com/SysAdminDoc/HushGram), use the same Morphe Manager signing key for both. Threads then shows your Instagram account as a tile on its login screen, and tapping it signs you in without typing your password. That was checked on Android 17 with Threads 449 and HushGram 0.0.4.
+If you also patch Instagram with [HushGram](https://github.com/SysAdminDoc/HushGram), use the same Morphe Manager signing key for both. Threads then shows your Instagram account as a tile on its login screen, and tapping it signs you in without typing your password. That was checked on Android 17 with Threads 449 and HushGram 0.0.4, and on Android 16 with Threads 448 and HushGram 0.0.5.
 
 With a Root Mount install you can sign in on stock Threads first. The mounted build uses stock Threads' data, so it keeps that session, and signing out and back in on it works too.
 
-Updating between Threads 448.0.0.54.85 and 449.0.0.54.82 with the same signing key keeps you signed in, and your switches stay as you set them.
+Updating between Threads 448.0.0.54.85 and 449.0.0.54.82 with the same signing key keeps you signed in, and your switches stay as you set them. The same goes for repatching one version with more patches selected.
 
 If Threads says your password is wrong when you know it's right, reset your Instagram password and sign in with the new one. That fixed it for the person who reported it in [issue #3](https://github.com/SysAdminDoc/HushThreads/issues/3). If it still fails, [open an issue](https://github.com/SysAdminDoc/HushThreads/issues/new/choose) with a diagnostic report from HushThreads' settings, your phone and Android version, and how you installed it.
 

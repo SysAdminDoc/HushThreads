@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** Signing in now has a device check on Threads 448.0.0.54.85 too. A typed password reaches the feed with only the settings patch or with all 11, and repatching with more patches on the same key keeps you signed in with your switches as you left them. With HushGram on the same key, your Instagram account shows up as a tile that signs you in without a password.
+
 ## 0.0.11 (2026-10-05)
 
 * **Threads:** New Pure black dark mode patch. In dark mode your feed, posts and profiles sit on pure black instead of Threads' #101010 dark gray, which looks deeper and saves power on an OLED screen. Menus and sheets keep their own grays. It isn't selected by default. Once you pick it, its switch is on and lives on a new Appearance page in HushThreads settings, and a change takes effect after Threads restarts. Pause and safe mode hand the gray back.
