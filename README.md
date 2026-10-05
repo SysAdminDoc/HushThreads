@@ -12,9 +12,7 @@
 
 HushThreads is a Morphe patch bundle for Android that takes the ads out of Threads, cleans the links you share and cuts down what the app reports back to Meta.
 
-The latest release is [v0.0.10](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.10), with 10 patches.
-
-The source build is v0.0.11. It hasn't been released yet.
+The latest release is [v0.0.11](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.11), with 11 patches.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -37,7 +35,7 @@ This project has no connection to Meta or to the Morphe project. Neither endorse
 3. Get Threads 449.0.0.54.82 (`com.instagram.barcelona`) for arm64-v8a, version code 511908382 (120-640dpi, Android 9+). That's the build these patches are checked against. Morphe Manager warns about other builds of the same version.
 4. In Morphe Manager, pick that file, keep the default patch selection or change it, and patch.
 
-HushThreads v0.0.10 works with both of these arm64-v8a variants.
+HushThreads v0.0.11 works with both of these arm64-v8a variants.
 
 | Threads version | Version code | Android floor |
 |---|---|---|
