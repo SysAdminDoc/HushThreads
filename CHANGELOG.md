@@ -4,10 +4,13 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+## 0.0.11 (2026-10-05)
+
 * **Threads:** New Pure black dark mode patch. In dark mode your feed, posts and profiles sit on pure black instead of Threads' #101010 dark gray, which looks deeper and saves power on an OLED screen. Menus and sheets keep their own grays. It isn't selected by default. Once you pick it, its switch is on and lives on a new Appearance page in HushThreads settings, and a change takes effect after Threads restarts. Pause and safe mode hand the gray back.
 * **Tooling:** A fixture test checks on 449 and 448 that the patch finds every #101010 load in Threads' theme and the background slots of its dark color scheme, hooks only those, and refuses to patch when the gray moves, the scheme builder branches, or one scheme serves both modes.
 * **Threads:** HushThreads now builds on Morphe patcher 1.15.1, so it needs Morphe Manager 1.34.0 or newer. Manager 1.33.0 asks for an update before it loads the bundle.
 * **Tooling:** ARSCLib follows the patcher to 9b742c412d, with hashes checked against the cached files. smali stays at d856bad65f, which 1.15.1 still asks for. The fixture gates move to desktop CLI 1.18.1.
+* **Threads:** The sign-in section of the README now suggests resetting your Instagram password when Threads turns down one you know is right. That's what fixed it for the person who reported it.
 
 ## 0.0.10 (2026-10-03)
 

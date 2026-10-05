@@ -1,7 +1,7 @@
 ![HushThreads. Keep the thread. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.10-000000" alt="Version 0.0.10"></a>
+  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.11-000000" alt="Version 0.0.11"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Threads-449.0.0.54.82-000000" alt="Threads 449.0.0.54.82">
@@ -13,6 +13,8 @@
 HushThreads is a Morphe patch bundle for Android that takes the ads out of Threads, cleans the links you share and cuts down what the app reports back to Meta.
 
 The latest release is [v0.0.10](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.10), with 10 patches.
+
+The source build is v0.0.11. It hasn't been released yet.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -60,7 +62,7 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-HushThreads v0.0.10 has 11 patches. All but Block background-return feed refresh, Disable video autoplay and Pure black dark mode are selected by default.
+HushThreads v0.0.11 has 11 patches. All but Block background-return feed refresh, Disable video autoplay and Pure black dark mode are selected by default.
 
 | Patch | What it does |
 |---|---|
@@ -111,7 +113,7 @@ With a Root Mount install you can sign in on stock Threads first. The mounted bu
 
 Updating between Threads 448.0.0.54.85 and 449.0.0.54.82 with the same signing key keeps you signed in, and your switches stay as you set them.
 
-If Threads says your password is wrong when you know it's right, add a comment to [issue #3](https://github.com/SysAdminDoc/HushThreads/issues/3) with a diagnostic report from HushThreads' settings, your phone and Android version, and how you installed it.
+If Threads says your password is wrong when you know it's right, reset your Instagram password and sign in with the new one. That fixed it for the person who reported it in [issue #3](https://github.com/SysAdminDoc/HushThreads/issues/3). If it still fails, [open an issue](https://github.com/SysAdminDoc/HushThreads/issues/new/choose) with a diagnostic report from HushThreads' settings, your phone and Android version, and how you installed it.
 
 ## Your Threads account
 
