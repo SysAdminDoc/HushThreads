@@ -136,14 +136,14 @@ internal fun Method.warmStartSite(): WarmStartSite {
  * Where the warm-start check compares the time away with its threshold, the register its answer
  * sits in, and where the search for that answer's store starts.
  */
-private data class WarmStartAnswer(val compare: Int, val register: Int, val storeFrom: Int)
+internal data class WarmStartAnswer(val compare: Int, val register: Int, val storeFrom: Int)
 
 /**
  * 448 and 449 set the answer to 1, branch over a 0 that falls into the [TOO_SHORT] log, and store
  * it after the log. 450 sets it to 0 early on, branches to the log when the time away is short and
  * sets the 1 otherwise, and the log jumps back to where the two sides meet before the store.
  */
-private fun Method.warmStartAnswer(): WarmStartAnswer {
+internal fun Method.warmStartAnswer(): WarmStartAnswer {
     val body = implementation!!.instructions.toList()
     val logged = body.indices.filter { body[it].getReference<StringReference>()?.string == TOO_SHORT }
         .singleOrPatchException("$PATCH: the warm-start check's \"$TOO_SHORT\" log")

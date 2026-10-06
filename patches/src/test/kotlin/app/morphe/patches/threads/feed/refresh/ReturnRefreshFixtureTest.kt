@@ -169,6 +169,32 @@ class ReturnRefreshFixtureTest {
     }
 
     @Test
+    fun `450's short log that doesn't go back, sets the answer, or follows a true answer is refused`() {
+        val builds = Fixtures.declaredBuilds().filter { it.name.startsWith("threads-450.") }
+        assertTrue("450 is a declared build", builds.isNotEmpty())
+        for (build in builds) {
+            val fixture = fixture(build)
+            val body = fixture.warm.implementation!!.instructions.toList()
+            val answer = fixture.warm.warmStartAnswer()
+            val logged = body.indices.single { body[it].getReference<StringReference>()?.string == TOO_SHORT }
+            val end = (logged until body.size).first { body[it] is OffsetInstruction || !body[it].opcode.canContinue() }
+            assertTrue(build.name, body[end].opcode.name.startsWith("goto"))
+            assertEquals(build.name, Opcode.CMP_LONG, body[answer.compare].opcode)
+            val cases = listOf<Pair<String, (MutableMethod) -> Unit>>(
+                "doesn't go back to its answer" to { it.replaceInstruction(end, "return-object v${answer.register}") },
+                "is overwritten around" to { it.addInstructions(end, "const/16 v${answer.register}, 0x1") },
+                "isn't false on every path to its comparison" to { it.addInstructions(answer.compare, "const/16 v${answer.register}, 0x1") },
+            )
+            for ((message, change) in cases) {
+                val context = context(fixture)
+                change(context.mutableMethod(fixture.warm))
+                val error = assertThrows("$build $message", PatchException::class.java) { blockReturnRefreshPatch.execute(context) }
+                assertTrue(error.message.orEmpty(), error.message.orEmpty().contains(message))
+            }
+        }
+    }
+
+    @Test
     fun `a swap whose answer is overwritten, or a second swap, is refused`() {
         for (build in Fixtures.declaredBuilds()) {
             val fixture = fixture(build)
