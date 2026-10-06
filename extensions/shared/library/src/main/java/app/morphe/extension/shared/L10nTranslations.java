@@ -47,11 +47,12 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(370);
+        Map<String, String> table = new HashMap<>(494);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
         fillDe3(table);
+        fillDe4(table);
         return table;
     }
 
@@ -64,6 +65,12 @@ public final class L10nTranslations {
                 "%1$d Eintrag in dieser Datei ist keine Einstellung, die diese Version von HushThreads kennt, und wird deshalb ausgelassen.");
         table.put("%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.",
                 "%1$d Eintr\u00e4ge in dieser Datei sind keine Einstellungen, die diese Version von HushThreads kennt, und werden deshalb ausgelassen.");
+        table.put("%1$d saved in lower quality than on Threads.",
+                "%1$d in niedrigerer Qualit\u00e4t als auf Threads gespeichert.");
+        table.put("%1$d saves stopped. Reopen the post and save again.",
+                "%1$d Speichervorg\u00e4nge wurden gestoppt. \u00d6ffne den Beitrag erneut und speichere noch einmal.");
+        table.put("%1$d saves were interrupted",
+                "%1$d Speichervorg\u00e4nge wurden unterbrochen");
         table.put("%1$d setting found",
                 "%1$d Einstellung gefunden");
         table.put("%1$d settings found",
@@ -72,6 +79,12 @@ public final class L10nTranslations {
                 "%1$d Schalter wird ge\u00e4ndert.");
         table.put("%1$d switches will change.",
                 "%1$d Schalter werden ge\u00e4ndert.");
+        table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
+                "%1$s wird zu Datum und Uhrzeit des Speicherns, %2$s zur Nummer des Videos auf Threads, %3$s zum Namen dessen, der es gepostet hat, und %4$s zum Tag der Ver\u00f6ffentlichung. Was beim Speichern nicht bekannt ist, wird weggelassen, und ein Name ohne eines davon bekommt das Datum angeh\u00e4ngt. Gibt es den Namen im Ordner schon, wird die Uhrzeit des Speicherns angeh\u00e4ngt. Ung\u00fcltige Zeichen werden zu Unterstrichen. Lass das Feld leer, um den Standardnamen %5$s zu verwenden.");
+        table.put("%1$s of %2$s",
+                "%1$s von %2$s");
+        table.put("%1$s so far",
+                "Bisher %1$s");
         table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
                 "%1$s. Das wurde beim Patchen festgelegt, deshalb kann die Pause es nicht ausschalten. Um es auszuschlie\u00dfen, patche erneut und lass diesen Patch weg.");
         table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
@@ -82,8 +95,14 @@ public final class L10nTranslations {
                 "Ein Diagnosebericht wird bereits gespeichert.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "Eine Datei namens %1$s in %2$s hat HushThreads pausiert.");
+        table.put("A save stopped. Reopen the post and save again.",
+                "Ein Speichervorgang wurde gestoppt. \u00d6ffne den Beitrag erneut und speichere noch einmal.");
+        table.put("A save was interrupted",
+                "Ein Speichervorgang wurde unterbrochen");
         table.put("About",
                 "Info");
+        table.put("Adds a Save row to a post's menu. A post with several photos or videos saves them all, in order. Off or paused, the menu is Threads' own.",
+                "F\u00fcgt dem Men\u00fc eines Beitrags eine Zeile zum Speichern hinzu. Hat ein Beitrag mehrere Fotos oder Videos, werden alle der Reihe nach gespeichert. Ausgeschaltet oder pausiert bleibt das Men\u00fc so, wie Threads es zeigt.");
         table.put("Ads and suggested accounts in your feed",
                 "Werbung und vorgeschlagene Konten in deinem Feed");
         table.put("Advertising ID removed",
@@ -108,12 +127,22 @@ public final class L10nTranslations {
                 "Fragt GitHub sofort nach der neuesten Version, auch wenn der Schalter dar\u00fcber aus ist.");
         table.put("Back",
                 "Zur\u00fcck");
+        table.put("Best",
+                "Beste");
         table.put("Browse settings",
                 "Einstellungen durchsuchen");
         table.put("Build %1$s",
                 "Build %1$s");
         table.put("Cancel",
                 "Abbrechen");
+        table.put("Cancel saving this carousel",
+                "Speichern dieses Karussells abbrechen");
+        table.put("Cancel saving this photo",
+                "Speichern dieses Fotos abbrechen");
+        table.put("Cancel saving this video",
+                "Speichern dieses Videos abbrechen");
+        table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "Karussell abgebrochen. Gespeichert %1$d. Fehlgeschlagen %2$d. \u00dcbersprungen %3$d.");
         table.put("Changing these",
                 "So \u00e4nderst du sie");
         table.put("Check for new HushThreads releases",
@@ -122,6 +151,8 @@ public final class L10nTranslations {
                 "Jetzt pr\u00fcfen");
         table.put("Checking GitHub now.",
                 "GitHub wird gerade gefragt.");
+        table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
+                "W\u00e4hle einen Ordnernamen unter Movies und Pictures. Ung\u00fcltige Zeichen werden zu Unterstrichen. Lass das Feld leer, um den Standardordner %1$s zu verwenden.");
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "W\u00e4hle eine Einstellungsdatei. Vor dem Import siehst du, wie viele Schalter sie \u00e4ndert.");
         table.put("Clear diagnostic data",
@@ -134,6 +165,8 @@ public final class L10nTranslations {
                 "Kurzen Bericht in die Zwischenablage kopieren.");
         table.put("Copy quick report",
                 "Kurzbericht kopieren");
+        table.put("Copying to the gallery",
+                "Wird in die Galerie kopiert");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "Die Einstellungen lie\u00dfen sich nicht importieren, und deine vorherigen lie\u00dfen sich nicht wiederherstellen. Pr\u00fcfe die Schalter auf diesem Bildschirm.");
         table.put("Couldn't import the settings. Nothing was changed.",
@@ -144,6 +177,9 @@ public final class L10nTranslations {
                 "Die Dateiauswahl lie\u00df sich nicht \u00f6ffnen. Versuche es noch einmal.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "Die Diagnosedaten lie\u00dfen sich nicht wiederherstellen. Versuche es noch einmal.");
+    }
+
+    private static void fillDe1(Map<String, String> table) {
         table.put("Couldn't reach GitHub. Try again later.",
                 "GitHub war nicht erreichbar. Versuche es sp\u00e4ter noch einmal.");
         table.put("Couldn't save the settings file. Try again.",
@@ -166,19 +202,42 @@ public final class L10nTranslations {
                 "Diagnosedaten wiederhergestellt.");
         table.put("Diagnostic report copied to the clipboard.",
                 "Diagnosebericht in die Zwischenablage kopiert.");
+        table.put("Download failed",
+                "Download fehlgeschlagen");
+        table.put("Download quality",
+                "Download-Qualit\u00e4t");
+        table.put("Downloading",
+                "Wird heruntergeladen");
+        table.put("Downloads",
+                "Downloads");
+        table.put("Each video saves at %1$s or the closest quality below it. A video with nothing that low saves at the closest quality above.",
+                "Jedes Video wird in %1$s oder der n\u00e4chstniedrigeren Qualit\u00e4t gespeichert. Hat ein Video keine so niedrige Qualit\u00e4t, wird es in der n\u00e4chsth\u00f6heren gespeichert.");
+        table.put("Each video saves at its lowest quality, for the smallest file.",
+                "Jedes Video wird in seiner niedrigsten Qualit\u00e4t gespeichert, damit die Datei so klein wie m\u00f6glich ist.");
+        table.put("Each video saves at the best quality the player streams.",
+                "Jedes Video wird in der besten Qualit\u00e4t gespeichert, die der Player streamt.");
         table.put("Empties the log and the hook findings a report would include.",
                 "Leert das Protokoll und die Hook-Ergebnisse, die ein Bericht enthalten w\u00fcrde.");
         table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
                 "Jeder Schalter au\u00dfer der Debug-Protokollierung verh\u00e4lt sich, als w\u00e4re er aus, und was beim Patchen festgelegt wurde, bleibt aktiv. Deine Einstellungen bleiben, wie sie sind.");
+        table.put("Example without post details",
+                "Beispiel ohne Beitragsdetails");
         table.put("Export diagnostic report",
                 "Diagnosebericht exportieren");
         table.put("Export settings",
                 "Einstellungen exportieren");
         table.put("Feed",
                 "Feed");
-    }
-
-    private static void fillDe1(Map<String, String> table) {
+        table.put("File name",
+                "Dateiname");
+        table.put("File name set to %1$s.",
+                "Dateiname auf %1$s gesetzt.");
+        table.put("Folder name",
+                "Ordnername");
+        table.put("Folder set to %1$s.",
+                "Ordner auf %1$s gesetzt.");
+        table.put("For WhatsApp, video editors such as CapCut and InShot, or a gallery or player that plays saves without sound. May lower quality.",
+                "F\u00fcr WhatsApp, Videoeditoren wie CapCut und InShot oder wenn eine Galerie oder ein Player gespeicherte Videos ohne Ton abspielt. Kann die Qualit\u00e4t senken.");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Ab dem n\u00e4chsten Start verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv, und deine Auswahl bleibt gespeichert.");
         table.put("Full report saved to %1$s",
@@ -195,6 +254,8 @@ public final class L10nTranslations {
                 "Werbung ausblenden");
         table.put("Hide suggested users",
                 "Vorgeschlagene Nutzer ausblenden");
+        table.put("How far a photo or video you're saving has got, with a button to cancel it",
+                "Fortschritt beim Speichern eines Fotos oder Videos, mit einem Button zum Abbrechen");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s ist erschienen. Aktualisiere es im Morphe Manager.");
         table.put("HushThreads %1$s on Threads %2$s",
@@ -207,6 +268,8 @@ public final class L10nTranslations {
                 "HushThreads ist pausiert");
         table.put("HushThreads pauses when Threads restarts.",
                 "HushThreads pausiert, sobald Threads neu startet.");
+        table.put("HushThreads saves",
+                "Speichern mit HushThreads");
         table.put("HushThreads settings",
                 "HushThreads-Einstellungen");
         table.put("HushThreads settings couldn't open",
@@ -221,16 +284,25 @@ public final class L10nTranslations {
                 "Einstellungen werden importiert");
         table.put("It targets Threads %1$s.",
                 "Es ist f\u00fcr Threads %1$s gedacht.");
+        table.put("Joining the picture and sound",
+                "Bild und Ton werden zusammengef\u00fcgt");
         table.put("Jump to a section",
                 "Zu einem Abschnitt springen");
         table.put("Keep feed position on return",
                 "Feedposition beim Zur\u00fcckkehren beibehalten");
+        table.put("Last carousel save",
+                "Letzter gespeicherter Karussellbeitrag");
         table.put("Licenses",
                 "Lizenzen");
+        table.put("Link expired. Reopen the post and try again",
+                "Link abgelaufen. \u00d6ffne den Beitrag neu und versuche es noch einmal");
         table.put("Links",
                 "Links");
         table.put("Links, updates, backup and more",
                 "Links, Updates, Sicherung und mehr");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
                 "Gefundene Analyseadressen werden an eine Adresse umgeleitet, die nicht antwortet. Andere Telemetrie kann bleiben. Schalte dies aus, um die urspr\u00fcnglichen Adressen zu verwenden.");
         table.put("More settings",
@@ -247,6 +319,12 @@ public final class L10nTranslations {
                 "Nicht in diesem Build: %1$s. Morphe Manager w\u00e4hlt diesen Patch standardm\u00e4\u00dfig aus. W\u00e4hle ihn aus und patche erneut, um zu bekommen, was er tut.");
         table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
                 "Nicht in diesem Build: %1$s. Morphe Manager w\u00e4hlt diese Patches standardm\u00e4\u00dfig aus. W\u00e4hle sie aus und patche erneut, um zu bekommen, was sie tun.");
+        table.put("Not saved: a carousel can have at most %1$d pages",
+                "Nicht gespeichert: Ein Karussell darf h\u00f6chstens %1$d Seiten haben");
+        table.put("Not saved: that isn't a Threads photo or video",
+                "Nicht gespeichert: Das ist kein Foto oder Video von Threads");
+        table.put("Not saved: the file is over 512 MB",
+                "Nicht gespeichert: Die Datei ist \u00fcber 512 MB gro\u00df");
         table.put("OK",
                 "OK");
         table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
@@ -255,6 +333,8 @@ public final class L10nTranslations {
                 "Links in deinem Browser \u00f6ffnen");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201eUnterst\u00fctzte Links \u00f6ffnen\u201c ist f\u00fcr diese App in den Android-Einstellungen aus. Tippe, um es einzuschalten.");
+        table.put("Page %1$d of %2$d",
+                "Seite %1$d von %2$d");
         table.put("Patched: %1$s. Missing: %2$s.",
                 "Gepatcht: %1$s. Fehlend: %2$s.");
         table.put("Pause",
@@ -263,6 +343,8 @@ public final class L10nTranslations {
                 "HushThreads pausieren");
         table.put("Pause, backup and diagnostics",
                 "Pause, Sicherung und Diagnose");
+        table.put("Photos and videos you save from posts",
+                "Fotos und Videos, die du aus Beitr\u00e4gen speicherst");
         table.put("Privacy",
                 "Datenschutz");
         table.put("Pure black dark mode",
@@ -277,35 +359,73 @@ public final class L10nTranslations {
                 "Tracking aus geteilten Links entfernen");
         table.put("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
                 "Entfernt best\u00e4tigte Karten mit Konten zum Folgen. Normale Beitr\u00e4ge und Reposts bleiben.");
+        table.put("Reopen the post and save again.",
+                "\u00d6ffne den Beitrag erneut und speichere noch einmal.");
         table.put("Resume",
                 "Fortsetzen");
         table.put("Retry",
                 "Erneut versuchen");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Wenn du innerhalb von zehn Minuten zu Threads zur\u00fcckkehrst, bleibst du an derselben Stelle. Zum Aktualisieren kannst du weiter nach unten ziehen.");
+        table.put("Save",
+                "Speichern");
+        table.put("Save all",
+                "Alle speichern");
+        table.put("Save cancelled",
+                "Speichern abgebrochen");
+        table.put("Save folder",
+                "Speicherordner");
         table.put("Save full report",
                 "Vollst\u00e4ndigen Bericht speichern");
+        table.put("Save photo",
+                "Foto speichern");
+        table.put("Save photos and videos",
+                "Fotos und Videos speichern");
         table.put("Save the full report in Download/Morphe.",
                 "Vollst\u00e4ndigen Bericht unter Download/Morphe speichern.");
+        table.put("Save video",
+                "Video speichern");
+        table.put("Save videos other apps can open",
+                "Videos speichern, die andere Apps \u00f6ffnen k\u00f6nnen");
         table.put("Save your switches to a file. Pause and Debug logging aren't included, and neither is the release check.",
                 "Speichert deine Schalter in einer Datei. Pause und Debug-Protokollierung sind nicht enthalten, die Suche nach neuen Versionen auch nicht.");
+        table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "Gespeichert %1$d. Fehlgeschlagen %2$d. \u00dcbersprungen %3$d.");
+        table.put("Saved to %1$s",
+                "Gespeichert unter %1$s");
+        table.put("Saved to %1$s in lower quality than on Threads",
+                "Gespeichert unter %1$s, in geringerer Qualit\u00e4t als auf Threads");
+        table.put("Saved to the gallery",
+                "In der Galerie gespeichert");
+        table.put("Saved to the gallery in lower quality than on Threads",
+                "In der Galerie gespeichert, in geringerer Qualit\u00e4t als auf Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Gespeichert. Starte Threads neu, um diese \u00c4nderung zu \u00fcbernehmen.");
+        table.put("Saving a carousel",
+                "Karussell wird gespeichert");
+        table.put("Saving a photo",
+                "Foto wird gespeichert");
+        table.put("Saving a video",
+                "Video wird gespeichert");
         table.put("Saving the settings file",
                 "Einstellungsdatei wird gespeichert");
+        table.put("Saving...",
+                "Wird gespeichert \u2026");
+        table.put("Saving... Cancel: Downloads in HushThreads.",
+                "Wird gespeichert \u2026 Abbrechen: Downloads in HushThreads.");
         table.put("Screens that check Threads' own signature open again on this re-signed build.",
                 "Bildschirme, die die eigene Signatur von Threads pr\u00fcfen, \u00f6ffnen sich in diesem neu signierten Build wieder.");
         table.put("Search settings",
                 "Einstellungen suchen");
         table.put("Selecting links by hand",
                 "Links von Hand ausw\u00e4hlen");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Set when you patched",
                 "Beim Patchen festgelegt");
         table.put("Settings couldn't open",
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Die Einstellungen lie\u00dfen sich nicht vollst\u00e4ndig aktualisieren. \u00d6ffne sie neu und versuche es noch einmal.");
         table.put("Settings exported.",
@@ -318,6 +438,8 @@ public final class L10nTranslations {
                 "Einstellungen importiert. %1$d Schalter wurde ge\u00e4ndert.");
         table.put("Settings imported. %1$d switches changed.",
                 "Einstellungen importiert. %1$d Schalter wurden ge\u00e4ndert.");
+        table.put("Smallest",
+                "Kleinste");
         table.put("Source code and issues",
                 "Quellcode und Issues");
         table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
@@ -406,6 +528,12 @@ public final class L10nTranslations {
                 "Version");
         table.put("Version %1$s for Threads %2$s",
                 "Version %1$s f\u00fcr Threads %2$s");
+        table.put("Video file name",
+                "Dateiname f\u00fcr Videos");
+        table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
+                "Videos hei\u00dfen %1$s. Fotos hei\u00dfen immer %2$s, gefolgt von Datum und Uhrzeit.");
+        table.put("Videos go to %1$s and photos to %2$s.",
+                "Videos landen in %1$s und Fotos in %2$s.");
         table.put("Videos in your feed",
                 "Videos in deinem Feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
@@ -418,13 +546,13 @@ public final class L10nTranslations {
                 "Wenn der Schalter oben an ist, bleibt deine Stelle erhalten, egal wie lange du weg bist. Zum Aktualisieren ziehen und ein Neustart laden weiterhin neue Beitr\u00e4ge.");
         table.put("You have the newest HushThreads release.",
                 "Du hast die neueste Version von HushThreads.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Du hast HushThreads pausiert.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Deine Auswahl bleibt gespeichert. Tippe auf Fortsetzen und starte Threads dann neu.");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
@@ -438,11 +566,12 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(370);
+        Map<String, String> table = new HashMap<>(494);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
         fillEs3(table);
+        fillEs4(table);
         return table;
     }
 
@@ -455,6 +584,12 @@ public final class L10nTranslations {
                 "%1$d elemento de ese archivo no es un ajuste que conozca esta versi\u00f3n de HushThreads, as\u00ed que se omitir\u00e1.");
         table.put("%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.",
                 "%1$d elementos de ese archivo no son ajustes que conozca esta versi\u00f3n de HushThreads, as\u00ed que se omitir\u00e1n.");
+        table.put("%1$d saved in lower quality than on Threads.",
+                "%1$d guardados con menor calidad que en Threads.");
+        table.put("%1$d saves stopped. Reopen the post and save again.",
+                "Se detuvieron %1$d guardados. Vuelve a abrir la publicaci\u00f3n y gu\u00e1rdala otra vez.");
+        table.put("%1$d saves were interrupted",
+                "Se interrumpieron %1$d guardados");
         table.put("%1$d setting found",
                 "%1$d ajuste encontrado");
         table.put("%1$d settings found",
@@ -463,6 +598,12 @@ public final class L10nTranslations {
                 "Cambiar\u00e1 %1$d interruptor.");
         table.put("%1$d switches will change.",
                 "Cambiar\u00e1n %1$d interruptores.");
+        table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
+                "%1$s se convierte en la fecha y la hora del guardado, %2$s en el n\u00famero del video en Threads, %3$s en quien lo public\u00f3 y %4$s en el d\u00eda en que se public\u00f3. Lo que el guardado no sabe se omite, y a un nombre sin ninguno de ellos se le a\u00f1ade la fecha. Si el nombre ya est\u00e1 en la carpeta, se le a\u00f1ade al final la hora del guardado. Los caracteres no v\u00e1lidos se convierten en guiones bajos. D\u00e9jalo vac\u00edo para usar el nombre predeterminado, %5$s.");
+        table.put("%1$s of %2$s",
+                "%1$s de %2$s");
+        table.put("%1$s so far",
+                "%1$s hasta ahora");
         table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
                 "%1$s. Este cambio se aplic\u00f3 al parchear, as\u00ed que Pausar no puede desactivarlo. Para descartarlo, vuelve a parchear sin ese parche.");
         table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
@@ -473,8 +614,14 @@ public final class L10nTranslations {
                 "Ya se est\u00e1 guardando un informe de diagn\u00f3stico.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "Un archivo llamado %1$s en %2$s paus\u00f3 HushThreads.");
+        table.put("A save stopped. Reopen the post and save again.",
+                "Se detuvo un guardado. Vuelve a abrir la publicaci\u00f3n y gu\u00e1rdala otra vez.");
+        table.put("A save was interrupted",
+                "Se interrumpi\u00f3 un guardado");
         table.put("About",
                 "Acerca de");
+        table.put("Adds a Save row to a post's menu. A post with several photos or videos saves them all, in order. Off or paused, the menu is Threads' own.",
+                "A\u00f1ade una opci\u00f3n para guardar al men\u00fa de una publicaci\u00f3n. Si una publicaci\u00f3n tiene varias fotos o videos, se guardan todos en orden. Desactivado o en pausa, el men\u00fa es el de Threads.");
         table.put("Ads and suggested accounts in your feed",
                 "Anuncios y cuentas sugeridas en tu feed");
         table.put("Advertising ID removed",
@@ -499,12 +646,22 @@ public final class L10nTranslations {
                 "Pregunta ahora mismo a GitHub por la versi\u00f3n m\u00e1s reciente, aunque el interruptor de arriba est\u00e9 desactivado.");
         table.put("Back",
                 "Atr\u00e1s");
+        table.put("Best",
+                "La mejor");
         table.put("Browse settings",
                 "Explorar ajustes");
         table.put("Build %1$s",
                 "Compilaci\u00f3n %1$s");
         table.put("Cancel",
                 "Cancelar");
+        table.put("Cancel saving this carousel",
+                "Cancelar el guardado de este carrusel");
+        table.put("Cancel saving this photo",
+                "Cancelar el guardado de esta foto");
+        table.put("Cancel saving this video",
+                "Cancelar el guardado de este video");
+        table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "Carrusel cancelado. Guardados %1$d. Fallidos %2$d. Omitidos %3$d.");
         table.put("Changing these",
                 "C\u00f3mo cambiarlos");
         table.put("Check for new HushThreads releases",
@@ -513,6 +670,8 @@ public final class L10nTranslations {
                 "Comprobar ahora");
         table.put("Checking GitHub now.",
                 "Consultando GitHub ahora.");
+        table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
+                "Elige un nombre de carpeta en Movies y Pictures. Los caracteres no v\u00e1lidos se convierten en guiones bajos. D\u00e9jalo vac\u00edo para usar la carpeta predeterminada, %1$s.");
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "Elige un archivo de configuraci\u00f3n. Antes de importar nada, ver\u00e1s cu\u00e1ntos interruptores cambia.");
         table.put("Clear diagnostic data",
@@ -525,6 +684,8 @@ public final class L10nTranslations {
                 "Copia un informe breve en el portapapeles.");
         table.put("Copy quick report",
                 "Copiar informe r\u00e1pido");
+        table.put("Copying to the gallery",
+                "Copiando a la galer\u00eda");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "No se pudo importar la configuraci\u00f3n ni restaurar la que ten\u00edas. Revisa los interruptores de esta pantalla.");
         table.put("Couldn't import the settings. Nothing was changed.",
@@ -535,6 +696,9 @@ public final class L10nTranslations {
                 "No se pudo abrir el selector de archivos. Int\u00e9ntalo de nuevo.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "No se pudieron restaurar los datos de diagn\u00f3stico. Int\u00e9ntalo de nuevo.");
+    }
+
+    private static void fillEs1(Map<String, String> table) {
         table.put("Couldn't reach GitHub. Try again later.",
                 "No se pudo contactar con GitHub. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
         table.put("Couldn't save the settings file. Try again.",
@@ -557,19 +721,42 @@ public final class L10nTranslations {
                 "Se restauraron los datos de diagn\u00f3stico.");
         table.put("Diagnostic report copied to the clipboard.",
                 "Informe de diagn\u00f3stico copiado en el portapapeles.");
+        table.put("Download failed",
+                "No se pudo descargar");
+        table.put("Download quality",
+                "Calidad de descarga");
+        table.put("Downloading",
+                "Descargando");
+        table.put("Downloads",
+                "Descargas");
+        table.put("Each video saves at %1$s or the closest quality below it. A video with nothing that low saves at the closest quality above.",
+                "Cada video se guarda en %1$s o en la calidad m\u00e1s cercana por debajo. Si un video no tiene ninguna tan baja, se guarda en la m\u00e1s cercana por encima.");
+        table.put("Each video saves at its lowest quality, for the smallest file.",
+                "Cada video se guarda con su calidad m\u00e1s baja, para que el archivo sea lo m\u00e1s peque\u00f1o posible.");
+        table.put("Each video saves at the best quality the player streams.",
+                "Cada video se guarda con la mejor calidad que ofrece el reproductor.");
         table.put("Empties the log and the hook findings a report would include.",
                 "Vac\u00eda el registro y los resultados de los hooks que incluir\u00eda un informe.");
         table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
                 "Todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados, y lo que se aplic\u00f3 al parchear se mantiene. Tu configuraci\u00f3n no cambia.");
+        table.put("Example without post details",
+                "Ejemplo sin datos de la publicaci\u00f3n");
         table.put("Export diagnostic report",
                 "Exportar informe de diagn\u00f3stico");
         table.put("Export settings",
                 "Exportar configuraci\u00f3n");
         table.put("Feed",
                 "Feed");
-    }
-
-    private static void fillEs1(Map<String, String> table) {
+        table.put("File name",
+                "Nombre de archivo");
+        table.put("File name set to %1$s.",
+                "Nombre de archivo establecido en %1$s.");
+        table.put("Folder name",
+                "Nombre de carpeta");
+        table.put("Folder set to %1$s.",
+                "Carpeta establecida en %1$s.");
+        table.put("For WhatsApp, video editors such as CapCut and InShot, or a gallery or player that plays saves without sound. May lower quality.",
+                "Para WhatsApp, editores de video como CapCut e InShot, o una galer\u00eda o un reproductor que reproduzca sin sonido los videos guardados. Puede bajar la calidad.");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Desde el pr\u00f3ximo inicio, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene, y tus preferencias quedan guardadas.");
         table.put("Full report saved to %1$s",
@@ -586,6 +773,8 @@ public final class L10nTranslations {
                 "Ocultar anuncios");
         table.put("Hide suggested users",
                 "Ocultar usuarios sugeridos");
+        table.put("How far a photo or video you're saving has got, with a button to cancel it",
+                "El progreso de la foto o el video que est\u00e1s guardando, con un bot\u00f3n para cancelar");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "Ya sali\u00f3 HushThreads %1$s. Actual\u00edzalo en Morphe Manager.");
         table.put("HushThreads %1$s on Threads %2$s",
@@ -598,6 +787,8 @@ public final class L10nTranslations {
                 "HushThreads est\u00e1 en pausa");
         table.put("HushThreads pauses when Threads restarts.",
                 "HushThreads se pausa cuando Threads se reinicie.");
+        table.put("HushThreads saves",
+                "Descargas de HushThreads");
         table.put("HushThreads settings",
                 "Configuraci\u00f3n de HushThreads");
         table.put("HushThreads settings couldn't open",
@@ -612,16 +803,25 @@ public final class L10nTranslations {
                 "Importando la configuraci\u00f3n");
         table.put("It targets Threads %1$s.",
                 "Est\u00e1 pensado para Threads %1$s.");
+        table.put("Joining the picture and sound",
+                "Uniendo la imagen y el sonido");
         table.put("Jump to a section",
                 "Ir a una secci\u00f3n");
         table.put("Keep feed position on return",
                 "Mantener la posici\u00f3n del feed al volver");
+        table.put("Last carousel save",
+                "\u00daltimo carrusel guardado");
         table.put("Licenses",
                 "Licencias");
+        table.put("Link expired. Reopen the post and try again",
+                "El enlace expir\u00f3. Vuelve a abrir la publicaci\u00f3n e int\u00e9ntalo de nuevo");
         table.put("Links",
                 "Enlaces");
         table.put("Links, updates, backup and more",
                 "Enlaces, actualizaciones, copia de seguridad y m\u00e1s");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
                 "Las direcciones de an\u00e1lisis detectadas se redirigen a una direcci\u00f3n que no responde. Puede quedar otra telemetr\u00eda. Desactiva esto para usar las direcciones originales.");
         table.put("More settings",
@@ -638,6 +838,12 @@ public final class L10nTranslations {
                 "No est\u00e1 en esta compilaci\u00f3n: %1$s. Morphe Manager lo selecciona por defecto. Selecci\u00f3nalo y vuelve a parchear para obtener lo que hace.");
         table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
                 "No est\u00e1n en esta compilaci\u00f3n: %1$s. Morphe Manager los selecciona por defecto. Selecci\u00f3nalos y vuelve a parchear para obtener lo que hacen.");
+        table.put("Not saved: a carousel can have at most %1$d pages",
+                "No se guard\u00f3: un carrusel puede tener como m\u00e1ximo %1$d p\u00e1ginas");
+        table.put("Not saved: that isn't a Threads photo or video",
+                "No se guard\u00f3: no es una foto ni un video de Threads");
+        table.put("Not saved: the file is over 512 MB",
+                "No se guard\u00f3: el archivo supera los 512 MB");
         table.put("OK",
                 "Aceptar");
         table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
@@ -646,6 +852,8 @@ public final class L10nTranslations {
                 "Abrir enlaces en tu navegador");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir enlaces compatibles\u201d est\u00e1 desactivado para esta app en los ajustes de Android. Toca para activarlo.");
+        table.put("Page %1$d of %2$d",
+                "P\u00e1gina %1$d de %2$d");
         table.put("Patched: %1$s. Missing: %2$s.",
                 "Modificadas: %1$s. Faltantes: %2$s.");
         table.put("Pause",
@@ -654,6 +862,8 @@ public final class L10nTranslations {
                 "Pausar HushThreads");
         table.put("Pause, backup and diagnostics",
                 "Pausa, copia de seguridad y diagn\u00f3stico");
+        table.put("Photos and videos you save from posts",
+                "Fotos y videos que guardas de las publicaciones");
         table.put("Privacy",
                 "Privacidad");
         table.put("Pure black dark mode",
@@ -668,35 +878,73 @@ public final class L10nTranslations {
                 "Quitar el seguimiento de los enlaces compartidos");
         table.put("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
                 "Elimina las tarjetas verificadas que sugieren cuentas para seguir. Las publicaciones normales y los reposts permanecen.");
+        table.put("Reopen the post and save again.",
+                "Vuelve a abrir la publicaci\u00f3n y gu\u00e1rdala otra vez.");
         table.put("Resume",
                 "Reanudar");
         table.put("Retry",
                 "Reintentar");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Si vuelves a Threads en menos de diez minutos, seguir\u00e1s donde estabas. Puedes deslizar hacia abajo para actualizar.");
+        table.put("Save",
+                "Guardar");
+        table.put("Save all",
+                "Guardar todo");
+        table.put("Save cancelled",
+                "Se cancel\u00f3 el guardado");
+        table.put("Save folder",
+                "Carpeta de guardado");
         table.put("Save full report",
                 "Guardar informe completo");
+        table.put("Save photo",
+                "Guardar foto");
+        table.put("Save photos and videos",
+                "Guardar fotos y videos");
         table.put("Save the full report in Download/Morphe.",
                 "Guarda el informe completo en Download/Morphe.");
+        table.put("Save video",
+                "Guardar video");
+        table.put("Save videos other apps can open",
+                "Guardar videos que otras apps puedan abrir");
         table.put("Save your switches to a file. Pause and Debug logging aren't included, and neither is the release check.",
                 "Guarda tus interruptores en un archivo. La pausa y el Registro de depuraci\u00f3n no se incluyen, y la b\u00fasqueda de nuevas versiones tampoco.");
+        table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "Guardados %1$d. Fallidos %2$d. Omitidos %3$d.");
+        table.put("Saved to %1$s",
+                "Se guard\u00f3 en %1$s");
+        table.put("Saved to %1$s in lower quality than on Threads",
+                "Se guard\u00f3 en %1$s con menos calidad que en Threads");
+        table.put("Saved to the gallery",
+                "Se guard\u00f3 en la galer\u00eda");
+        table.put("Saved to the gallery in lower quality than on Threads",
+                "Se guard\u00f3 en la galer\u00eda con menos calidad que en Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Guardado. Reinicia Threads para aplicar este cambio.");
+        table.put("Saving a carousel",
+                "Guardando un carrusel");
+        table.put("Saving a photo",
+                "Guardando una foto");
+        table.put("Saving a video",
+                "Guardando un video");
         table.put("Saving the settings file",
                 "Guardando el archivo de configuraci\u00f3n");
+        table.put("Saving...",
+                "Guardando...");
+        table.put("Saving... Cancel: Downloads in HushThreads.",
+                "Guardando... Cancelar: Descargas en HushThreads.");
         table.put("Screens that check Threads' own signature open again on this re-signed build.",
                 "Las pantallas que comprueban la firma propia de Threads vuelven a abrirse en esta versi\u00f3n firmada de nuevo.");
         table.put("Search settings",
                 "Buscar ajustes");
         table.put("Selecting links by hand",
                 "Seleccionar enlaces a mano");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Set when you patched",
                 "Aplicado al parchear");
         table.put("Settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "No se pudo actualizar la configuraci\u00f3n por completo. Vuelve a abrirla e int\u00e9ntalo de nuevo.");
         table.put("Settings exported.",
@@ -709,6 +957,8 @@ public final class L10nTranslations {
                 "Configuraci\u00f3n importada. Cambi\u00f3 %1$d interruptor.");
         table.put("Settings imported. %1$d switches changed.",
                 "Configuraci\u00f3n importada. Cambiaron %1$d interruptores.");
+        table.put("Smallest",
+                "La m\u00e1s peque\u00f1a");
         table.put("Source code and issues",
                 "C\u00f3digo fuente e incidencias");
         table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
@@ -797,6 +1047,12 @@ public final class L10nTranslations {
                 "Versi\u00f3n");
         table.put("Version %1$s for Threads %2$s",
                 "Versi\u00f3n %1$s para Threads %2$s");
+        table.put("Video file name",
+                "Nombre de archivo de los videos");
+        table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
+                "Los videos se llaman %1$s. Las fotos siempre se llaman %2$s seguido de la fecha y la hora.");
+        table.put("Videos go to %1$s and photos to %2$s.",
+                "Los videos van a %1$s y las fotos a %2$s.");
         table.put("Videos in your feed",
                 "Videos de tu feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
@@ -809,13 +1065,13 @@ public final class L10nTranslations {
                 "Con el interruptor de arriba activado, tu lugar se mantiene sin importar cu\u00e1nto tiempo est\u00e9s fuera. Deslizar para actualizar y abrir la app de nuevo siguen cargando publicaciones nuevas.");
         table.put("You have the newest HushThreads release.",
                 "Tienes la versi\u00f3n m\u00e1s reciente de HushThreads.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Pausaste HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Tus preferencias est\u00e1n guardadas. Toca Reanudar y luego reinicia Threads.");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
@@ -829,11 +1085,12 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(370);
+        Map<String, String> table = new HashMap<>(494);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
         fillIn3(table);
+        fillIn4(table);
         return table;
     }
 
@@ -846,6 +1103,12 @@ public final class L10nTranslations {
                 "%1$d item dalam file itu bukan pengaturan yang dikenali versi HushThreads ini, jadi tidak akan disertakan.");
         table.put("%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.",
                 "%1$d item dalam file itu bukan pengaturan yang dikenali versi HushThreads ini, jadi tidak akan disertakan.");
+        table.put("%1$d saved in lower quality than on Threads.",
+                "%1$d disimpan dengan kualitas lebih rendah daripada di Threads.");
+        table.put("%1$d saves stopped. Reopen the post and save again.",
+                "%1$d penyimpanan terhenti. Buka kembali postingan dan simpan lagi.");
+        table.put("%1$d saves were interrupted",
+                "%1$d penyimpanan terputus");
         table.put("%1$d setting found",
                 "%1$d pengaturan ditemukan");
         table.put("%1$d settings found",
@@ -854,6 +1117,12 @@ public final class L10nTranslations {
                 "%1$d sakelar akan berubah.");
         table.put("%1$d switches will change.",
                 "%1$d sakelar akan berubah.");
+        table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
+                "%1$s diganti dengan tanggal dan waktu penyimpanan, %2$s dengan nomor video di Threads, %3$s dengan nama pengunggahnya, dan %4$s dengan tanggal unggahnya. Yang tidak diketahui saat menyimpan akan dihilangkan, dan nama tanpa satu pun di antaranya akan ditambahi tanggal. Jika nama itu sudah ada di folder, waktu penyimpanan ditambahkan di akhir. Karakter yang tidak valid menjadi garis bawah. Kosongkan untuk memakai nama bawaan, %5$s.");
+        table.put("%1$s of %2$s",
+                "%1$s dari %2$s");
+        table.put("%1$s so far",
+                "%1$s terunduh");
         table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
                 "%1$s. Ini diatur saat Anda menambal, jadi Jeda tidak dapat mematikannya. Untuk memastikan bukan ini penyebabnya, tambal ulang tanpa tambalan yang tertera dalam kurung setelahnya.");
         table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
@@ -864,8 +1133,14 @@ public final class L10nTranslations {
                 "Sudah ada laporan diagnostik yang sedang disimpan.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "File bernama %1$s di %2$s menjeda HushThreads.");
+        table.put("A save stopped. Reopen the post and save again.",
+                "Penyimpanan terhenti. Buka kembali postingan dan simpan lagi.");
+        table.put("A save was interrupted",
+                "Penyimpanan terputus");
         table.put("About",
                 "Tentang");
+        table.put("Adds a Save row to a post's menu. A post with several photos or videos saves them all, in order. Off or paused, the menu is Threads' own.",
+                "Menambahkan baris Simpan ke menu postingan. Postingan dengan beberapa foto atau video menyimpan semuanya secara berurutan. Jika dimatikan atau dijeda, menunya tetap menu Threads sendiri.");
         table.put("Ads and suggested accounts in your feed",
                 "Iklan dan akun yang disarankan di feed Anda");
         table.put("Advertising ID removed",
@@ -890,12 +1165,22 @@ public final class L10nTranslations {
                 "Menanyakan rilis terbaru ke GitHub sekarang juga, meski sakelar di atas mati.");
         table.put("Back",
                 "Kembali");
+        table.put("Best",
+                "Terbaik");
         table.put("Browse settings",
                 "Jelajahi pengaturan");
         table.put("Build %1$s",
                 "Versi build %1$s");
         table.put("Cancel",
                 "Batal");
+        table.put("Cancel saving this carousel",
+                "Batalkan penyimpanan carousel ini");
+        table.put("Cancel saving this photo",
+                "Batalkan penyimpanan foto ini");
+        table.put("Cancel saving this video",
+                "Batalkan penyimpanan video ini");
+        table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "Carousel dibatalkan. Disimpan %1$d. Gagal %2$d. Dilewati %3$d.");
         table.put("Changing these",
                 "Mengubah pilihan ini");
         table.put("Check for new HushThreads releases",
@@ -904,6 +1189,8 @@ public final class L10nTranslations {
                 "Periksa sekarang");
         table.put("Checking GitHub now.",
                 "Sedang memeriksa GitHub.");
+        table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
+                "Pilih nama folder di Movies dan Pictures. Karakter yang tidak valid menjadi garis bawah. Kosongkan untuk memakai folder bawaan, %1$s.");
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "Pilih file pengaturan. Sebelum apa pun diimpor, Anda akan melihat berapa sakelar yang berubah.");
         table.put("Clear diagnostic data",
@@ -916,6 +1203,8 @@ public final class L10nTranslations {
                 "Salin laporan singkat ke papan klip.");
         table.put("Copy quick report",
                 "Salin laporan singkat");
+        table.put("Copying to the gallery",
+                "Menyalin ke galeri");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "Pengaturan tidak dapat diimpor, dan pengaturan sebelumnya tidak dapat dikembalikan. Periksa sakelar di layar ini.");
         table.put("Couldn't import the settings. Nothing was changed.",
@@ -926,6 +1215,9 @@ public final class L10nTranslations {
                 "Pemilih file tidak dapat dibuka. Coba lagi.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "Data diagnostik tidak dapat dikembalikan. Coba lagi.");
+    }
+
+    private static void fillIn1(Map<String, String> table) {
         table.put("Couldn't reach GitHub. Try again later.",
                 "GitHub tidak dapat dihubungi. Coba lagi nanti.");
         table.put("Couldn't save the settings file. Try again.",
@@ -948,19 +1240,42 @@ public final class L10nTranslations {
                 "Data diagnostik dikembalikan.");
         table.put("Diagnostic report copied to the clipboard.",
                 "Laporan diagnostik disalin ke papan klip.");
+        table.put("Download failed",
+                "Unduhan gagal");
+        table.put("Download quality",
+                "Kualitas unduhan");
+        table.put("Downloading",
+                "Mengunduh");
+        table.put("Downloads",
+                "Unduhan");
+        table.put("Each video saves at %1$s or the closest quality below it. A video with nothing that low saves at the closest quality above.",
+                "Setiap video disimpan dalam %1$s atau kualitas terdekat di bawahnya. Video yang tidak memiliki kualitas serendah itu disimpan dalam kualitas terdekat di atasnya.");
+        table.put("Each video saves at its lowest quality, for the smallest file.",
+                "Setiap video disimpan dengan kualitas terendahnya, agar ukuran filenya sekecil mungkin.");
+        table.put("Each video saves at the best quality the player streams.",
+                "Setiap video disimpan dengan kualitas streaming terbaik dari pemutar.");
         table.put("Empties the log and the hook findings a report would include.",
                 "Mengosongkan log dan temuan hook yang akan dimasukkan ke laporan.");
         table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
                 "Semua sakelar kecuali Pencatatan debug dianggap nonaktif, dan yang diatur saat Anda menambal tetap aktif. Pengaturan Anda tetap seperti semula.");
+        table.put("Example without post details",
+                "Contoh tanpa detail postingan");
         table.put("Export diagnostic report",
                 "Ekspor laporan diagnostik");
         table.put("Export settings",
                 "Ekspor pengaturan");
         table.put("Feed",
                 "Feed");
-    }
-
-    private static void fillIn1(Map<String, String> table) {
+        table.put("File name",
+                "Nama file");
+        table.put("File name set to %1$s.",
+                "Nama file diatur menjadi %1$s.");
+        table.put("Folder name",
+                "Nama folder");
+        table.put("Folder set to %1$s.",
+                "Folder diatur menjadi %1$s.");
+        table.put("For WhatsApp, video editors such as CapCut and InShot, or a gallery or player that plays saves without sound. May lower quality.",
+                "Untuk WhatsApp, editor video seperti CapCut dan InShot, atau galeri atau pemutar yang memutar video tersimpan tanpa suara. Kualitas bisa lebih rendah.");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Mulai peluncuran berikutnya, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif, dan pilihan Anda tetap tersimpan.");
         table.put("Full report saved to %1$s",
@@ -977,6 +1292,8 @@ public final class L10nTranslations {
                 "Sembunyikan iklan");
         table.put("Hide suggested users",
                 "Sembunyikan pengguna yang disarankan");
+        table.put("How far a photo or video you're saving has got, with a button to cancel it",
+                "Progres foto atau video yang sedang Anda simpan, dengan tombol untuk membatalkannya");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s sudah dirilis. Perbarui di Morphe Manager.");
         table.put("HushThreads %1$s on Threads %2$s",
@@ -989,6 +1306,8 @@ public final class L10nTranslations {
                 "HushThreads dijeda");
         table.put("HushThreads pauses when Threads restarts.",
                 "HushThreads dijeda saat Threads dimulai ulang.");
+        table.put("HushThreads saves",
+                "Penyimpanan HushThreads");
         table.put("HushThreads settings",
                 "Pengaturan HushThreads");
         table.put("HushThreads settings couldn't open",
@@ -1003,16 +1322,25 @@ public final class L10nTranslations {
                 "Mengimpor pengaturan");
         table.put("It targets Threads %1$s.",
                 "Rilis ini ditujukan untuk Threads %1$s.");
+        table.put("Joining the picture and sound",
+                "Menggabungkan gambar dan suara");
         table.put("Jump to a section",
                 "Lompat ke bagian");
         table.put("Keep feed position on return",
                 "Pertahankan posisi feed saat kembali");
+        table.put("Last carousel save",
+                "Penyimpanan carousel terakhir");
         table.put("Licenses",
                 "Lisensi");
+        table.put("Link expired. Reopen the post and try again",
+                "Tautan kedaluwarsa. Buka ulang postingan lalu coba lagi");
         table.put("Links",
                 "Tautan");
         table.put("Links, updates, backup and more",
                 "Tautan, pembaruan, cadangan, dan lainnya");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
                 "Alamat analitik yang ditemukan dialihkan ke alamat yang tidak merespons. Telemetri lain mungkin masih ada. Nonaktifkan ini untuk menggunakan alamat asli.");
         table.put("More settings",
@@ -1029,6 +1357,12 @@ public final class L10nTranslations {
                 "Tidak ada di build ini: %1$s. Morphe Manager memilihnya secara default. Pilih tambalan itu lalu tambal ulang untuk mendapatkan fungsinya.");
         table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
                 "Tidak ada di build ini: %1$s. Morphe Manager memilihnya secara default. Pilih tambalan itu lalu tambal ulang untuk mendapatkan fungsinya.");
+        table.put("Not saved: a carousel can have at most %1$d pages",
+                "Tidak disimpan: carousel hanya boleh memiliki paling banyak %1$d halaman");
+        table.put("Not saved: that isn't a Threads photo or video",
+                "Tidak disimpan: itu bukan foto atau video Threads");
+        table.put("Not saved: the file is over 512 MB",
+                "Tidak disimpan: file lebih dari 512 MB");
         table.put("OK",
                 "Oke");
         table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
@@ -1037,6 +1371,8 @@ public final class L10nTranslations {
                 "Buka tautan di browser Anda");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cBuka link yang didukung\u201d nonaktif untuk aplikasi ini di pengaturan Android. Ketuk untuk mengaktifkannya.");
+        table.put("Page %1$d of %2$d",
+                "Halaman %1$d dari %2$d");
         table.put("Patched: %1$s. Missing: %2$s.",
                 "Dipatch: %1$s. Tidak ditemukan: %2$s.");
         table.put("Pause",
@@ -1045,6 +1381,8 @@ public final class L10nTranslations {
                 "Jeda HushThreads");
         table.put("Pause, backup and diagnostics",
                 "Jeda, cadangan, dan diagnostik");
+        table.put("Photos and videos you save from posts",
+                "Foto dan video yang Anda simpan dari postingan");
         table.put("Privacy",
                 "Privasi");
         table.put("Pure black dark mode",
@@ -1059,35 +1397,73 @@ public final class L10nTranslations {
                 "Hapus pelacakan dari tautan yang dibagikan");
         table.put("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
                 "Menghapus kartu terverifikasi yang menyarankan akun untuk diikuti. Postingan biasa dan repost tetap ada.");
+        table.put("Reopen the post and save again.",
+                "Buka kembali postingan dan simpan lagi.");
         table.put("Resume",
                 "Lanjutkan");
         table.put("Retry",
                 "Coba lagi");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Jika kembali ke Threads dalam sepuluh menit, posisi feed tetap sama. Tarik ke bawah untuk memuat ulang masih berfungsi.");
+        table.put("Save",
+                "Simpan");
+        table.put("Save all",
+                "Simpan semua");
+        table.put("Save cancelled",
+                "Penyimpanan dibatalkan");
+        table.put("Save folder",
+                "Folder simpan");
         table.put("Save full report",
                 "Simpan laporan lengkap");
+        table.put("Save photo",
+                "Simpan foto");
+        table.put("Save photos and videos",
+                "Simpan foto dan video");
         table.put("Save the full report in Download/Morphe.",
                 "Simpan laporan lengkap di Download/Morphe.");
+        table.put("Save video",
+                "Simpan video");
+        table.put("Save videos other apps can open",
+                "Simpan video yang bisa dibuka aplikasi lain");
         table.put("Save your switches to a file. Pause and Debug logging aren't included, and neither is the release check.",
                 "Simpan sakelar Anda ke sebuah file. Jeda dan Pencatatan debug tidak disertakan, begitu pula pemeriksaan rilis.");
+        table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "Disimpan %1$d. Gagal %2$d. Dilewati %3$d.");
+        table.put("Saved to %1$s",
+                "Disimpan ke %1$s");
+        table.put("Saved to %1$s in lower quality than on Threads",
+                "Disimpan ke %1$s dengan kualitas lebih rendah daripada di Threads");
+        table.put("Saved to the gallery",
+                "Disimpan ke galeri");
+        table.put("Saved to the gallery in lower quality than on Threads",
+                "Disimpan ke galeri dengan kualitas lebih rendah daripada di Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Tersimpan. Mulai ulang Threads untuk menerapkan perubahan ini.");
+        table.put("Saving a carousel",
+                "Menyimpan carousel");
+        table.put("Saving a photo",
+                "Menyimpan foto");
+        table.put("Saving a video",
+                "Menyimpan video");
         table.put("Saving the settings file",
                 "Menyimpan file pengaturan");
+        table.put("Saving...",
+                "Menyimpan...");
+        table.put("Saving... Cancel: Downloads in HushThreads.",
+                "Menyimpan... Batal: Unduhan di HushThreads.");
         table.put("Screens that check Threads' own signature open again on this re-signed build.",
                 "Layar yang memeriksa tanda tangan Threads sendiri dapat dibuka lagi di build yang ditandatangani ulang ini.");
         table.put("Search settings",
                 "Cari pengaturan");
         table.put("Selecting links by hand",
                 "Memilih tautan secara manual");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Set when you patched",
                 "Diatur saat Anda menambal");
         table.put("Settings couldn't open",
                 "Pengaturan tidak dapat dibuka");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Pengaturan tidak dapat dimuat ulang sepenuhnya. Buka kembali pengaturan lalu coba lagi.");
         table.put("Settings exported.",
@@ -1100,6 +1476,8 @@ public final class L10nTranslations {
                 "Pengaturan diimpor. %1$d sakelar berubah.");
         table.put("Settings imported. %1$d switches changed.",
                 "Pengaturan diimpor. %1$d sakelar berubah.");
+        table.put("Smallest",
+                "Terkecil");
         table.put("Source code and issues",
                 "Kode sumber dan laporan masalah");
         table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
@@ -1188,6 +1566,12 @@ public final class L10nTranslations {
                 "Versi");
         table.put("Version %1$s for Threads %2$s",
                 "Versi %1$s untuk Threads %2$s");
+        table.put("Video file name",
+                "Nama file video");
+        table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
+                "Video diberi nama %1$s. Foto selalu diberi nama %2$s diikuti tanggal dan waktu.");
+        table.put("Videos go to %1$s and photos to %2$s.",
+                "Video disimpan ke %1$s dan foto ke %2$s.");
         table.put("Videos in your feed",
                 "Video di feed Anda");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
@@ -1200,13 +1584,13 @@ public final class L10nTranslations {
                 "Jika sakelar di atas aktif, posisi Anda tetap tersimpan berapa lama pun Anda pergi. Tarik untuk memuat ulang dan membuka ulang aplikasi tetap memuat postingan baru.");
         table.put("You have the newest HushThreads release.",
                 "Anda sudah memakai rilis HushThreads terbaru.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Anda menjeda HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Threads.");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
@@ -1220,11 +1604,12 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(370);
+        Map<String, String> table = new HashMap<>(494);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
         fillPt_rBR3(table);
+        fillPt_rBR4(table);
         return table;
     }
 
@@ -1237,6 +1622,12 @@ public final class L10nTranslations {
                 "%1$d item desse arquivo n\u00e3o \u00e9 uma configura\u00e7\u00e3o conhecida por esta vers\u00e3o do HushThreads e ser\u00e1 ignorado.");
         table.put("%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.",
                 "%1$d itens desse arquivo n\u00e3o s\u00e3o configura\u00e7\u00f5es conhecidas por esta vers\u00e3o do HushThreads e ser\u00e3o ignorados.");
+        table.put("%1$d saved in lower quality than on Threads.",
+                "%1$d salvos com qualidade menor que no Threads.");
+        table.put("%1$d saves stopped. Reopen the post and save again.",
+                "%1$d salvamentos pararam. Abra a publica\u00e7\u00e3o novamente e salve outra vez.");
+        table.put("%1$d saves were interrupted",
+                "%1$d salvamentos foram interrompidos");
         table.put("%1$d setting found",
                 "%1$d configura\u00e7\u00e3o encontrada");
         table.put("%1$d settings found",
@@ -1245,6 +1636,12 @@ public final class L10nTranslations {
                 "%1$d op\u00e7\u00e3o ser\u00e1 alterada.");
         table.put("%1$d switches will change.",
                 "%1$d op\u00e7\u00f5es ser\u00e3o alteradas.");
+        table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
+                "%1$s representa a data e a hora do salvamento, %2$s o n\u00famero do v\u00eddeo no Threads, %3$s quem o publicou e %4$s o dia da publica\u00e7\u00e3o. O que n\u00e3o estiver dispon\u00edvel ser\u00e1 omitido, e um nome sem nenhum desses dados receber\u00e1 a data. Se o nome j\u00e1 existir na pasta, a hora do salvamento ser\u00e1 acrescentada ao final. Caracteres inv\u00e1lidos s\u00e3o substitu\u00eddos por sublinhados. Deixe em branco para usar o nome padr\u00e3o, %5$s.");
+        table.put("%1$s of %2$s",
+                "%1$s de %2$s");
+        table.put("%1$s so far",
+                "%1$s at\u00e9 o momento");
         table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
                 "%1$s. Isso foi definido quando voc\u00ea aplicou os patches, ent\u00e3o a pausa n\u00e3o pode desativ\u00e1-lo. Para descartar essa possibilidade, aplique os patches novamente sem esse patch.");
         table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
@@ -1255,8 +1652,14 @@ public final class L10nTranslations {
                 "Um relat\u00f3rio de diagn\u00f3stico j\u00e1 est\u00e1 sendo salvo.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "Um arquivo chamado %1$s em %2$s pausou o HushThreads.");
+        table.put("A save stopped. Reopen the post and save again.",
+                "Um salvamento parou. Abra a publica\u00e7\u00e3o novamente e salve outra vez.");
+        table.put("A save was interrupted",
+                "Um salvamento foi interrompido");
         table.put("About",
                 "Sobre");
+        table.put("Adds a Save row to a post's menu. A post with several photos or videos saves them all, in order. Off or paused, the menu is Threads' own.",
+                "Adiciona uma op\u00e7\u00e3o de salvar ao menu de uma publica\u00e7\u00e3o. Uma publica\u00e7\u00e3o com v\u00e1rias fotos ou v\u00eddeos salva todos, em ordem. Desativado ou pausado, o menu \u00e9 o do pr\u00f3prio Threads.");
         table.put("Ads and suggested accounts in your feed",
                 "An\u00fancios e contas sugeridas no seu feed");
         table.put("Advertising ID removed",
@@ -1281,12 +1684,22 @@ public final class L10nTranslations {
                 "Consulta o GitHub agora mesmo em busca da vers\u00e3o mais nova, mesmo que a op\u00e7\u00e3o acima esteja desativada.");
         table.put("Back",
                 "Voltar");
+        table.put("Best",
+                "A melhor");
         table.put("Browse settings",
                 "Explorar configura\u00e7\u00f5es");
         table.put("Build %1$s",
                 "Compila\u00e7\u00e3o %1$s");
         table.put("Cancel",
                 "Cancelar");
+        table.put("Cancel saving this carousel",
+                "Cancelar o salvamento deste carrossel");
+        table.put("Cancel saving this photo",
+                "Cancelar o salvamento desta foto");
+        table.put("Cancel saving this video",
+                "Cancelar o salvamento deste v\u00eddeo");
+        table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "Carrossel cancelado. Salvos %1$d. Falhas %2$d. Ignorados %3$d.");
         table.put("Changing these",
                 "Como alterar estas op\u00e7\u00f5es");
         table.put("Check for new HushThreads releases",
@@ -1295,6 +1708,8 @@ public final class L10nTranslations {
                 "Verificar agora");
         table.put("Checking GitHub now.",
                 "Consultando o GitHub agora.");
+        table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
+                "Escolha o nome da pasta dentro de Movies e Pictures. Caracteres inv\u00e1lidos s\u00e3o substitu\u00eddos por sublinhados. Deixe em branco para usar a pasta padr\u00e3o, %1$s.");
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "Escolha um arquivo de configura\u00e7\u00f5es. Antes de importar qualquer coisa, voc\u00ea ver\u00e1 quantas op\u00e7\u00f5es ser\u00e3o alteradas.");
         table.put("Clear diagnostic data",
@@ -1307,6 +1722,8 @@ public final class L10nTranslations {
                 "Copie um relat\u00f3rio curto para a \u00e1rea de transfer\u00eancia.");
         table.put("Copy quick report",
                 "Copiar relat\u00f3rio r\u00e1pido");
+        table.put("Copying to the gallery",
+                "Copiando para a galeria");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "N\u00e3o foi poss\u00edvel importar as configura\u00e7\u00f5es nem restaurar as que voc\u00ea tinha. Confira as op\u00e7\u00f5es nesta tela.");
         table.put("Couldn't import the settings. Nothing was changed.",
@@ -1317,6 +1734,9 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel abrir o seletor de arquivos. Tente de novo.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "N\u00e3o foi poss\u00edvel restaurar os dados de diagn\u00f3stico. Tente de novo.");
+    }
+
+    private static void fillPt_rBR1(Map<String, String> table) {
         table.put("Couldn't reach GitHub. Try again later.",
                 "N\u00e3o foi poss\u00edvel conectar-se ao GitHub. Tente novamente mais tarde.");
         table.put("Couldn't save the settings file. Try again.",
@@ -1339,19 +1759,42 @@ public final class L10nTranslations {
                 "Dados de diagn\u00f3stico restaurados.");
         table.put("Diagnostic report copied to the clipboard.",
                 "Relat\u00f3rio de diagn\u00f3stico copiado para a \u00e1rea de transfer\u00eancia.");
+        table.put("Download failed",
+                "Falha no download");
+        table.put("Download quality",
+                "Qualidade do download");
+        table.put("Downloading",
+                "Baixando");
+        table.put("Downloads",
+                "Downloads");
+        table.put("Each video saves at %1$s or the closest quality below it. A video with nothing that low saves at the closest quality above.",
+                "Cada v\u00eddeo \u00e9 salvo em %1$s ou na qualidade dispon\u00edvel mais pr\u00f3xima abaixo disso. Se n\u00e3o houver uma qualidade t\u00e3o baixa, o v\u00eddeo ser\u00e1 salvo na qualidade dispon\u00edvel mais pr\u00f3xima acima.");
+        table.put("Each video saves at its lowest quality, for the smallest file.",
+                "Cada v\u00eddeo \u00e9 salvo na menor qualidade dispon\u00edvel, para gerar o menor arquivo poss\u00edvel.");
+        table.put("Each video saves at the best quality the player streams.",
+                "Cada v\u00eddeo \u00e9 salvo na melhor qualidade que o player reproduz.");
         table.put("Empties the log and the hook findings a report would include.",
                 "Apaga o registro e os resultados dos hooks que seriam inclu\u00eddos em um relat\u00f3rio.");
         table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
                 "Todas as op\u00e7\u00f5es, exceto Registro de depura\u00e7\u00e3o, funcionam como se estivessem desativadas, e o que foi definido ao aplicar os patches permanece ativo. Suas configura\u00e7\u00f5es n\u00e3o s\u00e3o alteradas.");
+        table.put("Example without post details",
+                "Exemplo sem detalhes da publica\u00e7\u00e3o");
         table.put("Export diagnostic report",
                 "Exportar relat\u00f3rio de diagn\u00f3stico");
         table.put("Export settings",
                 "Exportar configura\u00e7\u00f5es");
         table.put("Feed",
                 "Feed");
-    }
-
-    private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("File name",
+                "Nome do arquivo");
+        table.put("File name set to %1$s.",
+                "Nome do arquivo definido como %1$s.");
+        table.put("Folder name",
+                "Nome da pasta");
+        table.put("Folder set to %1$s.",
+                "Pasta definida como %1$s.");
+        table.put("For WhatsApp, video editors such as CapCut and InShot, or a gallery or player that plays saves without sound. May lower quality.",
+                "Para o WhatsApp, editores de v\u00eddeo como CapCut e InShot ou uma galeria ou player que reproduza os v\u00eddeos salvos sem som. Pode reduzir a qualidade.");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "A partir da pr\u00f3xima abertura, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo, e suas escolhas ficam salvas.");
         table.put("Full report saved to %1$s",
@@ -1368,6 +1811,8 @@ public final class L10nTranslations {
                 "Ocultar an\u00fancios");
         table.put("Hide suggested users",
                 "Ocultar usu\u00e1rios sugeridos");
+        table.put("How far a photo or video you're saving has got, with a button to cancel it",
+                "Indica o progresso do salvamento de uma foto ou v\u00eddeo, com um bot\u00e3o para cancel\u00e1-lo");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "O HushThreads %1$s est\u00e1 dispon\u00edvel. Atualize-o pelo Morphe Manager.");
         table.put("HushThreads %1$s on Threads %2$s",
@@ -1380,6 +1825,8 @@ public final class L10nTranslations {
                 "O HushThreads est\u00e1 pausado");
         table.put("HushThreads pauses when Threads restarts.",
                 "O HushThreads ser\u00e1 pausado quando o Threads for reiniciado.");
+        table.put("HushThreads saves",
+                "Salvamentos do HushThreads");
         table.put("HushThreads settings",
                 "Configura\u00e7\u00f5es do HushThreads");
         table.put("HushThreads settings couldn't open",
@@ -1394,16 +1841,25 @@ public final class L10nTranslations {
                 "Importando as configura\u00e7\u00f5es");
         table.put("It targets Threads %1$s.",
                 "Compat\u00edvel com o Threads %1$s.");
+        table.put("Joining the picture and sound",
+                "Juntando a imagem e o som");
         table.put("Jump to a section",
                 "Ir para uma se\u00e7\u00e3o");
         table.put("Keep feed position on return",
                 "Manter a posi\u00e7\u00e3o no feed ao voltar");
+        table.put("Last carousel save",
+                "\u00daltimo carrossel salvo");
         table.put("Licenses",
                 "Licen\u00e7as");
+        table.put("Link expired. Reopen the post and try again",
+                "Link expirado. Abra a publica\u00e7\u00e3o novamente e tente de novo");
         table.put("Links",
                 "Links");
         table.put("Links, updates, backup and more",
                 "Links, atualiza\u00e7\u00f5es, backup e mais");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
                 "Os endere\u00e7os de an\u00e1lise encontrados s\u00e3o redirecionados para um endere\u00e7o que n\u00e3o responde. Outras telemetrias podem permanecer. Desative isto para usar os endere\u00e7os originais.");
         table.put("More settings",
@@ -1420,6 +1876,12 @@ public final class L10nTranslations {
                 "N\u00e3o faz parte desta vers\u00e3o: %1$s. O Morphe Manager o seleciona por padr\u00e3o. Selecione-o e aplique os patches novamente para ter o que ele faz.");
         table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
                 "N\u00e3o fazem parte desta vers\u00e3o: %1$s. O Morphe Manager os seleciona por padr\u00e3o. Selecione-os e aplique os patches novamente para ter o que eles fazem.");
+        table.put("Not saved: a carousel can have at most %1$d pages",
+                "N\u00e3o foi salvo: um carrossel pode ter no m\u00e1ximo %1$d p\u00e1ginas");
+        table.put("Not saved: that isn't a Threads photo or video",
+                "N\u00e3o salvo: isso n\u00e3o \u00e9 uma foto nem um v\u00eddeo do Threads");
+        table.put("Not saved: the file is over 512 MB",
+                "N\u00e3o foi salvo: o arquivo tem mais de 512 MB");
         table.put("OK",
                 "OK");
         table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
@@ -1428,6 +1890,8 @@ public final class L10nTranslations {
                 "Abrir links no seu navegador");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir links compat\u00edveis\u201d est\u00e1 desativado para este app nas configura\u00e7\u00f5es do Android. Toque para ativar.");
+        table.put("Page %1$d of %2$d",
+                "P\u00e1gina %1$d de %2$d");
         table.put("Patched: %1$s. Missing: %2$s.",
                 "Modificados: %1$s. Ausentes: %2$s.");
         table.put("Pause",
@@ -1436,6 +1900,8 @@ public final class L10nTranslations {
                 "Pausar o HushThreads");
         table.put("Pause, backup and diagnostics",
                 "Pausa, backup e diagn\u00f3stico");
+        table.put("Photos and videos you save from posts",
+                "Fotos e v\u00eddeos que voc\u00ea salva das publica\u00e7\u00f5es");
         table.put("Privacy",
                 "Privacidade");
         table.put("Pure black dark mode",
@@ -1450,35 +1916,73 @@ public final class L10nTranslations {
                 "Remover o rastreamento dos links compartilhados");
         table.put("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
                 "Remove cart\u00f5es verificados que sugerem contas para seguir. Publica\u00e7\u00f5es comuns e reposts permanecem.");
+        table.put("Reopen the post and save again.",
+                "Abra a publica\u00e7\u00e3o novamente e salve outra vez.");
         table.put("Resume",
                 "Retomar");
         table.put("Retry",
                 "Tentar novamente");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Ao voltar ao Threads em at\u00e9 dez minutos, voc\u00ea continuar\u00e1 no ponto em que estava. O gesto de puxar para baixo para atualizar continuar\u00e1 funcionando.");
+        table.put("Save",
+                "Salvar");
+        table.put("Save all",
+                "Salvar tudo");
+        table.put("Save cancelled",
+                "Salvamento cancelado");
+        table.put("Save folder",
+                "Pasta de destino");
         table.put("Save full report",
                 "Salvar relat\u00f3rio completo");
+        table.put("Save photo",
+                "Salvar foto");
+        table.put("Save photos and videos",
+                "Salvar fotos e v\u00eddeos");
         table.put("Save the full report in Download/Morphe.",
                 "Salve o relat\u00f3rio completo em Download/Morphe.");
+        table.put("Save video",
+                "Salvar v\u00eddeo");
+        table.put("Save videos other apps can open",
+                "Salvar v\u00eddeos que outros apps conseguem abrir");
         table.put("Save your switches to a file. Pause and Debug logging aren't included, and neither is the release check.",
                 "Salve suas op\u00e7\u00f5es em um arquivo. Pausa e Registro de depura\u00e7\u00e3o n\u00e3o s\u00e3o inclu\u00eddos, nem a verifica\u00e7\u00e3o de novas vers\u00f5es.");
+        table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "Salvos %1$d. Falhas %2$d. Ignorados %3$d.");
+        table.put("Saved to %1$s",
+                "Salvo em %1$s");
+        table.put("Saved to %1$s in lower quality than on Threads",
+                "Salvo em %1$s com qualidade menor que no Threads");
+        table.put("Saved to the gallery",
+                "Salvo na galeria");
+        table.put("Saved to the gallery in lower quality than on Threads",
+                "Salvo na galeria com qualidade menor que no Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Salvo. Reinicie o Threads para aplicar esta altera\u00e7\u00e3o.");
+        table.put("Saving a carousel",
+                "Salvando um carrossel");
+        table.put("Saving a photo",
+                "Salvando uma foto");
+        table.put("Saving a video",
+                "Salvando um v\u00eddeo");
         table.put("Saving the settings file",
                 "Salvando o arquivo de configura\u00e7\u00f5es");
+        table.put("Saving...",
+                "Salvando...");
+        table.put("Saving... Cancel: Downloads in HushThreads.",
+                "Salvando... Cancelar: Downloads no HushThreads.");
         table.put("Screens that check Threads' own signature open again on this re-signed build.",
                 "As telas que conferem a assinatura do pr\u00f3prio Threads voltam a abrir nesta vers\u00e3o com nova assinatura.");
         table.put("Search settings",
                 "Buscar configura\u00e7\u00f5es");
         table.put("Selecting links by hand",
                 "Selecionar links manualmente");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Set when you patched",
                 "Definido ao aplicar os patches");
         table.put("Settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "N\u00e3o foi poss\u00edvel atualizar completamente as configura\u00e7\u00f5es. Reabra as configura\u00e7\u00f5es e tente novamente.");
         table.put("Settings exported.",
@@ -1491,6 +1995,8 @@ public final class L10nTranslations {
                 "Configura\u00e7\u00f5es importadas. %1$d op\u00e7\u00e3o foi alterada.");
         table.put("Settings imported. %1$d switches changed.",
                 "Configura\u00e7\u00f5es importadas. %1$d op\u00e7\u00f5es foram alteradas.");
+        table.put("Smallest",
+                "A menor");
         table.put("Source code and issues",
                 "C\u00f3digo-fonte e relatos de problemas");
         table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
@@ -1579,6 +2085,12 @@ public final class L10nTranslations {
                 "Vers\u00e3o");
         table.put("Version %1$s for Threads %2$s",
                 "Vers\u00e3o %1$s para o Threads %2$s");
+        table.put("Video file name",
+                "Nome do arquivo de v\u00eddeo");
+        table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
+                "Os v\u00eddeos ser\u00e3o nomeados como %1$s. As fotos sempre recebem o nome %2$s seguido da data e da hora.");
+        table.put("Videos go to %1$s and photos to %2$s.",
+                "Os v\u00eddeos v\u00e3o para %1$s e as fotos para %2$s.");
         table.put("Videos in your feed",
                 "V\u00eddeos do seu feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
@@ -1591,13 +2103,13 @@ public final class L10nTranslations {
                 "Com a op\u00e7\u00e3o acima ativada, voc\u00ea continua no ponto em que estava, n\u00e3o importa quanto tempo fique fora. Puxar para atualizar e iniciar o Threads novamente continuam carregando novas publica\u00e7\u00f5es.");
         table.put("You have the newest HushThreads release.",
                 "Voc\u00ea j\u00e1 est\u00e1 usando a vers\u00e3o mais nova do HushThreads.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Voc\u00ea pausou o HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Suas escolhas est\u00e3o salvas. Toque em Retomar e depois reinicie o Threads.");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
@@ -1611,11 +2123,12 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(370);
+        Map<String, String> table = new HashMap<>(494);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
         fillTr3(table);
+        fillTr4(table);
         return table;
     }
 
@@ -1628,6 +2141,12 @@ public final class L10nTranslations {
                 "O dosyadaki %1$d \u00f6\u011fe, HushThreads'un bu s\u00fcr\u00fcm\u00fcn\u00fcn tan\u0131d\u0131\u011f\u0131 ayarlardan de\u011fil, bu y\u00fczden atlanacak.");
         table.put("%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.",
                 "O dosyadaki %1$d \u00f6\u011fe, HushThreads'un bu s\u00fcr\u00fcm\u00fcn\u00fcn tan\u0131d\u0131\u011f\u0131 ayarlardan de\u011fil, bu y\u00fczden atlanacak.");
+        table.put("%1$d saved in lower quality than on Threads.",
+                "%1$d \u00f6\u011fe Threads'tekinden daha d\u00fc\u015f\u00fck kalitede kaydedildi.");
+        table.put("%1$d saves stopped. Reopen the post and save again.",
+                "%1$d kaydetme i\u015flemi durdu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
+        table.put("%1$d saves were interrupted",
+                "%1$d kaydetme i\u015flemi kesildi");
         table.put("%1$d setting found",
                 "%1$d ayar bulundu");
         table.put("%1$d settings found",
@@ -1636,6 +2155,12 @@ public final class L10nTranslations {
                 "%1$d anahtar de\u011fi\u015fecek.");
         table.put("%1$d switches will change.",
                 "%1$d anahtar de\u011fi\u015fecek.");
+        table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
+                "%1$s kaydetme tarihine ve saatine, %2$s videonun Threads'teki numaras\u0131na, %3$s payla\u015fan ki\u015finin ad\u0131na, %4$s ise payla\u015f\u0131ld\u0131\u011f\u0131 g\u00fcne d\u00f6n\u00fc\u015f\u00fcr. Kaydederken bilinmeyenler d\u0131\u015far\u0131da b\u0131rak\u0131l\u0131r ve bunlar\u0131n hi\u00e7birini i\u00e7ermeyen bir ada tarih eklenir. Ad klas\u00f6rde zaten varsa sonuna kaydetme saati eklenir. Ge\u00e7ersiz karakterler alt \u00e7izgiye d\u00f6n\u00fc\u015f\u00fcr. Varsay\u0131lan %5$s ad\u0131n\u0131 kullanmak i\u00e7in bo\u015f b\u0131rak.");
+        table.put("%1$s of %2$s",
+                "%1$s / %2$s");
+        table.put("%1$s so far",
+                "\u015eimdiye kadar %1$s");
         table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
                 "%1$s. Yamalad\u0131\u011f\u0131nda ayarland\u0131\u011f\u0131 i\u00e7in Duraklatma bunu kapatamaz. Bunu elemek i\u00e7in yeniden yamala ve o yamay\u0131 d\u0131\u015far\u0131da b\u0131rak.");
         table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
@@ -1646,8 +2171,14 @@ public final class L10nTranslations {
                 "Bir tan\u0131lama raporu zaten kaydediliyor.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "%2$s i\u00e7indeki %1$s adl\u0131 bir dosya HushThreads'u duraklatt\u0131.");
+        table.put("A save stopped. Reopen the post and save again.",
+                "Bir kaydetme i\u015flemi durdu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
+        table.put("A save was interrupted",
+                "Bir kaydetme i\u015flemi kesildi");
         table.put("About",
                 "Hakk\u0131nda");
+        table.put("Adds a Save row to a post's menu. A post with several photos or videos saves them all, in order. Off or paused, the menu is Threads' own.",
+                "Bir g\u00f6nderinin men\u00fcs\u00fcne Kaydet sat\u0131r\u0131 ekler. Birden fazla foto\u011fraf veya video i\u00e7eren bir g\u00f6nderide hepsi s\u0131rayla kaydedilir. Kapal\u0131yken veya duraklat\u0131ld\u0131\u011f\u0131nda men\u00fc Threads'in kendi men\u00fcs\u00fcd\u00fcr.");
         table.put("Ads and suggested accounts in your feed",
                 "Ak\u0131\u015f\u0131n\u0131zdaki reklamlar ve \u00f6nerilen hesaplar");
         table.put("Advertising ID removed",
@@ -1672,12 +2203,22 @@ public final class L10nTranslations {
                 "Yukar\u0131daki anahtar kapal\u0131 olsa bile GitHub'a en yeni s\u00fcr\u00fcm\u00fc hemen sorar.");
         table.put("Back",
                 "Geri");
+        table.put("Best",
+                "En iyi");
         table.put("Browse settings",
                 "Ayarlar\u0131 ke\u015ffet");
         table.put("Build %1$s",
                 "Derleme %1$s");
         table.put("Cancel",
                 "\u0130ptal");
+        table.put("Cancel saving this carousel",
+                "Bu \u00e7oklu g\u00f6nderinin kayd\u0131n\u0131 iptal et");
+        table.put("Cancel saving this photo",
+                "Bu foto\u011fraf\u0131n kaydedilmesini iptal et");
+        table.put("Cancel saving this video",
+                "Bu videonun kaydedilmesini iptal et");
+        table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "\u00c7oklu g\u00f6nderi iptal edildi. Kaydedilen %1$d. Ba\u015far\u0131s\u0131z %2$d. Atlanan %3$d.");
         table.put("Changing these",
                 "Bunlar\u0131 de\u011fi\u015ftirmek");
         table.put("Check for new HushThreads releases",
@@ -1686,6 +2227,8 @@ public final class L10nTranslations {
                 "\u015eimdi denetle");
         table.put("Checking GitHub now.",
                 "GitHub \u015fu anda denetleniyor.");
+        table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
+                "Movies ve Pictures alt\u0131nda bir klas\u00f6r ad\u0131 se\u00e7. Ge\u00e7ersiz karakterler alt \u00e7izgiye d\u00f6n\u00fc\u015f\u00fcr. Varsay\u0131lan %1$s klas\u00f6r\u00fcn\u00fc kullanmak i\u00e7in bo\u015f b\u0131rak.");
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "Bir ayar dosyas\u0131 se\u00e7. \u0130\u00e7e aktarmadan \u00f6nce ka\u00e7 anahtar\u0131n de\u011fi\u015fece\u011fini g\u00f6r\u00fcrs\u00fcn.");
         table.put("Clear diagnostic data",
@@ -1698,6 +2241,8 @@ public final class L10nTranslations {
                 "K\u0131sa raporu panoya kopyalar.");
         table.put("Copy quick report",
                 "H\u0131zl\u0131 raporu kopyala");
+        table.put("Copying to the gallery",
+                "Galeriye kopyalan\u0131yor");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "Ayarlar i\u00e7e aktar\u0131lamad\u0131 ve \u00f6nceki ayarlar\u0131n geri y\u00fcklenemedi. Bu ekrandaki anahtarlar\u0131 kontrol et.");
         table.put("Couldn't import the settings. Nothing was changed.",
@@ -1708,6 +2253,9 @@ public final class L10nTranslations {
                 "Dosya se\u00e7ici a\u00e7\u0131lamad\u0131. Tekrar dene.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "Tan\u0131lama verileri geri getirilemedi. Tekrar dene.");
+    }
+
+    private static void fillTr1(Map<String, String> table) {
         table.put("Couldn't reach GitHub. Try again later.",
                 "GitHub'a ula\u015f\u0131lamad\u0131. Daha sonra tekrar dene.");
         table.put("Couldn't save the settings file. Try again.",
@@ -1730,19 +2278,42 @@ public final class L10nTranslations {
                 "Tan\u0131lama verileri geri getirildi.");
         table.put("Diagnostic report copied to the clipboard.",
                 "Tan\u0131lama raporu panoya kopyaland\u0131.");
+        table.put("Download failed",
+                "\u0130ndirme ba\u015far\u0131s\u0131z oldu");
+        table.put("Download quality",
+                "\u0130ndirme kalitesi");
+        table.put("Downloading",
+                "\u0130ndiriliyor");
+        table.put("Downloads",
+                "\u0130ndirmeler");
+        table.put("Each video saves at %1$s or the closest quality below it. A video with nothing that low saves at the closest quality above.",
+                "Her video %1$s kalitesinde ya da bunun alt\u0131ndaki en yak\u0131n kalitede kaydedilir. Bu kadar d\u00fc\u015f\u00fck kalitesi olmayan video, bunun \u00fcst\u00fcndeki en yak\u0131n kalitede kaydedilir.");
+        table.put("Each video saves at its lowest quality, for the smallest file.",
+                "Her video en d\u00fc\u015f\u00fck kalitesinde kaydedilir, b\u00f6ylece dosya en k\u00fc\u00e7\u00fck olur.");
+        table.put("Each video saves at the best quality the player streams.",
+                "Her video, oynat\u0131c\u0131n\u0131n sundu\u011fu en iyi kalitede kaydedilir.");
         table.put("Empties the log and the hook findings a report would include.",
                 "Bir raporun i\u00e7erece\u011fi g\u00fcnl\u00fc\u011f\u00fc ve hook bulgular\u0131n\u0131 bo\u015falt\u0131r.");
         table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
                 "Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r, yamalad\u0131\u011f\u0131nda ayarlananlar ise devrede kal\u0131r. Ayarlar\u0131n oldu\u011fu gibi kal\u0131r.");
+        table.put("Example without post details",
+                "G\u00f6nderi ayr\u0131nt\u0131lar\u0131 olmadan \u00f6rnek");
         table.put("Export diagnostic report",
                 "Tan\u0131lama raporunu d\u0131\u015fa aktar");
         table.put("Export settings",
                 "Ayarlar\u0131 d\u0131\u015fa aktar");
         table.put("Feed",
                 "Ak\u0131\u015f");
-    }
-
-    private static void fillTr1(Map<String, String> table) {
+        table.put("File name",
+                "Dosya ad\u0131");
+        table.put("File name set to %1$s.",
+                "Dosya ad\u0131 %1$s olarak ayarland\u0131.");
+        table.put("Folder name",
+                "Klas\u00f6r ad\u0131");
+        table.put("Folder set to %1$s.",
+                "Klas\u00f6r %1$s olarak ayarland\u0131.");
+        table.put("For WhatsApp, video editors such as CapCut and InShot, or a gallery or player that plays saves without sound. May lower quality.",
+                "WhatsApp, CapCut ve InShot gibi video d\u00fczenleyiciler ya da kaydedilen videolar\u0131 sessiz oynatan bir galeri veya oynat\u0131c\u0131 i\u00e7in. Kaliteyi d\u00fc\u015f\u00fcrebilir.");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Sonraki a\u00e7\u0131l\u0131\u015ftan itibaren Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r ve tercihlerin kay\u0131tl\u0131 kal\u0131r.");
         table.put("Full report saved to %1$s",
@@ -1759,6 +2330,8 @@ public final class L10nTranslations {
                 "Reklamlar\u0131 gizle");
         table.put("Hide suggested users",
                 "\u00d6nerilen kullan\u0131c\u0131lar\u0131 gizle");
+        table.put("How far a photo or video you're saving has got, with a button to cancel it",
+                "Kaydetti\u011fin foto\u011fraf veya videonun ilerleme durumu ve iptal etmek i\u00e7in bir d\u00fc\u011fme");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s \u00e7\u0131kt\u0131. Morphe Manager'da g\u00fcncelle.");
         table.put("HushThreads %1$s on Threads %2$s",
@@ -1771,6 +2344,8 @@ public final class L10nTranslations {
                 "HushThreads duraklat\u0131ld\u0131");
         table.put("HushThreads pauses when Threads restarts.",
                 "HushThreads, Threads yeniden ba\u015flad\u0131\u011f\u0131nda duraklat\u0131l\u0131r.");
+        table.put("HushThreads saves",
+                "HushThreads kaydetme i\u015flemleri");
         table.put("HushThreads settings",
                 "HushThreads ayarlar\u0131");
         table.put("HushThreads settings couldn't open",
@@ -1785,16 +2360,25 @@ public final class L10nTranslations {
                 "Ayarlar i\u00e7e aktar\u0131l\u0131yor");
         table.put("It targets Threads %1$s.",
                 "Threads %1$s i\u00e7in haz\u0131rland\u0131.");
+        table.put("Joining the picture and sound",
+                "G\u00f6r\u00fcnt\u00fc ve ses birle\u015ftiriliyor");
         table.put("Jump to a section",
                 "Bir b\u00f6l\u00fcme git");
         table.put("Keep feed position on return",
                 "Geri d\u00f6n\u00fcnce ak\u0131\u015f konumunu koru");
+        table.put("Last carousel save",
+                "Son \u00e7oklu g\u00f6nderi kayd\u0131");
         table.put("Licenses",
                 "Lisanslar");
+        table.put("Link expired. Reopen the post and try again",
+                "Ba\u011flant\u0131n\u0131n s\u00fcresi doldu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar dene");
         table.put("Links",
                 "Ba\u011flant\u0131lar");
         table.put("Links, updates, backup and more",
                 "Ba\u011flant\u0131lar, g\u00fcncellemeler, yedekleme ve daha fazlas\u0131");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
                 "Bulunan analiz adresleri yan\u0131t vermeyen bir adrese y\u00f6nlendirilir. Di\u011fer telemetri devam edebilir. \u00d6zg\u00fcn adresleri kullanmak i\u00e7in bunu kapat.");
         table.put("More settings",
@@ -1811,6 +2395,12 @@ public final class L10nTranslations {
                 "Bu s\u00fcr\u00fcmde yok: %1$s. Morphe Manager bunu varsay\u0131lan olarak se\u00e7er. Yapt\u0131\u011f\u0131 i\u015fi almak i\u00e7in onu se\u00e7ip yeniden yamala.");
         table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
                 "Bu s\u00fcr\u00fcmde yok: %1$s. Morphe Manager bunlar\u0131 varsay\u0131lan olarak se\u00e7er. Yapt\u0131klar\u0131 i\u015fi almak i\u00e7in onlar\u0131 se\u00e7ip yeniden yamala.");
+        table.put("Not saved: a carousel can have at most %1$d pages",
+                "Kaydedilmedi: \u00e7oklu g\u00f6nderide en fazla %1$d sayfa olabilir");
+        table.put("Not saved: that isn't a Threads photo or video",
+                "Kaydedilmedi: Bu bir Threads foto\u011fraf\u0131 veya videosu de\u011fil");
+        table.put("Not saved: the file is over 512 MB",
+                "Kaydedilmedi: Dosya 512 MB'tan b\u00fcy\u00fck");
         table.put("OK",
                 "Tamam");
         table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
@@ -1819,6 +2409,8 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131lar\u0131 taray\u0131c\u0131nda a\u00e7");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cDesteklenen ba\u011flant\u0131lar\u0131 a\u00e7\u201d Android ayarlar\u0131nda bu uygulama i\u00e7in kapal\u0131. A\u00e7mak i\u00e7in dokunun.");
+        table.put("Page %1$d of %2$d",
+                "%1$d / %2$d sayfa");
         table.put("Patched: %1$s. Missing: %2$s.",
                 "Yamalanan: %1$s. Eksik: %2$s.");
         table.put("Pause",
@@ -1827,6 +2419,8 @@ public final class L10nTranslations {
                 "HushThreads'u duraklat");
         table.put("Pause, backup and diagnostics",
                 "Duraklatma, yedekleme ve tan\u0131lama");
+        table.put("Photos and videos you save from posts",
+                "G\u00f6nderilerden kaydetti\u011fin foto\u011fraflar ve videolar");
         table.put("Privacy",
                 "Gizlilik");
         table.put("Pure black dark mode",
@@ -1841,35 +2435,73 @@ public final class L10nTranslations {
                 "Payla\u015f\u0131lan ba\u011flant\u0131lardan izlemeyi kald\u0131r");
         table.put("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
                 "Takip edilecek hesaplar \u00f6neren do\u011frulanm\u0131\u015f kartlar\u0131 kald\u0131r\u0131r. Normal g\u00f6nderiler ve yeniden payla\u015f\u0131mlar kal\u0131r.");
+        table.put("Reopen the post and save again.",
+                "G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
         table.put("Resume",
                 "Devam et");
         table.put("Retry",
                 "Yeniden dene");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Threads'e on dakika i\u00e7inde d\u00f6nersen kald\u0131\u011f\u0131n yer korunur. Yenilemek i\u00e7in a\u015fa\u011f\u0131 \u00e7ekmeye devam edebilirsin.");
+        table.put("Save",
+                "Kaydet");
+        table.put("Save all",
+                "T\u00fcm\u00fcn\u00fc kaydet");
+        table.put("Save cancelled",
+                "Kaydetme iptal edildi");
+        table.put("Save folder",
+                "Kay\u0131t klas\u00f6r\u00fc");
         table.put("Save full report",
                 "Tam raporu kaydet");
+        table.put("Save photo",
+                "Foto\u011fraf\u0131 kaydet");
+        table.put("Save photos and videos",
+                "Foto\u011fraflar\u0131 ve videolar\u0131 kaydet");
         table.put("Save the full report in Download/Morphe.",
                 "Tam raporu Download/Morphe konumuna kaydeder.");
+        table.put("Save video",
+                "Videoyu kaydet");
+        table.put("Save videos other apps can open",
+                "Videolar\u0131 di\u011fer uygulamalar\u0131n a\u00e7abilece\u011fi bi\u00e7imde kaydet");
         table.put("Save your switches to a file. Pause and Debug logging aren't included, and neither is the release check.",
                 "Anahtarlar\u0131n\u0131 bir dosyaya kaydet. Duraklatma ve Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc dahil edilmez, s\u00fcr\u00fcm denetimi de edilmez.");
+        table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "Kaydedilen %1$d. Ba\u015far\u0131s\u0131z %2$d. Atlanan %3$d.");
+        table.put("Saved to %1$s",
+                "\u015euraya kaydedildi: %1$s");
+        table.put("Saved to %1$s in lower quality than on Threads",
+                "\u015euraya Threads'tekinden d\u00fc\u015f\u00fck kalitede kaydedildi: %1$s");
+        table.put("Saved to the gallery",
+                "Galeriye kaydedildi");
+        table.put("Saved to the gallery in lower quality than on Threads",
+                "Galeriye Threads'tekinden d\u00fc\u015f\u00fck kalitede kaydedildi");
         table.put("Saved. Restart Threads to apply this change.",
                 "Kaydedildi. Bu de\u011fi\u015fikli\u011fi uygulamak i\u00e7in Threads'i yeniden ba\u015flat.");
+        table.put("Saving a carousel",
+                "\u00c7oklu g\u00f6nderi kaydediliyor");
+        table.put("Saving a photo",
+                "Foto\u011fraf kaydediliyor");
+        table.put("Saving a video",
+                "Video kaydediliyor");
         table.put("Saving the settings file",
                 "Ayar dosyas\u0131 kaydediliyor");
+        table.put("Saving...",
+                "Kaydediliyor...");
+        table.put("Saving... Cancel: Downloads in HushThreads.",
+                "Kaydediliyor... \u0130ptal: HushThreads'ta \u0130ndirmeler.");
         table.put("Screens that check Threads' own signature open again on this re-signed build.",
                 "Threads'in kendi imzas\u0131n\u0131 denetleyen ekranlar bu yeniden imzalanm\u0131\u015f s\u00fcr\u00fcmde tekrar a\u00e7\u0131l\u0131r.");
         table.put("Search settings",
                 "Ayarlarda ara");
         table.put("Selecting links by hand",
                 "Ba\u011flant\u0131lar\u0131 elle se\u00e7me");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Set when you patched",
                 "Yamalad\u0131\u011f\u0131nda ayarlananlar");
         table.put("Settings couldn't open",
                 "Ayarlar a\u00e7\u0131lamad\u0131");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Ayarlar tamamen yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
         table.put("Settings exported.",
@@ -1882,6 +2514,8 @@ public final class L10nTranslations {
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131. %1$d anahtar de\u011fi\u015fti.");
         table.put("Settings imported. %1$d switches changed.",
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131. %1$d anahtar de\u011fi\u015fti.");
+        table.put("Smallest",
+                "En k\u00fc\u00e7\u00fck");
         table.put("Source code and issues",
                 "Kaynak kodu ve sorunlar");
         table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
@@ -1970,6 +2604,12 @@ public final class L10nTranslations {
                 "S\u00fcr\u00fcm");
         table.put("Version %1$s for Threads %2$s",
                 "Threads %2$s i\u00e7in %1$s s\u00fcr\u00fcm\u00fc");
+        table.put("Video file name",
+                "Video dosya ad\u0131");
+        table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
+                "Videolar\u0131n ad\u0131 %1$s olur. Foto\u011fraflar\u0131n ad\u0131 her zaman %2$s ile ba\u015flar, ard\u0131ndan tarih ve saat gelir.");
+        table.put("Videos go to %1$s and photos to %2$s.",
+                "Videolar %1$s klas\u00f6r\u00fcne, foto\u011fraflar %2$s klas\u00f6r\u00fcne kaydedilir.");
         table.put("Videos in your feed",
                 "Ak\u0131\u015ftaki videolar");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
@@ -1982,13 +2622,13 @@ public final class L10nTranslations {
                 "Yukar\u0131daki anahtar a\u00e7\u0131kken ne kadar uzun s\u00fcre uzakta kal\u0131rsan kal yerin korunur. Yenilemek i\u00e7in \u00e7ekmek ve uygulamay\u0131 yeniden ba\u015flatmak yine yeni g\u00f6nderileri y\u00fckler.");
         table.put("You have the newest HushThreads release.",
                 "En yeni HushThreads s\u00fcr\u00fcm\u00fcn\u00fc kullan\u0131yorsun.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "HushThreads'u duraklatt\u0131n.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Tercihleriniz kay\u0131tl\u0131. Devam et'e dokunun, sonra Threads'i yeniden ba\u015flat\u0131n.");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Kontrolleriniz etkin.");
         table.put("Your switches already match that file, so nothing will change.",
