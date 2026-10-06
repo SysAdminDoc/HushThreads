@@ -104,7 +104,7 @@ Reports name the HushThreads bundle and include the installed app's current cert
 
 ## Signing in
 
-Tap Log in with Instagram and enter your Instagram username and password. That reached a live feed on Threads 449.0.0.54.82 with every patch combination tested, on Android 16 next to a signed-in stock Instagram and on Android 17 with no Instagram installed. The Android 17 checks used the same install settings Morphe Manager's Shizuku mode uses. On Threads 448.0.0.54.85 it reached the feed on Android 16 with no Instagram installed, both with only the settings patch and with all 11, and again after signing out and back in.
+Tap Log in with Instagram and enter your Instagram username and password. That reached a live feed on Threads 449.0.0.54.82 with every patch combination tested, on Android 16 next to a signed-in stock Instagram and on Android 17 with no Instagram installed. The Android 17 checks used the same install settings Morphe Manager's Shizuku mode uses. On Threads 448.0.0.54.85 it reached the feed on Android 16 with no Instagram installed, both with only the settings patch and with all 11.
 
 Threads can show Save your login info twice. Tap Not now on each prompt if you don't want to save it.
 
