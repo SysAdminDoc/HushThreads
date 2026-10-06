@@ -31,8 +31,8 @@ public final class ThreadsSettingsRow {
 
     private static final Click CLICK = new Click();
 
-    /** -1 until it's looked up, then 0 when Threads has none of {@link #ICONS}. */
-    private static int icon = -1;
+    /** -1 until it's looked up, then 0 when Threads has none of {@link #ICONS}. Package-visible for tests. */
+    static int icon = -1;
 
     private ThreadsSettingsRow() {
     }
@@ -43,18 +43,18 @@ public final class ThreadsSettingsRow {
      */
     public static void add(Object composer) {
         if (icon < 0) icon = lookUpIcon();
-        if (icon == 0) return;
+        if (icon <= 0) return;
         showRow(composer, CLICK, TITLE, L10n.t(Utils.getContext(), "Turn features on or off"), icon);
     }
 
+    /** The icon's id, 0 when Threads has none of {@link #ICONS}, or -1 to look again on the next draw because there's no context yet. */
     private static int lookUpIcon() {
+        Context context = Utils.getContext();
+        if (context == null) return -1;
         try {
-            Context context = Utils.getContext();
-            if (context != null) {
-                for (String name : ICONS) {
-                    int id = context.getResources().getIdentifier(name, "drawable", context.getPackageName());
-                    if (id != 0) return id;
-                }
+            for (String name : ICONS) {
+                int id = context.getResources().getIdentifier(name, "drawable", context.getPackageName());
+                if (id != 0) return id;
             }
         } catch (Exception ex) {
             Logger.printException(() -> "Settings row: could not look up its icon", ex);
