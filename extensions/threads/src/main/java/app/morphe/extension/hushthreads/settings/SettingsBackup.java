@@ -81,7 +81,8 @@ public final class SettingsBackup {
             Settings.SANITIZE_SHARING_LINKS,
             Settings.OPEN_LINKS_EXTERNALLY,
             Settings.DISABLE_ANALYTICS,
-            Settings.PURE_BLACK));
+            Settings.PURE_BLACK,
+            Settings.DOWNLOAD_COMPATIBLE));
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be

@@ -341,6 +341,41 @@
       ],
       "license": "GPL-3.0-only with the Morphe section 7 notices",
       "changes": "Read and verify the defining bundle identity, inject it into the shared runtime and refuse tampered current bundles. Adapted for Threads without changing the release version or current-signing checks."
+    },
+    {
+      "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/DashManifest.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/DashSave.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/DownloadQuality.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/Downloader.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/Feedback.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/FileNameTemplate.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/InstagramMedia.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/MediaSave.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/MediaStoreWriter.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/MediaUrlPolicy.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/Mp4Join.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/PostDetails.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/RenditionPicker.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveControl.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveFolder.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveLeftovers.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveSettings.java"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/HushGram",
+      "commit": "539b6467b25c8c1cd5a1cdaad7e785cf1227f61c",
+      "via": [
+        "https://github.com/SysAdminDoc/Hushfacebook",
+        "https://github.com/andrewliang25/morphe-patches",
+        "https://github.com/SysAdminDoc/hushfeed",
+        "https://github.com/icysymmetra/tiktok-patches-for-morphe",
+        "https://github.com/MorpheApp/morphe-patches",
+        "https://github.com/MorpheApp/morphe-patches-library",
+        "https://gitlab.com/ReVanced/revanced-patches"
+      ],
+      "license": "GPL-3.0-only with the Morphe section 7 notices",
+      "changes": "HushGram's save engine and its Downloads rows, moved from app.hushgram.extension.instagram to app.morphe.extension.hushthreads with Threads' names: TH_VID_ and TH_IMG_ file names, a Threads save folder, hushthreads keys, actions and notification channel. InstagramMedia keeps only the getters a post save reads. A batch names each page's file after the post and the page's place, so two posts saved at once stay apart. The quality, folder and file name settings live in SaveSettings, since Settings holds only switches, and the Downloads rows moved out of HushGram's settings page into SaveSettingsRows."
     }
   ]
 }

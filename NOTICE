@@ -21,9 +21,14 @@ carried in derivative works and shown to the person using the software, so it
 is also reachable in the app itself: long-press Threads' launcher icon, open
 HushThreads, then More settings, About and Licenses.
 
+Saving photos and videos comes from HushGram, the Instagram sibling, which
+took Hushfacebook's save engine and fitted it to Meta's media model that
+Threads shares.
+
   HushThreads                 https://github.com/SysAdminDoc/HushThreads
   Hushfacebook                https://github.com/SysAdminDoc/Hushfacebook
   Hushfacebook commits        814acd23d7b70d5d23abce6cb6c97767e16a051e, 88a7f512c1e97126ae6fb3cf05e3c152a39fb1fc
+  HushGram                    https://github.com/SysAdminDoc/HushGram
   Hushfeed                    https://github.com/SysAdminDoc/hushfeed
   morphe-patches (Andrew's)   https://github.com/andrewliang25/morphe-patches
   FroggoMorphePatches         https://github.com/SapitoSucio/FroggoMorphePatches
@@ -33,10 +38,10 @@ HushThreads, then More settings, About and Licenses.
   morphe-patches-library      https://github.com/MorpheApp/morphe-patches-library
   ReVanced                    https://gitlab.com/ReVanced/revanced-patches
 
-Hushfacebook, Andrew Liang's patches, FroggoMorphePatches and zeldrisho's
-patches are licensed under the GNU General Public License v3.0. Files that
-came from another project keep a "Forked from" line naming it and the commit
-they came from, and provenance.json records every rule.
+Hushfacebook, HushGram, Andrew Liang's patches, FroggoMorphePatches and
+zeldrisho's patches are licensed under the GNU General Public License v3.0.
+Files that came from another project keep a "Forked from" line naming it and
+the commit they came from, and provenance.json records every rule.
 
 
 Morphe: Project Name Restriction

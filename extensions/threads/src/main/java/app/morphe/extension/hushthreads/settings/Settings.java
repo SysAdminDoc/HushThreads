@@ -82,6 +82,17 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_pure_black", TRUE, true);
 
     /**
+     * Video saves keep to what other apps open: H.264 video with AAC-LC or HE-AAC sound, within the
+     * quality a save asks for
+     * ({@link app.morphe.extension.hushthreads.download.SaveSettings#DOWNLOAD_QUALITY}), or the
+     * app's single MP4 file when the manifest has no such pair. The sharpest version Meta streams
+     * is often AV1 with xHE-AAC sound, which Gallery and VLC play and WhatsApp turns down. Off by
+     * default, so a save keeps the sharpest.
+     */
+    public static final BooleanSetting DOWNLOAD_COMPATIBLE =
+            new BooleanSetting("hushthreads_download_compatible", FALSE);
+
+    /**
      * Once a day, when Threads starts, ask api.github.com whether a newer HushThreads release is
      * out, and say so on the settings screen ({@link ReleaseCheck}). It's the settings entry's own
      * switch rather than a patch's, so every build has it ({@link PatchFamily#ENTRY_SWITCHES}). Off
