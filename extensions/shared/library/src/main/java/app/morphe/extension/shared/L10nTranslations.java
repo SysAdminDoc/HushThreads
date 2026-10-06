@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(368);
+        Map<String, String> table = new HashMap<>(370);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -394,6 +394,8 @@ public final class L10nTranslations {
                 "Versuch ein anderes Wort oder l\u00f6sche die Suche.");
         table.put("Try again, or go back to Threads.",
                 "Versuche es noch einmal oder kehre zu Threads zur\u00fcck.");
+        table.put("Turn features on or off",
+                "Funktionen ein- oder ausschalten");
         table.put("Undo",
                 "R\u00fcckg\u00e4ngig");
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
@@ -420,11 +422,11 @@ public final class L10nTranslations {
                 "Du hast HushThreads pausiert.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Deine Auswahl bleibt gespeichert. Tippe auf Fortsetzen und starte Threads dann neu.");
-        table.put("Your controls are active.",
-                "Deine Einstellungen sind aktiv.");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Your controls are active.",
+                "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
         table.put("none",
@@ -436,7 +438,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(368);
+        Map<String, String> table = new HashMap<>(370);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -783,6 +785,8 @@ public final class L10nTranslations {
                 "Prueba otra palabra o borra la b\u00fasqueda.");
         table.put("Try again, or go back to Threads.",
                 "Int\u00e9ntalo de nuevo o vuelve a Threads.");
+        table.put("Turn features on or off",
+                "Activa o desactiva funciones");
         table.put("Undo",
                 "Deshacer");
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
@@ -809,11 +813,11 @@ public final class L10nTranslations {
                 "Pausaste HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Tus preferencias est\u00e1n guardadas. Toca Reanudar y luego reinicia Threads.");
-        table.put("Your controls are active.",
-                "Tus controles est\u00e1n activos.");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Your controls are active.",
+                "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
         table.put("none",
@@ -825,7 +829,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(368);
+        Map<String, String> table = new HashMap<>(370);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1172,6 +1176,8 @@ public final class L10nTranslations {
                 "Coba kata lain atau hapus pencarian.");
         table.put("Try again, or go back to Threads.",
                 "Coba lagi, atau kembali ke Threads.");
+        table.put("Turn features on or off",
+                "Aktifkan atau nonaktifkan fitur");
         table.put("Undo",
                 "Urungkan");
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
@@ -1198,11 +1204,11 @@ public final class L10nTranslations {
                 "Anda menjeda HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Threads.");
-        table.put("Your controls are active.",
-                "Kontrol Anda aktif.");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Your controls are active.",
+                "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
         table.put("none",
@@ -1214,7 +1220,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(368);
+        Map<String, String> table = new HashMap<>(370);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1561,6 +1567,8 @@ public final class L10nTranslations {
                 "Tente outra palavra ou limpe a busca.");
         table.put("Try again, or go back to Threads.",
                 "Tente novamente ou volte para o Threads.");
+        table.put("Turn features on or off",
+                "Ative ou desative recursos");
         table.put("Undo",
                 "Desfazer");
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
@@ -1587,11 +1595,11 @@ public final class L10nTranslations {
                 "Voc\u00ea pausou o HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Suas escolhas est\u00e3o salvas. Toque em Retomar e depois reinicie o Threads.");
-        table.put("Your controls are active.",
-                "Seus controles est\u00e3o ativos.");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Your controls are active.",
+                "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
         table.put("none",
@@ -1603,7 +1611,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(368);
+        Map<String, String> table = new HashMap<>(370);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -1950,6 +1958,8 @@ public final class L10nTranslations {
                 "Ba\u015fka bir kelime deneyin veya aramay\u0131 temizleyin.");
         table.put("Try again, or go back to Threads.",
                 "Tekrar dene veya Threads'e geri d\u00f6n.");
+        table.put("Turn features on or off",
+                "\u00d6zellikleri a\u00e7 veya kapat");
         table.put("Undo",
                 "Geri al");
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
@@ -1976,11 +1986,11 @@ public final class L10nTranslations {
                 "HushThreads'u duraklatt\u0131n.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Tercihleriniz kay\u0131tl\u0131. Devam et'e dokunun, sonra Threads'i yeniden ba\u015flat\u0131n.");
-        table.put("Your controls are active.",
-                "Kontrolleriniz etkin.");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Your controls are active.",
+                "Kontrolleriniz etkin.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
         table.put("none",

@@ -69,7 +69,7 @@ HushThreads v0.0.11 has 11 patches. All but Block background-return feed refresh
 | `Disable video autoplay` | Videos in feed posts don't play by themselves as you scroll. Tap one to watch it full screen. |
 | `Hide ads` | Takes sponsored posts out of your Threads feed before they're shown. |
 | `Hide suggested users` | Removes verified server cards suggesting accounts to follow. Ordinary posts, reposts and unknown card types stay. |
-| `HushThreads settings` | Adds HushThreads settings to Threads. Long-press Threads' launcher icon, or open Additional settings in the app on Threads' App info page, to turn features on or off, pause HushThreads, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
+| `HushThreads settings` | Adds HushThreads settings to Threads. Tap HushThreads above More settings in Threads' own settings, long-press Threads' launcher icon, or open Additional settings in the app on Threads' App info page, to turn features on or off, pause HushThreads, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
 | `Open links in browser` | Opens the web links you tap in your default browser instead of Threads' own, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads. |
 | `Pure black dark mode` | Threads' dark mode uses pure black instead of its dark gray behind your feed, posts and profiles, which looks deeper and saves power on an OLED screen. Menus and sheets keep their own grays. |
 | `Remove the advertising ID` | Stops Threads getting your phone's advertising ID from Google Play services. Threads gets a string of zeros in its place. |
@@ -86,7 +86,9 @@ Pure black dark mode changes the #101010 gray that Threads' theme uses for the f
 
 ## Settings
 
-Long-press the Threads icon and tap HushThreads. You can also open Threads' App info page and tap Additional settings in the app, which Samsung phones call Configure in Threads.
+In Threads, open your profile, tap the settings button at the top and tap HushThreads, just above More settings. You can also long-press the Threads icon and tap HushThreads, or open Threads' App info page and tap Additional settings in the app, which Samsung phones call Configure in Threads.
+
+The row in Threads' settings grows with large text, and TalkBack reads it out and opens it with a double tap. That was checked on Threads 449 and 448 on Android 16.
 
 <p><img src="assets/settings-overview.png" width="320" alt="HushThreads settings with search, Pause and the Feed and Privacy pages"><img src="assets/settings-privacy.png" width="320" alt="Privacy preview with clean shared links, analytics uploads and all three address kinds matched"></p>
 <p><img src="assets/launcher-shortcut.png" width="320" alt="The HushThreads shortcut on Threads' launcher icon"></p>

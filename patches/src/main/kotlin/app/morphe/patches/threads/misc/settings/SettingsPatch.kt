@@ -97,17 +97,20 @@ internal val settingsManifestPatch = resourcePatch {
 }
 
 /**
- * Makes the HushThreads screen reachable two ways. From the home screen, a long-press shortcut on
+ * Makes the HushThreads screen reachable three ways. From the home screen, a long-press shortcut on
  * Threads' launcher icon opens Threads with an extra; from Android's App info page for Threads,
  * "Additional settings in the app" opens it with [APPLICATION_PREFERENCES]. Threads' launcher
  * activity reports its intent, and the screen opens over the next Threads activity to resume.
- * Every name used here is a manifest component or a framework override or call.
+ * Every name used for those is a manifest component or a framework override or call. Inside
+ * Threads, a HushThreads row above More settings in Threads' own settings opens it too
+ * ([addThreadsSettingsRow]), found by Compose's notes and the settings list's enum names.
  */
 @Suppress("unused")
 val settingsPatch = bytecodePatch(
     name = "HushThreads settings",
-    description = "Adds HushThreads settings to Threads. Long-press Threads' launcher icon, or open " +
-        "Additional settings in the app on Threads' App info page, to turn features on or off, pause " +
+    description = "Adds HushThreads settings to Threads. Tap HushThreads above More settings in Threads' " +
+        "own settings, long-press Threads' launcher icon, or open Additional settings in the app on " +
+        "Threads' App info page, to turn features on or off, pause " +
         "HushThreads, save your switches to a file or load them, and export diagnostics. The licenses " +
         "are there too.",
     default = true,
@@ -146,5 +149,7 @@ val settingsPatch = bytecodePatch(
         // Each of those calls now goes through the extension, which puts it back in front
         // afterwards. Framework names only, which the obfuscator keeps.
         rerouteShortcutCalls()
+
+        addThreadsSettingsRow()
     }
 }

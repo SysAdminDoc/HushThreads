@@ -2,6 +2,11 @@
 
 Changes in the source build, then released versions.
 
+## Unreleased
+
+* **Threads:** HushThreads now has its own row in Threads' settings, right above More settings, so you can open it from your profile's settings like any other page. It's drawn the way Threads draws its own rows. It grows with large text, and TalkBack reads it out and opens it with a double tap. The launcher shortcut and Additional settings on the App info page still work.
+* **Tooling:** A fixture test checks on 449 and 448 that the row goes in only where Threads draws More settings, hands Threads its own composer and modifier, and refuses to patch when that entry moves, its composer gets overwritten or a branch jumps into it.
+
 ## 0.0.11 (2026-10-05)
 
 * **Threads:** New Pure black dark mode patch. In dark mode your feed, posts and profiles sit on pure black instead of Threads' #101010 dark gray, which looks deeper and saves power on an OLED screen. Menus and sheets keep their own grays. It isn't selected by default. Once you pick it, its switch is on and lives on a new Appearance page in HushThreads settings, and a change takes effect after Threads restarts. Pause and safe mode hand the gray back.

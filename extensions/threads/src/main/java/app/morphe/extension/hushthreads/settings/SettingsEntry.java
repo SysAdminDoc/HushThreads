@@ -49,7 +49,8 @@ import app.morphe.extension.shared.Utils;
  * Threads activity reports its intent here from {@code onCreate} and {@code onNewIntent}, and the
  * next Threads activity to resume shows the screen as a full screen dialog. The shortcut is kept
  * first among Threads' own, because a launcher shows only the first few, and some launchers have no
- * shortcut menu at all.
+ * shortcut menu at all. Inside Threads, a HushThreads row above More settings in Threads' own
+ * settings opens it over the screen in front ({@link ThreadsSettingsRow}).
  */
 @SuppressWarnings("unused")
 public final class SettingsEntry {
@@ -296,7 +297,7 @@ public final class SettingsEntry {
 
     static final class OpenWhenResumed implements Application.ActivityLifecycleCallbacks {
         /** The Threads screen in front right now, if any. */
-        private WeakReference<Activity> resumed;
+        private static volatile WeakReference<Activity> resumed;
 
         @Override
         public void onActivityResumed(Activity activity) {
@@ -403,6 +404,14 @@ public final class SettingsEntry {
             intent.setAction(Intent.ACTION_MAIN);
             request("Android's App info page");
         }
+    }
+
+    /** The HushThreads row in Threads' own settings was tapped, over the screen in front. */
+    static void openFromThreadsSettings() {
+        request("the row in Threads' settings");
+        WeakReference<Activity> front = OpenWhenResumed.resumed;
+        Activity current = front == null ? null : front.get();
+        if (current != null) OpenWhenResumed.openWhenSettled(current);
     }
 
     private static void request(String from) {

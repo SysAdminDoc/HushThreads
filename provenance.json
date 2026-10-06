@@ -221,6 +221,17 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ThreadsSettingsRow.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/misc/settings/ThreadsSettingsRow.kt"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "A HushThreads row above More settings in Threads' own settings, drawn by Threads' settings row and found by Compose's notes and the settings list's enum names in 449 and 448, with no outside code."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/ReturnRefresh.java"
       ],
       "origin": "ported",
