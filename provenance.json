@@ -376,6 +376,15 @@
       ],
       "license": "GPL-3.0-only with the Morphe section 7 notices",
       "changes": "HushGram's save engine and its Downloads rows, moved from app.hushgram.extension.instagram to app.morphe.extension.hushthreads with Threads' names: TH_VID_ and TH_IMG_ file names, a Threads save folder, hushthreads keys, actions and notification channel. InstagramMedia keeps only the getters a post save reads. A batch names each page's file after the post and the page's place, so two posts saved at once stay apart. The quality, folder and file name settings live in SaveSettings, since Settings holds only switches, and the Downloads rows moved out of HushGram's settings page into SaveSettingsRows."
+    },
+    {
+      "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/PostSave.java"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only"
     }
   ]
 }

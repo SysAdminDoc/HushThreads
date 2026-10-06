@@ -27,6 +27,7 @@ public final class FamilyNames {
     public static final String EXTERNAL_BROWSER = "Open links in browser";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String PURE_BLACK = "Pure black dark mode";
+    public static final String SAVE_MEDIA = "Save photos and videos";
     public static final String REMOVE_AD_ID = "Remove the advertising ID";
     public static final String RESTORE_TRUST = "Restore screens on re-signed builds";
 

@@ -82,6 +82,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_pure_black", TRUE, true);
 
     /**
+     * A post's menu gets a row that saves its photos and videos to the phone, every page of a
+     * post with several in order, from the addresses Threads already holds
+     * ({@link app.morphe.extension.hushthreads.download.PostSave}).
+     */
+    public static final BooleanSetting SAVE_MEDIA =
+            new BooleanSetting("hushthreads_save_media", TRUE);
+
+    /**
      * Video saves keep to what other apps open: H.264 video with AAC-LC or HE-AAC sound, within the
      * quality a save asks for
      * ({@link app.morphe.extension.hushthreads.download.SaveSettings#DOWNLOAD_QUALITY}), or the

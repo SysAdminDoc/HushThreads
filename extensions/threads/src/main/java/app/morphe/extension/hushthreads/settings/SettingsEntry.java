@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import app.morphe.extension.hushthreads.download.SaveLeftovers;
 import app.morphe.extension.hushthreads.feed.ReturnRefresh;
 import app.morphe.extension.shared.L10n;
 import app.morphe.extension.shared.Logger;
@@ -99,6 +100,9 @@ public final class SettingsEntry {
         } catch (Exception ex) {
             Logger.printException(() -> "Settings entry: could not watch activities", ex);
         }
+        // A save Android stopped halfway left a pending gallery row, a work file or a notification.
+        // Whatever the switch says now: it may have been on when the save started.
+        if (SettingsStatus.saveMedia()) SaveLeftovers.sweepAfterStart(context);
         ReleaseCheck.onThreadsStart();
         publishShortcut(context);
     }
@@ -302,6 +306,7 @@ public final class SettingsEntry {
         @Override
         public void onActivityResumed(Activity activity) {
             resumed = new WeakReference<>(activity);
+            if (SettingsStatus.saveMedia()) SaveLeftovers.showInterrupted(activity);
             if (openPending) openWhenSettled(activity);
             relabelIfStale(activity);
         }
