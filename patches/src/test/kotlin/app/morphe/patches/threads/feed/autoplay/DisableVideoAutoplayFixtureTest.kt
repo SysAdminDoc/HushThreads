@@ -146,6 +146,21 @@ class DisableVideoAutoplayFixtureTest {
             copied.replaceInstruction(write, "move/from16 v$register, v0")
             val notLiteral = assertThrows(build.name, PatchException::class.java) { disableVideoAutoplayPatch.execute(computed) }
             assertTrue(notLiteral.message.orEmpty(), notLiteral.message.orEmpty().contains("isn't set from the boolean it tests"))
+
+            // A build that plays when the boolean is false, or never plays, isn't one the hook can hold.
+            val shape = postVideo.playTest(fixture.effect)
+            for (value in listOf<(Int) -> Int>({ 1 - it }, { 0 })) {
+                val flipped = context(fixture)
+                val method = flipped.mutableMethod(postVideo)
+                (shape.test + 1 until shape.call).filter {
+                    (method.body()[it] as? OneRegisterInstruction)?.registerA == shape.argument && method.body()[it] is NarrowLiteralInstruction
+                }.forEach { at ->
+                    val literal = (method.body()[at] as NarrowLiteralInstruction).narrowLiteral
+                    method.replaceInstruction(at, "const/16 v${shape.argument}, ${value(literal)}")
+                }
+                val error = assertThrows(build.name, PatchException::class.java) { disableVideoAutoplayPatch.execute(flipped) }
+                assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("doesn't follow the boolean it tests"))
+            }
         }
     }
 
