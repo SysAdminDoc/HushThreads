@@ -19,6 +19,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
@@ -52,6 +53,7 @@ import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.shared.settings.HushThreadsPause;
+import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.morphe.extension.shared.settings.preference.ClearLogBufferPreference;
 import app.morphe.extension.shared.settings.preference.ExportDiagnosticReportPreference;
@@ -120,6 +122,20 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     @Nullable
     SettingsNavigation navigation;
 
+    /** The saves listed in Downloads, or null when this build has no save patch. */
+    @Nullable
+    SaveSettingsRows.Saves saves;
+
+    /** Set by a test to stand in for {@link SettingsStatus#saveMedia()}, or null. */
+    @Nullable
+    static volatile Boolean savesInBuildForTests;
+
+    /** Whether this build has the save patch, read the way the settings entry reads it. */
+    static boolean savesInBuild() {
+        Boolean forced = savesInBuildForTests;
+        return forced != null ? forced : SettingsStatus.saveMedia();
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -154,6 +170,13 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         super.onResume();
         SettingsBackupPreference.onPageResumed(this);
         showSupportedLinks();
+        if (saves != null) saves.resume(getContext());
+    }
+
+    @Override
+    public void onPause() {
+        if (saves != null) saves.pause();
+        super.onPause();
     }
 
     @Override
@@ -285,6 +308,22 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 }
                 privacy.addPreference(info(context, L10n.t("Analytics address coverage"), coverage));
             }
+        }
+
+        saves = null;
+        if (savesInBuild()) {
+            PreferenceCategory downloads = category(screen, L10n.t("Downloads"));
+            downloads.addPreference(toggle(context, Settings.SAVE_MEDIA, L10n.t("Save photos and videos"),
+                    L10n.t("Adds a Save row to a post's menu. A post with several photos or videos saves them all, "
+                            + "in order. Off or paused, the menu is Threads' own.")));
+            // Every save reads it, so it's here above the quality it keeps within.
+            downloads.addPreference(toggle(context, Settings.DOWNLOAD_COMPATIBLE, L10n.t("Save videos other apps can open"),
+                    L10n.t("For WhatsApp, video editors such as CapCut and InShot, or a gallery or player that plays saves "
+                            + "without sound. May lower quality.")));
+            downloads.addPreference(SaveSettingsRows.qualityRow(context));
+            downloads.addPreference(SaveSettingsRows.folderRow(context));
+            downloads.addPreference(SaveSettingsRows.fileNameRow(context));
+            saves = new SaveSettingsRows.Saves(downloads);
         }
 
         if (build.contains(PatchFamily.PURE_BLACK)) {
@@ -726,6 +765,16 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     @Override
     protected ErrorActionStyler errorActionStyler() {
         return ScreenColors::recoveryAction;
+    }
+
+    /** The quality row says what its choice does, where the shared page would show only its name. */
+    @Override
+    protected void updateListPreferenceSummary(ListPreference listPreference, Setting<?> setting) {
+        if (listPreference instanceof SaveSettingsRows.QualityRow) {
+            ((SaveSettingsRows.QualityRow) listPreference).showSummary();
+        } else {
+            super.updateListPreferenceSummary(listPreference, setting);
+        }
     }
 
     @Override

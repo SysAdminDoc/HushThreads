@@ -360,7 +360,8 @@
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveControl.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveFolder.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveLeftovers.java",
-        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveSettings.java"
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveSettings.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SaveSettingsRows.java"
       ],
       "origin": "ported",
       "upstream": "https://github.com/SysAdminDoc/HushGram",
