@@ -18,6 +18,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.threads.misc.extension.THREADS_APPLICATION
+import app.morphe.patches.threads.misc.extension.patchLog
 import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
 import app.morphe.util.superclassChain
 import com.android.tools.smali.dexlib2.Opcode
@@ -150,6 +151,13 @@ val settingsPatch = bytecodePatch(
         // afterwards. Framework names only, which the obfuscator keeps.
         rerouteShortcutCalls()
 
-        addThreadsSettingsRow()
+        // Every patch depends on this one, and HushThreads still opens from its launcher shortcut
+        // and App info without the row, so a build the row doesn't fit gets the rest of this patch
+        // and a warning saying why. The row checks everything before it writes anything.
+        try {
+            addThreadsSettingsRow()
+        } catch (e: PatchException) {
+            patchLog.warning("${e.message} The HushThreads row is left out of Threads' settings; HushThreads still opens from its launcher shortcut and App info.")
+        }
     }
 }

@@ -14,7 +14,10 @@ import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.patches.threads.misc.extension.THREADS_APPLICATION
+import app.morphe.patches.threads.misc.extension.patchLog
 import app.morphe.patches.threads.misc.theme.holdsNote
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -32,11 +35,16 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import java.util.logging.Handler
+import java.util.logging.Level
+import java.util.logging.LogRecord
 
 /**
  * The HushThreads row in Threads' own settings, on each declared build: the More settings case of
@@ -165,6 +173,58 @@ class ThreadsSettingsRowFixtureTest {
                 assertTrue("${build.name}: $error", error.contains(expected))
             }
         }
+    }
+
+    /** A second list lambda or a second settings row would leave the patch guessing, so either refuses the build. */
+    @Test
+    fun `a second settings list or a second settings row is refused`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val fixture = fixture(build)
+            val row = fixture.classes.flatMap { it.methods }.single { it.holdsNote(ROW_NOTE) }
+            for ((what, method) in listOf("settings list" to fixture.list, "settings row" to row)) {
+                val context = context(fixture)
+                context.mutableClassDefBy(method.definingClass).methods.add(MutableMethod(ImmutableMethod(
+                    method.definingClass, "copyOf${method.name}", method.parameters, method.returnType,
+                    method.accessFlags, null, null, ImmutableMethodImplementation.of(method.implementation),
+                )))
+                val error = assertThrows("${build.name}: $what", PatchException::class.java) { context.settingsRowSite() }.message.orEmpty()
+                assertTrue("${build.name}: $error", error.contains("Threads' $what") && error.contains("found 2"))
+            }
+        }
+    }
+
+    /**
+     * Every patch depends on the settings patch, and HushThreads opens from its launcher shortcut
+     * and App info without the row, so a build the row doesn't fit still gets the settings patch,
+     * with one warning in the patch log naming why the row was left out, and no part of the row.
+     */
+    @Test
+    fun `a build the row doesn't fit gets the rest of the settings patch and a warning`() {
+        val screen = "Lfixture/SettingsScreen;"
+        val hosts = SettingsPatchHosts.all()
+        assertTrue(hosts.any { it.type == screen })
+        val context = PatchContexts.of(hosts.filter { it.type != screen })
+        val warnings = mutableListOf<String>()
+        val handler = object : Handler() {
+            override fun publish(record: LogRecord) {
+                if (record.level == Level.WARNING) warnings += record.message
+            }
+            override fun flush() {}
+            override fun close() {}
+        }
+        patchLog.addHandler(handler)
+        try {
+            settingsPatch.execute(context)
+        } finally {
+            patchLog.removeHandler(handler)
+        }
+
+        assertEquals(warnings.toString(), 1, warnings.size)
+        assertTrue(warnings.single(), warnings.single().contains("Threads' settings row") && warnings.single().contains("left out"))
+        val onCreate = context.mutableClassDefBy(THREADS_APPLICATION).methods.single { it.name == "onCreate" }.body()
+        assertTrue("the application still starts HushThreads", onCreate.any { it.method()?.name == "onApplicationCreate" })
+        val stub = context.mutableClassDefBy(SETTINGS_ROW).methods.single { it.name == "showRow" }.body()
+        assertEquals("the row's stub is left empty", listOf(Opcode.RETURN_VOID), stub.map { it.opcode })
     }
 
     /** Where the switch sends More settings, the goto that ends that case, the run it goes to and the row call there. */

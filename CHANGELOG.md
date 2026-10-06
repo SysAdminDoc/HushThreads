@@ -10,6 +10,7 @@ Changes in the source build, then released versions.
 * **Tooling:** The fixture tests run on 450, 449 and 448. On 450 they check the playback effect's new parameters, the warm-start check that jumps to its log and back, the time limit read from either of two keys and the dark colors built in a helper.
 * **Tooling:** Disable video autoplay now also checks that the flag it finds turns a video on when true and off when false, so a Threads build wired the other way round is refused instead of getting a switch that works backwards.
 * **Threads:** If Threads draws its settings before HushThreads has started, the HushThreads row is left out of that one draw and comes back on the next, instead of staying hidden until Threads restarts.
+* **Threads:** On a Threads build whose settings screen has changed so the HushThreads row can't go in, the settings patch now leaves the row out and says why in the patch log, instead of failing and taking every other patch with it. HushThreads still opens from its launcher shortcut and App info.
 
 ## 0.0.11 (2026-10-05)
 
