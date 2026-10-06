@@ -51,6 +51,8 @@ public enum PatchFamily {
             Settings.OPEN_LINKS_EXTERNALLY),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,
             Settings.DISABLE_ANALYTICS),
+    SAVE_MEDIA(FamilyNames.SAVE_MEDIA, "saveMedia", null,
+            Settings.SAVE_MEDIA, Settings.DOWNLOAD_COMPATIBLE),
     PURE_BLACK(FamilyNames.PURE_BLACK, "pureBlack", null,
             Settings.PURE_BLACK),
     // A manifest can't be switched at run time: the permission is gone from the APK whether or not
@@ -90,7 +92,7 @@ public enum PatchFamily {
     /** Manager's defaults, held to patches-list.json by PatchFamilyTest (Hushfacebook 814acd23). */
     static final Set<PatchFamily> DEFAULT_SELECTION = Collections.unmodifiableSet(EnumSet.of(
             HIDE_ADS, HIDE_SUGGESTED_USERS, SANITIZE_SHARING_LINKS, EXTERNAL_BROWSER,
-            DISABLE_ANALYTICS, REMOVE_AD_ID, RESTORE_TRUST));
+            DISABLE_ANALYTICS, SAVE_MEDIA, REMOVE_AD_ID, RESTORE_TRUST));
 
     /** The families a test says this build carries, instead of asking {@link SettingsStatus}. */
     @Nullable

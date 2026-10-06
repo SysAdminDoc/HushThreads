@@ -361,7 +361,8 @@
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveFolder.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveLeftovers.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveSettings.java",
-        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SaveSettingsRows.java"
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SaveSettingsRows.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/download/MediaBridges.kt"
       ],
       "origin": "ported",
       "upstream": "https://github.com/SysAdminDoc/HushGram",
@@ -376,11 +377,13 @@
         "https://gitlab.com/ReVanced/revanced-patches"
       ],
       "license": "GPL-3.0-only with the Morphe section 7 notices",
-      "changes": "HushGram's save engine and its Downloads rows, moved from app.hushgram.extension.instagram to app.morphe.extension.hushthreads with Threads' names: TH_VID_ and TH_IMG_ file names, a Threads save folder, hushthreads keys, actions and notification channel. InstagramMedia keeps only the getters a post save reads. A batch names each page's file after the post and the page's place, so two posts saved at once stay apart. The quality, folder and file name settings live in SaveSettings, since Settings holds only switches, and the Downloads rows moved out of HushGram's settings page into SaveSettingsRows."
+      "changes": "HushGram's save engine and its Downloads rows, moved from app.hushgram.extension.instagram to app.morphe.extension.hushthreads with Threads' names: TH_VID_ and TH_IMG_ file names, a Threads save folder, hushthreads keys, actions and notification channel. InstagramMedia keeps only the getters a post save reads. A batch names each page's file after the post and the page's place, so two posts saved at once stay apart. The quality, folder and file name settings live in SaveSettings, since Settings holds only switches, and the Downloads rows moved out of HushGram's settings page into SaveSettingsRows. MediaBridges moved from app.morphe.patches.instagram.download to app.morphe.patches.threads.download, and also writes the carousel bridge, which a post save reads."
     },
     {
       "paths": [
-        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/PostSave.java"
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/PostSave.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveMediaRow.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/download/SaveMediaPatch.kt"
       ],
       "origin": "original",
       "upstream": "https://github.com/SysAdminDoc/HushThreads",

@@ -103,18 +103,18 @@ internal fun BytecodePatchContext.addThreadsSettingsRow() {
 }
 
 /** Makes the extension's [type] a Kotlin Function0, which it already answers with invoke(). */
-private fun BytecodePatchContext.implementFunction0(type: String) {
+internal fun BytecodePatchContext.implementFunction0(type: String, patch: String = PATCH) {
     val function0 = classDefByOrNull(FUNCTION0)
-        ?: throw PatchException("$PATCH: Threads carries no $FUNCTION0")
+        ?: throw PatchException("$patch: Threads carries no $FUNCTION0")
     if (!AccessFlags.INTERFACE.isSet(function0.accessFlags) ||
         function0.methods.none { it.name == "invoke" && it.parameterTypes.isEmpty() && it.returnType == "Ljava/lang/Object;" }
-    ) throw PatchException("$PATCH: $FUNCTION0 isn't an interface with invoke()")
+    ) throw PatchException("$patch: $FUNCTION0 isn't an interface with invoke()")
     val click = mutableClassDefBy(type)
     if (click.methods.none {
             it.name == "invoke" && it.parameterTypes.isEmpty() && it.returnType == "Ljava/lang/Object;" &&
                 AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
         }
-    ) throw PatchException("$PATCH: $type has no public invoke()")
+    ) throw PatchException("$patch: $type has no public invoke()")
     if (FUNCTION0 !in click.interfaces) click.interfaces.add(FUNCTION0)
 }
 

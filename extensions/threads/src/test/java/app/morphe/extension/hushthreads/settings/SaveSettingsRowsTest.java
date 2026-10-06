@@ -30,6 +30,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import app.morphe.extension.hushthreads.download.DownloadQuality;
@@ -52,7 +53,7 @@ public class SaveSettingsRowsTest {
 
     @After
     public void restore() {
-        HushThreadsPreferenceFragment.savesInBuildForTests = null;
+        PatchFamily.inBuildForTests = null;
         SavesForTests.endAll();
         SavesForTests.resetCarouselOutcome();
         SaveSettings.SAVE_FOLDER.resetToDefault();
@@ -61,7 +62,7 @@ public class SaveSettingsRowsTest {
 
     @Test
     public void aBuildWithoutTheSavePatchHasNoDownloadsSection() {
-        HushThreadsPreferenceFragment.savesInBuildForTests = false;
+        PatchFamily.inBuildForTests = EnumSet.noneOf(PatchFamily.class);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             HushThreadsPreferenceFragment page = pageOf(controller);
             assertNull(page.findPreference(Settings.SAVE_MEDIA.key));
@@ -73,7 +74,7 @@ public class SaveSettingsRowsTest {
 
     @Test
     public void aBuildWithTheSavePatchShowsEveryRowAbovePause() {
-        HushThreadsPreferenceFragment.savesInBuildForTests = true;
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SAVE_MEDIA);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             HushThreadsPreferenceFragment page = pageOf(controller);
             assertTrue(sections(page).toString(), sections(page).contains("Downloads"));
@@ -127,7 +128,7 @@ public class SaveSettingsRowsTest {
 
     @Test
     public void aRunningSaveIsListedWithCancelUntilItEnds() {
-        HushThreadsPreferenceFragment.savesInBuildForTests = true;
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SAVE_MEDIA);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             HushThreadsPreferenceFragment page = pageOf(controller);
             int id = SavesForTests.begin(controller.get(), true);

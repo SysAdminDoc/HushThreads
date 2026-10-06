@@ -126,16 +126,6 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     @Nullable
     SaveSettingsRows.Saves saves;
 
-    /** Set by a test to stand in for {@link SettingsStatus#saveMedia()}, or null. */
-    @Nullable
-    static volatile Boolean savesInBuildForTests;
-
-    /** Whether this build has the save patch, read the way the settings entry reads it. */
-    static boolean savesInBuild() {
-        Boolean forced = savesInBuildForTests;
-        return forced != null ? forced : SettingsStatus.saveMedia();
-    }
-
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -311,7 +301,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         }
 
         saves = null;
-        if (savesInBuild()) {
+        if (build.contains(PatchFamily.SAVE_MEDIA)) {
             PreferenceCategory downloads = category(screen, L10n.t("Downloads"));
             downloads.addPreference(toggle(context, Settings.SAVE_MEDIA, L10n.t("Save photos and videos"),
                     L10n.t("Adds a Save row to a post's menu. A post with several photos or videos saves them all, "

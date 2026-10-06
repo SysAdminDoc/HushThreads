@@ -33,6 +33,7 @@ import java.util.Set;
 
 import app.morphe.extension.hushthreads.ads.FeedAds;
 import app.morphe.extension.hushthreads.ads.ShadowFeedAds;
+import app.morphe.extension.hushthreads.download.SavesForTests;
 import app.morphe.extension.hushthreads.feed.ReturnRefresh;
 import app.morphe.extension.hushthreads.feed.VideoAutoplay;
 import app.morphe.extension.hushthreads.misc.Analytics;
@@ -143,6 +144,8 @@ public class PausedHooksTest {
             String upload = "https://graph.threads.net/logging_client_events";
             return !upload.equals(Analytics.endpoint(upload));
         }));
+        // A post's menu offers Save.
+        probes.put(PatchFamily.SAVE_MEDIA, Collections.singletonList(SavesForTests::menuOffersSave));
         // Threads' dark gray background comes back black.
         probes.put(PatchFamily.PURE_BLACK, Collections.singletonList(
                 () -> PureBlack.color(0xff101010L << 32) == 0xff00000000000000L));

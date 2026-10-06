@@ -61,7 +61,7 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-HushThreads v0.0.11 has 11 patches. All but Block background-return feed refresh, Disable video autoplay and Pure black dark mode are selected by default.
+HushThreads v0.0.11 has 12 patches. All but Block background-return feed refresh, Disable video autoplay and Pure black dark mode are selected by default.
 
 | Patch | What it does |
 |---|---|
@@ -76,6 +76,7 @@ HushThreads v0.0.11 has 11 patches. All but Block background-return feed refresh
 | `Remove the advertising ID` | Stops Threads getting your phone's advertising ID from Google Play services. Threads gets a string of zeros in its place. |
 | `Restore screens on re-signed builds` | Lets Threads trust itself again on a re-signed build and share sign-in information with an Instagram installed with this build's own key. Both apps keep their current signing keys. A Root Mount install doesn't need this patch. |
 | `Sanitize sharing links` | Takes Threads' tracking tags, such as xmt, off the links you share or copy, and turns a short share link into the post's own link. The post a link opens stays the same. |
+| `Save photos and videos` | Adds Save to a post's menu, below Copy link. It saves the post's photo or video to your phone's gallery, and every page of a carousel. |
 
 The feed controls share one page filter. Each selected rule has its own switch and removal count. Diagnostics also count the pages and items each enabled rule finished checking, including pages without matches. Disabled, paused and failed checks don't add to those counts. These are page checks, so checking the same page again adds another check. Pause restores the original page, and a failed card check keeps the whole page. Hide suggested users passes fixture checks on both source-supported builds. A Galaxy S23 Ultra report confirmed the Suggested Users block no longer appeared in Threads 449 with HushThreads 0.0.4.
 
@@ -126,7 +127,7 @@ If Threads says your password is wrong when you know it's right, reset your Inst
 
 ## Privacy
 
-HushThreads doesn't collect anything and has no server. The patched app goes online on HushThreads' behalf for one thing only: the release check, and it's off until you turn it on. Once it's on, HushThreads asks `api.github.com` for its latest release at most once a day, when Threads starts, and again whenever you tap Check now. That's an HTTPS request with `HushThreads/<version>` as its User-Agent, and it carries no cookies and nothing about you or your phone. Its separate connection leaves Threads' shared cookies untouched and discards any response cookies. Wire checks on native Android 9 and 17 verified those headers and preserved the shared store through successful and failed requests. It only follows a redirect that stays on api.github.com, and it reads at most 256 KB of the answer. The whole check has a 20-second deadline, including name resolution and the TLS handshake. GitHub sees your IP address, as any site you visit does. From the answer, HushThreads keeps the version number and, if the notes name one, the Threads version the release targets. Nothing else is kept.
+HushThreads doesn't collect anything and has no server. The patched app goes online on HushThreads' behalf for two things only. One is a save you ask for: tap Save in a post's menu and HushThreads fetches that post's photos or videos over HTTPS from Meta's media servers (`cdninstagram.com`, `fbcdn.net` and `fbsbx.com`), where Threads loads them from too. Every address is checked before anything is fetched, and an address anywhere else is refused. The other is the release check, and it's off until you turn it on. Once it's on, HushThreads asks `api.github.com` for its latest release at most once a day, when Threads starts, and again whenever you tap Check now. That's an HTTPS request with `HushThreads/<version>` as its User-Agent, and it carries no cookies and nothing about you or your phone. Its separate connection leaves Threads' shared cookies untouched and discards any response cookies. Wire checks on native Android 9 and 17 verified those headers and preserved the shared store through successful and failed requests. It only follows a redirect that stays on api.github.com, and it reads at most 256 KB of the answer. The whole check has a 20-second deadline, including name resolution and the TLS handshake. GitHub sees your IP address, as any site you visit does. From the answer, HushThreads keeps the version number and, if the notes name one, the Threads version the release targets. Nothing else is kept.
 
 The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`. Those open in your browser, and only when you tap one.
 

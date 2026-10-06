@@ -96,6 +96,19 @@ public final class SavesForTests {
         SaveLeftovers.forgetSweepForTests();
     }
 
+    /** Whether a post's menu offers Save for a post with one photo, read through a stand-in for the patch's bridges. */
+    public static boolean menuOffersSave() {
+        PostSave.Reader bridges = PostSave.reader;
+        PostSave.reader = PostSaveTest.FAKE;
+        try {
+            PostSaveTest.Post post = new PostSaveTest.Post("3001_7");
+            post.pictures = renditions("https://scontent.cdninstagram.com/v/photo.jpg");
+            return PostSave.canSave(post);
+        } finally {
+            PostSave.reader = bridges;
+        }
+    }
+
     /** The single files a caller hands a save, as addresses alone. A null address is left out. */
     public static List<MediaSave.Rendition> renditions(String... urls) {
         List<MediaSave.Rendition> renditions = new ArrayList<>();
