@@ -4,7 +4,7 @@
   <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.11-000000" alt="Version 0.0.11"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
-  <img src="https://img.shields.io/badge/Threads-449.0.0.54.82-000000" alt="Threads 449.0.0.54.82">
+  <img src="https://img.shields.io/badge/Threads-450.0.0.51.78-000000" alt="Threads 450.0.0.51.78">
   <img src="https://img.shields.io/badge/for-Morphe%20Manager%201.34.0%2B-8A2BE2" alt="For Morphe Manager 1.34.0 or newer">
 </p>
 
@@ -35,16 +35,17 @@ This project has no connection to Meta or to the Morphe project. Neither endorse
 3. Get Threads 449.0.0.54.82 (`com.instagram.barcelona`) for arm64-v8a, version code 511908382 (120-640dpi, Android 9+). That's the build these patches are checked against. Morphe Manager warns about other builds of the same version.
 4. In Morphe Manager, pick that file, keep the default patch selection or change it, and patch.
 
-HushThreads v0.0.11 works with both of these arm64-v8a variants.
+HushThreads v0.0.11 works with 449 and 448 below. Support for Threads 450.0.0.51.78 is in the source but not in a release yet, so with v0.0.11 stick to one of those two.
 
 | Threads version | Version code | Android floor |
 |---|---|---|
+| 450.0.0.51.78 | 512008342 (240-480dpi) | Android 9 |
 | 449.0.0.54.82 | 511908382 | Android 9 |
 | 448.0.0.54.85 | 511808302 | Android 9 |
 
 <p><img src="assets/patch-selection.png" width="300" alt="Morphe Manager with the six HushThreads patches selected and Morphe's own patches left off"></p>
 
-Threads releases a new version about once a week, and each one renames most of its code. Every patch here finds what it changes by names Threads keeps (its post model, the feed cache, JSON parser names, strings and manifest components) rather than by the names that change. When one can't find what it needs, patching stops with a message naming it, instead of producing an app that quietly does nothing. Disable analytics checks three address kinds: PIGEON (the logger's URL builder), DEFAULT (direct event-log URL returns) and MQTT (the analytics endpoint setting). It stops when none match. The patch log, Privacy settings and exported diagnostics identify matched and missing kinds. Both declared builds match all three. This doesn't establish that every telemetry path is covered.
+Threads releases a new version about once a week, and each one renames most of its code. Every patch here finds what it changes by names Threads keeps (its post model, the feed cache, JSON parser names, strings and manifest components) rather than by the names that change. When one can't find what it needs, patching stops with a message naming it, instead of producing an app that quietly does nothing. Disable analytics checks three address kinds: PIGEON (the logger's URL builder), DEFAULT (direct event-log URL returns) and MQTT (the analytics endpoint setting). It stops when none match. The patch log, Privacy settings and exported diagnostics identify matched and missing kinds. Every declared build matches all three. This doesn't establish that every telemetry path is covered.
 
 Hide ads, Hide suggested users and Sanitize sharing links also stop on competing inner targets. The failure lists the candidates so a changed build can be checked before installing it.
 
@@ -166,7 +167,7 @@ Before external code ships, mark its source adopted with the exact commit, compa
 
 Use JDK 21, the Android SDK and PowerShell 7.5 or newer (Windows PowerShell 5.1 also works). Set `JAVA_HOME` and `ANDROID_HOME`, or configure the SDK in `local.properties`. GitHub Packages requires `GITHUB_ACTOR` and `GITHUB_TOKEN` with `read:packages`.
 
-Declared arm64 builds: 449.0.0.54.82 / 511908382 and 448.0.0.54.85 / 511808302.
+Declared arm64 builds: 450.0.0.51.78 / 512008342, 449.0.0.54.82 / 511908382 and 448.0.0.54.85 / 511808302.
 
 ```powershell
 $env:HUSHTHREADS_FIXTURE_DIR = '<fixture folder>'

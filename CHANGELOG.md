@@ -6,6 +6,8 @@ Changes in the source build, then released versions.
 
 * **Threads:** HushThreads now has its own row in Threads' settings, right above More settings, so you can open it from your profile's settings like any other page. It's drawn the way Threads draws its own rows. It grows with large text, and TalkBack reads it out and opens it with a double tap. The launcher shortcut and Additional settings on the App info page still work.
 * **Tooling:** A fixture test checks on 449 and 448 that the row goes in only where Threads draws More settings, hands Threads its own composer and modifier, and refuses to patch when that entry moves, its composer gets overwritten or a branch jumps into it.
+* **Threads:** HushThreads now patches Threads 450.0.0.51.78 (version code 512008342, the 240-480dpi build) as well as 449 and 448. Threads 450 rearranged the code behind three patches. Disable video autoplay now finds the flag PostVideo plays by from the check that sets the player going, Block background-return feed refresh follows the warm-start check's new branch and the second server setting 450 can read its time limit from, and Pure black dark mode also looks in the helper where 450 builds its dark colors.
+* **Tooling:** The fixture tests run on 450, 449 and 448. On 450 they check the playback effect's new parameters, the warm-start check that jumps to its log and back, the time limit read from either of two keys and the dark colors built in a helper.
 
 ## 0.0.11 (2026-10-05)
 
