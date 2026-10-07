@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(500);
+        Map<String, String> table = new HashMap<>(506);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -438,6 +438,8 @@ public final class L10nTranslations {
                 "Einstellungen importiert. %1$d Schalter wurde ge\u00e4ndert.");
         table.put("Settings imported. %1$d switches changed.",
                 "Einstellungen importiert. %1$d Schalter wurden ge\u00e4ndert.");
+        table.put("Share sheet entry removed",
+                "Eintrag im Teilen-Men\u00fc entfernt");
         table.put("Smallest",
                 "Kleinste");
         table.put("Source code and issues",
@@ -510,6 +512,8 @@ public final class L10nTranslations {
                 "Threads kann die Werbe-ID deines Telefons nicht lesen. Die Berechtigung daf\u00fcr fehlt in diesem Build.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
                 "Threads ist dreimal hintereinander innerhalb einer Minute nach dem Start abgest\u00fcrzt oder h\u00e4ngen geblieben, deshalb hat sich HushThreads selbst pausiert.");
+        table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
+                "Threads erscheint nicht mehr, wenn du aus anderen Apps teilst. Aus Threads in andere Apps teilen funktioniert weiterhin.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Die Webadressen von Threads sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
         table.put("Tracking in links and analytics uploads",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Videos in deinem Feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
                 "Videos in deinem Feed warten auf ein Tippen, statt beim Scrollen abzuspielen.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Weblinks, die du antippst, \u00f6ffnen sich in deinem Standardbrowser oder in der App f\u00fcr diese Seite, ohne den Klick-Tracker von Threads. Seiten von Threads, Instagram und andere Meta-Seiten \u00f6ffnen sich weiter in Threads.");
         table.put("Where you left off in your feed",
                 "Wo du in deinem Feed aufgeh\u00f6rt hast");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Wenn der Schalter oben an ist, bleibt deine Stelle erhalten, egal wie lange du weg bist. Zum Aktualisieren ziehen und ein Neustart laden weiterhin neue Beitr\u00e4ge.");
         table.put("You have the newest HushThreads release.",
@@ -569,10 +573,12 @@ public final class L10nTranslations {
                 "der Fix f\u00fcr neu signierte Builds");
         table.put("the removed advertising ID permission",
                 "die entfernte Berechtigung f\u00fcr die Werbe-ID");
+        table.put("the removed share sheet entry",
+                "der entfernte Eintrag im Teilen-Men\u00fc");
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(500);
+        Map<String, String> table = new HashMap<>(506);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -963,6 +969,8 @@ public final class L10nTranslations {
                 "Configuraci\u00f3n importada. Cambi\u00f3 %1$d interruptor.");
         table.put("Settings imported. %1$d switches changed.",
                 "Configuraci\u00f3n importada. Cambiaron %1$d interruptores.");
+        table.put("Share sheet entry removed",
+                "Entrada del men\u00fa para compartir eliminada");
         table.put("Smallest",
                 "La m\u00e1s peque\u00f1a");
         table.put("Source code and issues",
@@ -1035,6 +1043,8 @@ public final class L10nTranslations {
                 "Threads no puede leer el ID de publicidad de tu tel\u00e9fono. El permiso para ello ya no est\u00e1 en esta versi\u00f3n.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
                 "Tres veces seguidas, Threads fall\u00f3 o se congel\u00f3 durante el primer minuto tras iniciarse, as\u00ed que HushThreads se paus\u00f3 solo.");
+        table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
+                "Threads ya no aparece cuando compartes desde otras apps. Compartir desde Threads a otras apps sigue funcionando.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Las direcciones web de Threads est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
         table.put("Tracking in links and analytics uploads",
@@ -1067,13 +1077,13 @@ public final class L10nTranslations {
                 "Videos de tu feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
                 "Los videos de tu feed esperan a que los toques en lugar de reproducirse mientras te desplazas.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Los enlaces web que tocas se abren en tu navegador predeterminado, o en la app de ese sitio, sin el rastreador de clics de Threads. Las p\u00e1ginas de Threads, Instagram y otras de Meta siguen abri\u00e9ndose en Threads.");
         table.put("Where you left off in your feed",
                 "Donde te quedaste en tu feed");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Con el interruptor de arriba activado, tu lugar se mantiene sin importar cu\u00e1nto tiempo est\u00e9s fuera. Deslizar para actualizar y abrir la app de nuevo siguen cargando publicaciones nuevas.");
         table.put("You have the newest HushThreads release.",
@@ -1094,10 +1104,12 @@ public final class L10nTranslations {
                 "el arreglo para la nueva firma");
         table.put("the removed advertising ID permission",
                 "el permiso del ID de publicidad eliminado");
+        table.put("the removed share sheet entry",
+                "la entrada eliminada del men\u00fa para compartir");
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(500);
+        Map<String, String> table = new HashMap<>(506);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1488,6 +1500,8 @@ public final class L10nTranslations {
                 "Pengaturan diimpor. %1$d sakelar berubah.");
         table.put("Settings imported. %1$d switches changed.",
                 "Pengaturan diimpor. %1$d sakelar berubah.");
+        table.put("Share sheet entry removed",
+                "Entri lembar bagikan dihapus");
         table.put("Smallest",
                 "Terkecil");
         table.put("Source code and issues",
@@ -1560,6 +1574,8 @@ public final class L10nTranslations {
                 "Threads tidak dapat membaca ID iklan ponsel Anda. Izin untuk itu sudah dihapus dari build ini.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
                 "Threads berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushThreads menjeda dirinya sendiri.");
+        table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
+                "Threads tidak muncul saat kamu berbagi dari aplikasi lain. Berbagi dari Threads ke aplikasi lain tetap berfungsi.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Alamat web Threads dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
         table.put("Tracking in links and analytics uploads",
@@ -1592,13 +1608,13 @@ public final class L10nTranslations {
                 "Video di feed Anda");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
                 "Video di feed Anda menunggu diketuk, bukan diputar saat Anda menggulir.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Tautan web yang Anda ketuk terbuka di browser default Anda, atau aplikasi untuk situs itu, tanpa pelacak klik Threads. Halaman Threads, Instagram, dan halaman Meta lainnya tetap terbuka di Threads.");
         table.put("Where you left off in your feed",
                 "Posisi terakhir Anda di feed");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Jika sakelar di atas aktif, posisi Anda tetap tersimpan berapa lama pun Anda pergi. Tarik untuk memuat ulang dan membuka ulang aplikasi tetap memuat postingan baru.");
         table.put("You have the newest HushThreads release.",
@@ -1619,10 +1635,12 @@ public final class L10nTranslations {
                 "perbaikan build yang ditandatangani ulang");
         table.put("the removed advertising ID permission",
                 "izin ID iklan yang dihapus");
+        table.put("the removed share sheet entry",
+                "entri lembar bagikan yang dihapus");
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(500);
+        Map<String, String> table = new HashMap<>(506);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2013,6 +2031,8 @@ public final class L10nTranslations {
                 "Configura\u00e7\u00f5es importadas. %1$d op\u00e7\u00e3o foi alterada.");
         table.put("Settings imported. %1$d switches changed.",
                 "Configura\u00e7\u00f5es importadas. %1$d op\u00e7\u00f5es foram alteradas.");
+        table.put("Share sheet entry removed",
+                "Entrada do menu de compartilhamento removida");
         table.put("Smallest",
                 "A menor");
         table.put("Source code and issues",
@@ -2085,6 +2105,8 @@ public final class L10nTranslations {
                 "O Threads n\u00e3o consegue ler o ID de publicidade do seu celular. A permiss\u00e3o para isso foi removida desta vers\u00e3o.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
                 "O Threads fechou com erro ou travou no primeiro minuto ap\u00f3s iniciar, tr\u00eas vezes seguidas, ent\u00e3o o HushThreads foi pausado automaticamente.");
+        table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
+                "O Threads n\u00e3o aparece quando voc\u00ea compartilha de outros apps. Compartilhar do Threads para outros apps continua funcionando.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Os endere\u00e7os web do Threads est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
         table.put("Tracking in links and analytics uploads",
@@ -2117,13 +2139,13 @@ public final class L10nTranslations {
                 "V\u00eddeos do seu feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
                 "Os v\u00eddeos do seu feed esperam um toque em vez de come\u00e7ar a tocar enquanto voc\u00ea rola a tela.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Links da web que voc\u00ea toca abrem no seu navegador padr\u00e3o, ou no app desse site, sem o rastreador de cliques do Threads. P\u00e1ginas do Threads, do Instagram e outras da Meta continuam abrindo no Threads.");
         table.put("Where you left off in your feed",
                 "Onde voc\u00ea parou no seu feed");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Com a op\u00e7\u00e3o acima ativada, voc\u00ea continua no ponto em que estava, n\u00e3o importa quanto tempo fique fora. Puxar para atualizar e iniciar o Threads novamente continuam carregando novas publica\u00e7\u00f5es.");
         table.put("You have the newest HushThreads release.",
@@ -2144,10 +2166,12 @@ public final class L10nTranslations {
                 "a corre\u00e7\u00e3o para vers\u00e3o reassinada");
         table.put("the removed advertising ID permission",
                 "a permiss\u00e3o do ID de publicidade removida");
+        table.put("the removed share sheet entry",
+                "a entrada removida do menu de compartilhamento");
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(500);
+        Map<String, String> table = new HashMap<>(506);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2538,6 +2562,8 @@ public final class L10nTranslations {
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131. %1$d anahtar de\u011fi\u015fti.");
         table.put("Settings imported. %1$d switches changed.",
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131. %1$d anahtar de\u011fi\u015fti.");
+        table.put("Share sheet entry removed",
+                "Payla\u015f\u0131m men\u00fcs\u00fc giri\u015fi kald\u0131r\u0131ld\u0131");
         table.put("Smallest",
                 "En k\u00fc\u00e7\u00fck");
         table.put("Source code and issues",
@@ -2610,6 +2636,8 @@ public final class L10nTranslations {
                 "Threads telefonunuzun reklam kimli\u011fini okuyamaz. Bunun i\u00e7in gereken izin bu s\u00fcr\u00fcmden kald\u0131r\u0131ld\u0131.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
                 "Threads a\u00e7\u0131ld\u0131ktan sonraki bir dakika i\u00e7inde \u00fcst \u00fcste \u00fc\u00e7 kez \u00e7\u00f6kt\u00fc veya dondu, bu y\u00fczden HushThreads kendini duraklatt\u0131.");
+        table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
+                "Di\u011fer uygulamalardan payla\u015f\u0131rken Threads g\u00f6r\u00fcnmez. Threads'ten di\u011fer uygulamalara payla\u015f\u0131m \u00e7al\u0131\u015fmaya devam eder.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Threads'in web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
         table.put("Tracking in links and analytics uploads",
@@ -2642,13 +2670,13 @@ public final class L10nTranslations {
                 "Ak\u0131\u015ftaki videolar");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
                 "Ak\u0131\u015ftaki videolar, kayd\u0131r\u0131rken kendili\u011finden oynamak yerine dokunman\u0131 bekler.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Dokundu\u011fun web ba\u011flant\u0131lar\u0131, Threads'in t\u0131klama izleyicisi olmadan varsay\u0131lan taray\u0131c\u0131nda veya o sitenin uygulamas\u0131nda a\u00e7\u0131l\u0131r. Threads, Instagram ve di\u011fer Meta sayfalar\u0131 yine Threads'te a\u00e7\u0131l\u0131r.");
         table.put("Where you left off in your feed",
                 "Ak\u0131\u015fta kald\u0131\u011f\u0131n yer");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Yukar\u0131daki anahtar a\u00e7\u0131kken ne kadar uzun s\u00fcre uzakta kal\u0131rsan kal yerin korunur. Yenilemek i\u00e7in \u00e7ekmek ve uygulamay\u0131 yeniden ba\u015flatmak yine yeni g\u00f6nderileri y\u00fckler.");
         table.put("You have the newest HushThreads release.",
@@ -2669,5 +2697,7 @@ public final class L10nTranslations {
                 "yeniden imzalanm\u0131\u015f s\u00fcr\u00fcm d\u00fczeltmesi");
         table.put("the removed advertising ID permission",
                 "kald\u0131r\u0131lan reklam kimli\u011fi izni");
+        table.put("the removed share sheet entry",
+                "kald\u0131r\u0131lan payla\u015f\u0131m men\u00fcs\u00fc giri\u015fi");
     }
 }

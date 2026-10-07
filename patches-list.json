@@ -482,6 +482,60 @@
       "options": []
     },
     {
+      "name": "Remove share targets",
+      "description": "Takes Threads out of the share sheet other apps open, so it isn't offered when you share a link, a photo or a video from somewhere else. It does that by removing the share entries from Threads' manifest, along with any contacts Threads offers there for direct sharing. Sharing from Threads to other apps still works.",
+      "category": "Interface",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings",
+        "ResourcePatch"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "450.0.0.51.78",
+          "449.0.0.54.82",
+          "448.0.0.54.85"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "450.0.0.51.78",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 512008342
+              }
+            },
+            {
+              "version": "449.0.0.54.82",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 511908382
+              }
+            },
+            {
+              "version": "448.0.0.54.85",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 511808302
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Remove the advertising ID",
       "description": "Stops Threads getting your phone's advertising ID from Google Play services. Threads gets a string of zeros in its place.",
       "category": "Privacy",

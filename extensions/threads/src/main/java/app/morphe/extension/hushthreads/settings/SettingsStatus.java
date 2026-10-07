@@ -73,4 +73,8 @@ public final class SettingsStatus {
     public static boolean versionCode() {
         return false;
     }
+
+    public static boolean removeShareTargets() {
+        return false;
+    }
 }

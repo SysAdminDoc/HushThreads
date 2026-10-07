@@ -59,7 +59,8 @@ public enum PatchFamily {
     // HushThreads is paused.
     REMOVE_AD_ID(FamilyNames.REMOVE_AD_ID, "removeAdId", "the removed advertising ID permission"),
     RESTORE_TRUST(FamilyNames.RESTORE_TRUST, "restoreTrust", "the re-signed build fix"),
-    VERSION_CODE(FamilyNames.VERSION_CODE, "versionCode", "the raised version code");
+    VERSION_CODE(FamilyNames.VERSION_CODE, "versionCode", "the raised version code"),
+    REMOVE_SHARE_TARGETS(FamilyNames.REMOVE_SHARE_TARGETS, "removeShareTargets", "the removed share sheet entry");
 
     /** The patch's name in Morphe Manager. */
     public final String patchName;

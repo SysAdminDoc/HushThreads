@@ -340,7 +340,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         ReleaseCheck.watch(this);
 
         if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)
-                || build.contains(PatchFamily.VERSION_CODE)) {
+                || build.contains(PatchFamily.VERSION_CODE) || build.contains(PatchFamily.REMOVE_SHARE_TARGETS)) {
             PreferenceCategory patched = category(screen, L10n.t("Set when you patched"));
             if (build.contains(PatchFamily.REMOVE_AD_ID)) {
                 patched.addPreference(mark(info(context, L10n.t("Advertising ID removed"),
@@ -359,6 +359,11 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                                 + "the real one. To go back to stock Threads, uninstall this one first, which deletes "
                                 + "Threads' data on this phone. Later HushThreads builds need Change version code too, "
                                 + "or they won't install over this one.")), SettingsIcons.UPDATES));
+            }
+            if (build.contains(PatchFamily.REMOVE_SHARE_TARGETS)) {
+                patched.addPreference(mark(info(context, L10n.t("Share sheet entry removed"),
+                        L10n.t("Threads doesn't show up when you share from other apps. Sharing from Threads to other "
+                                + "apps still works.")), SettingsIcons.BLOCK));
             }
             patched.addPreference(info(context, L10n.t("Changing these"),
                     L10n.t("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. "

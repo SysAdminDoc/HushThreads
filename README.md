@@ -61,7 +61,7 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-HushThreads v0.0.11 has 13 patches. All but Block background-return feed refresh, Change version code, Disable video autoplay and Pure black dark mode are selected by default.
+HushThreads v0.0.11 has 14 patches. All but Block background-return feed refresh, Change version code, Disable video autoplay, Pure black dark mode and Remove share targets are selected by default.
 
 | Patch | What it does |
 |---|---|
@@ -74,6 +74,7 @@ HushThreads v0.0.11 has 13 patches. All but Block background-return feed refresh
 | `HushThreads settings` | Adds HushThreads settings to Threads. Tap HushThreads above More settings in Threads' own settings, long-press Threads' launcher icon, or open Additional settings in the app on Threads' App info page, to turn features on or off, pause HushThreads, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
 | `Open links in browser` | Opens the web links you tap in your default browser instead of Threads' own, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads. |
 | `Pure black dark mode` | Threads' dark mode uses pure black instead of its dark gray behind your feed, posts and profiles, which looks deeper and saves power on an OLED screen. Menus and sheets keep their own grays. |
+| `Remove share targets` | Takes Threads out of the share sheet other apps open, so it isn't offered when you share a link, a photo or a video from somewhere else. It does that by removing the share entries from Threads' manifest, along with any contacts Threads offers there for direct sharing. Sharing from Threads to other apps still works. |
 | `Remove the advertising ID` | Stops Threads getting your phone's advertising ID from Google Play services. Threads gets a string of zeros in its place. |
 | `Restore screens on re-signed builds` | Lets Threads trust itself again on a re-signed build and share sign-in information with an Instagram installed with this build's own key. Both apps keep their current signing keys. A Root Mount install doesn't need this patch. |
 | `Sanitize sharing links` | Takes Threads' tracking tags, such as xmt, off the links you share or copy, and turns a short share link into the post's own link. The post a link opens stays the same. |
@@ -98,7 +99,7 @@ The row in Threads' settings grows with large text, and TalkBack reads it out an
 
 If Threads crashes within a minute of starting three times in a row, HushThreads pauses itself from the next start and says why at the top of its settings. Your switches stay saved. Tap Resume and restart Threads to turn it back on. A force-stop doesn't count as a crash. On Android 9 and 10 only ordinary crashes count. Android 11 and later also count crashes in Threads' native code and freezes that Android reports as not responding. This was checked on a Galaxy S22 with Threads 449.
 
-Threads has crash protection of its own. Five crashes within 45 seconds of starting, inside four hours, make it delete its data, which signs you out and clears HushThreads' settings. Safe mode steps in after three crashes in a row, so it gets there first whenever a switch can stop the crash. It can't help when the crash comes from Remove the advertising ID, Restore screens on re-signed builds or Change version code, because those are set when you patch, and it doesn't see crashes spread out between starts that work. If Threads keeps crashing, patch again without them.
+Threads has crash protection of its own. Five crashes within 45 seconds of starting, inside four hours, make it delete its data, which signs you out and clears HushThreads' settings. Safe mode steps in after three crashes in a row, so it gets there first whenever a switch can stop the crash. It can't help when the crash comes from Remove the advertising ID, Remove share targets, Restore screens on re-signed builds or Change version code, because those are set when you patch, and it doesn't see crashes spread out between starts that work. If Threads keeps crashing, patch again without them.
 
 Diagnostics list hook calls separately from removed feed items, shared links that changed and links sent to your browser. Unchanged, disabled, paused or failed operations add no removal or change count. Reports keep these totals without saving the posts or URLs.
 

@@ -81,6 +81,7 @@ body:
         - HushThreads settings
         - Open links in browser
         - Pure black dark mode
+        - Remove share targets
         - Remove the advertising ID
         - Restore screens on re-signed builds
         - Sanitize sharing links

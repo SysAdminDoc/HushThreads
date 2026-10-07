@@ -263,3 +263,6 @@ Videos go to %1$s and photos to %2$s.	Videolar %1$s klasörüne, fotoğraflar %2
 Version code raised	Sürüm kodu yükseltildi
 This build's version code is the highest Android allows, so Google Play doesn't offer Meta's updates over it. Threads' checks against the version it was built as still see the real one. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.	Bu derlemenin sürüm kodu Android'in izin verdiği en yüksek değerdir, bu yüzden Google Play bunun üzerine Meta'nın güncellemelerini sunmaz. Threads'in derlendiği sürümle yaptığı kontroller gerçek kodu görmeye devam eder. Orijinal Threads'e dönmek için önce bunu kaldırın. Bu, Threads'in bu telefondaki verilerini siler. Sonraki HushThreads derlemelerinin de Change version code içermesi gerekir, yoksa bunun üzerine yüklenmezler.
 the raised version code	yükseltilmiş sürüm kodu
+Share sheet entry removed	Paylaşım menüsü girişi kaldırıldı
+Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.	Diğer uygulamalardan paylaşırken Threads görünmez. Threads'ten diğer uygulamalara paylaşım çalışmaya devam eder.
+the removed share sheet entry	kaldırılan paylaşım menüsü girişi
