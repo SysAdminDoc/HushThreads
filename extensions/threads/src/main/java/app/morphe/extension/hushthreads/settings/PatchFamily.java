@@ -45,6 +45,8 @@ public enum PatchFamily {
             Settings.BLOCK_RETURN_REFRESH, Settings.RETURN_REFRESH_NO_LIMIT),
     VIDEO_AUTOPLAY(FamilyNames.VIDEO_AUTOPLAY, "disableVideoAutoplay", null,
             Settings.DISABLE_VIDEO_AUTOPLAY),
+    MAX_IMAGE_QUALITY(FamilyNames.MAX_IMAGE_QUALITY, "maxImageQuality", null,
+            Settings.MAX_IMAGE_QUALITY),
     SANITIZE_SHARING_LINKS(FamilyNames.SANITIZE_SHARING_LINKS, "sanitizeSharingLinks", null,
             Settings.SANITIZE_SHARING_LINKS),
     EXTERNAL_BROWSER(FamilyNames.EXTERNAL_BROWSER, "openLinksExternally", null,

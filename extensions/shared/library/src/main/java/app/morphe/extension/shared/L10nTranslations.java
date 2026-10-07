@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(516);
+        Map<String, String> table = new HashMap<>(520);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -242,6 +242,8 @@ public final class L10nTranslations {
                 "Ab dem n\u00e4chsten Start verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv, und deine Auswahl bleibt gespeichert.");
         table.put("Full report saved to %1$s",
                 "Vollst\u00e4ndiger Bericht gespeichert unter %1$s");
+        table.put("Full size photos",
+                "Fotos in voller Gr\u00f6\u00dfe");
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, mit den Hinweisen der Projekte, auf denen es aufbaut");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
@@ -298,11 +300,11 @@ public final class L10nTranslations {
                 "Lizenzen");
         table.put("Link expired. Reopen the post and try again",
                 "Link abgelaufen. \u00d6ffne den Beitrag neu und versuche es noch einmal");
-        table.put("Links",
-                "Links");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Links",
+                "Links");
         table.put("Links, updates, backup and more",
                 "Links, Updates, Sicherung und mehr");
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
@@ -347,6 +349,8 @@ public final class L10nTranslations {
                 "Pause, Sicherung und Diagnose");
         table.put("Photos and videos you save from posts",
                 "Fotos und Videos, die du aus Beitr\u00e4gen speicherst");
+        table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
+                "Fotos werden in der gr\u00f6\u00dften Gr\u00f6\u00dfe geladen, die Threads hat, nicht in einer f\u00fcr deinen Bildschirm gew\u00e4hlten. Sie wirken sch\u00e4rfer und verbrauchen mehr Daten.");
         table.put("Privacy",
                 "Datenschutz");
         table.put("Pure black dark mode",
@@ -419,13 +423,13 @@ public final class L10nTranslations {
                 "Bildschirme, die die eigene Signatur von Threads pr\u00fcfen, \u00f6ffnen sich in diesem neu signierten Build wieder.");
         table.put("Search settings",
                 "Einstellungen suchen");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Links von Hand ausw\u00e4hlen");
         table.put("Set when you patched",
                 "Beim Patchen festgelegt");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Version");
         table.put("Version %1$s for Threads %2$s",
                 "Version %1$s f\u00fcr Threads %2$s");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Version code raised",
                 "Versionscode erh\u00f6ht");
         table.put("Video file name",
                 "Dateiname f\u00fcr Videos");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
                 "Videos hei\u00dfen %1$s. Fotos hei\u00dfen immer %2$s, gefolgt von Datum und Uhrzeit.");
         table.put("Videos go to %1$s and photos to %2$s.",
@@ -588,7 +592,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(516);
+        Map<String, String> table = new HashMap<>(520);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -783,6 +787,8 @@ public final class L10nTranslations {
                 "Desde el pr\u00f3ximo inicio, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene, y tus preferencias quedan guardadas.");
         table.put("Full report saved to %1$s",
                 "Informe completo guardado en %1$s");
+        table.put("Full size photos",
+                "Fotos a tama\u00f1o completo");
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, con los avisos de los proyectos en los que se basa");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
@@ -839,11 +845,11 @@ public final class L10nTranslations {
                 "Licencias");
         table.put("Link expired. Reopen the post and try again",
                 "El enlace expir\u00f3. Vuelve a abrir la publicaci\u00f3n e int\u00e9ntalo de nuevo");
-        table.put("Links",
-                "Enlaces");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("Links",
+                "Enlaces");
         table.put("Links, updates, backup and more",
                 "Enlaces, actualizaciones, copia de seguridad y m\u00e1s");
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
@@ -888,6 +894,8 @@ public final class L10nTranslations {
                 "Pausa, copia de seguridad y diagn\u00f3stico");
         table.put("Photos and videos you save from posts",
                 "Fotos y videos que guardas de las publicaciones");
+        table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
+                "Las fotos se cargan en el tama\u00f1o m\u00e1s grande que tiene Threads, no en uno elegido para tu pantalla. Se ven m\u00e1s n\u00edtidas y usan m\u00e1s datos.");
         table.put("Privacy",
                 "Privacidad");
         table.put("Pure black dark mode",
@@ -960,13 +968,13 @@ public final class L10nTranslations {
                 "Las pantallas que comprueban la firma propia de Threads vuelven a abrirse en esta versi\u00f3n firmada de nuevo.");
         table.put("Search settings",
                 "Buscar ajustes");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Seleccionar enlaces a mano");
         table.put("Set when you patched",
                 "Aplicado al parchear");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -1083,13 +1091,13 @@ public final class L10nTranslations {
                 "Versi\u00f3n");
         table.put("Version %1$s for Threads %2$s",
                 "Versi\u00f3n %1$s para Threads %2$s");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Version code raised",
                 "C\u00f3digo de versi\u00f3n aumentado");
         table.put("Video file name",
                 "Nombre de archivo de los videos");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
                 "Los videos se llaman %1$s. Las fotos siempre se llaman %2$s seguido de la fecha y la hora.");
         table.put("Videos go to %1$s and photos to %2$s.",
@@ -1129,7 +1137,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(516);
+        Map<String, String> table = new HashMap<>(520);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1324,6 +1332,8 @@ public final class L10nTranslations {
                 "Mulai peluncuran berikutnya, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif, dan pilihan Anda tetap tersimpan.");
         table.put("Full report saved to %1$s",
                 "Laporan lengkap disimpan ke %1$s");
+        table.put("Full size photos",
+                "Foto ukuran penuh");
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, beserta pemberitahuan dari proyek yang menjadi dasarnya");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
@@ -1380,11 +1390,11 @@ public final class L10nTranslations {
                 "Lisensi");
         table.put("Link expired. Reopen the post and try again",
                 "Tautan kedaluwarsa. Buka ulang postingan lalu coba lagi");
-        table.put("Links",
-                "Tautan");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Links",
+                "Tautan");
         table.put("Links, updates, backup and more",
                 "Tautan, pembaruan, cadangan, dan lainnya");
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
@@ -1429,6 +1439,8 @@ public final class L10nTranslations {
                 "Jeda, cadangan, dan diagnostik");
         table.put("Photos and videos you save from posts",
                 "Foto dan video yang Anda simpan dari postingan");
+        table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
+                "Foto dimuat dalam ukuran terbesar yang dimiliki Threads, bukan ukuran yang dipilih untuk layarmu. Foto terlihat lebih tajam dan memakai lebih banyak data.");
         table.put("Privacy",
                 "Privasi");
         table.put("Pure black dark mode",
@@ -1501,13 +1513,13 @@ public final class L10nTranslations {
                 "Layar yang memeriksa tanda tangan Threads sendiri dapat dibuka lagi di build yang ditandatangani ulang ini.");
         table.put("Search settings",
                 "Cari pengaturan");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Memilih tautan secara manual");
         table.put("Set when you patched",
                 "Diatur saat Anda menambal");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "Pengaturan tidak dapat dibuka");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -1624,13 +1636,13 @@ public final class L10nTranslations {
                 "Versi");
         table.put("Version %1$s for Threads %2$s",
                 "Versi %1$s untuk Threads %2$s");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Version code raised",
                 "Kode versi dinaikkan");
         table.put("Video file name",
                 "Nama file video");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
                 "Video diberi nama %1$s. Foto selalu diberi nama %2$s diikuti tanggal dan waktu.");
         table.put("Videos go to %1$s and photos to %2$s.",
@@ -1670,7 +1682,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(516);
+        Map<String, String> table = new HashMap<>(520);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1865,6 +1877,8 @@ public final class L10nTranslations {
                 "A partir da pr\u00f3xima abertura, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo, e suas escolhas ficam salvas.");
         table.put("Full report saved to %1$s",
                 "Relat\u00f3rio completo salvo em %1$s");
+        table.put("Full size photos",
+                "Fotos em tamanho original");
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, com os avisos dos projetos em que o HushThreads se baseia");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
@@ -1921,11 +1935,11 @@ public final class L10nTranslations {
                 "Licen\u00e7as");
         table.put("Link expired. Reopen the post and try again",
                 "Link expirado. Abra a publica\u00e7\u00e3o novamente e tente de novo");
-        table.put("Links",
-                "Links");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("Links",
+                "Links");
         table.put("Links, updates, backup and more",
                 "Links, atualiza\u00e7\u00f5es, backup e mais");
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
@@ -1970,6 +1984,8 @@ public final class L10nTranslations {
                 "Pausa, backup e diagn\u00f3stico");
         table.put("Photos and videos you save from posts",
                 "Fotos e v\u00eddeos que voc\u00ea salva das publica\u00e7\u00f5es");
+        table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
+                "As fotos carregam no maior tamanho que o Threads tem, n\u00e3o em um escolhido para a sua tela. Ficam mais n\u00edtidas e usam mais dados.");
         table.put("Privacy",
                 "Privacidade");
         table.put("Pure black dark mode",
@@ -2042,13 +2058,13 @@ public final class L10nTranslations {
                 "As telas que conferem a assinatura do pr\u00f3prio Threads voltam a abrir nesta vers\u00e3o com nova assinatura.");
         table.put("Search settings",
                 "Buscar configura\u00e7\u00f5es");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Selecionar links manualmente");
         table.put("Set when you patched",
                 "Definido ao aplicar os patches");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -2165,13 +2181,13 @@ public final class L10nTranslations {
                 "Vers\u00e3o");
         table.put("Version %1$s for Threads %2$s",
                 "Vers\u00e3o %1$s para o Threads %2$s");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Version code raised",
                 "C\u00f3digo de vers\u00e3o aumentado");
         table.put("Video file name",
                 "Nome do arquivo de v\u00eddeo");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
                 "Os v\u00eddeos ser\u00e3o nomeados como %1$s. As fotos sempre recebem o nome %2$s seguido da data e da hora.");
         table.put("Videos go to %1$s and photos to %2$s.",
@@ -2211,7 +2227,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(516);
+        Map<String, String> table = new HashMap<>(520);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2406,6 +2422,8 @@ public final class L10nTranslations {
                 "Sonraki a\u00e7\u0131l\u0131\u015ftan itibaren Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r ve tercihlerin kay\u0131tl\u0131 kal\u0131r.");
         table.put("Full report saved to %1$s",
                 "Tam rapor \u015furaya kaydedildi: %1$s");
+        table.put("Full size photos",
+                "Tam boyutlu foto\u011fraflar");
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, \u00fczerine kuruldu\u011fu projelerin lisans bildirimleriyle");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
@@ -2462,11 +2480,11 @@ public final class L10nTranslations {
                 "Lisanslar");
         table.put("Link expired. Reopen the post and try again",
                 "Ba\u011flant\u0131n\u0131n s\u00fcresi doldu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar dene");
-        table.put("Links",
-                "Ba\u011flant\u0131lar");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("Links",
+                "Ba\u011flant\u0131lar");
         table.put("Links, updates, backup and more",
                 "Ba\u011flant\u0131lar, g\u00fcncellemeler, yedekleme ve daha fazlas\u0131");
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
@@ -2511,6 +2529,8 @@ public final class L10nTranslations {
                 "Duraklatma, yedekleme ve tan\u0131lama");
         table.put("Photos and videos you save from posts",
                 "G\u00f6nderilerden kaydetti\u011fin foto\u011fraflar ve videolar");
+        table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
+                "Foto\u011fraflar ekran\u0131na g\u00f6re se\u00e7ilen bir boyutta de\u011fil, Threads'te bulunan en b\u00fcy\u00fck boyutta y\u00fcklenir. Daha net g\u00f6r\u00fcn\u00fcr ve daha fazla veri kullan\u0131r.");
         table.put("Privacy",
                 "Gizlilik");
         table.put("Pure black dark mode",
@@ -2583,13 +2603,13 @@ public final class L10nTranslations {
                 "Threads'in kendi imzas\u0131n\u0131 denetleyen ekranlar bu yeniden imzalanm\u0131\u015f s\u00fcr\u00fcmde tekrar a\u00e7\u0131l\u0131r.");
         table.put("Search settings",
                 "Ayarlarda ara");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Ba\u011flant\u0131lar\u0131 elle se\u00e7me");
         table.put("Set when you patched",
                 "Yamalad\u0131\u011f\u0131nda ayarlananlar");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "Ayarlar a\u00e7\u0131lamad\u0131");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -2706,13 +2726,13 @@ public final class L10nTranslations {
                 "S\u00fcr\u00fcm");
         table.put("Version %1$s for Threads %2$s",
                 "Threads %2$s i\u00e7in %1$s s\u00fcr\u00fcm\u00fc");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Version code raised",
                 "S\u00fcr\u00fcm kodu y\u00fckseltildi");
         table.put("Video file name",
                 "Video dosya ad\u0131");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
                 "Videolar\u0131n ad\u0131 %1$s olur. Foto\u011fraflar\u0131n ad\u0131 her zaman %2$s ile ba\u015flar, ard\u0131ndan tarih ve saat gelir.");
         table.put("Videos go to %1$s and photos to %2$s.",

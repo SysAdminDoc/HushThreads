@@ -54,6 +54,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_disable_video_autoplay", TRUE);
 
     /**
+     * Photos load at the largest size the server sent instead of the one closest to the screen's
+     * width ({@link app.morphe.extension.hushthreads.feed.ImageQuality}).
+     */
+    public static final BooleanSetting MAX_IMAGE_QUALITY =
+            new BooleanSetting("hushthreads_max_image_quality", TRUE);
+
+    /**
      * The tracking keys come off the post links Threads hands out when you copy or share one
      * (xmt, slof, igsh and the rest), with the rest of the link left as the server wrote it.
      */

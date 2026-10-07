@@ -268,3 +268,5 @@ Threads accepts certificates you've installed yourself where Android checks them
 the user certificate trust	a confiança nos certificados do usuário
 Hide screenshots from Threads	Esconder capturas de tela do Threads
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	O Threads não fica sabendo quando você faz uma captura de tela, então não pode registrá-la nem reagir a ela.
+Full size photos	Fotos em tamanho original
+Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	As fotos carregam no maior tamanho que o Threads tem, não em um escolhido para a sua tela. Ficam mais nítidas e usam mais dados.

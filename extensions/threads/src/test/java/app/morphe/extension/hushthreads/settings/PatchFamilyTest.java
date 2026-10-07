@@ -144,6 +144,8 @@ public class PatchFamilyTest {
         assertFalse(PatchFamily.DEFAULT_SELECTION.contains(PatchFamily.PURE_BLACK));
         assertFalse(selected.contains(PatchFamily.SCREENSHOT_DETECTION.patchName));
         assertFalse(PatchFamily.DEFAULT_SELECTION.contains(PatchFamily.SCREENSHOT_DETECTION));
+        assertFalse(selected.contains(PatchFamily.MAX_IMAGE_QUALITY.patchName));
+        assertFalse(PatchFamily.DEFAULT_SELECTION.contains(PatchFamily.MAX_IMAGE_QUALITY));
     }
 
     /**
@@ -158,6 +160,7 @@ public class PatchFamilyTest {
         build.remove(PatchFamily.RETURN_REFRESH);
         build.remove(PatchFamily.PURE_BLACK);
         build.remove(PatchFamily.SCREENSHOT_DETECTION);
+        build.remove(PatchFamily.MAX_IMAGE_QUALITY);
         assertEquals(Collections.emptyList(), PatchFamily.missingDefaults(build));
         for (String line : PatchFamily.reportLines(build, false)) {
             assertFalse(line, line.startsWith("left out of Manager's default selection"));
@@ -170,7 +173,7 @@ public class PatchFamilyTest {
         assertEquals("left out of Manager's default selection: Hide ads, Hide suggested users",
                 lines.get(lines.size() - 1));
         assertEquals("not in this build: Hide ads, Hide suggested users, Block background-return feed refresh, Disable video autoplay, "
-                + "Disable screenshot detection, Pure black dark mode", lines.get(lines.size() - 2));
+                + "Max image quality, Disable screenshot detection, Pure black dark mode", lines.get(lines.size() - 2));
     }
 
     /** The new line goes through the redactor like the rest of the section and comes out whole. */
@@ -235,8 +238,8 @@ public class PatchFamilyTest {
                 "Hide ads: on (hushthreads_hide_ads=on)",
                 "Sanitize sharing links: disabled by its switch (hushthreads_sanitize_sharing_links=off)",
                 "Remove the advertising ID: no switch, stays in while paused: the removed advertising ID permission",
-                "not in this build: Hide suggested users, Block background-return feed refresh, Disable video autoplay, Open links in browser, Disable analytics, "
-                        + "Disable screenshot detection, Save photos and videos, Pure black dark mode, Restore screens on re-signed builds, Change version code, Remove share targets, Trust user-added certificates",
+                "not in this build: Hide suggested users, Block background-return feed refresh, Disable video autoplay, Max image quality, Open links in browser, "
+                        + "Disable analytics, Disable screenshot detection, Save photos and videos, Pure black dark mode, Restore screens on re-signed builds, Change version code, Remove share targets, Trust user-added certificates",
                 "left out of Manager's default selection: Hide suggested users, Open links in browser, Disable analytics, "
                         + "Save photos and videos, Restore screens on re-signed builds"),
                 running);

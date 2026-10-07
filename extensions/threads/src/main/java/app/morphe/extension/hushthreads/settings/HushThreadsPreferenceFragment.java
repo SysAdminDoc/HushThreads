@@ -239,7 +239,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         Set<PatchFamily> build = PatchFamily.inThisBuild();
 
         if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_SUGGESTED_USERS)
-                || build.contains(PatchFamily.RETURN_REFRESH) || build.contains(PatchFamily.VIDEO_AUTOPLAY)) {
+                || build.contains(PatchFamily.RETURN_REFRESH) || build.contains(PatchFamily.VIDEO_AUTOPLAY)
+                || build.contains(PatchFamily.MAX_IMAGE_QUALITY)) {
             PreferenceCategory feed = category(screen, L10n.t("Feed"));
             if (build.contains(PatchFamily.HIDE_ADS)) feed.addPreference(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
                     L10n.t("Sponsored posts come out of For you and Following before Threads shows them, so no gap is "
@@ -259,6 +260,10 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
             if (build.contains(PatchFamily.VIDEO_AUTOPLAY)) {
                 feed.addPreference(toggle(context, Settings.DISABLE_VIDEO_AUTOPLAY, L10n.t("Tap to play videos"),
                         L10n.t("Videos in your feed wait for a tap instead of playing as you scroll.")));
+            }
+            if (build.contains(PatchFamily.MAX_IMAGE_QUALITY)) {
+                feed.addPreference(toggle(context, Settings.MAX_IMAGE_QUALITY, L10n.t("Full size photos"),
+                        L10n.t("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.")));
             }
         }
 

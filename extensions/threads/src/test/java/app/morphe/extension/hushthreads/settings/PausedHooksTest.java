@@ -34,6 +34,7 @@ import java.util.Set;
 import app.morphe.extension.hushthreads.ads.FeedAds;
 import app.morphe.extension.hushthreads.ads.ShadowFeedAds;
 import app.morphe.extension.hushthreads.download.SavesForTests;
+import app.morphe.extension.hushthreads.feed.ImageQuality;
 import app.morphe.extension.hushthreads.feed.ReturnRefresh;
 import app.morphe.extension.hushthreads.feed.VideoAutoplay;
 import app.morphe.extension.hushthreads.misc.Analytics;
@@ -120,6 +121,8 @@ public class PausedHooksTest {
                 }));
         // A feed video Threads would play by itself waits for a tap.
         probes.put(PatchFamily.VIDEO_AUTOPLAY, Collections.singletonList(() -> !VideoAutoplay.play(true)));
+        // The photo size chooser aims past the screen's width.
+        probes.put(PatchFamily.MAX_IMAGE_QUALITY, Collections.singletonList(() -> ImageQuality.targetWidth(1080) != 1080));
         // A shared post link loses the tracking tags Threads added to it, and a short one becomes the post's own.
         probes.put(PatchFamily.SANITIZE_SHARING_LINKS, Arrays.asList(
                 () -> {

@@ -37,6 +37,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean maxImageQuality() {
+        return false;
+    }
+
     public static boolean saveMedia() {
         return false;
     }

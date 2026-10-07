@@ -286,6 +286,17 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/ImageQuality.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/feed/imagequality/MaxImageQualityPatch.kt"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Max image quality: the target width of Threads' photo size chooser asked of the extension first thing, which answers a width no photo reaches while the switch is on, so the largest size of the wanted shape wins. The chooser is found by its kept types and the work it does in 450, 449 and 448, with no outside code."
+    },
+    {
+      "paths": [
         "patches/src/main/kotlin/app/morphe/patches/threads/feed/**"
       ],
       "origin": "original",

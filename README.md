@@ -61,7 +61,7 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-HushThreads v0.0.11 has 16 patches. All but Block background-return feed refresh, Change version code, Disable screenshot detection, Disable video autoplay, Pure black dark mode, Remove share targets and Trust user-added certificates are selected by default.
+HushThreads v0.0.11 has 17 patches. All but Block background-return feed refresh, Change version code, Disable screenshot detection, Disable video autoplay, Max image quality, Pure black dark mode, Remove share targets and Trust user-added certificates are selected by default.
 
 | Patch | What it does |
 |---|---|
@@ -73,6 +73,7 @@ HushThreads v0.0.11 has 16 patches. All but Block background-return feed refresh
 | `Hide ads` | Takes sponsored posts out of your Threads feed before they're shown. |
 | `Hide suggested users` | Removes verified server cards suggesting accounts to follow. Ordinary posts, reposts and unknown card types stay. |
 | `HushThreads settings` | Adds HushThreads settings to Threads. Tap HushThreads above More settings in Threads' own settings, long-press Threads' launcher icon, or open Additional settings in the app on Threads' App info page, to turn features on or off, pause HushThreads, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
+| `Max image quality` | Photos load at the largest size Threads has instead of one picked for your screen. They're sharper, and each one is a bigger download. |
 | `Open links in browser` | Opens the web links you tap in your default browser instead of Threads' own, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads. |
 | `Pure black dark mode` | Threads' dark mode uses pure black instead of its dark gray behind your feed, posts and profiles, which looks deeper and saves power on an OLED screen. Menus and sheets keep their own grays. |
 | `Remove share targets` | Takes Threads out of the share sheet other apps open, so it isn't offered when you share a link, a photo or a video from somewhere else. It does that by removing the share entries from Threads' manifest, along with any contacts Threads offers there for direct sharing. Sharing from Threads to other apps still works. |
