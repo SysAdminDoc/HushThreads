@@ -156,7 +156,7 @@ HushThreads' build, settings, diagnostics and safety checks came from [Hushfaceb
 | [revanced-troubleshooting-guide](https://github.com/SodaWithoutSparkles/revanced-troubleshooting-guide) | Rejected. It stores catalogs without an independent patch body. |
 | [yt-revanced-icon](https://github.com/kairusds/yt-revanced-icon) and [rvmm-config-gen](https://github.com/user2user1/rvmm-config-gen) | Catalogs recorded as behavior-only. The former lacks a license. The latter uses AGPL-3.0, outside the ledger's accepted license list. |
 
-The census remains dated 2026-09-29. Repository entries and all five discovery indexes were checked on 2026-10-02. All five list HushThreads. GitLab code search wasn't run.
+The census is dated 2026-10-07. Every repository entry and all five discovery indexes were checked that day, and all five list HushThreads. GitLab code search wasn't run, though the GitLab sources in the ledger were read.
 
 Keep copyright, author, license and source notices when editing or moving files. Remove a notice only when its covered code is gone. Carry the GPL section 7 notices in NOTICE and make them available to users. Keep blocked original source URLs in notices, with a working GitLab mirror beside them.
 
