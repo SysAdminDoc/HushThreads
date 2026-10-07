@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(506);
+        Map<String, String> table = new HashMap<>(512);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -508,6 +508,8 @@ public final class L10nTranslations {
                 "Der Versionscode dieses Builds ist der h\u00f6chste, den Android zul\u00e4sst, daher bietet Google Play dar\u00fcber keine Updates von Meta an. Die Pr\u00fcfungen von Threads gegen die Version, als die es gebaut wurde, sehen weiterhin den echten. Um zum Original-Threads zur\u00fcckzukehren, deinstalliere zuerst dieses, wodurch die Daten von Threads auf diesem Telefon gel\u00f6scht werden. Sp\u00e4tere HushThreads-Builds brauchen ebenfalls Change version code, sonst lassen sie sich nicht \u00fcber dieses installieren.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Dieses Handy hat keine Dateiauswahl, hier l\u00e4sst sich also keine Datei w\u00e4hlen.");
+        table.put("Threads accepts certificates you've installed yourself where Android checks them. Its own checks on Meta's certificates haven't changed, so a proxy still can't read most of its traffic.",
+                "Threads akzeptiert selbst installierte Zertifikate dort, wo Android sie pr\u00fcft. Die eigenen Pr\u00fcfungen von Threads f\u00fcr Metas Zertifikate sind unver\u00e4ndert, daher kann ein Proxy den Gro\u00dfteil des Datenverkehrs weiterhin nicht lesen.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
                 "Threads kann die Werbe-ID deines Telefons nicht lesen. Die Berechtigung daf\u00fcr fehlt in diesem Build.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
@@ -530,6 +532,8 @@ public final class L10nTranslations {
                 "Bis zum Fortsetzen verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv.");
         table.put("Updates",
                 "Updates");
+        table.put("User certificates trusted",
+                "Eigenen Zertifikaten wird vertraut");
         table.put("Version",
                 "Version");
         table.put("Version %1$s for Threads %2$s",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Videos hei\u00dfen %1$s. Fotos hei\u00dfen immer %2$s, gefolgt von Datum und Uhrzeit.");
         table.put("Videos go to %1$s and photos to %2$s.",
                 "Videos landen in %1$s und Fotos in %2$s.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Videos in your feed",
                 "Videos in deinem Feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
                 "Videos in deinem Feed warten auf ein Tippen, statt beim Scrollen abzuspielen.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Weblinks, die du antippst, \u00f6ffnen sich in deinem Standardbrowser oder in der App f\u00fcr diese Seite, ohne den Klick-Tracker von Threads. Seiten von Threads, Instagram und andere Meta-Seiten \u00f6ffnen sich weiter in Threads.");
         table.put("Where you left off in your feed",
@@ -575,10 +579,12 @@ public final class L10nTranslations {
                 "die entfernte Berechtigung f\u00fcr die Werbe-ID");
         table.put("the removed share sheet entry",
                 "der entfernte Eintrag im Teilen-Men\u00fc");
+        table.put("the user certificate trust",
+                "das Vertrauen in eigene Zertifikate");
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(506);
+        Map<String, String> table = new HashMap<>(512);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1039,6 +1045,8 @@ public final class L10nTranslations {
                 "El c\u00f3digo de versi\u00f3n de esta compilaci\u00f3n es el m\u00e1s alto que permite Android, as\u00ed que Google Play no ofrece las actualizaciones de Meta sobre ella. Las comprobaciones de Threads contra la versi\u00f3n con la que se compil\u00f3 siguen viendo el real. Para volver al Threads original, desinstala primero este, lo que borra los datos de Threads en este tel\u00e9fono. Las pr\u00f3ximas compilaciones de HushThreads tambi\u00e9n necesitan Change version code o no se instalar\u00e1n sobre esta.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que aqu\u00ed no hay forma de elegir un archivo.");
+        table.put("Threads accepts certificates you've installed yourself where Android checks them. Its own checks on Meta's certificates haven't changed, so a proxy still can't read most of its traffic.",
+                "Threads acepta los certificados que instalaste t\u00fa mismo donde Android los comprueba. Sus propias comprobaciones de los certificados de Meta no han cambiado, as\u00ed que un proxy sigue sin poder leer la mayor parte de su tr\u00e1fico.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
                 "Threads no puede leer el ID de publicidad de tu tel\u00e9fono. El permiso para ello ya no est\u00e1 en esta versi\u00f3n.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
@@ -1061,6 +1069,8 @@ public final class L10nTranslations {
                 "Hasta que reanudes, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene.");
         table.put("Updates",
                 "Actualizaciones");
+        table.put("User certificates trusted",
+                "Certificados del usuario de confianza");
         table.put("Version",
                 "Versi\u00f3n");
         table.put("Version %1$s for Threads %2$s",
@@ -1073,13 +1083,13 @@ public final class L10nTranslations {
                 "Los videos se llaman %1$s. Las fotos siempre se llaman %2$s seguido de la fecha y la hora.");
         table.put("Videos go to %1$s and photos to %2$s.",
                 "Los videos van a %1$s y las fotos a %2$s.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Videos in your feed",
                 "Videos de tu feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
                 "Los videos de tu feed esperan a que los toques en lugar de reproducirse mientras te desplazas.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Los enlaces web que tocas se abren en tu navegador predeterminado, o en la app de ese sitio, sin el rastreador de clics de Threads. Las p\u00e1ginas de Threads, Instagram y otras de Meta siguen abri\u00e9ndose en Threads.");
         table.put("Where you left off in your feed",
@@ -1106,10 +1116,12 @@ public final class L10nTranslations {
                 "el permiso del ID de publicidad eliminado");
         table.put("the removed share sheet entry",
                 "la entrada eliminada del men\u00fa para compartir");
+        table.put("the user certificate trust",
+                "la confianza en los certificados del usuario");
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(506);
+        Map<String, String> table = new HashMap<>(512);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1570,6 +1582,8 @@ public final class L10nTranslations {
                 "Kode versi build ini adalah yang tertinggi yang diizinkan Android, jadi Google Play tidak menawarkan pembaruan Meta di atasnya. Pemeriksaan Threads terhadap versi saat ia dibuat tetap melihat kode aslinya. Untuk kembali ke Threads asli, copot pemasangan yang ini dulu, yang menghapus data Threads di ponsel ini. Build HushThreads berikutnya juga memerlukan Change version code, atau tidak akan bisa dipasang di atas yang ini.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Ponsel ini tidak memiliki pemilih file, jadi file tidak dapat dipilih di sini.");
+        table.put("Threads accepts certificates you've installed yourself where Android checks them. Its own checks on Meta's certificates haven't changed, so a proxy still can't read most of its traffic.",
+                "Threads menerima sertifikat yang kamu pasang sendiri di tempat Android memeriksanya. Pemeriksaan Threads sendiri atas sertifikat Meta tidak berubah, jadi proxy tetap tidak bisa membaca sebagian besar lalu lintasnya.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
                 "Threads tidak dapat membaca ID iklan ponsel Anda. Izin untuk itu sudah dihapus dari build ini.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
@@ -1592,6 +1606,8 @@ public final class L10nTranslations {
                 "Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif.");
         table.put("Updates",
                 "Pembaruan");
+        table.put("User certificates trusted",
+                "Sertifikat pengguna dipercaya");
         table.put("Version",
                 "Versi");
         table.put("Version %1$s for Threads %2$s",
@@ -1604,13 +1620,13 @@ public final class L10nTranslations {
                 "Video diberi nama %1$s. Foto selalu diberi nama %2$s diikuti tanggal dan waktu.");
         table.put("Videos go to %1$s and photos to %2$s.",
                 "Video disimpan ke %1$s dan foto ke %2$s.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Videos in your feed",
                 "Video di feed Anda");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
                 "Video di feed Anda menunggu diketuk, bukan diputar saat Anda menggulir.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Tautan web yang Anda ketuk terbuka di browser default Anda, atau aplikasi untuk situs itu, tanpa pelacak klik Threads. Halaman Threads, Instagram, dan halaman Meta lainnya tetap terbuka di Threads.");
         table.put("Where you left off in your feed",
@@ -1637,10 +1653,12 @@ public final class L10nTranslations {
                 "izin ID iklan yang dihapus");
         table.put("the removed share sheet entry",
                 "entri lembar bagikan yang dihapus");
+        table.put("the user certificate trust",
+                "kepercayaan pada sertifikat pengguna");
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(506);
+        Map<String, String> table = new HashMap<>(512);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2101,6 +2119,8 @@ public final class L10nTranslations {
                 "O c\u00f3digo de vers\u00e3o deste build \u00e9 o mais alto que o Android permite, ent\u00e3o o Google Play n\u00e3o oferece as atualiza\u00e7\u00f5es da Meta por cima dele. As verifica\u00e7\u00f5es do Threads contra a vers\u00e3o com que ele foi compilado continuam vendo o real. Para voltar ao Threads original, desinstale este primeiro, o que apaga os dados do Threads neste celular. Os pr\u00f3ximos builds do HushThreads tamb\u00e9m precisam do Change version code, sen\u00e3o n\u00e3o instalam por cima deste.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este dispositivo n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel escolher um arquivo aqui.");
+        table.put("Threads accepts certificates you've installed yourself where Android checks them. Its own checks on Meta's certificates haven't changed, so a proxy still can't read most of its traffic.",
+                "O Threads aceita certificados que voc\u00ea mesmo instalou onde o Android os verifica. As verifica\u00e7\u00f5es do pr\u00f3prio Threads nos certificados da Meta n\u00e3o mudaram, ent\u00e3o um proxy ainda n\u00e3o consegue ler a maior parte do tr\u00e1fego.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
                 "O Threads n\u00e3o consegue ler o ID de publicidade do seu celular. A permiss\u00e3o para isso foi removida desta vers\u00e3o.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
@@ -2123,6 +2143,8 @@ public final class L10nTranslations {
                 "At\u00e9 voc\u00ea retomar, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo.");
         table.put("Updates",
                 "Atualiza\u00e7\u00f5es");
+        table.put("User certificates trusted",
+                "Certificados do usu\u00e1rio confi\u00e1veis");
         table.put("Version",
                 "Vers\u00e3o");
         table.put("Version %1$s for Threads %2$s",
@@ -2135,13 +2157,13 @@ public final class L10nTranslations {
                 "Os v\u00eddeos ser\u00e3o nomeados como %1$s. As fotos sempre recebem o nome %2$s seguido da data e da hora.");
         table.put("Videos go to %1$s and photos to %2$s.",
                 "Os v\u00eddeos v\u00e3o para %1$s e as fotos para %2$s.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Videos in your feed",
                 "V\u00eddeos do seu feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
                 "Os v\u00eddeos do seu feed esperam um toque em vez de come\u00e7ar a tocar enquanto voc\u00ea rola a tela.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Links da web que voc\u00ea toca abrem no seu navegador padr\u00e3o, ou no app desse site, sem o rastreador de cliques do Threads. P\u00e1ginas do Threads, do Instagram e outras da Meta continuam abrindo no Threads.");
         table.put("Where you left off in your feed",
@@ -2168,10 +2190,12 @@ public final class L10nTranslations {
                 "a permiss\u00e3o do ID de publicidade removida");
         table.put("the removed share sheet entry",
                 "a entrada removida do menu de compartilhamento");
+        table.put("the user certificate trust",
+                "a confian\u00e7a nos certificados do usu\u00e1rio");
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(506);
+        Map<String, String> table = new HashMap<>(512);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2632,6 +2656,8 @@ public final class L10nTranslations {
                 "Bu derlemenin s\u00fcr\u00fcm kodu Android'in izin verdi\u011fi en y\u00fcksek de\u011ferdir, bu y\u00fczden Google Play bunun \u00fczerine Meta'n\u0131n g\u00fcncellemelerini sunmaz. Threads'in derlendi\u011fi s\u00fcr\u00fcmle yapt\u0131\u011f\u0131 kontroller ger\u00e7ek kodu g\u00f6rmeye devam eder. Orijinal Threads'e d\u00f6nmek i\u00e7in \u00f6nce bunu kald\u0131r\u0131n. Bu, Threads'in bu telefondaki verilerini siler. Sonraki HushThreads derlemelerinin de Change version code i\u00e7ermesi gerekir, yoksa bunun \u00fczerine y\u00fcklenmezler.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Bu telefonda dosya se\u00e7ici yok, bu y\u00fczden burada dosya se\u00e7menin bir yolu yok.");
+        table.put("Threads accepts certificates you've installed yourself where Android checks them. Its own checks on Meta's certificates haven't changed, so a proxy still can't read most of its traffic.",
+                "Threads, Android'in denetledi\u011fi yerlerde kendi y\u00fckledi\u011fin sertifikalar\u0131 kabul eder. Threads'in Meta sertifikalar\u0131 i\u00e7in kendi denetimleri de\u011fi\u015fmedi, bu y\u00fczden bir proxy trafi\u011fin \u00e7o\u011funu yine okuyamaz.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
                 "Threads telefonunuzun reklam kimli\u011fini okuyamaz. Bunun i\u00e7in gereken izin bu s\u00fcr\u00fcmden kald\u0131r\u0131ld\u0131.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
@@ -2654,6 +2680,8 @@ public final class L10nTranslations {
                 "Devam ettirene kadar Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r.");
         table.put("Updates",
                 "G\u00fcncellemeler");
+        table.put("User certificates trusted",
+                "Kullan\u0131c\u0131 sertifikalar\u0131na g\u00fcveniliyor");
         table.put("Version",
                 "S\u00fcr\u00fcm");
         table.put("Version %1$s for Threads %2$s",
@@ -2666,13 +2694,13 @@ public final class L10nTranslations {
                 "Videolar\u0131n ad\u0131 %1$s olur. Foto\u011fraflar\u0131n ad\u0131 her zaman %2$s ile ba\u015flar, ard\u0131ndan tarih ve saat gelir.");
         table.put("Videos go to %1$s and photos to %2$s.",
                 "Videolar %1$s klas\u00f6r\u00fcne, foto\u011fraflar %2$s klas\u00f6r\u00fcne kaydedilir.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Videos in your feed",
                 "Ak\u0131\u015ftaki videolar");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
                 "Ak\u0131\u015ftaki videolar, kayd\u0131r\u0131rken kendili\u011finden oynamak yerine dokunman\u0131 bekler.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Web links you tap open in your default browser, or the app for that site, without Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
                 "Dokundu\u011fun web ba\u011flant\u0131lar\u0131, Threads'in t\u0131klama izleyicisi olmadan varsay\u0131lan taray\u0131c\u0131nda veya o sitenin uygulamas\u0131nda a\u00e7\u0131l\u0131r. Threads, Instagram ve di\u011fer Meta sayfalar\u0131 yine Threads'te a\u00e7\u0131l\u0131r.");
         table.put("Where you left off in your feed",
@@ -2699,5 +2727,7 @@ public final class L10nTranslations {
                 "kald\u0131r\u0131lan reklam kimli\u011fi izni");
         table.put("the removed share sheet entry",
                 "kald\u0131r\u0131lan payla\u015f\u0131m men\u00fcs\u00fc giri\u015fi");
+        table.put("the user certificate trust",
+                "kullan\u0131c\u0131 sertifikalar\u0131na duyulan g\u00fcven");
     }
 }

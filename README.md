@@ -61,7 +61,7 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-HushThreads v0.0.11 has 14 patches. All but Block background-return feed refresh, Change version code, Disable video autoplay, Pure black dark mode and Remove share targets are selected by default.
+HushThreads v0.0.11 has 15 patches. All but Block background-return feed refresh, Change version code, Disable video autoplay, Pure black dark mode, Remove share targets and Trust user-added certificates are selected by default.
 
 | Patch | What it does |
 |---|---|
@@ -79,6 +79,7 @@ HushThreads v0.0.11 has 14 patches. All but Block background-return feed refresh
 | `Restore screens on re-signed builds` | Lets Threads trust itself again on a re-signed build and share sign-in information with an Instagram installed with this build's own key. Both apps keep their current signing keys. A Root Mount install doesn't need this patch. |
 | `Sanitize sharing links` | Takes Threads' tracking tags, such as xmt, off the links you share or copy, and turns a short share link into the post's own link. The post a link opens stays the same. |
 | `Save photos and videos` | Adds Save to a post's menu, below Copy link. It saves the post's photo or video to your phone's gallery, and every page of a carousel. |
+| `Trust user-added certificates` | Lets Android's certificate checks in Threads accept certificates you've installed on your phone yourself, such as one a work or school network needs, or a debugging proxy's. Threads also checks Meta's certificates in its own network code, which this patch doesn't change, so a proxy still can't read most of Threads' traffic to Meta. Only pick it if you know you need it. |
 
 The feed controls share one page filter. Each selected rule has its own switch and removal count. Diagnostics also count the pages and items each enabled rule finished checking, including pages without matches. Disabled, paused and failed checks don't add to those counts. These are page checks, so checking the same page again adds another check. Pause restores the original page, and a failed card check keeps the whole page. Hide suggested users passes fixture checks on both source-supported builds. A Galaxy S23 Ultra report confirmed the Suggested Users block no longer appeared in Threads 449 with HushThreads 0.0.4.
 
@@ -87,6 +88,8 @@ Block background-return feed refresh answers the four checks Threads makes as it
 Disable video autoplay holds the video that a post in your feed, a profile or a thread would start as you scroll. It stays on its cover frame until you tap it, and the full-screen viewer that opens plays it with its usual controls. Ad cards and trend previews still play as Threads decides, and so do Instagram videos shown inside a post. Threads may still load a video ahead of time. Its hook passes fixture checks on both source-supported builds. On an Android 16 emulator with Threads 449, feed videos stayed still with the switch on and played as usual with it off, and a tapped video played in the viewer. It hasn't been tried on a phone or on 448 yet.
 
 Pure black dark mode changes the #101010 gray that Threads' theme uses for the feed, posts and profiles to #000000. Raised surfaces such as cards, menus and sheets keep their own grays, so they still stand out. You'll only see it with dark mode on. The switch is on the Appearance page under More settings, and a change takes effect the next time Threads starts. Pause and safe mode give Threads its gray back. Its hooks pass fixture checks on both source-supported builds. On a Galaxy S22 with Threads 449, the feed drew on #000000 with the switch on, and on #101010 after turning it off and restarting. An Android 16 emulator showed the same for a post and a profile, and with HushThreads paused. It hasn't been tried on 448 yet.
+
+Trust user-added certificates edits the network security config Threads names, fb_network_security_config on 448 to 450. Your own certificates join the system ones in its base settings, and they're let past the pins that file sets for Meta's domains, since those pins would turn them away otherwise. Threads' network stack checks Meta's certificates in its own code as well. That's separate from the file and this patch leaves it alone. Debug overrides, which only a debuggable build reads, stay as they are. The edit passes fixture checks on 450, 449 and 448 and hasn't been tried on a device yet.
 
 ## Settings
 
@@ -99,7 +102,7 @@ The row in Threads' settings grows with large text, and TalkBack reads it out an
 
 If Threads crashes within a minute of starting three times in a row, HushThreads pauses itself from the next start and says why at the top of its settings. Your switches stay saved. Tap Resume and restart Threads to turn it back on. A force-stop doesn't count as a crash. On Android 9 and 10 only ordinary crashes count. Android 11 and later also count crashes in Threads' native code and freezes that Android reports as not responding. This was checked on a Galaxy S22 with Threads 449.
 
-Threads has crash protection of its own. Five crashes within 45 seconds of starting, inside four hours, make it delete its data, which signs you out and clears HushThreads' settings. Safe mode steps in after three crashes in a row, so it gets there first whenever a switch can stop the crash. It can't help when the crash comes from Remove the advertising ID, Remove share targets, Restore screens on re-signed builds or Change version code, because those are set when you patch, and it doesn't see crashes spread out between starts that work. If Threads keeps crashing, patch again without them.
+Threads has crash protection of its own. Five crashes within 45 seconds of starting, inside four hours, make it delete its data, which signs you out and clears HushThreads' settings. Safe mode steps in after three crashes in a row, so it gets there first whenever a switch can stop the crash. It can't help when the crash comes from Remove the advertising ID, Remove share targets, Restore screens on re-signed builds, Trust user-added certificates or Change version code, because those are set when you patch, and it doesn't see crashes spread out between starts that work. If Threads keeps crashing, patch again without them.
 
 Diagnostics list hook calls separately from removed feed items, shared links that changed and links sent to your browser. Unchanged, disabled, paused or failed operations add no removal or change count. Reports keep these totals without saving the posts or URLs.
 

@@ -86,6 +86,7 @@ body:
         - Restore screens on re-signed builds
         - Sanitize sharing links
         - Save photos and videos
+        - Trust user-added certificates
     validations:
       required: true
   - type: dropdown

@@ -340,7 +340,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         ReleaseCheck.watch(this);
 
         if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)
-                || build.contains(PatchFamily.VERSION_CODE) || build.contains(PatchFamily.REMOVE_SHARE_TARGETS)) {
+                || build.contains(PatchFamily.VERSION_CODE) || build.contains(PatchFamily.REMOVE_SHARE_TARGETS)
+                || build.contains(PatchFamily.TRUST_USER_CERTIFICATES)) {
             PreferenceCategory patched = category(screen, L10n.t("Set when you patched"));
             if (build.contains(PatchFamily.REMOVE_AD_ID)) {
                 patched.addPreference(mark(info(context, L10n.t("Advertising ID removed"),
@@ -364,6 +365,12 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 patched.addPreference(mark(info(context, L10n.t("Share sheet entry removed"),
                         L10n.t("Threads doesn't show up when you share from other apps. Sharing from Threads to other "
                                 + "apps still works.")), SettingsIcons.BLOCK));
+            }
+            if (build.contains(PatchFamily.TRUST_USER_CERTIFICATES)) {
+                patched.addPreference(mark(info(context, L10n.t("User certificates trusted"),
+                        L10n.t("Threads accepts certificates you've installed yourself where Android checks them. Its "
+                                + "own checks on Meta's certificates haven't changed, so a proxy still can't read most "
+                                + "of its traffic.")), SettingsIcons.TOOLS));
             }
             patched.addPreference(info(context, L10n.t("Changing these"),
                     L10n.t("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. "

@@ -266,3 +266,6 @@ the raised version code	yükseltilmiş sürüm kodu
 Share sheet entry removed	Paylaşım menüsü girişi kaldırıldı
 Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.	Diğer uygulamalardan paylaşırken Threads görünmez. Threads'ten diğer uygulamalara paylaşım çalışmaya devam eder.
 the removed share sheet entry	kaldırılan paylaşım menüsü girişi
+User certificates trusted	Kullanıcı sertifikalarına güveniliyor
+Threads accepts certificates you've installed yourself where Android checks them. Its own checks on Meta's certificates haven't changed, so a proxy still can't read most of its traffic.	Threads, Android'in denetlediği yerlerde kendi yüklediğin sertifikaları kabul eder. Threads'in Meta sertifikaları için kendi denetimleri değişmedi, bu yüzden bir proxy trafiğin çoğunu yine okuyamaz.
+the user certificate trust	kullanıcı sertifikalarına duyulan güven

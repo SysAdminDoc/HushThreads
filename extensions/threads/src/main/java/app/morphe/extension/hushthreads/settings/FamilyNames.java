@@ -32,6 +32,7 @@ public final class FamilyNames {
     public static final String RESTORE_TRUST = "Restore screens on re-signed builds";
     public static final String VERSION_CODE = "Change version code";
     public static final String REMOVE_SHARE_TARGETS = "Remove share targets";
+    public static final String TRUST_USER_CERTIFICATES = "Trust user-added certificates";
 
     private FamilyNames() {
     }

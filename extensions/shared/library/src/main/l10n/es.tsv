@@ -266,3 +266,6 @@ the raised version code	el código de versión aumentado
 Share sheet entry removed	Entrada del menú para compartir eliminada
 Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.	Threads ya no aparece cuando compartes desde otras apps. Compartir desde Threads a otras apps sigue funcionando.
 the removed share sheet entry	la entrada eliminada del menú para compartir
+User certificates trusted	Certificados del usuario de confianza
+Threads accepts certificates you've installed yourself where Android checks them. Its own checks on Meta's certificates haven't changed, so a proxy still can't read most of its traffic.	Threads acepta los certificados que instalaste tú mismo donde Android los comprueba. Sus propias comprobaciones de los certificados de Meta no han cambiado, así que un proxy sigue sin poder leer la mayor parte de su tráfico.
+the user certificate trust	la confianza en los certificados del usuario

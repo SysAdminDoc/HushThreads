@@ -184,6 +184,16 @@
     },
     {
       "paths": [
+        "patches/src/main/kotlin/app/morphe/patches/threads/misc/usercertificates/**"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Trust user-added certificates: user trust anchors added to the network security config Threads names, read from 450, 449 and 448, or a config of its own when a build names none."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/misc/ExternalBrowser.java"
       ],
       "origin": "ported",

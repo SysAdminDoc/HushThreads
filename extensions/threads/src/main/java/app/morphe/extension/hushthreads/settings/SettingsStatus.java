@@ -77,4 +77,8 @@ public final class SettingsStatus {
     public static boolean removeShareTargets() {
         return false;
     }
+
+    public static boolean trustUserCertificates() {
+        return false;
+    }
 }

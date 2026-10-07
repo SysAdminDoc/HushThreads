@@ -266,3 +266,6 @@ the raised version code	kode versi yang dinaikkan
 Share sheet entry removed	Entri lembar bagikan dihapus
 Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.	Threads tidak muncul saat kamu berbagi dari aplikasi lain. Berbagi dari Threads ke aplikasi lain tetap berfungsi.
 the removed share sheet entry	entri lembar bagikan yang dihapus
+User certificates trusted	Sertifikat pengguna dipercaya
+Threads accepts certificates you've installed yourself where Android checks them. Its own checks on Meta's certificates haven't changed, so a proxy still can't read most of its traffic.	Threads menerima sertifikat yang kamu pasang sendiri di tempat Android memeriksanya. Pemeriksaan Threads sendiri atas sertifikat Meta tidak berubah, jadi proxy tetap tidak bisa membaca sebagian besar lalu lintasnya.
+the user certificate trust	kepercayaan pada sertifikat pengguna

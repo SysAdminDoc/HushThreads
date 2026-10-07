@@ -747,6 +747,60 @@
         }
       ],
       "options": []
+    },
+    {
+      "name": "Trust user-added certificates",
+      "description": "Lets Android's certificate checks in Threads accept certificates you've installed on your phone yourself, such as one a work or school network needs, or a debugging proxy's. Threads also checks Meta's certificates in its own network code, which this patch doesn't change, so a proxy still can't read most of Threads' traffic to Meta. Only pick it if you know you need it.",
+      "category": "Fixes",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings",
+        "ResourcePatch"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "450.0.0.51.78",
+          "449.0.0.54.82",
+          "448.0.0.54.85"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "450.0.0.51.78",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 512008342
+              }
+            },
+            {
+              "version": "449.0.0.54.82",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 511908382
+              }
+            },
+            {
+              "version": "448.0.0.54.85",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 511808302
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
     }
   ]
 }

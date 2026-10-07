@@ -60,7 +60,8 @@ public enum PatchFamily {
     REMOVE_AD_ID(FamilyNames.REMOVE_AD_ID, "removeAdId", "the removed advertising ID permission"),
     RESTORE_TRUST(FamilyNames.RESTORE_TRUST, "restoreTrust", "the re-signed build fix"),
     VERSION_CODE(FamilyNames.VERSION_CODE, "versionCode", "the raised version code"),
-    REMOVE_SHARE_TARGETS(FamilyNames.REMOVE_SHARE_TARGETS, "removeShareTargets", "the removed share sheet entry");
+    REMOVE_SHARE_TARGETS(FamilyNames.REMOVE_SHARE_TARGETS, "removeShareTargets", "the removed share sheet entry"),
+    TRUST_USER_CERTIFICATES(FamilyNames.TRUST_USER_CERTIFICATES, "trustUserCertificates", "the user certificate trust");
 
     /** The patch's name in Morphe Manager. */
     public final String patchName;
