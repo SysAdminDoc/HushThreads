@@ -157,10 +157,11 @@
       "origin": "original",
       "upstream": "https://github.com/SysAdminDoc/HushThreads",
       "via": [
-        "https://github.com/zeldrisho/morphe-patches"
+        "https://github.com/zeldrisho/morphe-patches",
+        "https://github.com/MrxSiN/ThreadsHideAds"
       ],
       "license": "GPL-3.0-only",
-      "changes": "Hide ads: the feed cache's merge, the place zeldrisho/morphe-patches found, with Threads' own ad check."
+      "changes": "Hide ads: the feed cache's merge, the place zeldrisho/morphe-patches found, with Threads' own ad check, and the feed unit types MrxSiN/ThreadsHideAds 2.0.0 named as ads (AD, AD4AD, the two ad pivots and the ads feedback prompts), read by name from the item's own unit type field. No code from either is used."
     },
     {
       "paths": [
