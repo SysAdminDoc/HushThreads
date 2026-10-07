@@ -40,10 +40,6 @@ internal fun removeShareFilters(manifest: Document): Pair<List<String>, List<Str
         if (filters.isEmpty()) null else component to filters
     }
     if (shared.isEmpty()) throw PatchException("$PATCH: no activity in AndroidManifest.xml takes a share")
-    for ((_, filters) in shared) for (filter in filters) {
-        filter.children("action").filter { it.getAttribute("android:name") in SHARE_ACTIONS }.forEach(filter::removeChild)
-        if (filter.children("action").isEmpty()) filter.parentNode.removeChild(filter)
-    }
     val shortcuts = components.flatMap { it.children("meta-data") }
         .filter { it.getAttribute("android:name") == SHORTCUTS }
         .map { meta ->
@@ -51,6 +47,10 @@ internal fun removeShareFilters(manifest: Document): Pair<List<String>, List<Str
             if (!resource.startsWith("@xml/")) throw PatchException("$PATCH: the shortcuts meta-data points at \"$resource\"")
             "res/xml/${resource.removePrefix("@xml/")}.xml"
         }.distinct()
+    for ((_, filters) in shared) for (filter in filters) {
+        filter.children("action").filter { it.getAttribute("android:name") in SHARE_ACTIONS }.forEach(filter::removeChild)
+        if (filter.children("action").isEmpty()) filter.parentNode.removeChild(filter)
+    }
     return shared.map { (component, _) -> component.getAttribute("android:name") } to shortcuts
 }
 

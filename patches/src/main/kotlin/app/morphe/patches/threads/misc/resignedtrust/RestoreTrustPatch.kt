@@ -69,8 +69,12 @@ val restoreTrustPatch = bytecodePatch(
         }
         check(constructor != null) { "$signers has no (List, boolean, boolean) constructor" }
 
+        // Both sites are checked before either is edited: a refusal must leave Threads untouched.
+        val fbns = FbnsPackageCheckFingerprint.method
+        fbns.fbnsSignersRead()
+
         method.answerOriginalSigners(packageInfo, signers)
-        FbnsPackageCheckFingerprint.method.routeFbnsSigners()
+        fbns.routeFbnsSigners()
 
         enableStatus("restoreTrust")
     }
@@ -117,6 +121,18 @@ internal fun MutableMethod.answerOriginalSigners(packageInfo: String, signers: S
  * from, which the call still needs.
  */
 internal fun MutableMethod.routeFbnsSigners() {
+    val (index, info, signatures) = fbnsSignersRead()
+    addInstructions(
+        index + 1,
+        """
+            invoke-static { v$info, v$signatures }, $FBNS_SIGNERS
+            move-result-object v$signatures
+        """,
+    )
+}
+
+/** FBNS's one read of `PackageInfo.signatures`: its index, the package register and the signatures register. */
+internal fun MutableMethod.fbnsSignersRead(): Triple<Int, Int, Int> {
     val reads = instructions.withIndex().filter { (_, instruction) ->
         instruction.opcode == Opcode.IGET_OBJECT &&
             ((instruction as ReferenceInstruction).reference as FieldReference).let {
@@ -130,11 +146,5 @@ internal fun MutableMethod.routeFbnsSigners() {
     if (signatures == info || signatures > 15 || info > 15) {
         throw PatchException("Restore screens on re-signed builds: FBNS's package check reads signatures into v$signatures from v$info, which the call can't name")
     }
-    addInstructions(
-        index + 1,
-        """
-            invoke-static { v$info, v$signatures }, $FBNS_SIGNERS
-            move-result-object v$signatures
-        """,
-    )
+    return Triple(index, info, signatures)
 }

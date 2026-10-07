@@ -39,7 +39,9 @@ class RestoreTrustFbnsFixtureTest {
 
     @Test
     fun `each declared build's FBNS check hashes the signers the extension answers`() {
-        for (build in Fixtures.declaredBuilds()) {
+        val builds = Fixtures.declaredBuilds()
+        assertEquals("one build of each declared version", 3, builds.size)
+        for (build in builds) {
             FbnsPackageCheckFingerprint.clearMatch()
             val classes = FixtureDex.classesWhere(build, { marker in it.stringSection }) { method ->
                 method.instructions().any { it.string() == marker }

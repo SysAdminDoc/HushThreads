@@ -19,41 +19,18 @@ private const val PATCH = "Trust user-added certificates"
 /** The manifest attribute that names the network security config. */
 private const val CONFIG_ATTRIBUTE = "android:networkSecurityConfig"
 
-/** The config this patch writes when Threads names none. */
-internal const val NEW_CONFIG = "hushthreads_network_security_config"
-
 /**
- * A config for a Threads that names none: Android's default for an app that targets Android 7 or
- * later, which is the system's certificates alone, plus the user's.
+ * The network security config [manifest]'s application names, as the path a resource patch opens.
+ * Refused when it names none, which no declared build does (Threads 448 to 450 name
+ * fb_network_security_config), or something other than an xml resource.
  */
-internal val NEW_CONFIG_TEXT = """
-    <?xml version="1.0" encoding="utf-8"?>
-    <network-security-config>
-        <base-config>
-            <trust-anchors>
-                <certificates src="system" />
-                <certificates src="user" overridePins="true" />
-            </trust-anchors>
-        </base-config>
-    </network-security-config>
-""".trimIndent() + "\n"
-
-/**
- * The network security config [manifest]'s application names, as the path a resource patch opens,
- * or null when it names none. Refused when it names something other than an xml resource.
- */
-internal fun configPath(manifest: Document): String? {
+internal fun configPath(manifest: Document): String {
     val application = manifest.documentElement?.children("application")?.singleOrNull()
         ?: throw PatchException("$PATCH: AndroidManifest.xml has no single application element")
     val config = application.getAttribute(CONFIG_ATTRIBUTE)
-    if (config.isEmpty()) return null
+    if (config.isEmpty()) throw PatchException("$PATCH: AndroidManifest.xml names no network security config")
     if (!config.startsWith("@xml/")) throw PatchException("$PATCH: the network security config is \"$config\"")
     return "res/xml/${config.removePrefix("@xml/")}.xml"
-}
-
-/** Points [manifest]'s application at [NEW_CONFIG]. */
-internal fun nameNewConfig(manifest: Document) {
-    manifest.documentElement.children("application").single().setAttribute(CONFIG_ATTRIBUTE, "@xml/$NEW_CONFIG")
 }
 
 /**
@@ -94,14 +71,11 @@ private fun Element.descendants(tag: String): List<Element> =
     (0 until childNodes.length).mapNotNull { childNodes.item(it) as? Element }
         .flatMap { child -> listOfNotNull(child.takeIf { it.tagName == tag }) + child.descendants(tag) }
 
-/** The resource half: Threads' own config, or a new one when it names none. */
+/** The resource half: Threads' own config. The manifest is only read. */
 internal val trustUserCertificatesResourcePatch = resourcePatch {
     execute {
-        val path = document("AndroidManifest.xml").use { manifest ->
-            configPath(manifest).also { if (it == null) nameNewConfig(manifest) }
-        }
-        if (path == null) get("res/xml/$NEW_CONFIG.xml").writeText(NEW_CONFIG_TEXT)
-        else document(path).use { trustUserCertificates(it) }
+        val path = document("AndroidManifest.xml").use { configPath(it) }
+        document(path).use { trustUserCertificates(it) }
     }
 }
 
