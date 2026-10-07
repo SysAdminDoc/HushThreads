@@ -233,7 +233,7 @@ public class PatchFamilyTest {
                 "Sanitize sharing links: disabled by its switch (hushthreads_sanitize_sharing_links=off)",
                 "Remove the advertising ID: no switch, stays in while paused: the removed advertising ID permission",
                 "not in this build: Hide suggested users, Block background-return feed refresh, Disable video autoplay, Open links in browser, Disable analytics, "
-                        + "Save photos and videos, Pure black dark mode, Restore screens on re-signed builds",
+                        + "Save photos and videos, Pure black dark mode, Restore screens on re-signed builds, Change version code",
                 "left out of Manager's default selection: Hide suggested users, Open links in browser, Disable analytics, "
                         + "Save photos and videos, Restore screens on re-signed builds"),
                 running);

@@ -58,6 +58,59 @@
       "options": []
     },
     {
+      "name": "Change version code",
+      "description": "Raises this build's version code to the highest Android allows, so Google Play stops offering Meta's updates over it. Threads' checks against the version it was built as still see the real one. Since every build with this patch has the same code, an older Threads patched with it also installs over a newer one. Once it's in, going back to stock Threads means uninstalling first, which deletes Threads' data on your phone, and later HushThreads builds need this patch too or they won't install over this one.",
+      "category": "Updates",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "450.0.0.51.78",
+          "449.0.0.54.82",
+          "448.0.0.54.85"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "450.0.0.51.78",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 512008342
+              }
+            },
+            {
+              "version": "449.0.0.54.82",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 511908382
+              }
+            },
+            {
+              "version": "448.0.0.54.85",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 511808302
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Disable analytics",
       "description": "Redirects matched Pigeon, default event-log and MQTT analytics addresses. Settings show which address kinds were patched. Other telemetry may remain.",
       "category": "Privacy",

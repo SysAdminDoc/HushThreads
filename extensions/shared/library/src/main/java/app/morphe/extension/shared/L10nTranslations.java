@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(494);
+        Map<String, String> table = new HashMap<>(500);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -502,6 +502,8 @@ public final class L10nTranslations {
                 "Es gibt keine Diagnosedaten zum Wiederherstellen.");
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Diese werden beim Patchen in Morphe Manager ausgew\u00e4hlt, und die Pause schaltet sie nicht aus. Patche erneut, um sie zu \u00e4ndern.");
+        table.put("This build's version code is the highest Android allows, so Google Play doesn't offer Meta's updates over it. Threads' checks against the version it was built as still see the real one. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.",
+                "Der Versionscode dieses Builds ist der h\u00f6chste, den Android zul\u00e4sst, daher bietet Google Play dar\u00fcber keine Updates von Meta an. Die Pr\u00fcfungen von Threads gegen die Version, als die es gebaut wurde, sehen weiterhin den echten. Um zum Original-Threads zur\u00fcckzukehren, deinstalliere zuerst dieses, wodurch die Daten von Threads auf diesem Telefon gel\u00f6scht werden. Sp\u00e4tere HushThreads-Builds brauchen ebenfalls Change version code, sonst lassen sie sich nicht \u00fcber dieses installieren.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Dieses Handy hat keine Dateiauswahl, hier l\u00e4sst sich also keine Datei w\u00e4hlen.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -528,6 +530,8 @@ public final class L10nTranslations {
                 "Version");
         table.put("Version %1$s for Threads %2$s",
                 "Version %1$s f\u00fcr Threads %2$s");
+        table.put("Version code raised",
+                "Versionscode erh\u00f6ht");
         table.put("Video file name",
                 "Dateiname f\u00fcr Videos");
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Weblinks, die du antippst, \u00f6ffnen sich in deinem Standardbrowser oder in der App f\u00fcr diese Seite, ohne den Klick-Tracker von Threads. Seiten von Threads, Instagram und andere Meta-Seiten \u00f6ffnen sich weiter in Threads.");
         table.put("Where you left off in your feed",
                 "Wo du in deinem Feed aufgeh\u00f6rt hast");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Wenn der Schalter oben an ist, bleibt deine Stelle erhalten, egal wie lange du weg bist. Zum Aktualisieren ziehen und ein Neustart laden weiterhin neue Beitr\u00e4ge.");
         table.put("You have the newest HushThreads release.",
                 "Du hast die neueste Version von HushThreads.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Du hast HushThreads pausiert.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
@@ -559,6 +563,8 @@ public final class L10nTranslations {
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
         table.put("none",
                 "keine");
+        table.put("the raised version code",
+                "der erh\u00f6hte Versionscode");
         table.put("the re-signed build fix",
                 "der Fix f\u00fcr neu signierte Builds");
         table.put("the removed advertising ID permission",
@@ -566,7 +572,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(494);
+        Map<String, String> table = new HashMap<>(500);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1021,6 +1027,8 @@ public final class L10nTranslations {
                 "No hay datos de diagn\u00f3stico que restaurar.");
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Se eligen en Morphe Manager al parchear, y Pausar no los desactiva. Vuelve a parchear para cambiarlos.");
+        table.put("This build's version code is the highest Android allows, so Google Play doesn't offer Meta's updates over it. Threads' checks against the version it was built as still see the real one. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.",
+                "El c\u00f3digo de versi\u00f3n de esta compilaci\u00f3n es el m\u00e1s alto que permite Android, as\u00ed que Google Play no ofrece las actualizaciones de Meta sobre ella. Las comprobaciones de Threads contra la versi\u00f3n con la que se compil\u00f3 siguen viendo el real. Para volver al Threads original, desinstala primero este, lo que borra los datos de Threads en este tel\u00e9fono. Las pr\u00f3ximas compilaciones de HushThreads tambi\u00e9n necesitan Change version code o no se instalar\u00e1n sobre esta.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que aqu\u00ed no hay forma de elegir un archivo.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -1047,6 +1055,8 @@ public final class L10nTranslations {
                 "Versi\u00f3n");
         table.put("Version %1$s for Threads %2$s",
                 "Versi\u00f3n %1$s para Threads %2$s");
+        table.put("Version code raised",
+                "C\u00f3digo de versi\u00f3n aumentado");
         table.put("Video file name",
                 "Nombre de archivo de los videos");
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
@@ -1061,13 +1071,13 @@ public final class L10nTranslations {
                 "Los enlaces web que tocas se abren en tu navegador predeterminado, o en la app de ese sitio, sin el rastreador de clics de Threads. Las p\u00e1ginas de Threads, Instagram y otras de Meta siguen abri\u00e9ndose en Threads.");
         table.put("Where you left off in your feed",
                 "Donde te quedaste en tu feed");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Con el interruptor de arriba activado, tu lugar se mantiene sin importar cu\u00e1nto tiempo est\u00e9s fuera. Deslizar para actualizar y abrir la app de nuevo siguen cargando publicaciones nuevas.");
         table.put("You have the newest HushThreads release.",
                 "Tienes la versi\u00f3n m\u00e1s reciente de HushThreads.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Pausaste HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
@@ -1078,6 +1088,8 @@ public final class L10nTranslations {
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
         table.put("none",
                 "ninguna");
+        table.put("the raised version code",
+                "el c\u00f3digo de versi\u00f3n aumentado");
         table.put("the re-signed build fix",
                 "el arreglo para la nueva firma");
         table.put("the removed advertising ID permission",
@@ -1085,7 +1097,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(494);
+        Map<String, String> table = new HashMap<>(500);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1540,6 +1552,8 @@ public final class L10nTranslations {
                 "Tidak ada data diagnostik yang dapat dikembalikan.");
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Semua ini dipilih di Morphe Manager saat Anda menambal, dan Jeda tidak mematikannya. Tambal ulang untuk mengubahnya.");
+        table.put("This build's version code is the highest Android allows, so Google Play doesn't offer Meta's updates over it. Threads' checks against the version it was built as still see the real one. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.",
+                "Kode versi build ini adalah yang tertinggi yang diizinkan Android, jadi Google Play tidak menawarkan pembaruan Meta di atasnya. Pemeriksaan Threads terhadap versi saat ia dibuat tetap melihat kode aslinya. Untuk kembali ke Threads asli, copot pemasangan yang ini dulu, yang menghapus data Threads di ponsel ini. Build HushThreads berikutnya juga memerlukan Change version code, atau tidak akan bisa dipasang di atas yang ini.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Ponsel ini tidak memiliki pemilih file, jadi file tidak dapat dipilih di sini.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -1566,6 +1580,8 @@ public final class L10nTranslations {
                 "Versi");
         table.put("Version %1$s for Threads %2$s",
                 "Versi %1$s untuk Threads %2$s");
+        table.put("Version code raised",
+                "Kode versi dinaikkan");
         table.put("Video file name",
                 "Nama file video");
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
@@ -1580,13 +1596,13 @@ public final class L10nTranslations {
                 "Tautan web yang Anda ketuk terbuka di browser default Anda, atau aplikasi untuk situs itu, tanpa pelacak klik Threads. Halaman Threads, Instagram, dan halaman Meta lainnya tetap terbuka di Threads.");
         table.put("Where you left off in your feed",
                 "Posisi terakhir Anda di feed");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Jika sakelar di atas aktif, posisi Anda tetap tersimpan berapa lama pun Anda pergi. Tarik untuk memuat ulang dan membuka ulang aplikasi tetap memuat postingan baru.");
         table.put("You have the newest HushThreads release.",
                 "Anda sudah memakai rilis HushThreads terbaru.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Anda menjeda HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
@@ -1597,6 +1613,8 @@ public final class L10nTranslations {
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
         table.put("none",
                 "tidak ada");
+        table.put("the raised version code",
+                "kode versi yang dinaikkan");
         table.put("the re-signed build fix",
                 "perbaikan build yang ditandatangani ulang");
         table.put("the removed advertising ID permission",
@@ -1604,7 +1622,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(494);
+        Map<String, String> table = new HashMap<>(500);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2059,6 +2077,8 @@ public final class L10nTranslations {
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para restaurar.");
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Eles s\u00e3o escolhidos no Morphe Manager quando voc\u00ea aplica os patches, e a pausa n\u00e3o os desativa. Aplique os patches novamente para alter\u00e1-los.");
+        table.put("This build's version code is the highest Android allows, so Google Play doesn't offer Meta's updates over it. Threads' checks against the version it was built as still see the real one. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.",
+                "O c\u00f3digo de vers\u00e3o deste build \u00e9 o mais alto que o Android permite, ent\u00e3o o Google Play n\u00e3o oferece as atualiza\u00e7\u00f5es da Meta por cima dele. As verifica\u00e7\u00f5es do Threads contra a vers\u00e3o com que ele foi compilado continuam vendo o real. Para voltar ao Threads original, desinstale este primeiro, o que apaga os dados do Threads neste celular. Os pr\u00f3ximos builds do HushThreads tamb\u00e9m precisam do Change version code, sen\u00e3o n\u00e3o instalam por cima deste.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este dispositivo n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel escolher um arquivo aqui.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -2085,6 +2105,8 @@ public final class L10nTranslations {
                 "Vers\u00e3o");
         table.put("Version %1$s for Threads %2$s",
                 "Vers\u00e3o %1$s para o Threads %2$s");
+        table.put("Version code raised",
+                "C\u00f3digo de vers\u00e3o aumentado");
         table.put("Video file name",
                 "Nome do arquivo de v\u00eddeo");
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
@@ -2099,13 +2121,13 @@ public final class L10nTranslations {
                 "Links da web que voc\u00ea toca abrem no seu navegador padr\u00e3o, ou no app desse site, sem o rastreador de cliques do Threads. P\u00e1ginas do Threads, do Instagram e outras da Meta continuam abrindo no Threads.");
         table.put("Where you left off in your feed",
                 "Onde voc\u00ea parou no seu feed");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Com a op\u00e7\u00e3o acima ativada, voc\u00ea continua no ponto em que estava, n\u00e3o importa quanto tempo fique fora. Puxar para atualizar e iniciar o Threads novamente continuam carregando novas publica\u00e7\u00f5es.");
         table.put("You have the newest HushThreads release.",
                 "Voc\u00ea j\u00e1 est\u00e1 usando a vers\u00e3o mais nova do HushThreads.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Voc\u00ea pausou o HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
@@ -2116,6 +2138,8 @@ public final class L10nTranslations {
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
         table.put("none",
                 "nenhum");
+        table.put("the raised version code",
+                "o c\u00f3digo de vers\u00e3o aumentado");
         table.put("the re-signed build fix",
                 "a corre\u00e7\u00e3o para vers\u00e3o reassinada");
         table.put("the removed advertising ID permission",
@@ -2123,7 +2147,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(494);
+        Map<String, String> table = new HashMap<>(500);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2578,6 +2602,8 @@ public final class L10nTranslations {
                 "Geri getirilecek tan\u0131lama verisi yok.");
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Bunlar yamalarken Morphe Manager'da se\u00e7ilir ve Duraklatma bunlar\u0131 kapatmaz. De\u011fi\u015ftirmek i\u00e7in yeniden yamala.");
+        table.put("This build's version code is the highest Android allows, so Google Play doesn't offer Meta's updates over it. Threads' checks against the version it was built as still see the real one. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.",
+                "Bu derlemenin s\u00fcr\u00fcm kodu Android'in izin verdi\u011fi en y\u00fcksek de\u011ferdir, bu y\u00fczden Google Play bunun \u00fczerine Meta'n\u0131n g\u00fcncellemelerini sunmaz. Threads'in derlendi\u011fi s\u00fcr\u00fcmle yapt\u0131\u011f\u0131 kontroller ger\u00e7ek kodu g\u00f6rmeye devam eder. Orijinal Threads'e d\u00f6nmek i\u00e7in \u00f6nce bunu kald\u0131r\u0131n. Bu, Threads'in bu telefondaki verilerini siler. Sonraki HushThreads derlemelerinin de Change version code i\u00e7ermesi gerekir, yoksa bunun \u00fczerine y\u00fcklenmezler.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Bu telefonda dosya se\u00e7ici yok, bu y\u00fczden burada dosya se\u00e7menin bir yolu yok.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -2604,6 +2630,8 @@ public final class L10nTranslations {
                 "S\u00fcr\u00fcm");
         table.put("Version %1$s for Threads %2$s",
                 "Threads %2$s i\u00e7in %1$s s\u00fcr\u00fcm\u00fc");
+        table.put("Version code raised",
+                "S\u00fcr\u00fcm kodu y\u00fckseltildi");
         table.put("Video file name",
                 "Video dosya ad\u0131");
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
@@ -2618,13 +2646,13 @@ public final class L10nTranslations {
                 "Dokundu\u011fun web ba\u011flant\u0131lar\u0131, Threads'in t\u0131klama izleyicisi olmadan varsay\u0131lan taray\u0131c\u0131nda veya o sitenin uygulamas\u0131nda a\u00e7\u0131l\u0131r. Threads, Instagram ve di\u011fer Meta sayfalar\u0131 yine Threads'te a\u00e7\u0131l\u0131r.");
         table.put("Where you left off in your feed",
                 "Ak\u0131\u015fta kald\u0131\u011f\u0131n yer");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Yukar\u0131daki anahtar a\u00e7\u0131kken ne kadar uzun s\u00fcre uzakta kal\u0131rsan kal yerin korunur. Yenilemek i\u00e7in \u00e7ekmek ve uygulamay\u0131 yeniden ba\u015flatmak yine yeni g\u00f6nderileri y\u00fckler.");
         table.put("You have the newest HushThreads release.",
                 "En yeni HushThreads s\u00fcr\u00fcm\u00fcn\u00fc kullan\u0131yorsun.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "HushThreads'u duraklatt\u0131n.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
@@ -2635,6 +2663,8 @@ public final class L10nTranslations {
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
         table.put("none",
                 "yok");
+        table.put("the raised version code",
+                "y\u00fckseltilmi\u015f s\u00fcr\u00fcm kodu");
         table.put("the re-signed build fix",
                 "yeniden imzalanm\u0131\u015f s\u00fcr\u00fcm d\u00fczeltmesi");
         table.put("the removed advertising ID permission",

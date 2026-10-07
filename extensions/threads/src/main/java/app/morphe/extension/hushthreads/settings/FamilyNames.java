@@ -30,6 +30,7 @@ public final class FamilyNames {
     public static final String SAVE_MEDIA = "Save photos and videos";
     public static final String REMOVE_AD_ID = "Remove the advertising ID";
     public static final String RESTORE_TRUST = "Restore screens on re-signed builds";
+    public static final String VERSION_CODE = "Change version code";
 
     private FamilyNames() {
     }

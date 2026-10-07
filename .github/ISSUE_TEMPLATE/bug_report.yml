@@ -73,6 +73,7 @@ body:
       multiple: true
       options:
         - Block background-return feed refresh
+        - Change version code
         - Disable analytics
         - Disable video autoplay
         - Hide ads

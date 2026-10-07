@@ -69,4 +69,8 @@ public final class SettingsStatus {
     public static boolean restoreTrust() {
         return false;
     }
+
+    public static boolean versionCode() {
+        return false;
+    }
 }

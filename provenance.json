@@ -389,6 +389,18 @@
       "upstream": "https://github.com/SysAdminDoc/HushThreads",
       "via": [],
       "license": "GPL-3.0-only"
+    },
+    {
+      "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/misc/VersionCode.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/misc/versioncode/**"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/HushGram",
+      "commit": "b0a3eca5a52cfe6761dc8a8cdf9ed12df662075c",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "HushGram's Change version code, moved from app.morphe.patches.instagram and app.hushgram.extension.instagram to app.morphe.patches.threads and app.morphe.extension.hushthreads with Threads' names. The class walk is a local helper over classDefForEach in place of HushGram's ClassIndex, the family is switched on from the patch file, and the extension leaves out HushGram's report line and the unraised helper its override files read."
     }
   ]
 }

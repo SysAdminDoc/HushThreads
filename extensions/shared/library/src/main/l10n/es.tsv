@@ -260,3 +260,6 @@ Smallest	La más pequeña
 Video file name	Nombre de archivo de los videos
 Videos are named %1$s. Photos are always named %2$s followed by the date and time.	Los videos se llaman %1$s. Las fotos siempre se llaman %2$s seguido de la fecha y la hora.
 Videos go to %1$s and photos to %2$s.	Los videos van a %1$s y las fotos a %2$s.
+Version code raised	Código de versión aumentado
+This build's version code is the highest Android allows, so Google Play doesn't offer Meta's updates over it. Threads' checks against the version it was built as still see the real one. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.	El código de versión de esta compilación es el más alto que permite Android, así que Google Play no ofrece las actualizaciones de Meta sobre ella. Las comprobaciones de Threads contra la versión con la que se compiló siguen viendo el real. Para volver al Threads original, desinstala primero este, lo que borra los datos de Threads en este teléfono. Las próximas compilaciones de HushThreads también necesitan Change version code o no se instalarán sobre esta.
+the raised version code	el código de versión aumentado

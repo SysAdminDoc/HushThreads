@@ -86,6 +86,7 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.PURE_BLACK, "Pure black dark mode");
         ROW_TITLES.put(PatchFamily.REMOVE_AD_ID, "Advertising ID removed");
         ROW_TITLES.put(PatchFamily.RESTORE_TRUST, "Re-signed build fix");
+        ROW_TITLES.put(PatchFamily.VERSION_CODE, "Version code raised");
     }
 
     /** The sections every build has, in the order they're drawn. */
@@ -195,7 +196,8 @@ public class HushThreadsPreferenceFragmentTest {
                 if (build.contains(PatchFamily.SAVE_MEDIA)) expected.add("Downloads");
                 if (build.contains(PatchFamily.PURE_BLACK)) expected.add("Appearance");
                 expected.addAll(EVERY_BUILD.subList(0, 2));
-                if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)) {
+                if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)
+                        || build.contains(PatchFamily.VERSION_CODE)) {
                     expected.add("Set when you patched");
                 }
                 expected.addAll(EVERY_BUILD.subList(2, EVERY_BUILD.size()));

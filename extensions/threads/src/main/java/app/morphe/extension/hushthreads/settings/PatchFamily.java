@@ -58,7 +58,8 @@ public enum PatchFamily {
     // A manifest can't be switched at run time: the permission is gone from the APK whether or not
     // HushThreads is paused.
     REMOVE_AD_ID(FamilyNames.REMOVE_AD_ID, "removeAdId", "the removed advertising ID permission"),
-    RESTORE_TRUST(FamilyNames.RESTORE_TRUST, "restoreTrust", "the re-signed build fix");
+    RESTORE_TRUST(FamilyNames.RESTORE_TRUST, "restoreTrust", "the re-signed build fix"),
+    VERSION_CODE(FamilyNames.VERSION_CODE, "versionCode", "the raised version code");
 
     /** The patch's name in Morphe Manager. */
     public final String patchName;

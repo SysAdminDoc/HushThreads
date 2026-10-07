@@ -339,7 +339,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         updates.addPreference(checkNowRow(context));
         ReleaseCheck.watch(this);
 
-        if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)) {
+        if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)
+                || build.contains(PatchFamily.VERSION_CODE)) {
             PreferenceCategory patched = category(screen, L10n.t("Set when you patched"));
             if (build.contains(PatchFamily.REMOVE_AD_ID)) {
                 patched.addPreference(mark(info(context, L10n.t("Advertising ID removed"),
@@ -350,6 +351,14 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 patched.addPreference(mark(info(context, L10n.t("Re-signed build fix"),
                         L10n.t("Screens that check Threads' own signature open again on this re-signed build.")),
                         SettingsIcons.BUILD));
+            }
+            if (build.contains(PatchFamily.VERSION_CODE)) {
+                patched.addPreference(mark(info(context, L10n.t("Version code raised"),
+                        L10n.t("This build's version code is the highest Android allows, so Google Play doesn't offer "
+                                + "Meta's updates over it. Threads' checks against the version it was built as still see "
+                                + "the real one. To go back to stock Threads, uninstall this one first, which deletes "
+                                + "Threads' data on this phone. Later HushThreads builds need Change version code too, "
+                                + "or they won't install over this one.")), SettingsIcons.UPDATES));
             }
             patched.addPreference(info(context, L10n.t("Changing these"),
                     L10n.t("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. "

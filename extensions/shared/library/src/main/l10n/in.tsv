@@ -260,3 +260,6 @@ Smallest	Terkecil
 Video file name	Nama file video
 Videos are named %1$s. Photos are always named %2$s followed by the date and time.	Video diberi nama %1$s. Foto selalu diberi nama %2$s diikuti tanggal dan waktu.
 Videos go to %1$s and photos to %2$s.	Video disimpan ke %1$s dan foto ke %2$s.
+Version code raised	Kode versi dinaikkan
+This build's version code is the highest Android allows, so Google Play doesn't offer Meta's updates over it. Threads' checks against the version it was built as still see the real one. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.	Kode versi build ini adalah yang tertinggi yang diizinkan Android, jadi Google Play tidak menawarkan pembaruan Meta di atasnya. Pemeriksaan Threads terhadap versi saat ia dibuat tetap melihat kode aslinya. Untuk kembali ke Threads asli, copot pemasangan yang ini dulu, yang menghapus data Threads di ponsel ini. Build HushThreads berikutnya juga memerlukan Change version code, atau tidak akan bisa dipasang di atas yang ini.
+the raised version code	kode versi yang dinaikkan
