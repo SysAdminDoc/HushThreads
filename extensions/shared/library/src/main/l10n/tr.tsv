@@ -269,3 +269,5 @@ the removed share sheet entry	kaldırılan paylaşım menüsü girişi
 User certificates trusted	Kullanıcı sertifikalarına güveniliyor
 Threads accepts certificates you've installed yourself where Android checks them. Its own checks on Meta's certificates haven't changed, so a proxy still can't read most of its traffic.	Threads, Android'in denetlediği yerlerde kendi yüklediğin sertifikaları kabul eder. Threads'in Meta sertifikaları için kendi denetimleri değişmedi, bu yüzden bir proxy trafiğin çoğunu yine okuyamaz.
 the user certificate trust	kullanıcı sertifikalarına duyulan güven
+Hide screenshots from Threads	Ekran görüntülerini Threads'ten gizle
+Threads isn't told when you take a screenshot, so it can't log it or react to it.	Ekran görüntüsü aldığında Threads'e haber verilmez, bu yüzden onu kaydedemez ya da ona tepki veremez.

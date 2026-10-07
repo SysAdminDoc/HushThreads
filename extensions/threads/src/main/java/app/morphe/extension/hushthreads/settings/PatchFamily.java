@@ -51,6 +51,8 @@ public enum PatchFamily {
             Settings.OPEN_LINKS_EXTERNALLY),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,
             Settings.DISABLE_ANALYTICS),
+    SCREENSHOT_DETECTION(FamilyNames.SCREENSHOT_DETECTION, "disableScreenshotDetection", null,
+            Settings.DISABLE_SCREENSHOT_DETECTION),
     SAVE_MEDIA(FamilyNames.SAVE_MEDIA, "saveMedia", null,
             Settings.SAVE_MEDIA, Settings.DOWNLOAD_COMPATIBLE),
     PURE_BLACK(FamilyNames.PURE_BLACK, "pureBlack", null,

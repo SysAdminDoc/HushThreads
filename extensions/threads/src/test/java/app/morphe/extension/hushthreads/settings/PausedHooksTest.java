@@ -39,6 +39,7 @@ import app.morphe.extension.hushthreads.feed.VideoAutoplay;
 import app.morphe.extension.hushthreads.misc.Analytics;
 import app.morphe.extension.hushthreads.misc.ExternalBrowser;
 import app.morphe.extension.hushthreads.misc.LinkCleaner;
+import app.morphe.extension.hushthreads.misc.ScreenshotDetection;
 import app.morphe.extension.hushthreads.theme.PureBlack;
 import app.morphe.extension.shared.SettingsContextRule;
 import app.morphe.extension.shared.settings.BaseSettings;
@@ -144,6 +145,9 @@ public class PausedHooksTest {
             String upload = "https://graph.threads.net/logging_client_events";
             return !upload.equals(Analytics.endpoint(upload));
         }));
+        // A new picture in the photo library or a screenshot folder never reaches Threads' watchers.
+        probes.put(PatchFamily.SCREENSHOT_DETECTION, Arrays.asList(
+                ScreenshotDetection::ignoresChange, ScreenshotDetection::ignoresScreenshotFile));
         // A post's menu offers Save.
         probes.put(PatchFamily.SAVE_MEDIA, Collections.singletonList(SavesForTests::menuOffersSave));
         // Threads' dark gray background comes back black.

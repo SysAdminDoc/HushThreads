@@ -75,6 +75,7 @@ body:
         - Block background-return feed refresh
         - Change version code
         - Disable analytics
+        - Disable screenshot detection
         - Disable video autoplay
         - Hide ads
         - Hide suggested users

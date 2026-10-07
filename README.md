@@ -61,13 +61,14 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-HushThreads v0.0.11 has 15 patches. All but Block background-return feed refresh, Change version code, Disable video autoplay, Pure black dark mode, Remove share targets and Trust user-added certificates are selected by default.
+HushThreads v0.0.11 has 16 patches. All but Block background-return feed refresh, Change version code, Disable screenshot detection, Disable video autoplay, Pure black dark mode, Remove share targets and Trust user-added certificates are selected by default.
 
 | Patch | What it does |
 |---|---|
 | `Block background-return feed refresh` | Keeps your place in the feed when you come back to Threads within ten minutes, or after any time away with No time limit on. Pull to refresh and a fresh launch still load new posts. |
 | `Change version code` | Raises this build's version code to the highest Android allows, so Google Play stops offering Meta's updates over it. Threads' checks against the version it was built as still see the real one. Since every build with this patch has the same code, an older Threads patched with it also installs over a newer one. Once it's in, going back to stock Threads means uninstalling first, which deletes Threads' data on your phone, and later HushThreads builds need this patch too or they won't install over this one. |
 | `Disable analytics` | Redirects matched Pigeon, default event-log and MQTT analytics addresses. Settings show which address kinds were patched. Other telemetry may remain. |
+| `Disable screenshot detection` | Threads isn't told when you take a screenshot. It stops looking for new screenshots in your photos and doesn't ask Android to report them. |
 | `Disable video autoplay` | Videos in feed posts don't play by themselves as you scroll. Tap one to watch it full screen. |
 | `Hide ads` | Takes sponsored posts out of your Threads feed before they're shown. |
 | `Hide suggested users` | Removes verified server cards suggesting accounts to follow. Ordinary posts, reposts and unknown card types stay. |
@@ -139,6 +140,8 @@ The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.o
 `Open links in browser` hands a tapped web link to Android as an ordinary link, the way any app does, so your default browser or the site's own app opens it. When Threads wrapped the link in its click tracker (`l.threads.com`, `l.instagram.com`, or a `/linkshim` page), HushThreads reads the real address out of it on the phone and sends only that, with tracking tags such as `fbclid` removed. Links to Threads, Instagram, Facebook, Messenger and Meta stay in Threads' own browser, because sign-in, security checks and Accounts Center need its session. If nothing on the phone can open a web link, the link stays in Threads too. A few places open Threads' browser without the step HushThreads answers, so their links still open in Threads: the photo and video viewer, a link followed inside Threads' full-screen browser, an ad's button and an ad's sign-up form.
 
 `Disable analytics` replaces matched Pigeon, default event-log and MQTT analytics addresses with `127.0.0.1`, on a port nothing listens on. Those uploads fail locally. Missing address kinds and other telemetry aren't covered by this claim. Turning the switch off, Pause or safe mode restores the original addresses.
+
+`Disable screenshot detection` keeps Threads from noticing your screenshots. Threads watches your photo library for new pictures named like screenshots (or, on some phones, the screenshot folders themselves), and on Android 14 and newer it also asks Android to tell it about screenshots of the feed. With the switch on, both watchers stop before they look at the picture and Threads' request to Android isn't made. Your screenshots are saved as usual. Turning the switch off or pausing HushThreads brings back Threads' own behavior. The in-app browser's screenshot report, used only for ads, isn't changed.
 
 On 2026-10-02, repeated enabled, off and paused feed sessions on Android 16 and Threads 449 showed failed local connections only when blocking was enabled. Short worker traces found no sustained analytics CPU retry storm. This doesn't establish long-term battery cost or queue behavior, so the interception stays unchanged.
 

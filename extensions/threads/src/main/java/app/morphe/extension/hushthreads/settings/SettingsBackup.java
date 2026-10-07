@@ -81,6 +81,7 @@ public final class SettingsBackup {
             Settings.SANITIZE_SHARING_LINKS,
             Settings.OPEN_LINKS_EXTERNALLY,
             Settings.DISABLE_ANALYTICS,
+            Settings.DISABLE_SCREENSHOT_DETECTION,
             Settings.PURE_BLACK,
             Settings.SAVE_MEDIA,
             Settings.DOWNLOAD_COMPATIBLE));

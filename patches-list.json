@@ -164,6 +164,59 @@
       "options": []
     },
     {
+      "name": "Disable screenshot detection",
+      "description": "Threads isn't told when you take a screenshot. It stops looking for new screenshots in your photos and doesn't ask Android to report them.",
+      "category": "Privacy",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "450.0.0.51.78",
+          "449.0.0.54.82",
+          "448.0.0.54.85"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "450.0.0.51.78",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 512008342
+              }
+            },
+            {
+              "version": "449.0.0.54.82",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 511908382
+              }
+            },
+            {
+              "version": "448.0.0.54.85",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 511808302
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Disable video autoplay",
       "description": "Videos in feed posts don't play by themselves as you scroll. Tap one to watch it full screen.",
       "category": "Feed",

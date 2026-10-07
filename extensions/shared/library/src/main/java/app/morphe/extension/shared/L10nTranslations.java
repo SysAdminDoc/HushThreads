@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(512);
+        Map<String, String> table = new HashMap<>(516);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -252,6 +252,8 @@ public final class L10nTranslations {
                 "Direkt zu einer Gruppe von Einstellungen. Zur\u00fcck bringt dich dorthin, wo du warst.");
         table.put("Hide ads",
                 "Werbung ausblenden");
+        table.put("Hide screenshots from Threads",
+                "Screenshots vor Threads verbergen");
         table.put("Hide suggested users",
                 "Vorgeschlagene Nutzer ausblenden");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
@@ -298,11 +300,11 @@ public final class L10nTranslations {
                 "Link abgelaufen. \u00d6ffne den Beitrag neu und versuche es noch einmal");
         table.put("Links",
                 "Links");
-        table.put("Links, updates, backup and more",
-                "Links, Updates, Sicherung und mehr");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Links, updates, backup and more",
+                "Links, Updates, Sicherung und mehr");
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
                 "Gefundene Analyseadressen werden an eine Adresse umgeleitet, die nicht antwortet. Andere Telemetrie kann bleiben. Schalte dies aus, um die urspr\u00fcnglichen Adressen zu verwenden.");
         table.put("More settings",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Links von Hand ausw\u00e4hlen");
         table.put("Set when you patched",
                 "Beim Patchen festgelegt");
-        table.put("Settings couldn't open",
-                "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Settings couldn't open",
+                "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Die Einstellungen lie\u00dfen sich nicht vollst\u00e4ndig aktualisieren. \u00d6ffne sie neu und versuche es noch einmal.");
         table.put("Settings exported.",
@@ -516,6 +518,8 @@ public final class L10nTranslations {
                 "Threads ist dreimal hintereinander innerhalb einer Minute nach dem Start abgest\u00fcrzt oder h\u00e4ngen geblieben, deshalb hat sich HushThreads selbst pausiert.");
         table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
                 "Threads erscheint nicht mehr, wenn du aus anderen Apps teilst. Aus Threads in andere Apps teilen funktioniert weiterhin.");
+        table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
+                "Threads erf\u00e4hrt nicht, wenn du einen Screenshot machst, und kann ihn daher weder protokollieren noch darauf reagieren.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Die Webadressen von Threads sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
         table.put("Tracking in links and analytics uploads",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Versionscode erh\u00f6ht");
         table.put("Video file name",
                 "Dateiname f\u00fcr Videos");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
                 "Videos hei\u00dfen %1$s. Fotos hei\u00dfen immer %2$s, gefolgt von Datum und Uhrzeit.");
         table.put("Videos go to %1$s and photos to %2$s.",
                 "Videos landen in %1$s und Fotos in %2$s.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Videos in your feed",
                 "Videos in deinem Feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
@@ -584,7 +588,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(512);
+        Map<String, String> table = new HashMap<>(516);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -789,6 +793,8 @@ public final class L10nTranslations {
                 "Ve directo a un grupo de ajustes. Atr\u00e1s te devuelve a donde estabas.");
         table.put("Hide ads",
                 "Ocultar anuncios");
+        table.put("Hide screenshots from Threads",
+                "Ocultar capturas de pantalla a Threads");
         table.put("Hide suggested users",
                 "Ocultar usuarios sugeridos");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
@@ -835,11 +841,11 @@ public final class L10nTranslations {
                 "El enlace expir\u00f3. Vuelve a abrir la publicaci\u00f3n e int\u00e9ntalo de nuevo");
         table.put("Links",
                 "Enlaces");
-        table.put("Links, updates, backup and more",
-                "Enlaces, actualizaciones, copia de seguridad y m\u00e1s");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("Links, updates, backup and more",
+                "Enlaces, actualizaciones, copia de seguridad y m\u00e1s");
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
                 "Las direcciones de an\u00e1lisis detectadas se redirigen a una direcci\u00f3n que no responde. Puede quedar otra telemetr\u00eda. Desactiva esto para usar las direcciones originales.");
         table.put("More settings",
@@ -958,11 +964,11 @@ public final class L10nTranslations {
                 "Seleccionar enlaces a mano");
         table.put("Set when you patched",
                 "Aplicado al parchear");
-        table.put("Settings couldn't open",
-                "No se pudo abrir la configuraci\u00f3n");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Settings couldn't open",
+                "No se pudo abrir la configuraci\u00f3n");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "No se pudo actualizar la configuraci\u00f3n por completo. Vuelve a abrirla e int\u00e9ntalo de nuevo.");
         table.put("Settings exported.",
@@ -1053,6 +1059,8 @@ public final class L10nTranslations {
                 "Tres veces seguidas, Threads fall\u00f3 o se congel\u00f3 durante el primer minuto tras iniciarse, as\u00ed que HushThreads se paus\u00f3 solo.");
         table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
                 "Threads ya no aparece cuando compartes desde otras apps. Compartir desde Threads a otras apps sigue funcionando.");
+        table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
+                "Threads no se entera cuando haces una captura de pantalla, as\u00ed que no puede registrarla ni reaccionar a ella.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Las direcciones web de Threads est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
         table.put("Tracking in links and analytics uploads",
@@ -1079,13 +1087,13 @@ public final class L10nTranslations {
                 "C\u00f3digo de versi\u00f3n aumentado");
         table.put("Video file name",
                 "Nombre de archivo de los videos");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
                 "Los videos se llaman %1$s. Las fotos siempre se llaman %2$s seguido de la fecha y la hora.");
         table.put("Videos go to %1$s and photos to %2$s.",
                 "Los videos van a %1$s y las fotos a %2$s.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Videos in your feed",
                 "Videos de tu feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
@@ -1121,7 +1129,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(512);
+        Map<String, String> table = new HashMap<>(516);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1326,6 +1334,8 @@ public final class L10nTranslations {
                 "Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.");
         table.put("Hide ads",
                 "Sembunyikan iklan");
+        table.put("Hide screenshots from Threads",
+                "Sembunyikan tangkapan layar dari Threads");
         table.put("Hide suggested users",
                 "Sembunyikan pengguna yang disarankan");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
@@ -1372,11 +1382,11 @@ public final class L10nTranslations {
                 "Tautan kedaluwarsa. Buka ulang postingan lalu coba lagi");
         table.put("Links",
                 "Tautan");
-        table.put("Links, updates, backup and more",
-                "Tautan, pembaruan, cadangan, dan lainnya");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Links, updates, backup and more",
+                "Tautan, pembaruan, cadangan, dan lainnya");
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
                 "Alamat analitik yang ditemukan dialihkan ke alamat yang tidak merespons. Telemetri lain mungkin masih ada. Nonaktifkan ini untuk menggunakan alamat asli.");
         table.put("More settings",
@@ -1495,11 +1505,11 @@ public final class L10nTranslations {
                 "Memilih tautan secara manual");
         table.put("Set when you patched",
                 "Diatur saat Anda menambal");
-        table.put("Settings couldn't open",
-                "Pengaturan tidak dapat dibuka");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Settings couldn't open",
+                "Pengaturan tidak dapat dibuka");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Pengaturan tidak dapat dimuat ulang sepenuhnya. Buka kembali pengaturan lalu coba lagi.");
         table.put("Settings exported.",
@@ -1590,6 +1600,8 @@ public final class L10nTranslations {
                 "Threads berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushThreads menjeda dirinya sendiri.");
         table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
                 "Threads tidak muncul saat kamu berbagi dari aplikasi lain. Berbagi dari Threads ke aplikasi lain tetap berfungsi.");
+        table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
+                "Threads tidak diberi tahu saat kamu mengambil tangkapan layar, jadi tidak bisa mencatat atau menanggapinya.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Alamat web Threads dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
         table.put("Tracking in links and analytics uploads",
@@ -1616,13 +1628,13 @@ public final class L10nTranslations {
                 "Kode versi dinaikkan");
         table.put("Video file name",
                 "Nama file video");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
                 "Video diberi nama %1$s. Foto selalu diberi nama %2$s diikuti tanggal dan waktu.");
         table.put("Videos go to %1$s and photos to %2$s.",
                 "Video disimpan ke %1$s dan foto ke %2$s.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Videos in your feed",
                 "Video di feed Anda");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
@@ -1658,7 +1670,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(512);
+        Map<String, String> table = new HashMap<>(516);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1863,6 +1875,8 @@ public final class L10nTranslations {
                 "V\u00e1 diretamente para um grupo de configura\u00e7\u00f5es. Voltar leva voc\u00ea de volta ao ponto em que estava.");
         table.put("Hide ads",
                 "Ocultar an\u00fancios");
+        table.put("Hide screenshots from Threads",
+                "Esconder capturas de tela do Threads");
         table.put("Hide suggested users",
                 "Ocultar usu\u00e1rios sugeridos");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
@@ -1909,11 +1923,11 @@ public final class L10nTranslations {
                 "Link expirado. Abra a publica\u00e7\u00e3o novamente e tente de novo");
         table.put("Links",
                 "Links");
-        table.put("Links, updates, backup and more",
-                "Links, atualiza\u00e7\u00f5es, backup e mais");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("Links, updates, backup and more",
+                "Links, atualiza\u00e7\u00f5es, backup e mais");
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
                 "Os endere\u00e7os de an\u00e1lise encontrados s\u00e3o redirecionados para um endere\u00e7o que n\u00e3o responde. Outras telemetrias podem permanecer. Desative isto para usar os endere\u00e7os originais.");
         table.put("More settings",
@@ -2032,11 +2046,11 @@ public final class L10nTranslations {
                 "Selecionar links manualmente");
         table.put("Set when you patched",
                 "Definido ao aplicar os patches");
-        table.put("Settings couldn't open",
-                "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Settings couldn't open",
+                "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "N\u00e3o foi poss\u00edvel atualizar completamente as configura\u00e7\u00f5es. Reabra as configura\u00e7\u00f5es e tente novamente.");
         table.put("Settings exported.",
@@ -2127,6 +2141,8 @@ public final class L10nTranslations {
                 "O Threads fechou com erro ou travou no primeiro minuto ap\u00f3s iniciar, tr\u00eas vezes seguidas, ent\u00e3o o HushThreads foi pausado automaticamente.");
         table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
                 "O Threads n\u00e3o aparece quando voc\u00ea compartilha de outros apps. Compartilhar do Threads para outros apps continua funcionando.");
+        table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
+                "O Threads n\u00e3o fica sabendo quando voc\u00ea faz uma captura de tela, ent\u00e3o n\u00e3o pode registr\u00e1-la nem reagir a ela.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Os endere\u00e7os web do Threads est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
         table.put("Tracking in links and analytics uploads",
@@ -2153,13 +2169,13 @@ public final class L10nTranslations {
                 "C\u00f3digo de vers\u00e3o aumentado");
         table.put("Video file name",
                 "Nome do arquivo de v\u00eddeo");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
                 "Os v\u00eddeos ser\u00e3o nomeados como %1$s. As fotos sempre recebem o nome %2$s seguido da data e da hora.");
         table.put("Videos go to %1$s and photos to %2$s.",
                 "Os v\u00eddeos v\u00e3o para %1$s e as fotos para %2$s.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Videos in your feed",
                 "V\u00eddeos do seu feed");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
@@ -2195,7 +2211,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(512);
+        Map<String, String> table = new HashMap<>(516);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2400,6 +2416,8 @@ public final class L10nTranslations {
                 "Do\u011frudan bir ayar grubuna git. Geri, bulundu\u011fun yere d\u00f6nd\u00fcr\u00fcr.");
         table.put("Hide ads",
                 "Reklamlar\u0131 gizle");
+        table.put("Hide screenshots from Threads",
+                "Ekran g\u00f6r\u00fcnt\u00fclerini Threads'ten gizle");
         table.put("Hide suggested users",
                 "\u00d6nerilen kullan\u0131c\u0131lar\u0131 gizle");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
@@ -2446,11 +2464,11 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131n\u0131n s\u00fcresi doldu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar dene");
         table.put("Links",
                 "Ba\u011flant\u0131lar");
-        table.put("Links, updates, backup and more",
-                "Ba\u011flant\u0131lar, g\u00fcncellemeler, yedekleme ve daha fazlas\u0131");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("Links, updates, backup and more",
+                "Ba\u011flant\u0131lar, g\u00fcncellemeler, yedekleme ve daha fazlas\u0131");
         table.put("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. Turn this off to use the original addresses.",
                 "Bulunan analiz adresleri yan\u0131t vermeyen bir adrese y\u00f6nlendirilir. Di\u011fer telemetri devam edebilir. \u00d6zg\u00fcn adresleri kullanmak i\u00e7in bunu kapat.");
         table.put("More settings",
@@ -2569,11 +2587,11 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131lar\u0131 elle se\u00e7me");
         table.put("Set when you patched",
                 "Yamalad\u0131\u011f\u0131nda ayarlananlar");
-        table.put("Settings couldn't open",
-                "Ayarlar a\u00e7\u0131lamad\u0131");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Settings couldn't open",
+                "Ayarlar a\u00e7\u0131lamad\u0131");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Ayarlar tamamen yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
         table.put("Settings exported.",
@@ -2664,6 +2682,8 @@ public final class L10nTranslations {
                 "Threads a\u00e7\u0131ld\u0131ktan sonraki bir dakika i\u00e7inde \u00fcst \u00fcste \u00fc\u00e7 kez \u00e7\u00f6kt\u00fc veya dondu, bu y\u00fczden HushThreads kendini duraklatt\u0131.");
         table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
                 "Di\u011fer uygulamalardan payla\u015f\u0131rken Threads g\u00f6r\u00fcnmez. Threads'ten di\u011fer uygulamalara payla\u015f\u0131m \u00e7al\u0131\u015fmaya devam eder.");
+        table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
+                "Ekran g\u00f6r\u00fcnt\u00fcs\u00fc ald\u0131\u011f\u0131nda Threads'e haber verilmez, bu y\u00fczden onu kaydedemez ya da ona tepki veremez.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Threads'in web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
         table.put("Tracking in links and analytics uploads",
@@ -2690,13 +2710,13 @@ public final class L10nTranslations {
                 "S\u00fcr\u00fcm kodu y\u00fckseltildi");
         table.put("Video file name",
                 "Video dosya ad\u0131");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
                 "Videolar\u0131n ad\u0131 %1$s olur. Foto\u011fraflar\u0131n ad\u0131 her zaman %2$s ile ba\u015flar, ard\u0131ndan tarih ve saat gelir.");
         table.put("Videos go to %1$s and photos to %2$s.",
                 "Videolar %1$s klas\u00f6r\u00fcne, foto\u011fraflar %2$s klas\u00f6r\u00fcne kaydedilir.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Videos in your feed",
                 "Ak\u0131\u015ftaki videolar");
         table.put("Videos in your feed wait for a tap instead of playing as you scroll.",

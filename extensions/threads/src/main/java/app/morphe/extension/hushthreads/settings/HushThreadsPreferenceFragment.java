@@ -263,7 +263,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         }
 
         if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS) || build.contains(PatchFamily.EXTERNAL_BROWSER)
-                || build.contains(PatchFamily.DISABLE_ANALYTICS)) {
+                || build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.SCREENSHOT_DETECTION)) {
             PreferenceCategory privacy = category(screen, L10n.t("Privacy"));
             if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS)) {
                 privacy.addPreference(toggle(context, Settings.SANITIZE_SHARING_LINKS,
@@ -297,6 +297,11 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                     coverage = L10n.f("Patched: %1$s. Missing: %2$s.", found, absent);
                 }
                 privacy.addPreference(info(context, L10n.t("Analytics address coverage"), coverage));
+            }
+            if (build.contains(PatchFamily.SCREENSHOT_DETECTION)) {
+                privacy.addPreference(toggle(context, Settings.DISABLE_SCREENSHOT_DETECTION,
+                        L10n.t("Hide screenshots from Threads"),
+                        L10n.t("Threads isn't told when you take a screenshot, so it can't log it or react to it.")));
             }
         }
 

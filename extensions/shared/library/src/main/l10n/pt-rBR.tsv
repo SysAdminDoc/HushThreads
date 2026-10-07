@@ -266,3 +266,5 @@ the removed share sheet entry	a entrada removida do menu de compartilhamento
 User certificates trusted	Certificados do usuário confiáveis
 Threads accepts certificates you've installed yourself where Android checks them. Its own checks on Meta's certificates haven't changed, so a proxy still can't read most of its traffic.	O Threads aceita certificados que você mesmo instalou onde o Android os verifica. As verificações do próprio Threads nos certificados da Meta não mudaram, então um proxy ainda não consegue ler a maior parte do tráfego.
 the user certificate trust	a confiança nos certificados do usuário
+Hide screenshots from Threads	Esconder capturas de tela do Threads
+Threads isn't told when you take a screenshot, so it can't log it or react to it.	O Threads não fica sabendo quando você faz uma captura de tela, então não pode registrá-la nem reagir a ela.

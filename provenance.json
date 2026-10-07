@@ -241,6 +241,19 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/misc/ScreenshotDetection.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/misc/screenshot/**"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [
+        "https://github.com/SysAdminDoc/Hushfacebook"
+      ],
+      "license": "GPL-3.0-only",
+      "changes": "Disable screenshot detection: the extension asked first thing in the photo library observer and the screenshot folder report, both found by the strings they log or query, and Threads' screen capture registrations sent through the extension. Found by reading 450, 449 and 448, with Hushfacebook's switch as the behavior reference."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ThreadsSettingsRow.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/misc/settings/ThreadsSettingsRow.kt"
       ],

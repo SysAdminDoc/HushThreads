@@ -75,6 +75,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_disable_analytics", TRUE);
 
     /**
+     * Threads isn't told when you take a screenshot: its photo library and screenshot folder
+     * watchers skip the new picture, and on Android 14 and newer it doesn't ask Android to report
+     * screenshots of the feed ({@link app.morphe.extension.hushthreads.misc.ScreenshotDetection}).
+     */
+    public static final BooleanSetting DISABLE_SCREENSHOT_DETECTION =
+            new BooleanSetting("hushthreads_disable_screenshot_detection", TRUE);
+
+    /**
      * Dark mode's background is pure black instead of Threads' dark gray. Threads builds its colors
      * once a start, so a change waits for a restart.
      */

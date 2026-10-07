@@ -58,6 +58,10 @@ public final class SettingsStatus {
         return 0;
     }
 
+    public static boolean disableScreenshotDetection() {
+        return false;
+    }
+
     public static boolean pureBlack() {
         return false;
     }
