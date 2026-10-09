@@ -43,7 +43,8 @@ This project has no connection to Meta or to the Morphe project. Neither endorse
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.34.0 or newer.
 2. Add HushThreads as a patch source: https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads
 3. Get Threads 449.0.0.54.82 (`com.instagram.barcelona`) for arm64-v8a, version code 511908382 (120-640dpi, Android 9+). That's the build these patches are checked against. Morphe Manager warns about other builds of the same version.
-4. In Morphe Manager, pick that file, keep the default patch selection or change it, and patch.
+4. In Morphe Manager, pick that file and patch. Manager's default selection holds every patch but the three the [Patches](#patches) section names, so you don't need Expert mode. The patches that used to be opt-in, such as `Disable video autoplay` and `Pure black dark mode`, start with their switches off until you turn them on in [HushThreads settings](#settings).
+5. To change the selection, or to add `Change version code`, `Remove share targets` or `Trust user-added certificates`, turn on **Settings → Advanced → Expert mode** in Manager before you pick the file. If you saved a selection of your own in Expert mode before, Manager may keep using it, so look over the HushThreads list once for the patches that joined the default selection.
 
 HushThreads v0.0.12 works with all three builds below.
 
@@ -73,7 +74,9 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 HushThreads v0.0.12 has 17 patches. Morphe Manager's default selection has every patch but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Change version code changes the version Android sees, so going back to stock Threads means uninstalling. The other two change Threads when you patch and have no switch to undo it. Turn on Expert mode in Manager to pick them.
 
-Nothing else needs Expert mode. `Block background-return feed refresh`, `Disable screenshot detection`, `Disable video autoplay`, `Max image quality` and `Pure black dark mode` used to be opt-in. They're in every build now with their switches off, so a fresh patch looks like the Threads you know until you turn them on in HushThreads settings. Each row below says where a patch's switch is and how it starts.
+Nothing else needs Expert mode. `Block background-return feed refresh`, `Disable screenshot detection`, `Disable video autoplay`, `Max image quality` and `Pure black dark mode` used to be opt-in. They're in every build now with their switches off, so a fresh patch looks like the Threads you know until you turn them on in HushThreads settings. Each row below says where a patch's switch is and how it starts. In Expert mode the patches sit in groups named for what they touch, like Feed, Privacy and Downloads.
+
+Updating from v0.0.12 or older? If you'd picked one of those five before and never changed its switch, the switch now starts off, so turn it back on in HushThreads settings after you update. The [changelog](CHANGELOG.md) names each one.
 
 | Patch | What it does |
 |---|---|
@@ -101,7 +104,7 @@ Block background-return feed refresh answers the four checks Threads makes as it
 
 Disable video autoplay holds the video that a post in your feed, a profile or a thread would start as you scroll. It stays on its cover frame until you tap it, and the full-screen viewer that opens plays it with its usual controls. Ad cards and trend previews still play as Threads decides, and so do Instagram videos shown inside a post. Threads may still load a video ahead of time. Its hook passes fixture checks on both source-supported builds. On an Android 16 emulator with Threads 449, feed videos stayed still with the switch on and played as usual with it off, and a tapped video played in the viewer. It hasn't been tried on a phone or on 448 yet.
 
-Pure black dark mode changes the #101010 gray that Threads' theme uses for the feed, posts and profiles to #000000. Raised surfaces such as cards, menus and sheets keep their own grays, so they still stand out. You'll only see it with dark mode on. The switch is on the Appearance page under More settings, and a change takes effect the next time Threads starts. Pause and safe mode give Threads its gray back. Its hooks pass fixture checks on both source-supported builds. On a Galaxy S22 with Threads 449, the feed drew on #000000 with the switch on, and on #101010 after turning it off and restarting. An Android 16 emulator showed the same for a post and a profile, and with HushThreads paused. It hasn't been tried on 448 yet.
+Pure black dark mode changes the #101010 gray that Threads' theme uses for the feed, posts and profiles to #000000. Raised surfaces such as cards, menus and sheets keep their own grays, so they still stand out. You'll only see it with dark mode on. The switch is on the Appearance page under More settings and starts off, and a change takes effect the next time Threads starts. Pause and safe mode give Threads its gray back. Its hooks pass fixture checks on both source-supported builds. On a Galaxy S22 with Threads 449, the feed drew on #000000 with the switch on, and on #101010 after turning it off and restarting. An Android 16 emulator showed the same for a post and a profile, and with HushThreads paused. It hasn't been tried on 448 yet.
 
 Trust user-added certificates edits the network security config Threads names, fb_network_security_config on 448 to 450. Your own certificates join the system ones in its base settings, and they're let past the pins that file sets for Meta's domains, since those pins would turn them away otherwise. Threads' network stack checks Meta's certificates in its own code as well. That's separate from the file and this patch leaves it alone. Debug overrides, which only a debuggable build reads, stay as they are. The edit passes fixture checks on 450, 449 and 448 and hasn't been tried on a device yet.
 

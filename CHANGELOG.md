@@ -2,6 +2,13 @@
 
 Changes in the source build, then released versions.
 
+## Unreleased
+
+* **Threads:** Morphe Manager's default selection now holds every patch but three, so you don't need Expert mode to get `Disable video autoplay`, `Pure black dark mode`, `Max image quality`, `Disable screenshot detection` or `Block background-return feed refresh`. Those five start with their switches off, and a fresh patch looks like the Threads you know until you turn things on in HushThreads settings. `Change version code` stays out because it changes the version Android sees, so going back to stock Threads means uninstalling. `Remove share targets` and `Trust user-added certificates` stay out because they change Threads when you patch and there's no switch to undo them. Turn on Expert mode to pick those three.
+* **Threads:** If you'd picked one of those five patches before and never changed its switch, the switch starts off after you update. HushThreads keeps no record of the build you came from, so it can't tell you meant it on. Look these over in HushThreads settings and turn back on the ones you want. Under Feed that's Keep feed position on return, Tap to play videos and Full size photos. Under Privacy it's Hide screenshots from Threads, and under Appearance, in More settings, it's Pure black dark mode. A switch you'd already turned off stays off.
+* **Threads:** `Save photos and videos` moves from Feed to a Downloads group in Expert mode's patch list, the same name its page has in HushThreads settings.
+* **Threads:** Every patch description says what the patch does, where its switch is in HushThreads settings and how that switch starts, so Manager's list tells you what you're getting before you patch.
+
 ## 0.0.12 (2026-10-07)
 
 * **Threads:** New Trust user-added certificates patch, not selected by default. Threads accepts certificates you've installed on your phone yourself, such as one a work network needs or a debugging proxy's, wherever it relies on Android's own certificate checks. Threads' network code checks Meta's certificates on its own as well and this patch doesn't change that, so a proxy still can't read most of Threads' traffic to Meta. HushThreads settings list it under Set when you patched.
