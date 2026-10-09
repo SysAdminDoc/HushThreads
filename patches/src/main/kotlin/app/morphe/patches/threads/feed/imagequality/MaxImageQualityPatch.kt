@@ -65,9 +65,8 @@ private const val TWENTIETH = 20
 @Suppress("unused")
 val maxImageQualityPatch = bytecodePatch(
     name = PATCH,
-    description = "Photos load at the largest size Threads has instead of one picked for your screen. " +
-        "They're sharper, and each one is a bigger download. Its switch, Full size photos, is on the Feed " +
-        "page of HushThreads settings and starts off.",
+    description = "Loads photos at the largest size Threads has, instead of one picked for your screen. Photos look" +
+        " sharper but use more data. Starts off. Turn it on in HushThreads settings > Feed.",
 ) {
     category("Feed")
     dependsOn(settingsPatch)

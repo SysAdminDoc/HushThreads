@@ -8,6 +8,7 @@ Changes in the source build, then released versions.
 * **Threads:** If you'd picked one of those five patches before and never changed its switch, the switch starts off after you update. HushThreads keeps no record of the build you came from, so it can't tell you meant it on. Look these over in HushThreads settings and turn back on the ones you want. Under Feed that's Keep feed position on return, Tap to play videos and Full size photos. Under Privacy it's Hide screenshots from Threads, and under Appearance, in More settings, it's Pure black dark mode. A switch you'd already turned off stays off.
 * **Threads:** `Save photos and videos` moves from Feed to a Downloads group in Expert mode's patch list, the same name its page has in HushThreads settings.
 * **Threads:** Every patch description says what the patch does, where its switch is in HushThreads settings and how that switch starts, so Manager's list tells you what you're getting before you patch.
+* **Threads:** Patch descriptions in Morphe Manager are rewritten in plain English. Each one says what the patch changes, why you might want it, and ends with where its switch is and whether it starts on or off.
 
 ## 0.0.12 (2026-10-07)
 

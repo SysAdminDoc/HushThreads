@@ -42,8 +42,9 @@ internal val removeAdIdManifestPatch = resourcePatch {
 @Suppress("unused")
 val removeAdIdPatch = bytecodePatch(
     name = "Remove the advertising ID",
-    description = "Stops Threads getting your phone's advertising ID from Google Play services. Threads gets " +
-        "a string of zeros in its place. It has no switch, since the permission comes out when you patch.",
+    description = "Stops Threads from reading your phone's advertising ID. It gets a string of zeros instead. Good " +
+        "for making your phone harder to track across apps. Works as soon as you patch it in, with no " +
+        "switch.",
     default = true,
 ) {
     category("Privacy")

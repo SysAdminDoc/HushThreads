@@ -83,11 +83,9 @@ internal val removeShareTargetsManifestPatch = resourcePatch {
 @Suppress("unused")
 val removeShareTargetsPatch = bytecodePatch(
     name = "Remove share targets",
-    description = "Takes Threads out of the share sheet other apps open, so it isn't offered when you share " +
-        "a link, a photo or a video from somewhere else. It does that by removing the share entries from " +
-        "Threads' manifest, along with any contacts Threads offers there for direct sharing. Sharing from " +
-        "Threads to other apps still works. There's no switch, since the entries come out when you patch, " +
-        "and it isn't selected by default, so turn on Expert mode in Morphe Manager to pick it.",
+    description = "Takes Threads out of the share menu in other apps, so it isn't offered when you share a link, " +
+        "photo or video. Sharing from Threads still works. It isn't selected by default. Works as soon as" +
+        " you patch it in, with no switch.",
     default = false,
 ) {
     category("Interface")

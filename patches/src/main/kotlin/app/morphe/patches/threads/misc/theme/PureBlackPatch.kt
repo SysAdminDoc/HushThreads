@@ -71,10 +71,9 @@ private const val SCHEME_COLORS = 20
 @Suppress("unused")
 val pureBlackPatch = bytecodePatch(
     name = PATCH,
-    description = "Threads' dark mode uses pure black instead of its dark gray behind your feed, posts and " +
-        "profiles, which looks deeper and saves power on an OLED screen. Menus and sheets keep their own " +
-        "grays. Its switch is on the Appearance page, under More settings in HushThreads settings. It starts " +
-        "off, and a change shows once Threads restarts.",
+    description = "Makes Threads' dark mode truly black instead of dark gray behind your feed and posts. It looks " +
+        "deeper and can save battery on OLED screens. Starts off. Turn it on in HushThreads settings > " +
+        "More settings > Appearance.",
 ) {
     category("Interface")
     dependsOn(settingsPatch)

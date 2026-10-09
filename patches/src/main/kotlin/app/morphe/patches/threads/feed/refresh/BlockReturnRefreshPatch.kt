@@ -81,9 +81,9 @@ internal const val BADGE_DECISION = "badge_decision"
 @Suppress("unused")
 val blockReturnRefreshPatch = bytecodePatch(
     name = PATCH,
-    description = "Keeps your place in the feed when you come back to Threads within ten minutes, or after " +
-        "any time away with No time limit on. Pull to refresh and a fresh launch still load new posts. Its " +
-        "switch, Keep feed position on return, is on the Feed page of HushThreads settings and starts off.",
+    description = "Keeps your place in your feed when you leave Threads and come back within ten minutes. Pulling " +
+        "down to refresh still loads new posts. Good if you hate losing the post you were reading. Starts" +
+        " off. Turn it on in HushThreads settings > Feed.",
 ) {
     category("Feed")
     dependsOn(settingsPatch)

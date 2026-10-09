@@ -456,8 +456,8 @@ internal fun BytecodePatchContext.suggestedTargets(): SuggestedTargets {
 @Suppress("unused")
 val hideSuggestedUsersPatch = bytecodePatch(
     name = PATCH,
-    description = "Removes verified server cards suggesting accounts to follow. Ordinary posts, reposts and " +
-        "unknown card types stay. Its switch is on the Feed page of HushThreads settings and starts on.",
+    description = "Removes the cards that suggest accounts to follow. Normal posts and reposts stay. Good if you " +
+        "only want posts in your feed. On by default. Turn it off in HushThreads settings > Feed.",
     default = true,
 ) {
     category("Feed")
