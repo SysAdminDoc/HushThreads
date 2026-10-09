@@ -77,9 +77,9 @@ internal const val PATH_PARSE_FAIL = "ig_android_screenshot_path_parse_fail"
 @Suppress("unused")
 val disableScreenshotDetectionPatch = bytecodePatch(
     name = PATCH,
-    description = "Threads isn't told when you take a screenshot. It stops looking for new screenshots in your " +
-        "photos and doesn't ask Android to report them.",
-    default = false,
+    description = "Threads isn't told when you take a screenshot. It stops looking for new screenshots in " +
+        "your photos and doesn't ask Android to report them. Its switch, Hide screenshots from Threads, is " +
+        "on the Privacy page of HushThreads settings and starts off.",
 ) {
     category("Privacy")
     dependsOn(settingsPatch)

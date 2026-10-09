@@ -79,8 +79,9 @@ internal object MqttSettingsFingerprint : Fingerprint(
 @Suppress("unused")
 val disableAnalyticsPatch = bytecodePatch(
     name = PATCH,
-    description = "Redirects matched Pigeon, default event-log and MQTT analytics addresses. " +
-        "Settings show which address kinds were patched. Other telemetry may remain.",
+    description = "Redirects matched Pigeon, default event-log and MQTT analytics addresses. Settings show " +
+        "which address kinds were patched. Other telemetry may remain. Its switch, Stop analytics uploads, " +
+        "is on the Privacy page of HushThreads settings and starts on.",
     default = true,
 ) {
     category("Privacy")

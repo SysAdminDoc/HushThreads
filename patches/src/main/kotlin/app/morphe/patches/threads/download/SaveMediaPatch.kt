@@ -97,7 +97,8 @@ internal data class SaveRowSite(
 val saveMediaPatch = bytecodePatch(
     name = PATCH,
     description = "Adds Save to a post's menu, below Copy link. It saves the post's photo or video to your " +
-        "phone's gallery, and every page of a carousel.",
+        "phone's gallery, and every page of a carousel. Its switch is on the Downloads page of HushThreads " +
+        "settings and starts on.",
     default = true,
 ) {
     category("Feed")

@@ -133,8 +133,9 @@ internal object PermalinkResponseParserFingerprint : Fingerprint(
 @Suppress("unused")
 val sanitizeSharingLinksPatch = bytecodePatch(
     name = "Sanitize sharing links",
-    description = "Takes Threads' tracking tags, such as xmt, off the links you share or copy, and turns a short " +
-        "share link into the post's own link. The post a link opens stays the same.",
+    description = "Takes Threads' tracking tags, such as xmt, off the links you share or copy, and turns a " +
+        "short share link into the post's own link. The post a link opens stays the same. Its switch, Remove " +
+        "tracking from shared links, is on the Privacy page of HushThreads settings and starts on.",
     default = true,
 ) {
     category("Privacy")

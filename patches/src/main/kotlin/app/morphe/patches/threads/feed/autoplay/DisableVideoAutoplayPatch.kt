@@ -68,8 +68,8 @@ internal const val POST_CAROUSEL = "com.instagram.barcelona.feed.post.ui.PostCar
 @Suppress("unused")
 val disableVideoAutoplayPatch = bytecodePatch(
     name = PATCH,
-    description = "Videos in feed posts don't play by themselves as you scroll. Tap one to watch it full screen.",
-    default = false,
+    description = "Videos in feed posts don't play by themselves as you scroll. Tap one to watch it full " +
+        "screen. Its switch, Tap to play videos, is on the Feed page of HushThreads settings and starts off.",
 ) {
     category("Feed")
     dependsOn(settingsPatch)

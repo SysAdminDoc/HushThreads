@@ -68,7 +68,8 @@ internal object BrowserLauncherFingerprint : Fingerprint(
 val openLinksExternallyPatch = bytecodePatch(
     name = "Open links in browser",
     description = "Opens the web links you tap in your default browser instead of Threads' own, without " +
-        "Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads.",
+        "Threads' click tracker. Threads, Instagram and other Meta pages still open in Threads. Its switch, " +
+        "Open links in your browser, is on the Privacy page of HushThreads settings and starts on.",
     default = true,
 ) {
     category("Privacy")

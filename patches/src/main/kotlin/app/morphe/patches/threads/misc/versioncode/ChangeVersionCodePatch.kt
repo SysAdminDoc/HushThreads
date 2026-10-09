@@ -61,12 +61,13 @@ private val versionCodeReadsPatch = bytecodePatch {
 @Suppress("unused")
 val changeVersionCodePatch = resourcePatch(
     name = "Change version code",
-    description = "Raises this build's version code to the highest Android allows, so Google Play stops offering " +
-        "Meta's updates over it. Threads' checks against the version it was built as still see the real one. " +
-        "Since every build with this patch has the same code, an older Threads patched with it also installs " +
-        "over a newer one. Once it's in, going back to stock Threads means uninstalling first, which deletes " +
-        "Threads' data on your phone, and later HushThreads builds need this patch too or they won't install " +
-        "over this one.",
+    description = "Raises this build's version code to the highest Android allows, so Google Play stops " +
+        "offering Meta's updates over it. Threads' checks against the version it was built as still see the " +
+        "real one. Since every build with this patch has the same code, an older Threads patched with it " +
+        "also installs over a newer one. Once it's in, going back to stock Threads means uninstalling first, " +
+        "which deletes Threads' data on your phone, and later HushThreads builds need this patch too or they " +
+        "won't install over this one. It has no switch and isn't selected by default, so turn on Expert mode " +
+        "in Morphe Manager to pick it.",
     default = false,
 ) {
     category("Updates")

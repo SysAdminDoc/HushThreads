@@ -92,9 +92,10 @@ internal val trustUserCertificatesResourcePatch = resourcePatch {
 val trustUserCertificatesPatch = bytecodePatch(
     name = "Trust user-added certificates",
     description = "Lets Android's certificate checks in Threads accept certificates you've installed on your " +
-        "phone yourself, such as one a work or school network needs, or a debugging proxy's. Threads also checks " +
-        "Meta's certificates in its own network code, which this patch doesn't change, so a proxy still can't " +
-        "read most of Threads' traffic to Meta. Only pick it if you know you need it.",
+        "phone yourself, such as one a work or school network needs, or a debugging proxy's. Threads also " +
+        "checks Meta's certificates in its own network code, which this patch doesn't change, so a proxy " +
+        "still can't read most of Threads' traffic to Meta. It has no switch and isn't selected by default, " +
+        "so turn on Expert mode in Morphe Manager to pick it if you know you need it.",
     default = false,
 ) {
     category("Fixes")

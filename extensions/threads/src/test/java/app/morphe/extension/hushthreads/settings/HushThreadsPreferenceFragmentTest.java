@@ -252,11 +252,15 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Pure black dark mode", String.valueOf(page.findPreference(Settings.PURE_BLACK.key).getTitle()));
             assertEquals("Dark mode draws black instead of dark gray. Turn on dark mode in Threads to see it.",
                     String.valueOf(page.findPreference(Settings.PURE_BLACK.key).getSummary()));
-            // Every selected feed, privacy and appearance switch ships on.
-            for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS, Settings.BLOCK_RETURN_REFRESH,
-                    Settings.DISABLE_VIDEO_AUTOPLAY, Settings.MAX_IMAGE_QUALITY, Settings.SANITIZE_SHARING_LINKS, Settings.OPEN_LINKS_EXTERNALLY, Settings.DISABLE_ANALYTICS,
-                    Settings.DISABLE_SCREENSHOT_DETECTION, Settings.PURE_BLACK)) {
+            // The patches that were always in Manager's default selection ship their switches on.
+            for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS,
+                    Settings.SANITIZE_SHARING_LINKS, Settings.OPEN_LINKS_EXTERNALLY, Settings.DISABLE_ANALYTICS)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
+            }
+            // The ones that joined it later start off, so a default build looks like Threads.
+            for (BooleanSetting setting : Arrays.asList(Settings.BLOCK_RETURN_REFRESH, Settings.DISABLE_VIDEO_AUTOPLAY,
+                    Settings.MAX_IMAGE_QUALITY, Settings.DISABLE_SCREENSHOT_DETECTION, Settings.PURE_BLACK)) {
+                assertFalse(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             // The time limit holds until someone lifts it.
             assertFalse(((SwitchPreference) page.findPreference(Settings.RETURN_REFRESH_NO_LIMIT.key)).isChecked());

@@ -39,9 +39,9 @@ private const val FBNS_SIGNERS = "Lapp/morphe/extension/hushthreads/misc/Threads
 @Suppress("unused")
 val restoreTrustPatch = bytecodePatch(
     name = "Restore screens on re-signed builds",
-    description = "Lets Threads trust itself again on a re-signed build and share sign-in information " +
-        "with an Instagram installed with this build's own key. Both apps keep their current signing " +
-        "keys. A Root Mount install doesn't need this patch.",
+    description = "Lets Threads trust itself again on a re-signed build and share sign-in information with " +
+        "an Instagram installed with this build's own key. Both apps keep their current signing keys. A Root " +
+        "Mount install doesn't need this patch. It has no switch.",
     default = true,
 ) {
     category("Fixes")
