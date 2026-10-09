@@ -42,7 +42,7 @@ This project has no connection to Meta or to the Morphe project. Neither endorse
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.34.0 or newer.
 2. Add HushThreads as a patch source: https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads
-3. Get Threads 449.0.0.54.82 (`com.instagram.barcelona`) for arm64-v8a, version code 511908382 (120-640dpi, Android 9+). That's the build these patches are checked against. Morphe Manager warns about other builds of the same version.
+3. Get Threads 450.0.0.51.78 (`com.instagram.barcelona`) for arm64-v8a, version code 512008342 (240-480dpi, Android 9+). This is the primary declared target. The patch fixture set also checks 449.0.0.54.82 and 448.0.0.54.85.
 4. In Morphe Manager, pick that file and patch. Manager's default selection holds every patch but the three the [Patches](#patches) section names, so you don't need Expert mode. The patches that used to be opt-in, such as `Disable video autoplay` and `Pure black dark mode`, start with their switches off until you turn them on in [HushThreads settings](#settings).
 5. To change the selection, or to add `Change version code`, `Remove share targets` or `Trust user-added certificates`, turn on **Settings → Advanced → Expert mode** in Manager before you pick the file. If you saved a selection of your own in Expert mode before, Manager may keep using it, so look over the HushThreads list once for the patches that joined the default selection.
 
@@ -193,6 +193,8 @@ Before external code ships, mark its source adopted with the exact commit, compa
 Use JDK 21, the Android SDK and PowerShell 7.5 or newer (Windows PowerShell 5.1 also works). Set `JAVA_HOME` and `ANDROID_HOME`, or configure the SDK in `local.properties`. GitHub Packages requires `GITHUB_ACTOR` and `GITHUB_TOKEN` with `read:packages`.
 
 Declared arm64 builds: 450.0.0.51.78 / 512008342, 449.0.0.54.82 / 511908382 and 448.0.0.54.85 / 511808302.
+
+For app internals and stable patch anchors, see [Threads app reference](docs/threads-app-reference.md). For the patch workflow, see [Patch authoring guide](docs/patch-authoring.md).
 
 ```powershell
 $env:HUSHTHREADS_FIXTURE_DIR = '<fixture folder>'
