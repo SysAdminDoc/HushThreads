@@ -112,7 +112,7 @@ You have the newest HushThreads release.	En yeni HushThreads sürümünü kullan
 The newest HushThreads release is %1$s.	En yeni HushThreads sürümü %1$s.
 Couldn't reach GitHub. Try again later.	GitHub'a ulaşılamadı. Daha sonra tekrar dene.
 GitHub is turning away checks from this network for now. Try again later.	GitHub şu an bu ağdan gelen sorguları geri çeviriyor. Daha sonra tekrar dene.
-GitHub's answer couldn't be used. Try again later.	GitHub'ın yanıtı kullanılamadı. Daha sonra tekrar dene.
+GitHub sent back something HushThreads couldn't read. Try again later.	GitHub, HushThreads'in okuyamadığı bir yanıt gönderdi. Daha sonra tekrar dene.
 Saving the settings file	Ayar dosyası kaydediliyor
 Set when you patched	Yamaladığında ayarlananlar
 Settings couldn't open	Ayarlar açılamadı
@@ -160,7 +160,7 @@ No matching settings	Eşleşen ayar yok
 Try a different word or clear the search.	Başka bir kelime deneyin veya aramayı temizleyin.
 Search settings	Ayarlarda ara
 Clear search	Aramayı temizle
-Your controls are active.	Kontrolleriniz etkin.
+Your switches are working.	Anahtarların çalışıyor.
 Pause	Duraklat
 Resume	Devam et
 Undo	Geri al
@@ -214,7 +214,7 @@ Cancel saving this video	Bu videonun kaydedilmesini iptal et
 Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.	Çoklu gönderi iptal edildi. Kaydedilen %1$d. Başarısız %2$d. Atlanan %3$d.
 Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.	Movies ve Pictures altında bir klasör adı seç. Geçersiz karakterler alt çizgiye dönüşür. Varsayılan %1$s klasörünü kullanmak için boş bırak.
 Copying to the gallery	Galeriye kopyalanıyor
-Download failed	İndirme başarısız oldu
+Download failed. Try again in a moment.	İndirme başarısız oldu. Biraz sonra tekrar dene.
 Download quality	İndirme kalitesi
 Downloading	İndiriliyor
 Downloads	İndirmeler
@@ -255,7 +255,7 @@ Saving a carousel	Çoklu gönderi kaydediliyor
 Saving a photo	Fotoğraf kaydediliyor
 Saving a video	Video kaydediliyor
 Saving...	Kaydediliyor...
-Saving... Cancel: Downloads in HushThreads.	Kaydediliyor... İptal: HushThreads'ta İndirmeler.
+Saving... To cancel, open Downloads in HushThreads settings.	Kaydediliyor... İptal etmek için HushThreads ayarlarında İndirmeler'i aç.
 Smallest	En küçük
 Video file name	Video dosya adı
 Videos are named %1$s. Photos are always named %2$s followed by the date and time.	Videoların adı %1$s olur. Fotoğrafların adı her zaman %2$s ile başlar, ardından tarih ve saat gelir.

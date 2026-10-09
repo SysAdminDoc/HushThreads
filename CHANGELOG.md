@@ -10,6 +10,7 @@ Changes in the source build, then released versions.
 * **Threads:** Every patch description says what the patch does, where its switch is in HushThreads settings and how that switch starts, so Manager's list tells you what you're getting before you patch.
 * **Threads:** Patch descriptions in Morphe Manager are rewritten in plain English. Each one says what the patch changes, why you might want it, and ends with where its switch is and whether it starts on or off.
 * **Threads:** Setting rows in HushThreads settings are reworded in plain English, with a restart reminder on Pure black dark mode. Translations for German, Spanish, Indonesian, Brazilian Portuguese and Turkish are updated to match.
+* **Threads:** A few messages are clearer about what happened and what to do next: a failed download, the cancel hint while saving, an unreadable reply from GitHub, and the status line on the overview. Translations are updated to match.
 
 ## 0.0.12 (2026-10-07)
 

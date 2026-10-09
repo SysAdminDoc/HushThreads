@@ -202,8 +202,8 @@ public final class L10nTranslations {
                 "Diagnosedaten wiederhergestellt.");
         table.put("Diagnostic report copied to the clipboard.",
                 "Diagnosebericht in die Zwischenablage kopiert.");
-        table.put("Download failed",
-                "Download fehlgeschlagen");
+        table.put("Download failed. Try again in a moment.",
+                "Download fehlgeschlagen. Versuche es gleich noch einmal.");
         table.put("Download quality",
                 "Download-Qualit\u00e4t");
         table.put("Downloading",
@@ -242,8 +242,8 @@ public final class L10nTranslations {
                 "GPL-3.0, mit den Hinweisen der Projekte, auf denen es aufbaut");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
                 "GitHub weist Anfragen aus diesem Netz gerade ab. Versuche es sp\u00e4ter noch einmal.");
-        table.put("GitHub's answer couldn't be used. Try again later.",
-                "Mit der Antwort von GitHub lie\u00df sich nichts anfangen. Versuche es sp\u00e4ter noch einmal.");
+        table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
+                "GitHub hat etwas geschickt, das HushThreads nicht lesen konnte. Versuche es sp\u00e4ter noch einmal.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Direkt zu einer Gruppe von Einstellungen. Zur\u00fcck bringt dich dorthin, wo du warst.");
         table.put("Helps if WhatsApp, an editor like CapCut or InShot, or a gallery plays your saved video without sound. May lower quality.",
@@ -413,8 +413,8 @@ public final class L10nTranslations {
                 "Einstellungsdatei wird gespeichert");
         table.put("Saving...",
                 "Wird gespeichert \u2026");
-        table.put("Saving... Cancel: Downloads in HushThreads.",
-                "Wird gespeichert \u2026 Abbrechen: Downloads in HushThreads.");
+        table.put("Saving... To cancel, open Downloads in HushThreads settings.",
+                "Speichern ... Zum Abbrechen \u00f6ffne Downloads in den HushThreads-Einstellungen.");
         table.put("Search settings",
                 "Einstellungen suchen");
         table.put("Selecting links by hand",
@@ -573,10 +573,10 @@ public final class L10nTranslations {
                 "Du hast HushThreads pausiert.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Deine Auswahl bleibt gespeichert. Tippe auf Fortsetzen und starte Threads dann neu.");
-        table.put("Your controls are active.",
-                "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
+        table.put("Your switches are working.",
+                "Deine Schalter sind aktiv.");
         table.put("none",
                 "keine");
         table.put("the raised version code",
@@ -747,8 +747,8 @@ public final class L10nTranslations {
                 "Se restauraron los datos de diagn\u00f3stico.");
         table.put("Diagnostic report copied to the clipboard.",
                 "Informe de diagn\u00f3stico copiado en el portapapeles.");
-        table.put("Download failed",
-                "No se pudo descargar");
+        table.put("Download failed. Try again in a moment.",
+                "La descarga fall\u00f3. Int\u00e9ntalo de nuevo en un momento.");
         table.put("Download quality",
                 "Calidad de descarga");
         table.put("Downloading",
@@ -787,8 +787,8 @@ public final class L10nTranslations {
                 "GPL-3.0, con los avisos de los proyectos en los que se basa");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
                 "GitHub est\u00e1 rechazando por ahora las consultas desde esta red. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
-        table.put("GitHub's answer couldn't be used. Try again later.",
-                "No se pudo usar la respuesta de GitHub. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
+        table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
+                "GitHub devolvi\u00f3 algo que HushThreads no pudo leer. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Ve directo a un grupo de ajustes. Atr\u00e1s te devuelve a donde estabas.");
         table.put("Helps if WhatsApp, an editor like CapCut or InShot, or a gallery plays your saved video without sound. May lower quality.",
@@ -958,8 +958,8 @@ public final class L10nTranslations {
                 "Guardando el archivo de configuraci\u00f3n");
         table.put("Saving...",
                 "Guardando...");
-        table.put("Saving... Cancel: Downloads in HushThreads.",
-                "Guardando... Cancelar: Descargas en HushThreads.");
+        table.put("Saving... To cancel, open Downloads in HushThreads settings.",
+                "Guardando... Para cancelar, abre Descargas en los ajustes de HushThreads.");
         table.put("Search settings",
                 "Buscar ajustes");
         table.put("Selecting links by hand",
@@ -1118,10 +1118,10 @@ public final class L10nTranslations {
                 "Pausaste HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Tus preferencias est\u00e1n guardadas. Toca Reanudar y luego reinicia Threads.");
-        table.put("Your controls are active.",
-                "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
+        table.put("Your switches are working.",
+                "Tus interruptores est\u00e1n funcionando.");
         table.put("none",
                 "ninguna");
         table.put("the raised version code",
@@ -1292,8 +1292,8 @@ public final class L10nTranslations {
                 "Data diagnostik dikembalikan.");
         table.put("Diagnostic report copied to the clipboard.",
                 "Laporan diagnostik disalin ke papan klip.");
-        table.put("Download failed",
-                "Unduhan gagal");
+        table.put("Download failed. Try again in a moment.",
+                "Unduhan gagal. Coba lagi sebentar lagi.");
         table.put("Download quality",
                 "Kualitas unduhan");
         table.put("Downloading",
@@ -1332,8 +1332,8 @@ public final class L10nTranslations {
                 "GPL-3.0, beserta pemberitahuan dari proyek yang menjadi dasarnya");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
                 "GitHub sedang menolak pemeriksaan dari jaringan ini. Coba lagi nanti.");
-        table.put("GitHub's answer couldn't be used. Try again later.",
-                "Jawaban GitHub tidak dapat digunakan. Coba lagi nanti.");
+        table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
+                "GitHub mengirim sesuatu yang tidak bisa dibaca HushThreads. Coba lagi nanti.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.");
         table.put("Helps if WhatsApp, an editor like CapCut or InShot, or a gallery plays your saved video without sound. May lower quality.",
@@ -1503,8 +1503,8 @@ public final class L10nTranslations {
                 "Menyimpan file pengaturan");
         table.put("Saving...",
                 "Menyimpan...");
-        table.put("Saving... Cancel: Downloads in HushThreads.",
-                "Menyimpan... Batal: Unduhan di HushThreads.");
+        table.put("Saving... To cancel, open Downloads in HushThreads settings.",
+                "Menyimpan... Untuk membatalkan, buka Unduhan di pengaturan HushThreads.");
         table.put("Search settings",
                 "Cari pengaturan");
         table.put("Selecting links by hand",
@@ -1663,10 +1663,10 @@ public final class L10nTranslations {
                 "Anda menjeda HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Threads.");
-        table.put("Your controls are active.",
-                "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
+        table.put("Your switches are working.",
+                "Sakelar Anda aktif.");
         table.put("none",
                 "tidak ada");
         table.put("the raised version code",
@@ -1837,8 +1837,8 @@ public final class L10nTranslations {
                 "Dados de diagn\u00f3stico restaurados.");
         table.put("Diagnostic report copied to the clipboard.",
                 "Relat\u00f3rio de diagn\u00f3stico copiado para a \u00e1rea de transfer\u00eancia.");
-        table.put("Download failed",
-                "Falha no download");
+        table.put("Download failed. Try again in a moment.",
+                "O download falhou. Tente de novo em instantes.");
         table.put("Download quality",
                 "Qualidade do download");
         table.put("Downloading",
@@ -1877,8 +1877,8 @@ public final class L10nTranslations {
                 "GPL-3.0, com os avisos dos projetos em que o HushThreads se baseia");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
                 "O GitHub est\u00e1 recusando consultas desta rede por enquanto. Tente novamente mais tarde.");
-        table.put("GitHub's answer couldn't be used. Try again later.",
-                "N\u00e3o foi poss\u00edvel usar a resposta do GitHub. Tente novamente mais tarde.");
+        table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
+                "O GitHub enviou algo que o HushThreads n\u00e3o conseguiu ler. Tente de novo mais tarde.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "V\u00e1 diretamente para um grupo de configura\u00e7\u00f5es. Voltar leva voc\u00ea de volta ao ponto em que estava.");
         table.put("Helps if WhatsApp, an editor like CapCut or InShot, or a gallery plays your saved video without sound. May lower quality.",
@@ -2048,8 +2048,8 @@ public final class L10nTranslations {
                 "Salvando o arquivo de configura\u00e7\u00f5es");
         table.put("Saving...",
                 "Salvando...");
-        table.put("Saving... Cancel: Downloads in HushThreads.",
-                "Salvando... Cancelar: Downloads no HushThreads.");
+        table.put("Saving... To cancel, open Downloads in HushThreads settings.",
+                "Salvando... Para cancelar, abra Downloads nas configura\u00e7\u00f5es do HushThreads.");
         table.put("Search settings",
                 "Buscar configura\u00e7\u00f5es");
         table.put("Selecting links by hand",
@@ -2208,10 +2208,10 @@ public final class L10nTranslations {
                 "Voc\u00ea pausou o HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Suas escolhas est\u00e3o salvas. Toque em Retomar e depois reinicie o Threads.");
-        table.put("Your controls are active.",
-                "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
+        table.put("Your switches are working.",
+                "Suas op\u00e7\u00f5es est\u00e3o funcionando.");
         table.put("none",
                 "nenhum");
         table.put("the raised version code",
@@ -2382,8 +2382,8 @@ public final class L10nTranslations {
                 "Tan\u0131lama verileri geri getirildi.");
         table.put("Diagnostic report copied to the clipboard.",
                 "Tan\u0131lama raporu panoya kopyaland\u0131.");
-        table.put("Download failed",
-                "\u0130ndirme ba\u015far\u0131s\u0131z oldu");
+        table.put("Download failed. Try again in a moment.",
+                "\u0130ndirme ba\u015far\u0131s\u0131z oldu. Biraz sonra tekrar dene.");
         table.put("Download quality",
                 "\u0130ndirme kalitesi");
         table.put("Downloading",
@@ -2422,8 +2422,8 @@ public final class L10nTranslations {
                 "GPL-3.0, \u00fczerine kuruldu\u011fu projelerin lisans bildirimleriyle");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
                 "GitHub \u015fu an bu a\u011fdan gelen sorgular\u0131 geri \u00e7eviriyor. Daha sonra tekrar dene.");
-        table.put("GitHub's answer couldn't be used. Try again later.",
-                "GitHub'\u0131n yan\u0131t\u0131 kullan\u0131lamad\u0131. Daha sonra tekrar dene.");
+        table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
+                "GitHub, HushThreads'in okuyamad\u0131\u011f\u0131 bir yan\u0131t g\u00f6nderdi. Daha sonra tekrar dene.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Do\u011frudan bir ayar grubuna git. Geri, bulundu\u011fun yere d\u00f6nd\u00fcr\u00fcr.");
         table.put("Helps if WhatsApp, an editor like CapCut or InShot, or a gallery plays your saved video without sound. May lower quality.",
@@ -2593,8 +2593,8 @@ public final class L10nTranslations {
                 "Ayar dosyas\u0131 kaydediliyor");
         table.put("Saving...",
                 "Kaydediliyor...");
-        table.put("Saving... Cancel: Downloads in HushThreads.",
-                "Kaydediliyor... \u0130ptal: HushThreads'ta \u0130ndirmeler.");
+        table.put("Saving... To cancel, open Downloads in HushThreads settings.",
+                "Kaydediliyor... \u0130ptal etmek i\u00e7in HushThreads ayarlar\u0131nda \u0130ndirmeler'i a\u00e7.");
         table.put("Search settings",
                 "Ayarlarda ara");
         table.put("Selecting links by hand",
@@ -2753,10 +2753,10 @@ public final class L10nTranslations {
                 "HushThreads'u duraklatt\u0131n.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Tercihleriniz kay\u0131tl\u0131. Devam et'e dokunun, sonra Threads'i yeniden ba\u015flat\u0131n.");
-        table.put("Your controls are active.",
-                "Kontrolleriniz etkin.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
+        table.put("Your switches are working.",
+                "Anahtarlar\u0131n \u00e7al\u0131\u015f\u0131yor.");
         table.put("none",
                 "yok");
         table.put("the raised version code",

@@ -112,7 +112,7 @@ You have the newest HushThreads release.	Anda sudah memakai rilis HushThreads te
 The newest HushThreads release is %1$s.	Rilis HushThreads terbaru adalah %1$s.
 Couldn't reach GitHub. Try again later.	GitHub tidak dapat dihubungi. Coba lagi nanti.
 GitHub is turning away checks from this network for now. Try again later.	GitHub sedang menolak pemeriksaan dari jaringan ini. Coba lagi nanti.
-GitHub's answer couldn't be used. Try again later.	Jawaban GitHub tidak dapat digunakan. Coba lagi nanti.
+GitHub sent back something HushThreads couldn't read. Try again later.	GitHub mengirim sesuatu yang tidak bisa dibaca HushThreads. Coba lagi nanti.
 Saving the settings file	Menyimpan file pengaturan
 Set when you patched	Diatur saat Anda menambal
 Settings couldn't open	Pengaturan tidak dapat dibuka
@@ -160,7 +160,7 @@ No matching settings	Tidak ada pengaturan yang cocok
 Try a different word or clear the search.	Coba kata lain atau hapus pencarian.
 Search settings	Cari pengaturan
 Clear search	Hapus pencarian
-Your controls are active.	Kontrol Anda aktif.
+Your switches are working.	Sakelar Anda aktif.
 Pause	Jeda
 Resume	Lanjutkan
 Undo	Urungkan
@@ -214,7 +214,7 @@ Cancel saving this video	Batalkan penyimpanan video ini
 Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.	Carousel dibatalkan. Disimpan %1$d. Gagal %2$d. Dilewati %3$d.
 Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.	Pilih nama folder di Movies dan Pictures. Karakter yang tidak valid menjadi garis bawah. Kosongkan untuk memakai folder bawaan, %1$s.
 Copying to the gallery	Menyalin ke galeri
-Download failed	Unduhan gagal
+Download failed. Try again in a moment.	Unduhan gagal. Coba lagi sebentar lagi.
 Download quality	Kualitas unduhan
 Downloading	Mengunduh
 Downloads	Unduhan
@@ -255,7 +255,7 @@ Saving a carousel	Menyimpan carousel
 Saving a photo	Menyimpan foto
 Saving a video	Menyimpan video
 Saving...	Menyimpan...
-Saving... Cancel: Downloads in HushThreads.	Menyimpan... Batal: Unduhan di HushThreads.
+Saving... To cancel, open Downloads in HushThreads settings.	Menyimpan... Untuk membatalkan, buka Unduhan di pengaturan HushThreads.
 Smallest	Terkecil
 Video file name	Nama file video
 Videos are named %1$s. Photos are always named %2$s followed by the date and time.	Video diberi nama %1$s. Foto selalu diberi nama %2$s diikuti tanggal dan waktu.

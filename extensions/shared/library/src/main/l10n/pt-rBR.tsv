@@ -111,7 +111,7 @@ You have the newest HushThreads release.	Você já está usando a versão mais n
 The newest HushThreads release is %1$s.	A versão mais nova do HushThreads é %1$s.
 Couldn't reach GitHub. Try again later.	Não foi possível conectar-se ao GitHub. Tente novamente mais tarde.
 GitHub is turning away checks from this network for now. Try again later.	O GitHub está recusando consultas desta rede por enquanto. Tente novamente mais tarde.
-GitHub's answer couldn't be used. Try again later.	Não foi possível usar a resposta do GitHub. Tente novamente mais tarde.
+GitHub sent back something HushThreads couldn't read. Try again later.	O GitHub enviou algo que o HushThreads não conseguiu ler. Tente de novo mais tarde.
 Saving the settings file	Salvando o arquivo de configurações
 Set when you patched	Definido ao aplicar os patches
 Settings couldn't open	Não foi possível abrir as configurações
@@ -159,7 +159,7 @@ No matching settings	Nenhuma configuração encontrada
 Try a different word or clear the search.	Tente outra palavra ou limpe a busca.
 Search settings	Buscar configurações
 Clear search	Limpar busca
-Your controls are active.	Seus controles estão ativos.
+Your switches are working.	Suas opções estão funcionando.
 Pause	Pausar
 Resume	Retomar
 Undo	Desfazer
@@ -211,7 +211,7 @@ Cancel saving this video	Cancelar o salvamento deste vídeo
 Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.	Carrossel cancelado. Salvos %1$d. Falhas %2$d. Ignorados %3$d.
 Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.	Escolha o nome da pasta dentro de Movies e Pictures. Caracteres inválidos são substituídos por sublinhados. Deixe em branco para usar a pasta padrão, %1$s.
 Copying to the gallery	Copiando para a galeria
-Download failed	Falha no download
+Download failed. Try again in a moment.	O download falhou. Tente de novo em instantes.
 Download quality	Qualidade do download
 Downloading	Baixando
 Downloads	Downloads
@@ -252,7 +252,7 @@ Saving a carousel	Salvando um carrossel
 Saving a photo	Salvando uma foto
 Saving a video	Salvando um vídeo
 Saving...	Salvando...
-Saving... Cancel: Downloads in HushThreads.	Salvando... Cancelar: Downloads no HushThreads.
+Saving... To cancel, open Downloads in HushThreads settings.	Salvando... Para cancelar, abra Downloads nas configurações do HushThreads.
 Smallest	A menor
 Video file name	Nome do arquivo de vídeo
 Videos are named %1$s. Photos are always named %2$s followed by the date and time.	Os vídeos serão nomeados como %1$s. As fotos sempre recebem o nome %2$s seguido da data e da hora.
