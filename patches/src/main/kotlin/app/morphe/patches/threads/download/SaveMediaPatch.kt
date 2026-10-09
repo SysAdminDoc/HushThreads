@@ -101,7 +101,7 @@ val saveMediaPatch = bytecodePatch(
         "settings and starts on.",
     default = true,
 ) {
-    category("Feed")
+    category("Downloads")
     dependsOn(settingsPatch)
     dependsOn(threadsExtensionPatch)
     compatibleWith(*AppCompatibilities.threads())
