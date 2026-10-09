@@ -114,7 +114,7 @@ The base manifest also defines `com.instagram.barcelona.permission.SYSTEM_ONLY`,
 | Feed page merge | BarcelonaFeedCache and the page filter are central to removing sponsored and suggested units without leaving gaps. Feed units also carry their own type fields. | HideAdsPatch.kt, FeedPageFilterPatch.kt, FeedAdAnchors.kt, HideSuggestedUsersPatch.kt |
 | Feed return | BarcelonaActivity.onStart participates in return-to-feed handling. The ten-minute rule and foreground transitions need flow checks. | BlockReturnRefreshPatch.kt |
 | Video autoplay | Redex moved the play flag. It is the fourth boolean in the observed call path. The default-argument method can write a constant into the destination register. | DisableVideoAutoplayPatch.kt, ReachingWrites.kt |
-| Save media menu | A Compose lambda in PostActionMenuSheet builds action rows. Redex can tail-merge the Copy link and Save rows into one call site. | SaveMediaPatch.kt, MediaBridges.kt |
+| Save media menu | A Compose lambda in PostActionMenuSheet builds action rows. Redex can share Copy link's row call with another stock action. Add Save only on Copy link's own path. | SaveMediaPatch.kt, MediaBridges.kt |
 | Analytics | Relevant URL paths are grouped as PIGEON, DEFAULT, and MQTT. These names describe separate matched paths, not every telemetry route in Threads. | DisableAnalyticsPatch.kt |
 | Re-signed trust | The main app and push processes perform separate signature checks. The :fbns check reads its own signatures and can cause push-thread growth if it rejects a re-signed app. | RestoreTrustPatch.kt, ThreadsSignature.java |
 | External links | Threads can wrap destinations with l.threads.com. Resolve the destination locally and retain the in-app route for Meta pages. | OpenLinksExternallyPatch.kt, ExternalBrowser.java |
@@ -128,7 +128,7 @@ For new UI text, use the extension's L10n helper. App strings may come from Meta
 
 ## Ads and tracking audit
 
-This section describes the 450 fixture and HushThreads' current patch boundaries. It is a static inspection. No authenticated feed or network capture has been reviewed yet, so it does not claim which fields were sent in a particular session or whether a given surface showed an ad.
+This section describes the 450 fixture and HushThreads' current patch boundaries. The separate [runtime audit](threads-runtime-audit.md) records signed-in stock screens and measured network activity. Encrypted packet metadata does not establish which fields an authenticated request sent or which event uploader handled them.
 
 ### Meta's published ad-delivery model
 
@@ -144,7 +144,7 @@ Meta's [2025 announcement](https://about.fb.com/ltam/news/2025/01/presentamos-an
 | Candidate selection | Meta says the existing AI-powered Meta ads system selects and personalizes Threads ads. The exact per-ad signals and ranking are not public in this build. | A client patch cannot turn off the server auction or change its candidate set. |
 | Formats and rollout | Meta describes native image, video, carousel, catalog, and app ads, and reported the global expansion complete in Q2 2026. | A filter should identify ad semantics, not assume one media type or a market-specific rollout. |
 | Feed response | The APK contains ad models and unit types in the same fetched page path as ordinary feed items. No live response has been captured. | HushThreads filters the client page before cache merge. It does not stop the request or prove every ad surface shares that path. |
-| Viewer feedback | Meta documents skip, hide, and report controls. This build's current UI has not been inspected on a clean logged-in install. | Keep the built-in controls available where possible, or provide a clear patch toggle and preserve ordinary posts. |
+| Viewer feedback | Meta documents skip, hide, and report controls. The signed-in stock survey did not encounter a labeled sponsored card, so its ad-specific menu remains unobserved. | Keep the built-in controls available where possible, or provide a clear patch toggle and preserve ordinary posts. |
 
 The end-to-end path below combines Meta's product description with the static client boundary. The network step is an inference from the APK's feed-page handling, not a captured request.
 
@@ -163,7 +163,7 @@ flowchart LR
 
 ### How feed ads reach the screen
 
-The 450 DEX contains a fetched feed page that is merged into `BarcelonaFeedCache`. Feed items carry a retained unit-type enum. Its names include `AD`, `AD4AD`, `INTENT_AWARE_AD_PIVOT`, `STAND_ALONE_MULTI_AD_PIVOT`, and `ADS_FEEDBACK_INTERFACE`, alongside normal `THREAD` and `SUGGESTED_USERS` entries. The post `Media` model also has an `injected` field. Threads' own ad predicate reads that field.
+The 450 DEX contains a fetched feed page that is merged into `BarcelonaFeedCache`. Feed items carry a retained unit-type enum. Its ad-related names include `AD`, `AD4AD`, `INTENT_AWARE_AD_PIVOT`, `STAND_ALONE_MULTI_AD_PIVOT`, `ADS_FEEDBACK_INTERFACE`, `ADS_FEEDBACK_INTERFACE_INTERESTS_PICKER`, and `ADS_FEEDBACK_INTERFACE_REPETITION`, alongside normal `THREAD` and `SUGGESTED_USERS` entries. The post `Media` model also has an `injected` field. Threads' own ad predicate reads that field.
 
 HushThreads' [feed page filter](../patches/src/main/kotlin/app/morphe/patches/threads/ads/FeedPageFilterPatch.kt) runs on the fetched list before the cache merge. [Hide ads](../patches/src/main/kotlin/app/morphe/patches/threads/ads/HideAdsPatch.kt) removes ad posts recognized by Threads' `injected` check and drops the ad-related unit types. The patch comments identify the two pivots, the ad-for-ads card, and the feedback prompt as additional removable units. Because this boundary handles both For You and Following page merges, one hook covers those feed paths.
 
@@ -187,7 +187,7 @@ The base manifest also requests network access, contacts and profile, precise an
 
 ### Annoyances and customization opportunities
 
-These are candidates to validate, not claims that every account sees the same screen. The clean app has not yet been opened in this audit. App version, server rollout, account state, and Android permission choices can change the experience.
+These are candidates to validate, not claims that every account sees the same screen. The [runtime audit](threads-runtime-audit.md) identifies which controls were reached on stock 450. App version, server rollout, account state, and Android permission choices can change the experience.
 
 | Potential friction | What supports it | Useful customization or inspection |
 |---|---|---|
@@ -195,7 +195,7 @@ These are candidates to validate, not claims that every account sees the same sc
 | Ad personalization may feel unexpected | Meta describes shared AI-powered personalization and says business-shared activity has been used for ads. | Verify the account's current ad and activity controls. Preserve hide/report actions when the patch is off, and do not describe RemoveAdId as disabling personalization. |
 | Suggestions can look like feed content | The APK has typed suggestion slots as well as sponsored units. | Keep Hide suggested users as its own control. Inspect search, profile, onboarding, and notifications for recommendation cards beyond the feed merge. |
 | The ranked feed can surface topics the person did not choose | Meta continues to add personalization controls, including custom feed ordering and the 2026 Your Algo controls. Their availability depends on rollout. | Verify built-in feed defaults and Your Algo first. A patch opportunity is a shortcut to those settings, not an attempt to recreate server ranking. |
-| Instagram remains part of the account and profile experience | Threads sign-in is tied to Instagram. Open [issue #7](https://github.com/SysAdminDoc/HushThreads/issues/7) asks to hide the Instagram button on a profile. | Confirm the button still exists in 450 and trace the profile header before adding a toggle. Avoid breaking account recovery or Instagram-linked controls. |
+| Instagram remains part of the account and profile experience | Threads sign-in is tied to Instagram. Open [issue #7](https://github.com/SysAdminDoc/HushThreads/issues/7) asks to hide the Instagram button on a profile, which was observed in stock 450. | Trace the profile header before adding a toggle. Avoid breaking account recovery or Instagram-linked controls. |
 | Feed position may be lost after leaving the app | Open [issue #4](https://github.com/SysAdminDoc/HushThreads/issues/4) reports background-return refresh. | Recheck the lifecycle hook and feed selection in 450. Keep the interval choice understandable and avoid blocking a deliberate refresh. |
 | Media can use data, battery, and storage | The app includes autoplay and media-quality paths. HushThreads already has switches for autoplay and image quality, and a save-media action. | Confirm defaults and per-feed behavior. A later option could distinguish Wi-Fi from mobile data if the app exposes a stable preference path. |
 | Permission prompts may feel broader than the immediate task | The manifest declares contacts, location, microphone, camera, Bluetooth, media, phone, and screen-capture capabilities. Some may be library or feature-specific declarations. | Record which screen triggers each runtime prompt on a clean install. Do not remove permissions based on manifest presence alone. |
@@ -208,8 +208,8 @@ The product controls that matter most for a user audit are the home-feed selecto
 
 | Area | Evidence and current coverage | Useful follow-up |
 |---|---|---|
-| Profile Instagram button | Open request [#7](https://github.com/SysAdminDoc/HushThreads/issues/7) asks to hide the Instagram button at the top of a profile. | Trace the 450 profile header and add a separate toggle if the button is still present and the anchor is stable. |
-| Sponsored cards | The feed filter handles the main For You and Following page merge and removes five ad-related unit kinds. | Check search, discovery, profile, and other server-driven cards after sign-in. The current filter does not prove those surfaces are covered. Consider separate controls for sponsored posts and Meta ad-feedback or ad-promotion cards if they behave differently. |
+| Profile Instagram button | Open request [#7](https://github.com/SysAdminDoc/HushThreads/issues/7) asks to hide the Instagram button at the top of a profile. Its presence was confirmed in stock 450. | Trace the header construction and add a separate toggle once the anchor is stable. |
+| Sponsored cards | The feed filter handles the main For You and Following page merge and recognizes seven ad-related unit kinds. Five retained names are required by the patch fingerprint. | Check search, discovery, profile, and other server-driven cards after sign-in. The current filter does not prove those surfaces are covered. Consider separate controls for sponsored posts and Meta ad-feedback or ad-promotion cards if they behave differently. |
 | Follow suggestions | A dedicated patch handles two typed feed slots, separately from ad units. | Inspect profile, search, onboarding, and notifications for recommendation cards outside the feed cache boundary. Add coverage only for surfaces that exist in the target build. |
 | Feed position | [Issue #4](https://github.com/SysAdminDoc/HushThreads/issues/4) reports a feed refresh on return. HushThreads already has a patch that keeps the current position for a chosen interval or without a time cap. | Recheck the current 450 lifecycle and the selected feed after sign-in. The issue discussion includes a positive report from another user, while the original reporter has not confirmed. |
 | Usage reports | The analytics patch intercepts Pigeon, default-address, and MQTT settings paths. | Trace endpoint overrides and events that use a different uploader. Keep the patch's wording limited to matched reports until each path has evidence. |
@@ -217,7 +217,7 @@ The product controls that matter most for a user audit are the home-feed selecto
 | Notifications and permission prompts | The manifest contains several sensitive capability declarations. Actual prompts depend on Android version and user flow. | Record first-run and permission prompts on a clean install, then compare each prompt with the feature that needs it before changing declarations. |
 | Re-signed app background behavior | [Issue #6](https://github.com/SysAdminDoc/HushThreads/issues/6) reported thread growth in the separate `:fbns` process. HushThreads routes its signer check separately from the main process. | Keep the main and FBNS process checks distinct when changing signer handling or process startup. The issue fix shipped in 0.0.12 and awaits confirmation from its reporter. |
 
-The next account-assisted pass should record the selected feed, promotion and suggestion cards, profile controls, notifications, settings, and outbound sharing on the signed-in 450 app. Keep account content out of committed screenshots. A network trace should separate ad delivery, ad measurement, general analytics, and essential account traffic before proposing any broader block.
+The signed-in 450 walkthrough confirms the Instagram profile button, a separate profile suggestion carousel, stock notification categories, and account ad controls. Keep account content out of committed screenshots. A future decrypted trace must distinguish ad delivery, ad measurement, general analytics, and essential account traffic before proposing any broader block. Shared encrypted destinations cannot make that distinction.
 
 ## Audit status as of 2026-10-09
 
@@ -225,11 +225,13 @@ The next account-assisted pass should record the selected feed, promotion and su
 |---|---|
 | 450 fixture package, manifest, DEX, models, and patch anchors | Static inspection complete |
 | Meta product and ads rollout statements | Reviewed and linked above |
-| Clean stock first launch and permission prompts | Not observed |
-| Signed-in feed, profile, settings, ads, and suggestions | Not observed |
-| Authenticated request, response, and event traffic | Not captured |
+| Original Meta-signed stock 450 installation and launch | Observed, installed base hash matches fixture |
+| Fresh-account onboarding and first permission prompts | Not observed; existing account and grants preserved |
+| Signed-in feed, profile, settings, suggestions, and ad controls | Observed, with [screen and behavior map](threads-runtime-audit.md#screen-and-behavior-map) |
+| Network activity and background behavior | Measured; see [runtime audit](threads-runtime-audit.md#network-observations) for attribution limits |
+| Decrypted authenticated requests, responses, and event payloads | Not captured |
 
-The attached phones currently have re-signed 449 installs, which cannot be replaced by the original Meta signer as an in-place update. The prepared clean emulator is x86_64, while this fixture contains only ARM64 splits. The shared emulator slots were occupied during this pass. No app data was cleared or removed. Continue with a clean ARM64-capable profile when one is available. Ask the user to complete sign-in only if a logged-in surface is needed.
+The runtime audit uses an existing Meta-signed emulator installation, preserving its account data. The Android 16 Google APIs guest reports both `x86_64` and `arm64-v8a`, with `libndk_translation.so`. An x86_64 emulator label alone does not establish incompatibility with the ARM64 fixture. Check the guest's advertised ABIs, native bridge, and actual install and launch result.
 
 ## Clean stock install and launch
 

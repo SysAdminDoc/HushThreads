@@ -194,7 +194,7 @@ Use JDK 21, the Android SDK and PowerShell 7.5 or newer (Windows PowerShell 5.1 
 
 Declared arm64 builds: 450.0.0.51.78 / 512008342, 449.0.0.54.82 / 511908382 and 448.0.0.54.85 / 511808302.
 
-For app internals and stable patch anchors, see [Threads app reference](docs/threads-app-reference.md). For the patch workflow, see [Patch authoring guide](docs/patch-authoring.md).
+For app internals and stable patch anchors, see [Threads app reference](docs/threads-app-reference.md). The [runtime audit](docs/threads-runtime-audit.md) records stock screens, network observations, and measurement limits. For the patch workflow, see [Patch authoring guide](docs/patch-authoring.md).
 
 ```powershell
 $env:HUSHTHREADS_FIXTURE_DIR = '<fixture folder>'

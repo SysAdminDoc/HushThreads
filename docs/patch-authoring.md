@@ -14,6 +14,7 @@ This guide is for tracing and changing Threads behavior in HushThreads. Start fr
 | extensions/shared/library | Runtime support shared with other Hush bundles |
 | patches-list.json | Generated patch metadata consumed by the bundle |
 | fixtures/ | Local, ignored Threads XAPK and extracted APK fixtures |
+| scripts/fingerprint-candidates.ps1 | Captures a method signature and ranks possible counterparts in another app build |
 | scripts/verify-all-patches.ps1 | Applies the bundle to an APK or XAPK and checks its output |
 | scripts/verify-injected-registers.ps1 | Checks DEX register, branch, and contract invariants |
 
@@ -46,14 +47,39 @@ The checked-in compatibility declarations are in [AppCompatibilities.kt](../patc
 1. Check the issue tracker, README patch list, current patch source, fixture tests, and recent commits. Confirm that the behavior is not already covered.
 2. Choose the exact upstream build first. Check its package name, version, version code, ABI, density splits, min SDK, and signer against AppCompatibilities.kt and the local XAPK manifest.
 3. Reproduce the behavior on an unmodified build. Record the affected screen, user action, expected result, and a screenshot or UI hierarchy when that evidence helps. Use a fresh emulator profile for stock behavior.
-4. Trace the behavior in the target DEX. Start with readable strings, model types, call sites, fields, manifest filters, or known app components. Use JADX for focused decompilation and BarProbe for DEX relationships. Recheck the decompiled bytecode around the final patch anchor.
-5. Build a semantic anchor from more than one signal where possible. Require the expected number of matches. If the target is missing or ambiguous, fail with a message that identifies what changed instead of patching the first candidate.
+4. Trace the behavior in the target DEX. Start with readable strings, model types, call sites, fields, manifest filters, or known app components. Use JADX for focused decompilation and the checked-in fingerprint candidate script to compare builds. Recheck the bytecode around the final patch anchor.
+5. Build a semantic anchor from more than one signal where possible. Require the expected number of matches. If a required target is missing or ambiguous, fail with a message that identifies what changed instead of patching the first candidate. A patch designed for partial coverage must report exactly which independent targets matched, as described below.
 6. Follow values to their actual writes. Use the flow-sensitive helpers in ReachingWrites.kt when a register, literal, parameter, or default argument can be set on multiple paths.
 7. Make the smallest DEX or manifest edit that changes the behavior. Preserve branch labels and try ranges. Use the register and control-flow helpers already used by the patches. Do not rely on an obfuscated class name as the only anchor.
 8. Add a fixture test against every declared target build. Assert the selected target count, the inserted or changed instruction shape, register kinds, branch flow, and unrelated code or manifest state where relevant.
 9. Regenerate the patch list, rebuild the Android patch bundle, run patch and runtime tests, lint the extension libraries, then run verify-all-patches.ps1 against each retained XAPK. Inspect appliedPatches in each result JSON. The desktop CLI can exit successfully while silently skipping a new patch when the local .mpp is stale.
 10. Exercise the user-visible feature on a clean patched install. Compare it with the stock flow, check the off and on states when there is a setting, and capture screenshots for a UI change.
-11. Update AppCompatibilities.kt, fixture declarations, probe-fixtures.txt, README, CHANGELOG, the [source ledger](../sources/threads-sources.json), and release receipt inputs when the target build or patch metadata changes.
+11. Update AppCompatibilities.kt, fixture declarations, README, CHANGELOG, the [source ledger](../sources/threads-sources.json), and release receipt inputs when the target build or patch metadata changes.
+
+### Registering a feature
+
+A new runtime feature needs both its patch and its settings registration. Follow a nearby feature through these files:
+
+- Add its status method to [SettingsStatus.java](../extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsStatus.java), with an unpatched result of false. Depend on the Threads extension patch so that class is present. Use `requireStatusMethod()` before changing bytecode and `enableStatus()` after the hooks are installed. Both helpers are in [ExtensionSupport.kt](../patches/src/main/kotlin/app/morphe/patches/threads/misc/extension/ExtensionSupport.kt).
+- Register the display name in [FamilyNames.java](../extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/FamilyNames.java) and the feature in [PatchFamily.java](../extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/PatchFamily.java). Its status-method name must match the patch. Declare its switches and any changes that remain while Pause is on so the settings screen and diagnostic report agree.
+- Put runtime settings and their defaults in [Settings.java](../extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/Settings.java), then add the row on the appropriate settings page. Use `L10n` for visible text. Check the feature with its switch off, on, and while paused.
+- Choose patch selection and runtime defaults separately. [DefaultSelectionPolicyTest.kt](../patches/src/test/kotlin/app/morphe/DefaultSelectionPolicyTest.kt) requires a reason for any patch left out of Manager's default selection. Keep that list and `PatchFamily.OPT_IN` consistent with the generated catalog. The current exceptions are Change version code, Remove share targets, and Trust user-added certificates.
+
+Keep the README patch table's names and descriptions identical to the generated catalog. A switch description should tell people its page, row title, and starting state. [ReadmePatchNamesTest.kt](../patches/src/test/kotlin/app/morphe/ReadmePatchNamesTest.kt) checks the table against the catalog, and [PatchCategoriesTest.kt](../patches/src/test/kotlin/app/morphe/PatchCategoriesTest.kt) limits a category to 15 entries.
+
+### Partial target coverage
+
+Some patches deliberately support independent targets that can be absent in a particular build. [PartialTargets.kt](../patches/src/main/kotlin/app/morphe/patches/threads/misc/extension/PartialTargets.kt) provides `handleTargets()`: a handler returns null on success or a reason when its target is absent. The helper warns for each missing target and fails when none match. This does not permit choosing an ambiguous target.
+
+Disable analytics uses that contract for its PIGEON, DEFAULT, and MQTT address families. It writes the matched mask to `SettingsStatus.analyticsAddressMask()` and logs the matched and missing families. Review that coverage as well as the applied-patch list. A patch being present does not mean every supported hook matched.
+
+### Comparing app builds
+
+Use the checked-in candidate finder when a known method moves:
+
+    ./scripts/fingerprint-candidates.ps1 -OldApk '<old bundle>' -Method '<method descriptor>' -NewApk '<new bundle>'
+
+The script accepts APK, APKM, or XAPK inputs. Candidate ranking suggests methods to inspect and does not change an anchor. Confirm the method's callers, data flow, and guards before updating the patch. `verify-all-patches.ps1 -Force` can explore an undeclared build, but compatibility checks must pass without `-Force` before support is declared.
 
 ## Threads 450 lessons
 
@@ -69,12 +95,14 @@ The checked-in compatibility declarations are in [AppCompatibilities.kt](../patc
 
 ## Ads and privacy patch boundaries
 
-- `FeedPageFilterPatch.kt` is the shared point before `BarcelonaFeedCache` merges a fetched page. `HideAdsPatch.kt` uses both Threads' `Media` ad predicate and the page item's unit type. In 450 the ad-related names are `AD`, `AD4AD`, `INTENT_AWARE_AD_PIVOT`, `STAND_ALONE_MULTI_AD_PIVOT`, and `ADS_FEEDBACK_INTERFACE`. Keep the normal `THREAD` and suggestion paths intact.
+- `FeedPageFilterPatch.kt` is the shared point before `BarcelonaFeedCache` merges a fetched page. `HideAdsPatch.kt` uses both Threads' `Media` ad predicate and the page item's unit type. The extension recognizes seven ad-related unit names: `AD`, `AD4AD`, `INTENT_AWARE_AD_PIVOT`, `STAND_ALONE_MULTI_AD_PIVOT`, `ADS_FEEDBACK_INTERFACE`, `ADS_FEEDBACK_INTERFACE_INTERESTS_PICKER`, and `ADS_FEEDBACK_INTERFACE_REPETITION`. The patch fingerprint requires a subset to identify the enum. [HideAdsFixtureTest.kt](../patches/src/test/kotlin/app/morphe/patches/threads/ads/HideAdsFixtureTest.kt) checks that both additional feedback names exist in the retained fixtures. Keep the normal `THREAD` and suggestion paths intact.
 - `HideSuggestedUsersPatch.kt` handles the typed `suggested_users` and kickstart slots. It validates the raw server type before filtering. Do not collapse that patch into the paid-ad predicate just because the entries share a feed page.
 - `DisableAnalyticsPatch.kt` rewrites three address families: Pigeon, default `logging_client_events`, and the MQTT settings object's `analytics_endpoint`. Build 450 also accepts `extra_analytics_endpoint` and `extra_fbns_analytics_endpoint` in its MQTT configuration-change flow, then reconstructs the settings object. The constructor hook should see those values, but keep this route in fixture and runtime regression coverage when the settings shape changes. This patch is not a network-wide tracker blocker.
 - The static scan also found `ad_tracking_token` and ad-interaction signal classes. Their upload path is not yet known. `Disable analytics` does not directly change those fields, so don't call it an ad-measurement opt-out until a live trace proves coverage.
 - `RemoveAdIdPatch.kt` removes the manifest permission. It leaves Google's AdvertisingIdClient call sites in the DEX. For a target SDK of 33 or later, Android returns zeroes when the permission is absent. Describe this as removing the Google advertising ID only. Account, session, analytics, and other app or device identifiers are separate.
 - The app-reference page records the static evidence and its limits. Update it when a new supported build changes the ad enum, feed boundary, analytics routes, identifiers, or permission declarations. Keep server-side delivery claims separate from what a client-side filter proves.
+
+For runtime checks, [FeedAds.java](../extensions/threads/src/main/java/app/morphe/extension/hushthreads/ads/FeedAds.java) records completed page and item checks separately from removals for each enabled rule. A nonempty page with no matches still counts as checked. Disabled, paused, and failed checks do not increment those completed-check counters. If checking an item throws, the filter returns the whole original page. Record the counters and failures alongside the visible feed. Zero removals alone prove neither that ads were absent from delivery nor that removal works.
 
 ## Build and verification
 
@@ -88,7 +116,11 @@ Use the toolchain and environment variables documented in [README.md](../README.
 
 Keep fixture binaries and verification output out of tracked files. The local fixture directory is ignored. When HUSHTHREADS_FIXTURE_DIR is unset, the real-build fixture tests skip, so check the test summary rather than treating a green task name as proof that the APK fixtures ran.
 
-For a new app build, add its exact fixture before declaring compatibility. Update AppCompatibilities.kt and its compatibility fixture test, the local probe map, source ledger, and every build-aware patch test. Run the full selected-patch verifier against all declared builds and confirm it applied each patch. Update the user-facing supported-build table and changelog after the fixture checks pass.
+The distributable bundle, SHA-256, and CycloneDX SBOM are written to `patches/build/release`. Tests can rebuild the intermediate jar under `patches/build/libs`, so use the release directory's bundle for verification and distribution.
+
+The verifier checks the CLI exit status, result report, expected patch names, package version, and saved APK. It also checks approved manifest changes, stock resource preservation, native packaging alignment, injected DEX structure and feature contracts, and bundle identity. Keep its result and diagnostic reports together. A result JSON can exist after a failed compile, and the desktop CLI can skip a patch absent from a stale bundle. The wrapper checks those conditions, so use its final result as well as reviewing `appliedPatches` and coverage warnings. Static native checks do not establish runtime support on a device with 16 KB memory pages.
+
+For a new app build, add its exact fixture before declaring compatibility. Update AppCompatibilities.kt and its compatibility fixture test, the source ledger, and every build-aware patch test. Run the full selected-patch verifier against all declared builds without `-Force` and confirm it applied each patch. Update the user-facing supported-build table and changelog after the fixture checks pass.
 
 Before a release, build a receipt and validate the artifact against the published bundle with scripts/build-release-receipt.ps1 and scripts/validate-release-facts.ps1. Keep the patch source license and provenance headers intact when adopting code.
 
