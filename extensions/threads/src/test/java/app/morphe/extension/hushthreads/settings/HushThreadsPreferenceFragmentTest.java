@@ -223,7 +223,7 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
                     String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getSummary()));
             assertEquals("Hide suggested users", String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_USERS.key).getTitle()));
-            assertEquals("Removes verified cards suggesting accounts to follow. Ordinary posts and reposts stay.",
+            assertEquals("Removes the cards that suggest accounts to follow. Normal posts and reposts stay.",
                     String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_USERS.key).getSummary()));
             assertEquals("Keep feed position on return", String.valueOf(page.findPreference(Settings.BLOCK_RETURN_REFRESH.key).getTitle()));
             assertEquals("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
@@ -240,17 +240,18 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share "
                     + "link becomes the post's own link.", String.valueOf(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key).getSummary()));
             assertEquals("Open links in your browser", String.valueOf(page.findPreference(Settings.OPEN_LINKS_EXTERNALLY.key).getTitle()));
-            assertEquals("Web links you tap open in your default browser, or the app for that site, without Threads' click "
-                    + "tracker. Threads, Instagram and other Meta pages still open in Threads.",
+            assertEquals("Links you tap open in your browser or the site's app, skipping Threads' link tracking. " +
+                "Threads and Instagram pages still open in Threads.",
                     String.valueOf(page.findPreference(Settings.OPEN_LINKS_EXTERNALLY.key).getSummary()));
-            assertEquals("Matched analytics addresses go to an address that doesn't answer. Other telemetry may remain. "
-                    + "Turn this off to use the original addresses.",
+            assertEquals("Stops most usage reports from reaching Meta. Some may still get through. Turn this off to " +
+                "send them as before.",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
             assertEquals("Hide screenshots from Threads", String.valueOf(page.findPreference(Settings.DISABLE_SCREENSHOT_DETECTION.key).getTitle()));
             assertEquals("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
                     String.valueOf(page.findPreference(Settings.DISABLE_SCREENSHOT_DETECTION.key).getSummary()));
             assertEquals("Pure black dark mode", String.valueOf(page.findPreference(Settings.PURE_BLACK.key).getTitle()));
-            assertEquals("Dark mode draws black instead of dark gray. Turn on dark mode in Threads to see it.",
+            assertEquals("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. " +
+                "Restart Threads to see the change.",
                     String.valueOf(page.findPreference(Settings.PURE_BLACK.key).getSummary()));
             // The patches that were always in Manager's default selection ship their switches on.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS,

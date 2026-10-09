@@ -552,7 +552,8 @@ public class L10nCatalogTest {
     /** Hushfacebook 88a7f512: the surviving Turkish GitHub row uses the catalog's apostrophe. */
     @Test
     public void upstream88a7f512KeepsTheTurkishGitHubApostropheConsistent() throws IOException {
-        String key = "Ask GitHub once a day at startup and show newer releases on the overview. Off by default. Nothing is downloaded.";
+        String key = "Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. " +
+            "Nothing is downloaded.";
         String translated = readTable("tr").get(key);
         assertTrue(translated, translated.contains("GitHub'ı"));
         assertFalse(translated, translated.contains("GitHub\u2019ı"));
