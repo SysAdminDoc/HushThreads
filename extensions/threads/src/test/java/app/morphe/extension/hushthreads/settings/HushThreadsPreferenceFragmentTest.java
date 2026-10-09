@@ -148,8 +148,9 @@ public class HushThreadsPreferenceFragmentTest {
                 assertTrue(key + " is drawn below the Pause row", indexOfKey(rows, key) < pause);
             }
             assertTrue("Debug logging is drawn above the Pause row", indexOfKey(rows, BaseSettings.DEBUG.key) > pause);
-            assertTrue(String.valueOf(rows.get(pause).getSummary()),
-                    String.valueOf(rows.get(pause).getSummary()).contains("every switch but Debug logging acts as if it were off. Changes made when you patched stay in"));
+            String pauseSummary = String.valueOf(rows.get(pause).getSummary());
+            assertTrue(pauseSummary, pauseSummary.contains("Turns off every HushThreads switch except Debug logging"));
+            assertTrue(pauseSummary, pauseSummary.contains("What you chose when you patched stays"));
         }
     }
 
