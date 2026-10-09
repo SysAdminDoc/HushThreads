@@ -939,8 +939,8 @@ public final class MediaSave {
                 // Nothing can leave this thread. The app installs its own handler for uncaught
                 // exceptions and reports them as its own crashes.
                 failure(() -> "the save failed", t);
-                if (pages == 0) Feedback.show(application, L10n.t(application, "Download failed. Try again in a " +
-                    "moment."), true);
+                if (pages == 0) Feedback.show(application, L10n.t(application, "Download failed. Try again in a "
+                    + "moment."), true);
             } finally {
                 SaveLeftovers.finishJob(application, marker);
                 // Publish the batch outcome before the end notification asks the settings to redraw.

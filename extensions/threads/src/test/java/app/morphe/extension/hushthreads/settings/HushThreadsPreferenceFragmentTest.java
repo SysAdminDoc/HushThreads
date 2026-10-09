@@ -240,18 +240,18 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share "
                     + "link becomes the post's own link.", String.valueOf(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key).getSummary()));
             assertEquals("Open links in your browser", String.valueOf(page.findPreference(Settings.OPEN_LINKS_EXTERNALLY.key).getTitle()));
-            assertEquals("Links you tap open in your browser or the site's app, skipping Threads' link tracking. " +
-                "Threads and Instagram pages still open in Threads.",
+            assertEquals("Links you tap open in your browser or the site's app, skipping Threads' link tracking. "
+                + "Threads and Instagram pages still open in Threads.",
                     String.valueOf(page.findPreference(Settings.OPEN_LINKS_EXTERNALLY.key).getSummary()));
-            assertEquals("Stops most usage reports from reaching Meta. Some may still get through. Turn this off to " +
-                "send them as before.",
+            assertEquals("Stops most usage reports from reaching Meta. Some may still get through. Turn this off to "
+                + "send them as before.",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
             assertEquals("Hide screenshots from Threads", String.valueOf(page.findPreference(Settings.DISABLE_SCREENSHOT_DETECTION.key).getTitle()));
             assertEquals("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
                     String.valueOf(page.findPreference(Settings.DISABLE_SCREENSHOT_DETECTION.key).getSummary()));
             assertEquals("Pure black dark mode", String.valueOf(page.findPreference(Settings.PURE_BLACK.key).getTitle()));
-            assertEquals("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. " +
-                "Restart Threads to see the change.",
+            assertEquals("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. "
+                + "Restart Threads to see the change.",
                     String.valueOf(page.findPreference(Settings.PURE_BLACK.key).getSummary()));
             // The patches that were always in Manager's default selection ship their switches on.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS,
