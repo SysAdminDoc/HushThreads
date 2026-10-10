@@ -571,8 +571,9 @@ try {
             $others = @(Get-TreeChanges | Where-Object { $indexFiles -notcontains "$_".Substring(3).Trim('"') })
             if ($others.Count -gt 0) { throw "The working tree has changes beyond the index's own files: $($others[0])" }
             $repository = Get-RepositorySlug
-            $published = [string](Invoke-Gh -What 'gh release view' -Arguments @('release', 'view', $tag, '-R', $repository,
-                    '--json', 'publishedAt', '--jq', '.publishedAt') -Probe | Select-Object -First 1)
+            # Interpolated, not cast: [string] of an empty pipeline is $null, which has no Trim().
+            $published = "$(Invoke-Gh -What 'gh release view' -Arguments @('release', 'view', $tag, '-R', $repository,
+                    '--json', 'publishedAt', '--jq', '.publishedAt') -Probe | Select-Object -First 1)"
             if (-not $published.Trim()) { throw "$tag isn't published on $repository. Run -Stage publish first." }
             $tagCommit = Get-RemoteRef "refs/tags/$tag"
             $head = Get-GitLine @('rev-parse', 'HEAD') 'HEAD'
