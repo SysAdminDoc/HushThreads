@@ -279,6 +279,12 @@ try {
             # stock side is the APK the CLI patched, a split bundle's merge among them: that is the
             # table the patched APK was rebuilt from.
             $resourceReport = Resolve-WithinRoot -Path (Join-Path $workRoot "verify-all-resources-$runId.txt") -Root $workRoot
+            # The files the selected patches write on purpose, from resource-file-allowlist.txt.
+            $writtenList = Resolve-WithinRoot -Path (Join-Path $workRoot "verify-all-written-$runId.txt") -Root $workRoot
+            $writtenLabels = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot 'resource-file-allowlist.txt') |
+                ForEach-Object { $_.Trim() } | Where-Object { $_ -and -not $_.StartsWith('#') } |
+                ForEach-Object { $label, $patch = $_ -split '\s+', 2; if ($names -ccontains $patch) { $label } })
+            Set-Content -LiteralPath $writtenList -Value $writtenLabels -Encoding UTF8
             # Continue for the call alone, as for the CLI: a JDK note or a stack trace on stderr would
             # otherwise end the run under Windows PowerShell 5.1 before the exit code is read.
             $preference = $ErrorActionPreference
@@ -286,7 +292,7 @@ try {
                 $ErrorActionPreference = 'Continue'
                 $global:LASTEXITCODE = -1
                 $resourceOutput = @(& $Java '-Xmx4g' '-cp' $DesktopJar (Join-Path $PSScriptRoot 'ResourceTableCheck.java') `
-                    $patchInput $out $resourceReport 2>&1)
+                    $patchInput $out $resourceReport $writtenList 2>&1)
                 $resourceExitCode = $LASTEXITCODE
             } finally {
                 $ErrorActionPreference = $preference

@@ -493,6 +493,7 @@ try {
     $resourceTableCheckPaths = @(
         'scripts/MergeSplits.java',
         'scripts/ResourceTableCheck.java',
+        'scripts/resource-file-allowlist.txt',
         'scripts/test-resource-table-check.ps1',
         'scripts/verify-all-patches.ps1'
     )
