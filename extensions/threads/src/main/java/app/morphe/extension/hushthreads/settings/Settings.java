@@ -99,6 +99,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_pure_black", FALSE, true);
 
     /**
+     * The Instagram button at the top of a profile isn't drawn, on your own profile or anyone
+     * else's ({@link app.morphe.extension.hushthreads.profile.InstagramButton}). Threads keeps a
+     * header it has drawn, so a change waits for a restart.
+     */
+    public static final BooleanSetting HIDE_INSTAGRAM_BUTTON =
+            new BooleanSetting("hushthreads_hide_instagram_button", FALSE, true);
+
+    /**
      * A post's menu gets a row that saves its photos and videos to the phone, every page of a
      * post with several in order, from the addresses Threads already holds
      * ({@link app.morphe.extension.hushthreads.download.PostSave}).

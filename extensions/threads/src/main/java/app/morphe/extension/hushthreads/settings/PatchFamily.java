@@ -59,6 +59,8 @@ public enum PatchFamily {
             Settings.SAVE_MEDIA, Settings.DOWNLOAD_COMPATIBLE),
     PURE_BLACK(FamilyNames.PURE_BLACK, "pureBlack", null,
             Settings.PURE_BLACK),
+    HIDE_INSTAGRAM_BUTTON(FamilyNames.HIDE_INSTAGRAM_BUTTON, "hideInstagramButton", null,
+            Settings.HIDE_INSTAGRAM_BUTTON),
     // A manifest can't be switched at run time: the permission is gone from the APK whether or not
     // HushThreads is paused.
     REMOVE_AD_ID(FamilyNames.REMOVE_AD_ID, "removeAdId", "the removed advertising ID permission"),

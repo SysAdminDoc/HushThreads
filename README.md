@@ -78,6 +78,8 @@ Nothing else needs Expert mode. `Block background-return feed refresh`, `Disable
 
 Updating from v0.0.12 or older? If you'd picked one of those five before and never changed its switch, the switch now starts off, so turn it back on in HushThreads settings after you update. The [changelog](CHANGELOG.md) names each one.
 
+`Hide the Instagram button` is in the source but not in a release yet.
+
 | Patch | What it does |
 |---|---|
 | `Block background-return feed refresh` | Keeps your place in your feed when you leave Threads and come back within ten minutes. Pulling down to refresh still loads new posts. Good if you hate losing the post you were reading. Starts off. Turn it on in HushThreads settings > Feed. |
@@ -87,6 +89,7 @@ Updating from v0.0.12 or older? If you'd picked one of those five before and nev
 | `Disable video autoplay` | Videos in your feed wait for a tap instead of playing as you scroll. Good for a calmer feed and less data use. Starts off. Turn it on in HushThreads settings > Feed. |
 | `Hide ads` | Removes sponsored posts from your feed before Threads shows them, so they leave no gap. Good for a cleaner feed. On by default. Turn it off in HushThreads settings > Feed. |
 | `Hide suggested users` | Removes the cards that suggest accounts to follow. Normal posts and reposts stay. Good if you only want posts in your feed. On by default. Turn it off in HushThreads settings > Feed. |
+| `Hide the Instagram button` | Takes the Instagram button off the top of profiles, yours and other people's. The other buttons stay. Good for a tidier profile. Starts off. Turn it on in HushThreads settings > More settings > Appearance. |
 | `HushThreads settings` | Adds a HushThreads page to Threads where you turn features on or off, pause HushThreads, back up your settings and read the licenses. Open it from Threads' own settings. Works as soon as you patch it in, with no switch. |
 | `Max image quality` | Loads photos at the largest size Threads has, instead of one picked for your screen. Photos look sharper but use more data. Starts off. Turn it on in HushThreads settings > Feed. |
 | `Open links in browser` | Opens links you tap in your regular browser instead of inside Threads, and skips Threads' link tracking. Threads, Instagram and other Meta pages still open in Threads. On by default. Turn it off in HushThreads settings > Privacy. |

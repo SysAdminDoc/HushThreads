@@ -86,6 +86,7 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.SCREENSHOT_DETECTION, "Hide screenshots from Threads");
         ROW_TITLES.put(PatchFamily.SAVE_MEDIA, "Save photos and videos");
         ROW_TITLES.put(PatchFamily.PURE_BLACK, "Pure black dark mode");
+        ROW_TITLES.put(PatchFamily.HIDE_INSTAGRAM_BUTTON, "Hide the Instagram button");
         ROW_TITLES.put(PatchFamily.REMOVE_AD_ID, "Advertising ID removed");
         ROW_TITLES.put(PatchFamily.RESTORE_TRUST, "Re-signed build fix");
         ROW_TITLES.put(PatchFamily.VERSION_CODE, "Version code raised");
@@ -200,7 +201,9 @@ public class HushThreadsPreferenceFragmentTest {
                     expected.add("Privacy");
                 }
                 if (build.contains(PatchFamily.SAVE_MEDIA)) expected.add("Downloads");
-                if (build.contains(PatchFamily.PURE_BLACK)) expected.add("Appearance");
+                if (build.contains(PatchFamily.PURE_BLACK) || build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)) {
+                    expected.add("Appearance");
+                }
                 expected.addAll(EVERY_BUILD.subList(0, 2));
                 if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)
                         || build.contains(PatchFamily.VERSION_CODE) || build.contains(PatchFamily.REMOVE_SHARE_TARGETS)
@@ -254,14 +257,20 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. "
                 + "Restart Threads to see the change.",
                     String.valueOf(page.findPreference(Settings.PURE_BLACK.key).getSummary()));
+            assertEquals("Hide the Instagram button", String.valueOf(page.findPreference(Settings.HIDE_INSTAGRAM_BUTTON.key).getTitle()));
+            assertEquals("Takes the Instagram button off the top of profiles, yours and other people's. "
+                + "Restart Threads to see the change.",
+                    String.valueOf(page.findPreference(Settings.HIDE_INSTAGRAM_BUTTON.key).getSummary()));
             // The patches that were always in Manager's default selection ship their switches on.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS,
                     Settings.SANITIZE_SHARING_LINKS, Settings.OPEN_LINKS_EXTERNALLY, Settings.DISABLE_ANALYTICS)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
-            // The ones that joined it later start off, so a default build looks like Threads.
+            // The ones that joined it later start off, so a default build looks like Threads, and so
+            // does Hide the Instagram button, which came after.
             for (BooleanSetting setting : Arrays.asList(Settings.BLOCK_RETURN_REFRESH, Settings.DISABLE_VIDEO_AUTOPLAY,
-                    Settings.MAX_IMAGE_QUALITY, Settings.DISABLE_SCREENSHOT_DETECTION, Settings.PURE_BLACK)) {
+                    Settings.MAX_IMAGE_QUALITY, Settings.DISABLE_SCREENSHOT_DETECTION, Settings.PURE_BLACK,
+                    Settings.HIDE_INSTAGRAM_BUTTON)) {
                 assertFalse(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             // The time limit holds until someone lifts it.

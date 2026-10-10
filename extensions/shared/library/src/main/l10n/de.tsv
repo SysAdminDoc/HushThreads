@@ -196,6 +196,8 @@ Not in this build: %1$s. Morphe Manager selects them by default. Patch again wit
 Appearance	Darstellung
 Pure black dark mode	Rein schwarzer Dunkelmodus
 Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.	Der Dunkelmodus nutzt echtes Schwarz statt Dunkelgrau. Schalte in Threads den Dunkelmodus ein, um das zu sehen. Starte Threads neu, damit die Änderung greift.
+Hide the Instagram button	Instagram-Button ausblenden
+Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.	Entfernt den Instagram-Button oben in Profilen, in deinem und in denen anderer. Starte Threads neu, damit die Änderung greift.
 Turn features on or off	Funktionen ein- oder ausschalten
 # Fotos und Videos speichern
 %1$d saved in lower quality than on Threads.	%1$d in niedrigerer Qualität als auf Threads gespeichert.

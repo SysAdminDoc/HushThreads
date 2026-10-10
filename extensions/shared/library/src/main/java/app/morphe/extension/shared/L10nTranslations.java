@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(520);
+        Map<String, String> table = new HashMap<>(524);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -254,6 +254,8 @@ public final class L10nTranslations {
                 "Screenshots vor Threads verbergen");
         table.put("Hide suggested users",
                 "Vorgeschlagene Nutzer ausblenden");
+        table.put("Hide the Instagram button",
+                "Instagram-Button ausblenden");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
                 "Fortschritt beim Speichern eines Fotos oder Videos, mit einem Button zum Abbrechen");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
@@ -298,11 +300,11 @@ public final class L10nTranslations {
                 "Link abgelaufen. \u00d6ffne den Beitrag neu und versuche es noch einmal");
         table.put("Links",
                 "Links");
-        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
-                "Links, die du antippst, \u00f6ffnen sich in deinem Browser oder in der App der Seite, ohne Threads' Link-Tracking. Threads- und Instagram-Seiten \u00f6ffnen sich weiter in Threads.");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
+                "Links, die du antippst, \u00f6ffnen sich in deinem Browser oder in der App der Seite, ohne Threads' Link-Tracking. Threads- und Instagram-Seiten \u00f6ffnen sich weiter in Threads.");
         table.put("Links, updates, backup and more",
                 "Links, Updates, Sicherung und mehr");
         table.put("More settings",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Links von Hand ausw\u00e4hlen");
         table.put("Set when you patched",
                 "Beim Patchen festgelegt");
-        table.put("Settings couldn't open",
-                "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Settings couldn't open",
+                "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Die Einstellungen lie\u00dfen sich nicht vollst\u00e4ndig aktualisieren. \u00d6ffne sie neu und versuche es noch einmal.");
         table.put("Settings exported.",
@@ -460,6 +462,8 @@ public final class L10nTranslations {
                 "Vorgeschlagene Konten in deinem Feed");
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
+        table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
+                "Entfernt den Instagram-Button oben in Profilen, in deinem und in denen anderer. Starte Threads neu, damit die \u00c4nderung greift.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Entfernt Tracking-Tags wie xmt und slof aus den Beitragslinks, die du kopierst oder teilst. Ein kurzer Teilen-Link wird zum eigenen Link des Beitrags.");
         table.put("Tap to play videos",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Bis zum Fortsetzen verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv.");
         table.put("Updates",
                 "Updates");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Eigenen Zertifikaten wird vertraut");
         table.put("Version",
                 "Version");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Version %1$s for Threads %2$s",
                 "Version %1$s f\u00fcr Threads %2$s");
         table.put("Version code raised",
@@ -592,7 +596,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(520);
+        Map<String, String> table = new HashMap<>(524);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -799,6 +803,8 @@ public final class L10nTranslations {
                 "Ocultar capturas de pantalla a Threads");
         table.put("Hide suggested users",
                 "Ocultar usuarios sugeridos");
+        table.put("Hide the Instagram button",
+                "Ocultar el bot\u00f3n de Instagram");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
                 "El progreso de la foto o el video que est\u00e1s guardando, con un bot\u00f3n para cancelar");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
@@ -843,11 +849,11 @@ public final class L10nTranslations {
                 "El enlace expir\u00f3. Vuelve a abrir la publicaci\u00f3n e int\u00e9ntalo de nuevo");
         table.put("Links",
                 "Enlaces");
-        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
-                "Los enlaces que tocas se abren en tu navegador o en la app del sitio, sin el seguimiento de enlaces de Threads. Las p\u00e1ginas de Threads e Instagram se siguen abriendo en Threads.");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
+                "Los enlaces que tocas se abren en tu navegador o en la app del sitio, sin el seguimiento de enlaces de Threads. Las p\u00e1ginas de Threads e Instagram se siguen abriendo en Threads.");
         table.put("Links, updates, backup and more",
                 "Enlaces, actualizaciones, copia de seguridad y m\u00e1s");
         table.put("More settings",
@@ -966,11 +972,11 @@ public final class L10nTranslations {
                 "Seleccionar enlaces a mano");
         table.put("Set when you patched",
                 "Aplicado al parchear");
-        table.put("Settings couldn't open",
-                "No se pudo abrir la configuraci\u00f3n");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Settings couldn't open",
+                "No se pudo abrir la configuraci\u00f3n");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "No se pudo actualizar la configuraci\u00f3n por completo. Vuelve a abrirla e int\u00e9ntalo de nuevo.");
         table.put("Settings exported.",
@@ -1005,6 +1011,8 @@ public final class L10nTranslations {
                 "Cuentas sugeridas en tu feed");
         table.put("Supported links",
                 "Enlaces compatibles");
+        table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
+                "Quita el bot\u00f3n de Instagram de la parte de arriba de los perfiles, el tuyo y los de otras personas. Reinicia Threads para ver el cambio.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Quita las etiquetas de seguimiento, como xmt y slof, de los enlaces de publicaciones que copias o compartes. Un enlace corto para compartir pasa a ser el enlace propio de la publicaci\u00f3n.");
         table.put("Tap to play videos",
@@ -1087,13 +1095,13 @@ public final class L10nTranslations {
                 "Hasta que reanudes, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene.");
         table.put("Updates",
                 "Actualizaciones");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Certificados del usuario de confianza");
         table.put("Version",
                 "Versi\u00f3n");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Version %1$s for Threads %2$s",
                 "Versi\u00f3n %1$s para Threads %2$s");
         table.put("Version code raised",
@@ -1137,7 +1145,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(520);
+        Map<String, String> table = new HashMap<>(524);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1344,6 +1352,8 @@ public final class L10nTranslations {
                 "Sembunyikan tangkapan layar dari Threads");
         table.put("Hide suggested users",
                 "Sembunyikan pengguna yang disarankan");
+        table.put("Hide the Instagram button",
+                "Sembunyikan tombol Instagram");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
                 "Progres foto atau video yang sedang Anda simpan, dengan tombol untuk membatalkannya");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
@@ -1388,11 +1398,11 @@ public final class L10nTranslations {
                 "Tautan kedaluwarsa. Buka ulang postingan lalu coba lagi");
         table.put("Links",
                 "Tautan");
-        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
-                "Tautan yang Anda ketuk terbuka di browser atau aplikasi situsnya, tanpa pelacakan tautan Threads. Halaman Threads dan Instagram tetap terbuka di Threads.");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
+                "Tautan yang Anda ketuk terbuka di browser atau aplikasi situsnya, tanpa pelacakan tautan Threads. Halaman Threads dan Instagram tetap terbuka di Threads.");
         table.put("Links, updates, backup and more",
                 "Tautan, pembaruan, cadangan, dan lainnya");
         table.put("More settings",
@@ -1511,11 +1521,11 @@ public final class L10nTranslations {
                 "Memilih tautan secara manual");
         table.put("Set when you patched",
                 "Diatur saat Anda menambal");
-        table.put("Settings couldn't open",
-                "Pengaturan tidak dapat dibuka");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Settings couldn't open",
+                "Pengaturan tidak dapat dibuka");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Pengaturan tidak dapat dimuat ulang sepenuhnya. Buka kembali pengaturan lalu coba lagi.");
         table.put("Settings exported.",
@@ -1550,6 +1560,8 @@ public final class L10nTranslations {
                 "Akun yang disarankan di feed Anda");
         table.put("Supported links",
                 "Tautan yang didukung");
+        table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
+                "Menghapus tombol Instagram di bagian atas profil, milik Anda dan milik orang lain. Mulai ulang Threads untuk melihat perubahannya.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Menghapus tag pelacakan seperti xmt dan slof dari tautan postingan yang Anda salin atau bagikan. Tautan berbagi pendek diganti dengan tautan postingan itu sendiri.");
         table.put("Tap to play videos",
@@ -1632,13 +1644,13 @@ public final class L10nTranslations {
                 "Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif.");
         table.put("Updates",
                 "Pembaruan");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Sertifikat pengguna dipercaya");
         table.put("Version",
                 "Versi");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Version %1$s for Threads %2$s",
                 "Versi %1$s untuk Threads %2$s");
         table.put("Version code raised",
@@ -1682,7 +1694,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(520);
+        Map<String, String> table = new HashMap<>(524);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1889,6 +1901,8 @@ public final class L10nTranslations {
                 "Esconder capturas de tela do Threads");
         table.put("Hide suggested users",
                 "Ocultar usu\u00e1rios sugeridos");
+        table.put("Hide the Instagram button",
+                "Ocultar o bot\u00e3o do Instagram");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
                 "Indica o progresso do salvamento de uma foto ou v\u00eddeo, com um bot\u00e3o para cancel\u00e1-lo");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
@@ -1933,11 +1947,11 @@ public final class L10nTranslations {
                 "Link expirado. Abra a publica\u00e7\u00e3o novamente e tente de novo");
         table.put("Links",
                 "Links");
-        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
-                "Os links que voc\u00ea toca abrem no navegador ou no app do site, sem o rastreamento de links do Threads. P\u00e1ginas do Threads e do Instagram continuam abrindo no Threads.");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
+                "Os links que voc\u00ea toca abrem no navegador ou no app do site, sem o rastreamento de links do Threads. P\u00e1ginas do Threads e do Instagram continuam abrindo no Threads.");
         table.put("Links, updates, backup and more",
                 "Links, atualiza\u00e7\u00f5es, backup e mais");
         table.put("More settings",
@@ -2056,11 +2070,11 @@ public final class L10nTranslations {
                 "Selecionar links manualmente");
         table.put("Set when you patched",
                 "Definido ao aplicar os patches");
-        table.put("Settings couldn't open",
-                "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Settings couldn't open",
+                "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "N\u00e3o foi poss\u00edvel atualizar completamente as configura\u00e7\u00f5es. Reabra as configura\u00e7\u00f5es e tente novamente.");
         table.put("Settings exported.",
@@ -2095,6 +2109,8 @@ public final class L10nTranslations {
                 "Contas sugeridas no seu feed");
         table.put("Supported links",
                 "Links compat\u00edveis");
+        table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
+                "Remove o bot\u00e3o do Instagram do topo dos perfis, o seu e os de outras pessoas. Reinicie o Threads para ver a mudan\u00e7a.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Remove dos links de publica\u00e7\u00f5es que voc\u00ea copia ou compartilha as tags de rastreamento, como xmt e slof. Um link curto de compartilhamento vira o link da pr\u00f3pria publica\u00e7\u00e3o.");
         table.put("Tap to play videos",
@@ -2177,13 +2193,13 @@ public final class L10nTranslations {
                 "At\u00e9 voc\u00ea retomar, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo.");
         table.put("Updates",
                 "Atualiza\u00e7\u00f5es");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Certificados do usu\u00e1rio confi\u00e1veis");
         table.put("Version",
                 "Vers\u00e3o");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Version %1$s for Threads %2$s",
                 "Vers\u00e3o %1$s para o Threads %2$s");
         table.put("Version code raised",
@@ -2227,7 +2243,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(520);
+        Map<String, String> table = new HashMap<>(524);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2434,6 +2450,8 @@ public final class L10nTranslations {
                 "Ekran g\u00f6r\u00fcnt\u00fclerini Threads'ten gizle");
         table.put("Hide suggested users",
                 "\u00d6nerilen kullan\u0131c\u0131lar\u0131 gizle");
+        table.put("Hide the Instagram button",
+                "Instagram d\u00fc\u011fmesini gizle");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
                 "Kaydetti\u011fin foto\u011fraf veya videonun ilerleme durumu ve iptal etmek i\u00e7in bir d\u00fc\u011fme");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
@@ -2478,11 +2496,11 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131n\u0131n s\u00fcresi doldu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar dene");
         table.put("Links",
                 "Ba\u011flant\u0131lar");
-        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
-                "Dokundu\u011fun ba\u011flant\u0131lar taray\u0131c\u0131nda veya sitenin uygulamas\u0131nda a\u00e7\u0131l\u0131r, Threads'in ba\u011flant\u0131 takibi atlan\u0131r. Threads ve Instagram sayfalar\u0131 yine Threads'te a\u00e7\u0131l\u0131r.");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
+                "Dokundu\u011fun ba\u011flant\u0131lar taray\u0131c\u0131nda veya sitenin uygulamas\u0131nda a\u00e7\u0131l\u0131r, Threads'in ba\u011flant\u0131 takibi atlan\u0131r. Threads ve Instagram sayfalar\u0131 yine Threads'te a\u00e7\u0131l\u0131r.");
         table.put("Links, updates, backup and more",
                 "Ba\u011flant\u0131lar, g\u00fcncellemeler, yedekleme ve daha fazlas\u0131");
         table.put("More settings",
@@ -2601,11 +2619,11 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131lar\u0131 elle se\u00e7me");
         table.put("Set when you patched",
                 "Yamalad\u0131\u011f\u0131nda ayarlananlar");
-        table.put("Settings couldn't open",
-                "Ayarlar a\u00e7\u0131lamad\u0131");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Settings couldn't open",
+                "Ayarlar a\u00e7\u0131lamad\u0131");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Ayarlar tamamen yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
         table.put("Settings exported.",
@@ -2640,6 +2658,8 @@ public final class L10nTranslations {
                 "Ak\u0131\u015f\u0131n\u0131zdaki \u00f6nerilen hesaplar");
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
+        table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
+                "Kendi profilinin ve ba\u015fkalar\u0131n\u0131n profillerinin \u00fcst\u00fcndeki Instagram d\u00fc\u011fmesini kald\u0131r\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Kopyalad\u0131\u011f\u0131n veya payla\u015ft\u0131\u011f\u0131n g\u00f6nderi ba\u011flant\u0131lar\u0131ndan xmt ve slof gibi izleme etiketlerini kald\u0131r\u0131r. K\u0131sa payla\u015f\u0131m ba\u011flant\u0131s\u0131, g\u00f6nderinin kendi ba\u011flant\u0131s\u0131na d\u00f6n\u00fc\u015f\u00fcr.");
         table.put("Tap to play videos",
@@ -2722,13 +2742,13 @@ public final class L10nTranslations {
                 "Devam ettirene kadar Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r.");
         table.put("Updates",
                 "G\u00fcncellemeler");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Kullan\u0131c\u0131 sertifikalar\u0131na g\u00fcveniliyor");
         table.put("Version",
                 "S\u00fcr\u00fcm");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Version %1$s for Threads %2$s",
                 "Threads %2$s i\u00e7in %1$s s\u00fcr\u00fcm\u00fc");
         table.put("Version code raised",

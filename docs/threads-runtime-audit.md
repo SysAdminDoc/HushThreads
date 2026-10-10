@@ -227,7 +227,7 @@ For a natural idle run, physically remove external power, press Home, turn the d
 
 | Priority | Opportunity | Required proof before implementation |
 |---|---|---|
-| High | Hide the profile Instagram button | The button is confirmed in stock 450. Trace its header construction and verify only the intended control disappears. |
+| High | Hide the profile Instagram button | The button is confirmed in stock 450, and `Hide the Instagram button` now hooks the header's own flag for it in source. A patched device still has to show that only this control disappears. |
 | High | Extend suggestion filtering to the profile carousel | Identify this separate component and check its render/data boundary. Keep confirmed friends, followers, and ordinary profile content intact. |
 | High | Map recommendation surfaces outside the feed | Search, Activity, Communities, and the outgoing share sheet exposed distinct suggestions. A single feed-model hook does not establish coverage of these components. |
 | High | Audit uploads beyond the three analytics address families | Correlate a specific event producer with its uploader. Encrypted traffic volume and shared hostnames cannot prove payload coverage. |

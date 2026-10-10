@@ -196,6 +196,8 @@ Not in this build: %1$s. Morphe Manager selects them by default. Patch again wit
 Appearance	Görünüm
 Pure black dark mode	Saf siyah karanlık mod
 Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.	Karanlık mod koyu gri yerine gerçek siyahı kullanır. Görmek için Threads'te karanlık modu aç. Değişikliği görmek için Threads'i yeniden başlat.
+Hide the Instagram button	Instagram düğmesini gizle
+Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.	Kendi profilinin ve başkalarının profillerinin üstündeki Instagram düğmesini kaldırır. Değişikliği görmek için Threads'i yeniden başlat.
 Turn features on or off	Özellikleri aç veya kapat
 # Fotoğrafları ve videoları kaydetme
 %1$d saved in lower quality than on Threads.	%1$d öğe Threads'tekinden daha düşük kalitede kaydedildi.

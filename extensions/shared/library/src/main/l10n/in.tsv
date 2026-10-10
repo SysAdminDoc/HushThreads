@@ -196,6 +196,8 @@ Not in this build: %1$s. Morphe Manager selects them by default. Patch again wit
 Appearance	Tampilan
 Pure black dark mode	Mode gelap hitam pekat
 Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.	Mode gelap memakai hitam pekat, bukan abu-abu gelap. Aktifkan mode gelap di Threads untuk melihatnya. Mulai ulang Threads untuk melihat perubahannya.
+Hide the Instagram button	Sembunyikan tombol Instagram
+Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.	Menghapus tombol Instagram di bagian atas profil, milik Anda dan milik orang lain. Mulai ulang Threads untuk melihat perubahannya.
 Turn features on or off	Aktifkan atau nonaktifkan fitur
 # Menyimpan foto dan video
 %1$d saved in lower quality than on Threads.	%1$d disimpan dengan kualitas lebih rendah daripada di Threads.

@@ -193,6 +193,8 @@ Not in this build: %1$s. Morphe Manager selects them by default. Patch again wit
 Appearance	Aparência
 Pure black dark mode	Modo escuro preto puro
 Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.	O modo escuro usa preto puro em vez de cinza-escuro. Ative o modo escuro no Threads para ver. Reinicie o Threads para ver a mudança.
+Hide the Instagram button	Ocultar o botão do Instagram
+Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.	Remove o botão do Instagram do topo dos perfis, o seu e os de outras pessoas. Reinicie o Threads para ver a mudança.
 Turn features on or off	Ative ou desative recursos
 # Salvar fotos e vídeos
 %1$d saved in lower quality than on Threads.	%1$d salvos com qualidade menor que no Threads.

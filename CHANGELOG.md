@@ -4,6 +4,7 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** New `Hide the Instagram button` patch takes the Instagram button off the top of profiles, yours and other people's, and leaves the other buttons where they are. Its switch is on the Appearance page under More settings and starts off. Restart Threads after you change it.
 * **Tooling:** Settings and Turkish translation tests now match the wording shipped in HushThreads.
 * **Docs:** Added a Threads APK reference and app audit covering feed ads, tracking identifiers, analytics patch boundaries, and customization opportunities. Added patch authoring guidance and corrected the install example to use the primary 450 target.
 * **Docs:** Added a stock 450 walkthrough with settings screenshots, measured network and background observations, and explicit battery-measurement limits. Confirmed the profile Instagram button and separate profile suggestions, and expanded the patch guide's registration and coverage checks.
