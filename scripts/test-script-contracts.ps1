@@ -47,14 +47,15 @@ function New-NotFoundAnswer {
 
 # --- patch-target.ps1 ------------------------------------------------------------------------
 #
-# Threads ships a build a week, so the catalog declares the build the bundle was last proved on
-# and can keep the one before it. They come back newest first, by number and not by text, and every
-# patch has to declare the same builds: a build only some patches declare is one the bundle can't
-# fully patch, and the release scripts would take it for a declared target.
+# Threads ships a build a week, and the catalog declares only the newest stable one, the build the
+# bundle was last proved on: a newer stable build replaces it in the same release. Several declared
+# builds still come back newest first, by number and not by text (the cases below), and every patch
+# has to declare the same builds: a build only some patches declare is one the bundle can't fully
+# patch, and the release scripts would take it for a declared target.
 $catalog = Get-Content -LiteralPath (Join-Path $Root 'patches-list.json') -Raw | ConvertFrom-Json
 $target = Get-PatchTarget -PatchList $catalog
 Assert-True ($target.PackageName -eq 'com.instagram.barcelona') 'The catalog package was not resolved.'
-Assert-True (@($target.PackageVersions).Count -ge 1 -and $target.PackageVersion -eq $target.PackageVersions[0]) `
+Assert-True (@($target.PackageVersions).Count -eq 1 -and $target.PackageVersion -eq $target.PackageVersions[0]) `
     "The catalog's declared Threads builds were not read: $($target.PackageVersions -join ', ')"
 foreach ($patch in @($catalog.patches)) {
     Assert-True (((@($patch.compatiblePackages.'com.instagram.barcelona') | Sort-Object) -join ',') -eq
@@ -4175,7 +4176,7 @@ try {
 
     $apkm = Join-Path $commonRoot 'threads.apkm'
     $apkmEntries = [ordered]@{
-        'info.json' = '{"versioncode":"511908382"}'
+        'info.json' = '{"versioncode":"512008342"}'
         'base.apk' = 'base'
         'split_config.arm64_v8a.apk' = ('native code ' * 64)
     }
@@ -4456,19 +4457,19 @@ try {
         Copy-ReleaseFile $relative $destination
     }
     # The cases below need a declared build older than the newest, one a receipt can leave out.
-    # When this checkout's catalog declares a single build, the fixture's copy declares the one
-    # before it too, on every patch at a version code of its own, the way the catalog keeps the
-    # previous build when Threads moves on.
+    # The checkout's catalog declares only the newest stable build, so the fixture's copy declares
+    # the one before it too, on every patch at a version code of its own, the way the published
+    # receipts of earlier releases ran it beside the newest.
     $releaseCatalogPath = Join-Path $releaseRepo 'patches-list.json'
     $releaseCatalogCopy = Get-Content -LiteralPath $releaseCatalogPath -Raw | ConvertFrom-Json
     $copiedTarget = Get-PatchTarget -PatchList $releaseCatalogCopy
     if (@($copiedTarget.PackageVersions).Count -lt 2) {
-        $previousBuild = '448.0.0.54.85'
+        $previousBuild = '449.0.0.54.82'
         foreach ($patch in @($releaseCatalogCopy.patches)) {
             $patch.compatiblePackages.($copiedTarget.PackageName) = @(@($patch.compatiblePackages.($copiedTarget.PackageName)) + $previousBuild)
             foreach ($compatibility in @($patch.compatibility | Where-Object { $_.packageName -eq $copiedTarget.PackageName })) {
                 $compatibility.targets = @(@($compatibility.targets) + [pscustomobject]@{ version = $previousBuild
-                        experimental = $false; versionCodes = [pscustomobject]@{ ARM64_V8A = 511808302 } })
+                        experimental = $false; versionCodes = [pscustomobject]@{ ARM64_V8A = 511908382 } })
             }
         }
         [System.IO.File]::WriteAllText($releaseCatalogPath, ($releaseCatalogCopy | ConvertTo-Json -Depth 20),

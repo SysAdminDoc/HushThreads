@@ -105,8 +105,7 @@ class HideSuggestedUsersFixtureTest {
             assertEquals(vendor.name, "A0M", targets.kickstartSlot.name)
             assertEquals(vendor.name, "A0L", targets.rawType.name)
             // 450 added an item field ahead of the impression item, so the same store lands one name later.
-            val content = if (vendor.name.startsWith("threads-450.")) "A0r" else "A0q"
-            assertEquals(vendor.name, content, targets.content.name)
+            assertEquals(vendor.name, "A0r", targets.content.name)
             hideSuggestedUsersPatch.execute(context)
             val stubs = context.mutableClassDefBy(FEED_ADS).methods
             assertTrue(stubs.single { it.name == "isSuggestedUserItem" }.instructions().size > 2)

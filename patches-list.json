@@ -15,9 +15,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -36,20 +34,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -68,9 +52,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -89,20 +71,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -121,9 +89,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -142,20 +108,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -174,9 +126,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -195,20 +145,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -227,9 +163,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -248,20 +182,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -280,9 +200,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -301,20 +219,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -333,9 +237,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -354,20 +256,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -386,9 +274,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -407,20 +293,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -439,9 +311,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -460,20 +330,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -492,9 +348,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -513,20 +367,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -545,9 +385,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -566,20 +404,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -598,9 +422,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -619,20 +441,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -652,9 +460,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -673,20 +479,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -706,9 +498,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -727,20 +517,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -759,9 +535,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -780,20 +554,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -812,9 +572,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -833,20 +591,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -865,9 +609,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -886,20 +628,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]
@@ -919,9 +647,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "450.0.0.51.78",
-          "449.0.0.54.82",
-          "448.0.0.54.85"
+          "450.0.0.51.78"
         ]
       },
       "compatibility": [
@@ -940,20 +666,6 @@
               "experimental": false,
               "versionCodes": {
                 "ARM64_V8A": 512008342
-              }
-            },
-            {
-              "version": "449.0.0.54.82",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511908382
-              }
-            },
-            {
-              "version": "448.0.0.54.85",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 511808302
               }
             }
           ]

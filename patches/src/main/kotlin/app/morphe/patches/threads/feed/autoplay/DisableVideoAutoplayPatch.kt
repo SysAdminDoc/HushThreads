@@ -106,8 +106,8 @@ internal fun Method.holdsNote(note: String): Boolean = implementation?.instructi
 
 /**
  * The effect takes the composer, the player's state and the video, then Compose's ints (450 adds a
- * volume float among them), and ends on its booleans: three in 448 and 449, two in 450. Whether to
- * play is the first boolean, and its index comes back.
+ * volume float among them), and ends on its booleans: two in 450, where 449 and 448 had three.
+ * Whether to play is the first boolean, and its index comes back.
  */
 internal fun Method.requirePlaybackEffect(): Int {
     val types = parameterTypes.map { it.toString() }
@@ -120,8 +120,8 @@ internal fun Method.requirePlaybackEffect(): Int {
 }
 
 /**
- * Which of PostVideo's parameters says whether its video plays: the fifth boolean in 448 and 449,
- * the fourth in 450, which dropped one ahead of it. It's the boolean PostVideo tests last before its
+ * Which of PostVideo's parameters says whether its video plays: the fourth boolean in 450, which
+ * dropped one ahead of it. It's the boolean PostVideo tests last before its
  * one call to the effect, on a branch whose false side writes a 0 as the effect's play argument
  * before the call, and every write to that argument between the test and the call must be a 0 or a
  * 1, with a 1 among them. The tested register has to hold that one boolean on every path to the

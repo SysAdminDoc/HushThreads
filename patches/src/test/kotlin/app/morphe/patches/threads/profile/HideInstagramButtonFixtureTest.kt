@@ -64,7 +64,7 @@ class HideInstagramButtonFixtureTest {
             val register = (stockBody[guard] as OneRegisterInstruction).registerA
             val parameter = stock.parameterTypes.indices.single { stock.parameterRegisterNumber(it) == register }
             assertEquals("$where: the flag", "Z", stock.parameterTypes[parameter].toString())
-            // The sixth of its nine booleans on 450, 449 and 448.
+            // The sixth of its nine booleans on 450.
             assertEquals(where, 24, parameter)
 
             val context = context(build)

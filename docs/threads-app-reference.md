@@ -28,7 +28,6 @@ Meta's [feature notes](https://about.fb.com/news/2025/03/new-threads-features-mo
 | Target SDK | 36 |
 | Compile SDK | 37 |
 | ABI in this fixture | arm64-v8a |
-| Additional repository targets | 449.0.0.54.82 and 448.0.0.54.85 |
 | Launcher activity | com.instagram.barcelona.mainactivity.BarcelonaActivity |
 | Application class | com.instagram.barcelona.app.BarcelonaAppShell |
 

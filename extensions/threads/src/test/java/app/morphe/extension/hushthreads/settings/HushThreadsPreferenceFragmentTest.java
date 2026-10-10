@@ -315,13 +315,13 @@ public class HushThreadsPreferenceFragmentTest {
 
     /**
      * A version is a value set into a sentence, so both rows that show one isolate it: in a
-     * right-to-left sentence "449.0.0.54.82" then keeps the order it was written in.
+     * right-to-left sentence "450.0.0.51.78" then keeps the order it was written in.
      */
     @Test
     public void theVersionRowsIsolateTheVersions() {
         android.content.Context context = RuntimeEnvironment.getApplication();
         Shadows.shadowOf(context.getPackageManager())
-                .getInternalMutablePackageInfo(context.getPackageName()).versionName = "449.0.0.54.82";
+                .getInternalMutablePackageInfo(context.getPackageName()).versionName = "450.0.0.51.78";
         String threads = app.morphe.extension.shared.Utils.getAppVersionName();
         assertTrue("no Threads version to look for", threads != null && !threads.isEmpty());
 

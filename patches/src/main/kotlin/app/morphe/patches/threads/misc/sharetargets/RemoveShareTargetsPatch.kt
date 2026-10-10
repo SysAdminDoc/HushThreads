@@ -75,8 +75,8 @@ internal val removeShareTargetsManifestPatch = resourcePatch {
 /**
  * Takes Threads out of the share sheet other apps open.
  *
- * Threads 448 to 450 take shares in one activity, BarcelonaShareHandlerActivity, through two intent
- * filters: text, and photos and videos. They declare no shortcuts file, so there are no direct share
+ * Threads 450 takes shares in one activity, BarcelonaShareHandlerActivity, through two intent
+ * filters: text, and photos and videos. It declares no shortcuts file, so there are no direct share
  * targets to take out today; one a later build names goes too. The activity stays, so anything in
  * Threads that opens it by name still can.
  */

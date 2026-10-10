@@ -21,7 +21,7 @@ private const val CONFIG_ATTRIBUTE = "android:networkSecurityConfig"
 
 /**
  * The network security config [manifest]'s application names, as the path a resource patch opens.
- * Refused when it names none, which no declared build does (Threads 448 to 450 name
+ * Refused when it names none, which no declared build does (Threads 450 names
  * fb_network_security_config), or something other than an xml resource.
  */
 internal fun configPath(manifest: Document): String {
@@ -82,7 +82,7 @@ internal val trustUserCertificatesResourcePatch = resourcePatch {
 /**
  * Lets Android's certificate checks in Threads accept the certificates you've installed yourself.
  *
- * Threads 448 to 450 name `fb_network_security_config`: the system's certificates for everything,
+ * Threads 450 names `fb_network_security_config`: the system's certificates for everything,
  * cleartext only off Meta's domains, and a pin set on Meta's domains that a user certificate would
  * fail. Threads also checks Meta's certificates in its own code: Tigon, Meta's network stack, records
  * whether its pinning was verified, and an OkHttp-style pinner throws "Certificate pinning failure!".

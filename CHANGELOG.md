@@ -4,6 +4,7 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** The next release patches Threads 450.0.0.51.78 only, the newest stable version. 449.0.0.54.82 and 448.0.0.54.85 aren't offered any more, so if you're still on one of them, update Threads to 450 before you patch. From here on each release moves to the newest stable Threads and drops the one before.
 * **Threads:** New `Hide the Instagram button` patch takes the Instagram button off the top of profiles, yours and other people's, and leaves the other buttons where they are. Its switch is on the Appearance page under More settings and starts off. Restart Threads after you change it.
 * **Tooling:** Settings and Turkish translation tests now match the wording shipped in HushThreads.
 * **Docs:** Added a Threads APK reference and app audit covering feed ads, tracking identifiers, analytics patch boundaries, and customization opportunities. Added patch authoring guidance and corrected the install example to use the primary 450 target.

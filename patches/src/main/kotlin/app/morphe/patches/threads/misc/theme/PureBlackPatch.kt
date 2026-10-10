@@ -139,8 +139,8 @@ private fun Instruction.loadsWide(value: Long) = when (opcode) {
 
 /**
  * The static methods [this] theme calls that build the same kind of colors it does: each returns a
- * type the theme constructs itself. 450 builds its dark colors from literals in one of those, where
- * 448 and 449 build them in the theme.
+ * type the theme constructs itself. 450 builds its dark colors from literals in one of those. The
+ * theme's own loads are read too, since 449 and 448 built them there.
  */
 internal fun Method.themeHelpers(): List<MethodReference> {
     val body = implementation!!.instructions

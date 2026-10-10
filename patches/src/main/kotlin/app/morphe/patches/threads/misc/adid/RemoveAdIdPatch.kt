@@ -35,7 +35,7 @@ internal val removeAdIdManifestPatch = resourcePatch {
  * Takes the advertising ID away from Threads.
  *
  * Google Play services gives an app that targets Android 13 or later a string of zeros in place of
- * the advertising ID unless its manifest asks for [AD_ID_PERMISSION]. Threads 449 targets Android
+ * the advertising ID unless its manifest asks for [AD_ID_PERMISSION]. Threads 450 targets Android
  * 16 and asks for it, so taking the request out is all it takes. Threads' code runs as before and
  * gets the zeros, which is what it gets on a phone where you've deleted your advertising ID.
  */
