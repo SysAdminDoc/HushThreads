@@ -242,6 +242,17 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/misc/FbnsProcess.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/misc/fbns/**"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Push process exit: the in-app push service's delegate tells the extension when the service is created and destroyed, and the extension ends the push process once Android has destroyed the service, since every later start in the same process leaves the stopped service's threads behind. Found by counting the push process's threads on 450 and reading FbnsServiceDelegateV2 and Meta's AsyncService base, with no outside code."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/profile/InstagramButton.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/profile/**"
       ],
