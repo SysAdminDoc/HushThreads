@@ -140,6 +140,7 @@ function Invoke-DexDiff {
             'Restore screens on re-signed builds' = 'restoreTrust'
             'Block background-return feed refresh' = 'returnRefresh'
             'Disable video autoplay' = 'disableVideoAutoplay'
+            'Pure black dark mode' = 'pureBlack'
         }
         foreach ($name in $SelectedPatches) {
             if ($name -cnotin @($catalog.patches | ForEach-Object { $_.name })) { throw "Unknown selected patch: $name" }

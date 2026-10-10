@@ -199,7 +199,7 @@ public class DexDiff {
     private static final String OUTSIDE_FIRST_CALL = "first-call-outside";
     private static final Set<String> THREADS_FEATURES = Set.of(
             "hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
-            "returnRefresh", "disableVideoAutoplay");
+            "returnRefresh", "disableVideoAutoplay", "pureBlack");
 
     private static final class Contract {
         final String kind;
@@ -1563,6 +1563,16 @@ public class DexDiff {
         return registers;
     }
 
+    /** Every register [i] names, in operand order: a range's or a call's, or A, B and C as it has them. */
+    private static List<Integer> namedRegisters(Instruction i) {
+        if (i instanceof RegisterRangeInstruction || i instanceof FiveRegisterInstruction) return callRegisters(i);
+        List<Integer> named = new ArrayList<>();
+        if (i instanceof OneRegisterInstruction) named.add(((OneRegisterInstruction) i).getRegisterA());
+        if (i instanceof TwoRegisterInstruction) named.add(((TwoRegisterInstruction) i).getRegisterB());
+        if (i instanceof ThreeRegisterInstruction) named.add(((ThreeRegisterInstruction) i).getRegisterC());
+        return named;
+    }
+
     /** "v2, v1" for [registers]. */
     private static String registerList(List<Integer> registers) {
         List<String> named = new ArrayList<>();
@@ -1966,6 +1976,15 @@ public class DexDiff {
     /** The notes of the feed post composables that put a video in a post: one on its own, and one in a carousel. */
     private static final List<String> FEED_POST_NOTES = List.of("com.instagram.barcelona.feed.post.ui.PostSingleMedia",
             "com.instagram.barcelona.feed.post.ui.PostCarousel");
+    private static final String PURE_BLACK = "Lapp/morphe/extension/hushthreads/theme/PureBlack;->";
+    private static final String PURE_ARGB = PURE_BLACK + "argb(J)J";
+    private static final String PURE_COLOR = PURE_BLACK + "color(J)J";
+    /** Compose's note in Threads' theme, the lambda that builds its colors for dark or light mode. It names the source file, so it survives Redex. */
+    private static final String BDS_THEME_NOTE = "com.instagram.barcelona.bds.theme.BdsTheme.<anonymous> (BdsTheme.kt:";
+    /** Threads' dark mode background, #101010, and white, as the ARGB literals its theme and color schemes load. */
+    private static final long THREADS_DARK = 0xff101010L, THREADS_WHITE = 0xffffffffL;
+    /** A color scheme's constructor takes at least this many colors and nothing else. Threads' takes 39. */
+    private static final int SCHEME_COLORS = 20;
 
     /** Keep duplicate definitions visible: choosing whichever dex was visited last hides corruption. */
     private static Map<String, List<Method>> featureMethods(File apk, Map<String, String> parents) throws Exception {
@@ -2037,11 +2056,13 @@ public class DexDiff {
     }
 
     private static void featureCall(List<Instruction> body, int at, String callee, int input, int output) {
-        // A hook answering a boolean hands it back with move-result; the others answer an object.
-        Opcode result = callee.endsWith(")Z") ? Opcode.MOVE_RESULT : Opcode.MOVE_RESULT_OBJECT;
+        // A hook answering a boolean hands it back with move-result, and one answering a long with
+        // move-result-wide, taking the pair from [input]; the others answer an object.
+        boolean wide = callee.endsWith(")J");
+        Opcode result = callee.endsWith(")Z") ? Opcode.MOVE_RESULT : wide ? Opcode.MOVE_RESULT_WIDE : Opcode.MOVE_RESULT_OBJECT;
         requireFeature(at >= 0 && at + 1 < body.size() && isStaticInvoke(body.get(at).getOpcode())
                 && reference(body.get(at)).equals(callee)
-                && Arrays.equals(invokeRegisters(body.get(at)), new int[]{input})
+                && Arrays.equals(invokeRegisters(body.get(at)), wide ? new int[]{input, input + 1} : new int[]{input})
                 && body.get(at + 1).getOpcode() == result
                 && ((OneRegisterInstruction) body.get(at + 1)).getRegisterA() == output,
                 "missing or miswired " + callee + " at instruction " + at);
@@ -2399,6 +2420,39 @@ public class DexDiff {
                 for (int next : exceptional.get(n)) if (mergeSource(before, next, input)) work.add(next);
             }
             return before[use] != null && before[use].get(register);
+        }
+
+        /**
+         * The instructions that can read [register] once the one at [index] has run, before
+         * something writes it again, on every path. Reads are over-counted as Pure black dark
+         * mode's patch counts them: a named register is read unless it's the plain destination,
+         * and a wide instruction's registers count with the one above. A throwing instruction
+         * writes nothing, so its handlers see the value.
+         */
+        List<Integer> readsAfter(int index, int register) {
+            Set<Integer> reads = new TreeSet<>();
+            BitSet seen = new BitSet();
+            Deque<Integer> work = new ArrayDeque<>();
+            List<Integer> starts = new ArrayList<>(normal.get(index));
+            starts.addAll(exceptional.get(index));
+            for (int next : starts) if (!seen.get(next)) { seen.set(next); work.add(next); }
+            while (!work.isEmpty()) {
+                int n = work.removeFirst();
+                Instruction i = layout.instructions.get(n);
+                String name = i.getOpcode().name;
+                boolean wide = name.contains("wide") || name.contains("long") || name.contains("double");
+                boolean plainWrite = i.getOpcode().setsRegister() && !name.endsWith("/2addr") && i.getOpcode() != Opcode.CHECK_CAST;
+                List<Integer> named = namedRegisters(i);
+                for (int k = plainWrite ? 1 : 0; k < named.size(); k++) {
+                    if (named.get(k) == register || wide && named.get(k) + 1 == register) reads.add(n);
+                }
+                List<Integer> next = new ArrayList<>(exceptional.get(n));
+                boolean writes = i.getOpcode().setsRegister() && i instanceof OneRegisterInstruction
+                        && (registerA(i) == register || i.getOpcode().setsWideRegister() && registerA(i) + 1 == register);
+                if (!writes) next.addAll(normal.get(n));
+                for (int k : next) if (!seen.get(k)) { seen.set(k); work.add(k); }
+            }
+            return new ArrayList<>(reads);
         }
 
         boolean sourceOnEveryPath(int definition, int parameter, int use, int register, boolean allowNull) {
@@ -3610,6 +3664,201 @@ public class DexDiff {
         return false;
     }
 
+    /**
+     * Where Pure black dark mode hooks: the #101010 loads of Threads' theme and of each helper it
+     * builds its colors in, by method, and the dark color scheme's constructor call in its holder's
+     * static initializer, with the registers of the scheme's #101010 backgrounds.
+     */
+    private record PureBlackSites(Map<Method, List<Integer>> builders, Method initializer, int call, List<Integer> backgrounds) {}
+
+    /** One build of a color scheme: its constructor call, the field it's stored in, and each color it passes, as far as literals tell, with its register. */
+    private record SchemeBuild(int call, String field, List<Long> colors, List<Integer> registers) {
+        /** How light its opaque colors are on average: a dark scheme's are darker. */
+        double lightness() {
+            return colors.stream().filter(java.util.Objects::nonNull).map(c -> c >>> 32).filter(c -> c >>> 24 == 0xffL)
+                    .mapToDouble(c -> 0.2126 * (c >> 16 & 0xff) + 0.7152 * (c >> 8 & 0xff) + 0.0722 * (c & 0xff)).average().orElse(Double.NaN);
+        }
+    }
+
+    /**
+     * Pure black dark mode: every place Threads' theme, or a helper it builds its colors in, loads
+     * #101010 hands it to PureBlack.argb right after, on that register, and the dark color scheme's
+     * #101010 backgrounds each go through PureBlack.color right before its constructor call. The
+     * rest of those methods, the light scheme's build among them, stays as Threads wrote it, and
+     * those are the only host calls.
+     */
+    private static void featurePureBlack(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        PureBlackSites sites = featurePureBlackSites(clean);
+        Map<String, Integer> loads = new TreeMap<>();
+        for (Map.Entry<Method, List<Integer>> e : sites.builders().entrySet()) {
+            List<Instruction> body = instructions(e.getKey());
+            Map<Integer, Integer> hooks = new TreeMap<>();
+            for (int load : e.getValue()) hooks.put(load + 1, registerA(body.get(load)));
+            featureBody(e.getKey(), featureMethod(patched, featureSig(e.getKey())), 0, hooks, PURE_ARGB);
+            if (!hooks.isEmpty()) loads.put(featureSig(e.getKey()), hooks.size());
+        }
+        featureHostCalls(patched, PURE_ARGB, loads);
+        // Each background asked once, in any order, with nothing between the questions and the call.
+        FeatureBlock backgrounds = (body, at) -> {
+            Set<Integer> left = new TreeSet<>(sites.backgrounds());
+            for (int n = 0; n < sites.backgrounds().size(); n++) {
+                int hook = at + 2 * n;
+                int[] registers = hook < body.size() && isStaticInvoke(body.get(hook).getOpcode()) ? invokeRegisters(body.get(hook)) : new int[0];
+                requireFeature(registers.length > 0 && left.remove(registers[0]), "the dark scheme's backgrounds " + left
+                        + " don't each ask " + PURE_COLOR + " right before its constructor, at instruction " + hook);
+                featureCall(body, hook, PURE_COLOR, registers[0], registers[0]);
+            }
+            return 2 * sites.backgrounds().size();
+        };
+        featureBody(sites.initializer(), featureMethod(patched, featureSig(sites.initializer())), 0, Map.of(), PURE_COLOR, null,
+                Map.of(sites.call(), backgrounds));
+        featureHostCalls(patched, PURE_COLOR, Map.of(featureSig(sites.initializer()), sites.backgrounds().size()));
+    }
+
+    /**
+     * Threads' theme, the one method holding its note, and the static calls it makes answering a
+     * type it builds itself, with each one's #101010 loads; 450 loads it in one of those helpers,
+     * not in the theme. Then the dark scheme: the theme reads a dark and a light one from two static
+     * fields of one class, whose static initializer builds each once, straight through. The darker
+     * is the dark one, and its backgrounds are the colors it passes as #101010 where the light one
+     * passes white. None of them may be read again once the dark scheme is built, or the light one
+     * would get the black too.
+     */
+    private static PureBlackSites featurePureBlackSites(Map<String, List<Method>> clean) {
+        Method theme = featureTarget(clean, m -> holdsNote(m, BDS_THEME_NOTE), "Threads' theme");
+        List<Instruction> body = instructions(theme);
+        Set<String> built = new HashSet<>();
+        for (Instruction i : body) if (i.getOpcode() == Opcode.NEW_INSTANCE) built.add(reference(i));
+        Map<Method, List<Integer>> builders = new LinkedHashMap<>();
+        builders.put(theme, featureDarkLoads(theme));
+        for (Instruction i : body) {
+            if (!isStaticInvoke(i.getOpcode())) continue;
+            MethodReference helper = (MethodReference) ((ReferenceInstruction) i).getReference();
+            if (!built.contains(helper.getReturnType()) || !clean.containsKey(featureSig(helper))) continue;
+            Method m = featureMethod(clean, featureSig(helper));
+            if (!builders.containsKey(m)) builders.put(m, featureDarkLoads(m));
+        }
+        requireFeature(builders.values().stream().anyMatch(loads -> !loads.isEmpty()), "Threads' theme no longer loads #101010");
+
+        Set<String> schemes = new HashSet<>();
+        for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+            if (m.getName().equals("<init>") && m.getParameterTypes().size() >= SCHEME_COLORS
+                    && m.getParameterTypes().stream().allMatch(p -> p.toString().equals("J"))) schemes.add(m.getDefiningClass());
+        }
+        Map<String, Set<String>> read = new LinkedHashMap<>();
+        for (Instruction i : body) if (i.getOpcode() == Opcode.SGET_OBJECT) {
+            FieldReference f = (FieldReference) ((ReferenceInstruction) i).getReference();
+            if (schemes.contains(f.getType())) read.computeIfAbsent(f.getDefiningClass() + " " + f.getType(), k -> new TreeSet<>()).add(f.getName());
+        }
+        String pair = featureOne(read.entrySet().stream().filter(e -> e.getValue().size() == 2).map(Map.Entry::getKey).toList(),
+                "the class holding Threads' dark and light color schemes");
+        String holder = pair.substring(0, pair.indexOf(' ')), type = pair.substring(pair.indexOf(' ') + 1);
+        Method initializer = featureMethod(clean, holder + "-><clinit>()V");
+        List<Instruction> init = instructions(initializer);
+        requireFeature(init.stream().noneMatch(i -> i instanceof OffsetInstruction && i.getOpcode() != Opcode.FILL_ARRAY_DATA),
+                holder + " branches while it builds its color schemes");
+        List<SchemeBuild> builds = featureSchemeBuilds(init, type).stream().filter(b -> read.get(pair).contains(b.field())).toList();
+        requireFeature(builds.size() == 2, holder + " builds " + builds.size() + " of the color schemes Threads' theme reads, not a dark and a light one");
+        boolean firstDark = Double.compare(builds.get(0).lightness(), builds.get(1).lightness()) <= 0;
+        SchemeBuild dark = builds.get(firstDark ? 0 : 1), light = builds.get(firstDark ? 1 : 0);
+        List<Integer> backgrounds = new ArrayList<>();
+        for (int p = 0; p < dark.colors().size(); p++) {
+            if (Long.valueOf(THREADS_DARK << 32).equals(dark.colors().get(p)) && Long.valueOf(THREADS_WHITE << 32).equals(light.colors().get(p))) {
+                backgrounds.add(dark.registers().get(p));
+            }
+        }
+        requireFeature(!backgrounds.isEmpty(), "Threads' dark color scheme has no #101010 where its light one has white");
+        FeatureFlow flow = new FeatureFlow(initializer);
+        for (int register : backgrounds) {
+            List<Integer> later = new ArrayList<>(flow.readsAfter(dark.call(), register));
+            later.addAll(flow.readsAfter(dark.call(), register + 1));
+            requireFeature(later.isEmpty(), holder + " reads v" + register + " again after building its dark scheme, at " + later);
+        }
+        return new PureBlackSites(builders, initializer, dark.call(), backgrounds);
+    }
+
+    /** Every place [m] loads #101010 as a wide literal. */
+    private static List<Integer> featureDarkLoads(Method m) {
+        List<Instruction> body = instructions(m);
+        List<Integer> loads = new ArrayList<>();
+        for (int k = 0; k < body.size(); k++) {
+            Opcode opcode = body.get(k).getOpcode();
+            if ((opcode == Opcode.CONST_WIDE || opcode == Opcode.CONST_WIDE_32 || opcode == Opcode.CONST_WIDE_16 || opcode == Opcode.CONST_WIDE_HIGH16)
+                    && ((WideLiteralInstruction) body.get(k)).getWideLiteral() == THREADS_DARK) loads.add(k);
+        }
+        return loads;
+    }
+
+    /**
+     * Each construction of a [type] in straight-line [body], with the colors it passes as far as
+     * literals, shifts and copies tell them, as Pure black dark mode's patch reads them. A color the
+     * code computes some other way is null.
+     */
+    private static List<SchemeBuild> featureSchemeBuilds(List<Instruction> body, String type) {
+        Map<Integer, Long> wide = new HashMap<>();
+        Map<Integer, Integer> narrow = new HashMap<>();
+        List<SchemeBuild> builds = new ArrayList<>();
+        for (int k = 0; k < body.size(); k++) {
+            Instruction i = body.get(k);
+            switch (i.getOpcode()) {
+                case CONST_WIDE: case CONST_WIDE_32: case CONST_WIDE_16: case CONST_WIDE_HIGH16:
+                    featureClobber(wide, narrow, registerA(i), true);
+                    wide.put(registerA(i), ((WideLiteralInstruction) i).getWideLiteral());
+                    break;
+                case CONST_4: case CONST_16: case CONST: case CONST_HIGH16:
+                    featureClobber(wide, narrow, registerA(i), false);
+                    narrow.put(registerA(i), (int) ((WideLiteralInstruction) i).getWideLiteral());
+                    break;
+                case MOVE_WIDE: case MOVE_WIDE_FROM16: case MOVE_WIDE_16: {
+                    Long value = wide.get(((TwoRegisterInstruction) i).getRegisterB());
+                    featureClobber(wide, narrow, registerA(i), true);
+                    if (value != null) wide.put(registerA(i), value);
+                    break;
+                }
+                case SHL_LONG: case SHL_LONG_2ADDR: {
+                    boolean three = i instanceof ThreeRegisterInstruction;
+                    int target = registerA(i), source = three ? ((ThreeRegisterInstruction) i).getRegisterB() : target;
+                    int amount = three ? ((ThreeRegisterInstruction) i).getRegisterC() : ((TwoRegisterInstruction) i).getRegisterB();
+                    Long value = wide.get(source);
+                    Integer shift = narrow.get(amount);
+                    featureClobber(wide, narrow, target, true);
+                    if (value != null && shift != null) wide.put(target, value << (shift & 63));
+                    break;
+                }
+                case INVOKE_DIRECT_RANGE: {
+                    MethodReference m = (MethodReference) ((ReferenceInstruction) i).getReference();
+                    if (!m.getDefiningClass().equals(type) || !m.getName().equals("<init>")) break;
+                    int start = ((RegisterRangeInstruction) i).getStartRegister();
+                    List<Long> colors = new ArrayList<>();
+                    List<Integer> registers = new ArrayList<>();
+                    for (int p = 0; p < m.getParameterTypes().size(); p++) {
+                        registers.add(start + 1 + 2 * p);
+                        colors.add(wide.get(start + 1 + 2 * p));
+                    }
+                    String field = "";
+                    for (int n = k + 1; n < body.size(); n++) if (body.get(n).getOpcode() == Opcode.SPUT_OBJECT && registerA(body.get(n)) == start) {
+                        field = ((FieldReference) ((ReferenceInstruction) body.get(n)).getReference()).getName();
+                        break;
+                    }
+                    builds.add(new SchemeBuild(k, field, colors, registers));
+                    break;
+                }
+                default:
+                    if (i.getOpcode().setsRegister()) featureClobber(wide, narrow, registerA(i), i.getOpcode().setsWideRegister());
+            }
+        }
+        return builds;
+    }
+
+    /** Forget what [register], and the one above when [pair], held, and any wide value that covered either. */
+    private static void featureClobber(Map<Integer, Long> wide, Map<Integer, Integer> narrow, int register, boolean pair) {
+        for (int r = register; r <= (pair ? register + 1 : register); r++) {
+            narrow.remove(r);
+            wide.remove(r);
+            wide.remove(r - 1);
+        }
+    }
+
     private static void featureFalseStub(Map<String, List<Method>> patched, String signature, boolean optional) {
         if (optional && !patched.containsKey(signature)) return;
         Method stub = featureMethod(patched, signature);
@@ -3679,6 +3928,16 @@ public class DexDiff {
         featurePreserveTargets(clean, patched, m -> hooked.contains(featureSig(m)));
     }
 
+    /** Left out, Pure black dark mode makes no call and leaves the theme, its color helpers and the schemes' initializer as Threads wrote them. */
+    private static void featureOmittedPureBlack(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        featureHostCalls(patched, PURE_ARGB, Map.of());
+        featureHostCalls(patched, PURE_COLOR, Map.of());
+        PureBlackSites sites = featurePureBlackSites(clean);
+        Set<String> hooked = new HashSet<>(List.of(featureSig(sites.initializer())));
+        for (Method builder : sites.builders().keySet()) hooked.add(featureSig(builder));
+        featurePreserveTargets(clean, patched, m -> hooked.contains(featureSig(m)));
+    }
+
     private static void featureOmitted(String feature, Map<String, List<Method>> clean, Map<String, List<Method>> patched,
             File cleanApk, File patchedApk) throws Exception {
         switch (feature) {
@@ -3715,6 +3974,7 @@ public class DexDiff {
                 break;
             case "returnRefresh": featureOmittedReturnRefresh(clean, patched); break;
             case "disableVideoAutoplay": featureOmittedVideoAutoplay(clean, patched); break;
+            case "pureBlack": featureOmittedPureBlack(clean, patched); break;
             default: throw new IllegalArgumentException("Unknown omitted feature " + feature);
         }
         if (feature.equals("hideAds") || feature.equals("hideSuggestedUsers")) {
@@ -3754,7 +4014,7 @@ public class DexDiff {
                 // Historical bundles predate these independently selectable families. Existing
                 // families still require their statuses whenever an extension payload exists.
                 if (!hasStatus && selected == null && (feature.equals("hideSuggestedUsers") || feature.equals("openLinksExternally")
-                        || feature.equals("returnRefresh") || feature.equals("disableVideoAutoplay"))) {
+                        || feature.equals("returnRefresh") || feature.equals("disableVideoAutoplay") || feature.equals("pureBlack"))) {
                     if (hasPayload) {
                         if (clean == null) clean = featureMethods(cleanApk, parents);
                         featureOmitted(feature, clean, patched, cleanApk, patchedApk);
@@ -3785,6 +4045,7 @@ public class DexDiff {
                     case "restoreTrust": featureTrust(clean, patched); break;
                     case "returnRefresh": featureReturnRefresh(clean, patched); break;
                     case "disableVideoAutoplay": featureVideoAutoplay(clean, patched); break;
+                    case "pureBlack": featurePureBlack(clean, patched); break;
                     default: throw new IllegalArgumentException("Unknown feature " + feature);
                 }
                 System.out.println("[diff] threads-feature " + feature + ": verified");

@@ -35,6 +35,8 @@ no-call Landroid/content/pm/ShortcutManager;->removeAllDynamicShortcuts()V outsi
 # edge and preserves the original unsafe-parser JSON input. Analytics checks each address bit.
 # Background-return refresh holds each of its four calls to where Threads makes that check's answer.
 # Video autoplay asks right before each feed post's call to PostVideo, on the flag PostVideo plays by.
+# Pure black asks after each #101010 load in the theme and its color helpers, and about each of the
+# dark scheme's #101010 backgrounds right before its constructor, leaving the light scheme alone.
 threads-feature hideAds
 threads-feature hideSuggestedUsers
 threads-feature sanitizeSharingLinks
@@ -43,3 +45,4 @@ threads-feature disableAnalytics
 threads-feature restoreTrust
 threads-feature returnRefresh
 threads-feature disableVideoAutoplay
+threads-feature pureBlack

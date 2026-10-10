@@ -41,6 +41,7 @@ import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstructio
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction31t;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction35c;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction3rc;
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction51l;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutablePackedSwitchPayload;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableSparseSwitchPayload;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableSwitchElement;
@@ -731,6 +732,19 @@ public class BadDexFixture {
     /** PostVideo plays by its fourth boolean, as on 450. */
     private static final ImmutableMethodReference POST_VIDEO = method(FEATURE_VIDEO, "post", "V", OBJECT, "I", "Z", "Z", "Z", "Z", "Z");
     private static final ImmutableMethodReference HOLD_VIDEO = method(FEATURE_AUTOPLAY, "play", "Z", "Z");
+    private static final String FEATURE_PURE_BLACK = "Lapp/morphe/extension/hushthreads/theme/PureBlack;";
+    private static final String FEATURE_THEME = "Lfixture/BdsTheme;";
+    private static final String FEATURE_THEME_COLORS = "Lfixture/ThemeColors;";
+    private static final String FEATURE_SCHEMES = "Lfixture/ColorSchemes;";
+    private static final String FEATURE_SCHEME = "Lfixture/ColorScheme;";
+    /** A color scheme takes 20 colors, the fewest Pure black dark mode reads as one. Threads' takes 39. */
+    private static final int SCHEME_COLORS = 20;
+    private static final ImmutableMethodReference SCHEME_INIT = method(FEATURE_SCHEME, "<init>", "V",
+            Collections.nCopies(SCHEME_COLORS, "J").toArray(new String[0]));
+    private static final ImmutableMethodReference THEME_HELPER = method(FEATURE_THEME_COLORS, "dark", FEATURE_THEME_COLORS, OBJECT);
+    private static final ImmutableMethodReference THEME_COLORS_INIT = method(FEATURE_THEME_COLORS, "<init>", "V", "J");
+    private static final ImmutableMethodReference PURE_ARGB = method(FEATURE_PURE_BLACK, "argb", "J", "J");
+    private static final ImmutableMethodReference PURE_COLOR = method(FEATURE_PURE_BLACK, "color", "J", "J");
 
     /** A Pando getter: it asks for the field by its name's hash and, here, answers null. */
     private static Method pandoGetter(String owner, String name, String returns, String field) {
@@ -1576,6 +1590,90 @@ public class BadDexFixture {
         return define(FEATURE_POSTS, name, "V", true, body(10, body.toArray(new Instruction[0])), OBJECT, "Z");
     }
 
+    /**
+     * Pure black dark mode's shapes: Threads' theme, which loads #101010 itself as 449 did and calls
+     * a helper that loads it as 450 does, each load shifted into a Compose color, and the class
+     * holding the two color schemes the theme reads. Its static initializer builds the light one and
+     * then the dark one, as 450 does, from shared colors: the dark one passes #101010 as its first
+     * two colors where the light one passes white, and the light one passes #101010 as its third, a
+     * dark color on light backgrounds. When [hooked], each load asks argb right after and the dark
+     * backgrounds, in v10 and v12, ask color right before the dark constructor. Faults: the helper's
+     * hook missing, the theme's hook on the gray loaded before its #101010, the second background's
+     * hook missing, that hook on the third color instead, and the background hooks put before the
+     * light constructor.
+     */
+    private static List<ClassDef> pureBlackClasses(boolean hooked, String fault) {
+        List<ClassDef> classes = new ArrayList<>();
+        // invoke(Object, Object): v0..v5 locals, this in v6 and the arguments in v7 and v8; #101010 in v3.
+        List<Instruction> theme = new ArrayList<>(List.of(string(0, "com.instagram.barcelona.bds.theme.BdsTheme.<anonymous> (BdsTheme.kt:73)"),
+                staticField(Opcode.SGET_OBJECT, 0, FEATURE_SCHEMES, "light", FEATURE_SCHEME),
+                staticField(Opcode.SGET_OBJECT, 0, FEATURE_SCHEMES, "dark", FEATURE_SCHEME),
+                new ImmutableInstruction21s(Opcode.CONST_16, 5, 32), constWide(1, 0xff1c1c1cL), constWide(3, 0xff101010L)));
+        if (hooked) theme.addAll(pureBlackHook(PURE_ARGB, fault.equals("pure-black-load-register") ? 1 : 3));
+        theme.addAll(List.of(new ImmutableInstruction23x(Opcode.SHL_LONG, 3, 3, 5), invoke(THEME_HELPER, 7), op(Opcode.MOVE_RESULT_OBJECT, 0),
+                type(Opcode.NEW_INSTANCE, 0, FEATURE_THEME_COLORS), direct(THEME_COLORS_INIT, 0, 3, 4), op(Opcode.RETURN_OBJECT, 0)));
+        classes.add(featureClass(FEATURE_THEME, OBJECT, List.of(),
+                define(FEATURE_THEME, "invoke", OBJECT, false, body(9, theme.toArray(new Instruction[0])), OBJECT, OBJECT)));
+        // dark(Object): v0..v5 locals and the argument in v6; #101010 in v2.
+        List<Instruction> helper = new ArrayList<>(List.of(new ImmutableInstruction21s(Opcode.CONST_16, 5, 32), constWide(0, 0xff0a0a0aL),
+                new ImmutableInstruction23x(Opcode.SHL_LONG, 0, 0, 5), constWide(2, 0xff101010L)));
+        if (hooked && !fault.equals("pure-black-load-missing")) helper.addAll(pureBlackHook(PURE_ARGB, 2));
+        helper.addAll(List.of(new ImmutableInstruction23x(Opcode.SHL_LONG, 2, 2, 5), type(Opcode.NEW_INSTANCE, 4, FEATURE_THEME_COLORS),
+                direct(THEME_COLORS_INIT, 4, 2, 3), op(Opcode.RETURN_OBJECT, 4)));
+        classes.add(featureClass(FEATURE_THEME_COLORS, OBJECT, List.of(),
+                define(FEATURE_THEME_COLORS, "dark", FEATURE_THEME_COLORS, true, body(7, helper.toArray(new Instruction[0])), OBJECT),
+                define(FEATURE_THEME_COLORS, "<init>", "V", false, body(3, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), "J")));
+
+        // The shift in v0 and the shared colors, each shifted into a Compose color: #101010 in v1,
+        // white in v3, the dark scheme's gray in v5 and the light scheme's in v7.
+        List<Instruction> init = new ArrayList<>(List.of(new ImmutableInstruction21s(Opcode.CONST_16, 0, 32)));
+        long[] shared = {0xff101010L, 0xffffffffL, 0xff1c1c1cL, 0xfff5f5f5L};
+        for (int n = 0; n < shared.length; n++) {
+            init.add(constWide(1 + 2 * n, shared[n]));
+            init.add(new ImmutableInstruction23x(Opcode.SHL_LONG, 1 + 2 * n, 1 + 2 * n, 0));
+        }
+        List<Integer> backgrounds = !hooked ? List.of() : fault.equals("pure-black-background-missing") ? List.of(10)
+                : fault.equals("pure-black-background-register") ? List.of(10, 14) : List.of(10, 12);
+        boolean onLight = fault.equals("pure-black-light");
+        init.addAll(schemeBuild("light", 3, 1, 7, onLight ? backgrounds : List.of()));
+        init.addAll(schemeBuild("dark", 1, 3, 5, onLight ? List.of() : backgrounds));
+        init.add(op(Opcode.RETURN_VOID));
+        int fieldFlags = AccessFlags.PUBLIC.getValue() | AccessFlags.STATIC.getValue();
+        classes.add(featureClass(FEATURE_SCHEMES, OBJECT, List.of(flaggedField(FEATURE_SCHEMES, "light", FEATURE_SCHEME, fieldFlags),
+                flaggedField(FEATURE_SCHEMES, "dark", FEATURE_SCHEME, fieldFlags)),
+                define(FEATURE_SCHEMES, "<clinit>", "V", true, body(10 + 2 * SCHEME_COLORS, init.toArray(new Instruction[0])))));
+        classes.add(featureClass(FEATURE_SCHEME, OBJECT, List.of(), define(FEATURE_SCHEME, "<init>", "V", false,
+                body(1 + 2 * SCHEME_COLORS, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)),
+                Collections.nCopies(SCHEME_COLORS, "J").toArray(new String[0]))));
+        return classes;
+    }
+
+    /**
+     * A color scheme built in v9 and stored in [field]: its first two colors copied from v[background],
+     * its third from v[text] and the rest from v[rest], asking color about each register in [hooks]
+     * just before the constructor.
+     */
+    private static List<Instruction> schemeBuild(String field, int background, int text, int rest, List<Integer> hooks) {
+        List<Instruction> build = new ArrayList<>(List.of(type(Opcode.NEW_INSTANCE, 9, FEATURE_SCHEME)));
+        for (int p = 0; p < SCHEME_COLORS; p++) {
+            build.add(new ImmutableInstruction22x(Opcode.MOVE_WIDE_FROM16, 10 + 2 * p, p < 2 ? background : p == 2 ? text : rest));
+        }
+        for (int hook : hooks) build.addAll(pureBlackHook(PURE_COLOR, hook));
+        build.add(new ImmutableInstruction3rc(Opcode.INVOKE_DIRECT_RANGE, 9, 1 + 2 * SCHEME_COLORS, SCHEME_INIT));
+        build.add(staticField(Opcode.SPUT_OBJECT, 9, FEATURE_SCHEMES, field, FEATURE_SCHEME));
+        return build;
+    }
+
+    /** const-wide v[register], [value]: a 64-bit load, as Threads loads an ARGB color. */
+    private static Instruction constWide(int register, long value) {
+        return new ImmutableInstruction51l(Opcode.CONST_WIDE, register, value);
+    }
+
+    /** A Pure black hook on the pair at v[register]: the range call with its move-result-wide back into it. */
+    private static List<Instruction> pureBlackHook(ImmutableMethodReference hook, int register) {
+        return List.of(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, register, 2, hook), op(Opcode.MOVE_RESULT_WIDE, register));
+    }
+
     /** Independent small host shapes. Every faulty build still passes all structural checks. */
     private static List<ClassDef> featureBuild(boolean patched, Set<String> selected, int mask, String fault) {
         List<ClassDef> classes = new ArrayList<>(patched ? good() : clean(cleanHost()));
@@ -1789,16 +1887,18 @@ public class BadDexFixture {
                 body(4, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), SHORTCUT_LIST, "Z", "Z")));
         classes.addAll(returnRefreshClasses(patched && selected.contains("returnRefresh"), fault));
         classes.addAll(videoAutoplayClasses(patched && selected.contains("disableVideoAutoplay"), fault));
+        classes.addAll(pureBlackClasses(patched && selected.contains("pureBlack"), fault));
         if (fault.startsWith("ambiguous-suggestion-") || fault.startsWith("proven-suggestion-")) corruptSuggestionStock(classes, fault);
         if (!patched) return classes;
 
         List<Method> flags = new ArrayList<>();
         for (String flag : List.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
-                "returnRefresh", "disableVideoAutoplay")) {
+                "returnRefresh", "disableVideoAutoplay", "pureBlack")) {
             if ((fault.equals("status-missing") || fault.equals("historical-missing-ad-status")) && flag.equals("hideAds")) continue;
-            // The published bundles came before Open links in browser, Block background-return feed refresh and Disable video autoplay.
+            // The published bundles came before Open links in browser, Block background-return feed refresh, Disable video
+            // autoplay and Pure black dark mode.
             if (fault.startsWith("historical") && (flag.equals("openLinksExternally") || flag.equals("returnRefresh")
-                    || flag.equals("disableVideoAutoplay"))) continue;
+                    || flag.equals("disableVideoAutoplay") || flag.equals("pureBlack"))) continue;
             if ((fault.equals("suggestion-status-missing") || fault.startsWith("historical")) && flag.equals("hideSuggestedUsers")) continue;
             boolean enabled = selected.contains(flag) && !(fault.equals("status-false") && flag.equals("hideAds"));
             if (fault.equals("suggestion-status-false") && flag.equals("hideSuggestedUsers")) enabled = false;
@@ -1840,6 +1940,9 @@ public class BadDexFixture {
                 define(FEATURE_RETURN, "warmStart", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z"),
                 define(FEATURE_RETURN, "cachedPosts", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z")));
         classes.add(featureClass(FEATURE_AUTOPLAY, OBJECT, List.of(), define(FEATURE_AUTOPLAY, "play", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z")));
+        classes.add(featureClass(FEATURE_PURE_BLACK, OBJECT, List.of(),
+                define(FEATURE_PURE_BLACK, "argb", "J", true, body(2, op(Opcode.RETURN_WIDE, 0)), "J"),
+                define(FEATURE_PURE_BLACK, "color", "J", true, body(2, op(Opcode.RETURN_WIDE, 0)), "J")));
         if (patched && (fault.equals("ad-body") || fault.equals("ad-helper-body") || fault.equals("getter-body")
                 || fault.equals("ad-helper-native") || fault.equals("getter-static"))) {
             String owner = fault.equals("ad-body") ? FEATURE_MEDIA : fault.startsWith("ad-helper-") ? "Lfixture/AdFlag;" : FEATURE_ITEM;
@@ -1945,7 +2048,7 @@ public class BadDexFixture {
 
         Map<String, List<ClassDef>> dexes = new LinkedHashMap<>();
         Set<String> allFeatures = Set.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
-                "returnRefresh", "disableVideoAutoplay");
+                "returnRefresh", "disableVideoAutoplay", "pureBlack");
         dexes.put("features-clean", featureBuild(false, Set.of(), 0, ""));
         dexes.put("features-good", featureBuild(true, allFeatures, 7, ""));
         dexes.put("features-omitted", featureBuild(true, Set.of(), 0, ""));
@@ -1969,6 +2072,11 @@ public class BadDexFixture {
         // Disable video autoplay alone too.
         for (String fault : List.of("autoplay-missing", "autoplay-register", "autoplay-inside", "autoplay-bypass")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("disableVideoAutoplay"), 0, fault));
+        }
+        // And Pure black dark mode.
+        for (String fault : List.of("pure-black-load-missing", "pure-black-load-register", "pure-black-background-missing",
+                "pure-black-background-register", "pure-black-light")) {
+            dexes.put("features-bad-" + fault, featureBuild(true, Set.of("pureBlack"), 0, fault));
         }
         for (String fault : List.of("suggestion-stub", "suggestion-media-guard", "suggestion-type-guard", "suggestion-null-guard",
                 "suggestion-item-missing", "suggestion-media-missing", "suggestion-type-missing", "suggestion-null-missing",
@@ -2025,7 +2133,7 @@ public class BadDexFixture {
         dexes.put("features-metadata-clean", metadataStock);
         dexes.put("features-metadata-good", metadataPatched);
         for (String feature : List.of("hideAds", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust", "returnRefresh",
-                "disableVideoAutoplay")) {
+                "disableVideoAutoplay", "pureBlack")) {
             List<ClassDef> unselected = featureBuild(true, Set.of("hideSuggestedUsers", feature), 7, "");
             omitFeatureStatus(unselected, feature, false);
             dexes.put("features-bad-omitted-" + feature, unselected);
