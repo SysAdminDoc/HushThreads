@@ -120,6 +120,7 @@ The base manifest also defines `com.instagram.barcelona.permission.SYSTEM_ONLY`,
 | Shared links | The /share/ link path carries a per-share token. Tests cover the app's Copy link and outbound share paths. | SanitizeSharingLinksPatch.kt, LinkCleaner.java |
 | Theme | The black-gray background constant can move into a static helper that a theme lambda calls. | PureBlackPatch.kt |
 | Version code | Android's package version and Threads' own version reads are distinct. The version patch keeps app-internal integrity and scheduler reads on Meta's original value. | ChangeVersionCodePatch.kt, VersionCodeReads.kt |
+| Certificate checks | Tigon's native stack verifies chains in the Java class CertificateVerifier. It runs Android's default trust manager first, which honors the network security config, and then, when the native side asks for pins, wants one of 18 SHA-256 public keys built into the app, a check written to stop on about 2027-09-30. After a pin failure it falls back to the device's user certificate store only once TigonMNSServiceHolder has called setTrustUserCertificates, which the Tigon service does when Meta's internal debug_allow_user_certs preference is on. The Java fallback client (HucClient) pins instagram.com hosts with its own list, and crash report uploads reuse the 18-key check. | TrustUserCertificatesPatch.kt |
 
 The patch authoring guide links each patch source to its primary fixture test.
 
