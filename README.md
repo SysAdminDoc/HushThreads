@@ -22,7 +22,7 @@
 
 HushThreads is a Morphe patch bundle for Android that takes the ads out of Threads, cleans the links you share and cuts down what the app reports back to Meta.
 
-The latest release is [v0.0.13](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.13), with 18 patches.
+The latest release is [v0.0.13](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.13), with 19 patches.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -70,7 +70,7 @@ The same goes for the Threads you have now. A patched Threads can't install over
 
 ## Patches
 
-HushThreads v0.0.13 has 18 patches. Morphe Manager's default selection has every patch but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Change version code changes the version Android sees, so going back to stock Threads means uninstalling. The other two change Threads when you patch and have no switch to undo it. Turn on Expert mode in Manager to pick them.
+HushThreads v0.0.13 has 19 patches. Morphe Manager's default selection has every patch but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Change version code changes the version Android sees, so going back to stock Threads means uninstalling. The other two change Threads when you patch and have no switch to undo it. Turn on Expert mode in Manager to pick them.
 
 Nothing else needs Expert mode. `Block background-return feed refresh`, `Disable screenshot detection`, `Disable video autoplay`, `Max image quality` and `Pure black dark mode` used to be opt-in. They're in every build now with their switches off, so a fresh patch looks like the Threads you know until you turn them on in HushThreads settings. Each row below says where a patch's switch is and how it starts. In Expert mode the patches sit in groups named for what they touch, like Feed, Privacy and Downloads.
 
@@ -84,6 +84,7 @@ Updating from v0.0.12 or older? If you'd picked one of those five before and nev
 | `Disable screenshot detection` | Threads isn't told when you take a screenshot. It stops watching your photos for new screenshots. Good if you want to screenshot without Threads noticing. Starts off. Turn it on in HushThreads settings > Privacy. |
 | `Disable video autoplay` | Videos in your feed wait for a tap instead of playing as you scroll. Good for a calmer feed and less data use. Starts off. Turn it on in HushThreads settings > Feed. |
 | `Hide ads` | Removes sponsored posts from your feed before Threads shows them, so they leave no gap. Good for a cleaner feed. On by default. Turn it off in HushThreads settings > Feed. |
+| `Hide ghost post bubbles` | Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. The pictures and the ghost posts themselves stay. Good for a calmer look. Starts off. Turn it on in HushThreads settings > More settings > Appearance. |
 | `Hide suggested users` | Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay, and so does the rest of a profile. Good if you only want posts in your feed. On by default. Turn it off in HushThreads settings > Feed. |
 | `Hide the Instagram button` | Takes the Instagram button off the top of profiles, yours and other people's. The other buttons stay. Good for a tidier profile. Starts off. Turn it on in HushThreads settings > More settings > Appearance. |
 | `HushThreads settings` | Adds a HushThreads page to Threads where you turn features on or off, pause HushThreads, back up your settings and read the licenses. Open it from Threads' own settings. Works as soon as you patch it in, with no switch. |

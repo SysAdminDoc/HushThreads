@@ -78,6 +78,7 @@ body:
         - Disable screenshot detection
         - Disable video autoplay
         - Hide ads
+        - Hide ghost post bubbles
         - Hide suggested users
         - Hide the Instagram button
         - HushThreads settings

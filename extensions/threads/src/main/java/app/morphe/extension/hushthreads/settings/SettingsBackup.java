@@ -85,6 +85,7 @@ public final class SettingsBackup {
             Settings.DISABLE_SCREENSHOT_DETECTION,
             Settings.PURE_BLACK,
             Settings.HIDE_INSTAGRAM_BUTTON,
+            Settings.HIDE_GHOST_POST_BUBBLES,
             Settings.SAVE_MEDIA,
             Settings.DOWNLOAD_COMPATIBLE));
 

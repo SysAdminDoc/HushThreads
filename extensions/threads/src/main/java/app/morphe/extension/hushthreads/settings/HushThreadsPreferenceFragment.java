@@ -333,7 +333,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
             saves = new SaveSettingsRows.Saves(downloads);
         }
 
-        if (build.contains(PatchFamily.PURE_BLACK) || build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)) {
+        if (build.contains(PatchFamily.PURE_BLACK) || build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)
+                || build.contains(PatchFamily.HIDE_GHOST_POST_BUBBLES)) {
             PreferenceCategory appearance = category(screen, L10n.t("Appearance"));
             if (build.contains(PatchFamily.PURE_BLACK)) {
                 appearance.addPreference(toggle(context, Settings.PURE_BLACK, L10n.t("Pure black dark mode"),
@@ -344,6 +345,11 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 appearance.addPreference(toggle(context, Settings.HIDE_INSTAGRAM_BUTTON, L10n.t("Hide the Instagram button"),
                         L10n.t("Takes the Instagram button off the top of profiles, yours and other people's. "
                             + "Restart Threads to see the change.")));
+            }
+            if (build.contains(PatchFamily.HIDE_GHOST_POST_BUBBLES)) {
+                appearance.addPreference(toggle(context, Settings.HIDE_GHOST_POST_BUBBLES, L10n.t("Hide ghost post bubbles"),
+                        L10n.t("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top "
+                            + "of your feed. Restart Threads to see the change.")));
             }
         }
 

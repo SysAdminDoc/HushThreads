@@ -107,6 +107,15 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_hide_instagram_button", FALSE, true);
 
     /**
+     * The ghost post bubbles on profile pictures aren't drawn, the one on a profile's header and
+     * the row of them at the top of the feed
+     * ({@link app.morphe.extension.hushthreads.profile.GhostPostBubbles}). Threads keeps what it
+     * has drawn, so a change waits for a restart.
+     */
+    public static final BooleanSetting HIDE_GHOST_POST_BUBBLES =
+            new BooleanSetting("hushthreads_hide_ghost_post_bubbles", FALSE, true);
+
+    /**
      * A post's menu gets a row that saves its photos and videos to the phone, every page of a
      * post with several in order, from the addresses Threads already holds
      * ({@link app.morphe.extension.hushthreads.download.PostSave}).

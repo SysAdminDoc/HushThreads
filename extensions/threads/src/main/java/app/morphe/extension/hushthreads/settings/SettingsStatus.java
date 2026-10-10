@@ -74,6 +74,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean hideGhostPostBubbles() {
+        return false;
+    }
+
     public static boolean removeAdId() {
         return false;
     }

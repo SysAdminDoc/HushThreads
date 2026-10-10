@@ -227,6 +227,43 @@
       "options": []
     },
     {
+      "name": "Hide ghost post bubbles",
+      "description": "Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. The pictures and the ghost posts themselves stay. Good for a calmer look. Starts off. Turn it on in HushThreads settings > More settings > Appearance.",
+      "category": "Interface",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "450.0.0.51.78"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "450.0.0.51.78",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 512008342
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide suggested users",
       "description": "Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay, and so does the rest of a profile. Good if you only want posts in your feed. On by default. Turn it off in HushThreads settings > Feed.",
       "category": "Feed",
