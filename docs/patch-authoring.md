@@ -123,7 +123,7 @@ The verifier checks the CLI exit status, result report, expected patch names, pa
 
 For a new app build, add its exact fixture before declaring compatibility. Update AppCompatibilities.kt and its compatibility fixture test, the source ledger, and every build-aware patch test. Run the full selected-patch verifier against all declared builds without `-Force` and confirm it applied each patch. Update the user-facing supported-build table and changelog after the fixture checks pass.
 
-Before a release, build a receipt and validate the artifact against the published bundle with scripts/build-release-receipt.ps1 and scripts/validate-release-facts.ps1. Keep the patch source license and provenance headers intact when adopting code.
+Cut a release with the five stages of `scripts/release/release.ps1`, in order: `-Stage prepare`, `preflight`, `build`, `publish` and `index`, each with `-Version <version>`. The build stage writes the receipt with scripts/build-release-receipt.ps1 from one kept fixture run per declared build, and the index stage holds the published bundle to scripts/validate-release-facts.ps1. The README's [building and checking steps](../README.md#building-and-checking) say what each stage does and what it needs. Keep the patch source license and provenance headers intact when adopting code.
 
 ## References
 
