@@ -82,8 +82,8 @@ public class SettingsNavigationTest {
 
     @Test public void homeAndEveryCategoryAreReachableWithoutRemovingTheModel() {
         assertNotNull(page.navigation);
-        // The status card, Browse settings, Feed, Privacy, Downloads and More settings.
-        assertEquals(6, list().getCount());
+        // The status card, Browse settings, Feed, Privacy, Downloads, More settings and Support HushThreads.
+        assertEquals(7, list().getCount());
         assertEquals(9, page.sections().size());
         int total = page.getPreferenceScreen().getRootAdapter().getCount();
         for (Preference section : page.sections()) {
@@ -94,7 +94,40 @@ public class SettingsNavigationTest {
             assertTrue(page.navigation.back());
             while (page.navigation.back()) { }
         }
-        assertEquals(6, list().getCount());
+        assertEquals(7, list().getCount());
+    }
+
+    /**
+     * The home page ends with Support HushThreads, under More settings. A tap opens the Ko-fi page
+     * in a browser of its own, and with no browser a tip names the address and Threads keeps running.
+     */
+    @Test public void theHomePageEndsWithSupportWhichOpensKoFi() {
+        Map<String, Object> before = savedValues();
+        int last = list().getCount() - 1;
+        Preference row = (Preference) list().getItemAtPosition(last);
+        assertEquals(HushThreadsPreferenceFragment.SUPPORT, row.getKey());
+        assertEquals("Support HushThreads", String.valueOf(row.getTitle()));
+        assertEquals("Buy me a coffee on Ko-fi", String.valueOf(row.getSummary()));
+        assertEquals("More settings", String.valueOf(((Preference) list().getItemAtPosition(last - 1)).getTitle()));
+        assertTrue(list().getAdapter().isEnabled(last));
+
+        tap(HushThreadsPreferenceFragment.SUPPORT);
+        android.content.Intent started = org.robolectric.Shadows.shadowOf(controller.get()).getNextStartedActivity();
+        assertNotNull("nothing opened", started);
+        assertEquals(android.content.Intent.ACTION_VIEW, started.getAction());
+        assertEquals("https://ko-fi.com/X8K126YVER", started.getDataString());
+        assertTrue(started.hasCategory(android.content.Intent.CATEGORY_BROWSABLE));
+        assertTrue("the page would open inside Threads' task",
+                (started.getFlags() & android.content.Intent.FLAG_ACTIVITY_NEW_TASK) != 0);
+        assertNull(started.getComponent());
+        assertEquals("the tap left the home page", last + 1, list().getCount());
+
+        org.robolectric.Shadows.shadowOf(org.robolectric.RuntimeEnvironment.getApplication()).checkActivities(true);
+        tap(HushThreadsPreferenceFragment.SUPPORT);
+        assertEquals("No app on this phone can open the link. The address is " + L10n.isolate("ko-fi.com/X8K126YVER") + ".",
+                ShadowToast.getTextOfLatestToast());
+        assertFalse(controller.get().isFinishing());
+        assertEquals(before, savedValues());
     }
 
     @Test public void categoryClickChangesOnlyTheSettingWhoseRowWasTapped() {
@@ -436,7 +469,7 @@ public class SettingsNavigationTest {
         assertEquals("No matching settings", ((Preference) list().getItemAtPosition(0)).getTitle());
         assertTrue(page.navigation.back());
         assertEquals("", search.getText().toString());
-        assertEquals(6, list().getCount());
+        assertEquals(7, list().getCount());
     }
 
     /**
@@ -542,13 +575,13 @@ public class SettingsNavigationTest {
         page.navigation.open(page.findPreference(Settings.HIDE_ADS.key));
         SettingsL10nTest.backOf(dialog).performClick();
         assertTrue(dialog.getDialog().isShowing());
-        assertEquals(6, list().getCount());
+        assertEquals(7, list().getCount());
         page.navigation.navigate("About");
         dialog.getDialog().onBackPressed();
         // More settings: Appearance, Links, Updates, Set when you patched, Pause, backup and diagnostics, and About.
         assertEquals(6, list().getCount());
         dialog.getDialog().onBackPressed();
-        assertEquals(6, list().getCount());
+        assertEquals(7, list().getCount());
         dialog.getDialog().onBackPressed();
         ShadowLooper.idleMainLooper();
         assertFalse(controller.get().isFinishing());
@@ -892,7 +925,7 @@ public class SettingsNavigationTest {
         page = page(dialog);
         Map<String, Object> before = savedValues();
 
-        assertEquals(7, list().getCount());
+        assertEquals(8, list().getCount());
         assertEquals(1, position(HushThreadsPreferenceFragment.MISSING_DEFAULTS));
         Preference row = (Preference) list().getItemAtPosition(1);
         assertEquals("1 default patch isn't in this build", String.valueOf(row.getTitle()));

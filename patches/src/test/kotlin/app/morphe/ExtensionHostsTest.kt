@@ -113,9 +113,10 @@ class ExtensionHostsTest {
     private companion object {
         /**
          * The hosts the README's Privacy section names. 127.0.0.1 is where Disable analytics sends
-         * Threads' event logs: the phone itself, on a port nothing listens on.
+         * Threads' event logs: the phone itself, on a port nothing listens on. ko-fi.com is the
+         * Support HushThreads row's page, opened in a browser only on a tap.
          */
-        val ALLOWED_HOSTS = setOf("github.com", "api.github.com", "gitlab.com", "www.gnu.org", "127.0.0.1")
+        val ALLOWED_HOSTS = setOf("github.com", "api.github.com", "gitlab.com", "www.gnu.org", "ko-fi.com", "127.0.0.1")
         const val RELEASE_CHECK =
             "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ReleaseCheck.java"
         val TRANSPORTS = listOf(

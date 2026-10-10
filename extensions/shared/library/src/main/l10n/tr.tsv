@@ -275,3 +275,7 @@ Hide screenshots from Threads	Ekran görüntülerini Threads'ten gizle
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	Ekran görüntüsü aldığında Threads'e haber verilmez, bu yüzden onu kaydedemez ya da ona tepki veremez.
 Full size photos	Tam boyutlu fotoğraflar
 Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	Fotoğraflar ekranına göre seçilen bir boyutta değil, Threads'te bulunan en büyük boyutta yüklenir. Daha net görünür ve daha fazla veri kullanır.
+# context: title of the last row on the settings home page; a tap opens the maintainer's Ko-fi page in a browser
+Support HushThreads	HushThreads'i destekle
+# context: that row's summary; Ko-fi is a tipping site's name and stays as it is
+Buy me a coffee on Ko-fi	Ko-fi'de bana bir kahve ısmarla

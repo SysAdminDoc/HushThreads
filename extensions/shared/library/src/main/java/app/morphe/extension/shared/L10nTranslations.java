@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(524);
+        Map<String, String> table = new HashMap<>(528);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -133,6 +133,8 @@ public final class L10nTranslations {
                 "Einstellungen durchsuchen");
         table.put("Build %1$s",
                 "Build %1$s");
+        table.put("Buy me a coffee on Ko-fi",
+                "Spendier mir einen Kaffee auf Ko-fi");
         table.put("Cancel",
                 "Abbrechen");
         table.put("Cancel saving this carousel",
@@ -175,11 +177,11 @@ public final class L10nTranslations {
                 "Die Einstellungen lie\u00dfen sich nicht importieren. Es wurde nichts ge\u00e4ndert.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "Diese Datei lie\u00df sich nicht \u00f6ffnen. Es wurde nichts ge\u00e4ndert.");
-        table.put("Couldn't open the file picker. Try again.",
-                "Die Dateiauswahl lie\u00df sich nicht \u00f6ffnen. Versuche es noch einmal.");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Couldn't open the file picker. Try again.",
+                "Die Dateiauswahl lie\u00df sich nicht \u00f6ffnen. Versuche es noch einmal.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "Die Diagnosedaten lie\u00dfen sich nicht wiederherstellen. Versuche es noch einmal.");
         table.put("Couldn't reach GitHub. Try again later.",
@@ -298,11 +300,11 @@ public final class L10nTranslations {
                 "Lizenzen");
         table.put("Link expired. Reopen the post and try again",
                 "Link abgelaufen. \u00d6ffne den Beitrag neu und versuche es noch einmal");
-        table.put("Links",
-                "Links");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Links",
+                "Links");
         table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
                 "Links, die du antippst, \u00f6ffnen sich in deinem Browser oder in der App der Seite, ohne Threads' Link-Tracking. Threads- und Instagram-Seiten \u00f6ffnen sich weiter in Threads.");
         table.put("Links, updates, backup and more",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Einstellungen suchen");
         table.put("Selecting links by hand",
                 "Links von Hand ausw\u00e4hlen");
-        table.put("Set when you patched",
-                "Beim Patchen festgelegt");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Set when you patched",
+                "Beim Patchen festgelegt");
         table.put("Settings couldn't open",
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -460,6 +462,8 @@ public final class L10nTranslations {
                 "H\u00e4lt die meisten Nutzungsberichte von Meta fern. Einige k\u00f6nnen trotzdem durchkommen. Schalte das aus, um sie wie zuvor zu senden.");
         table.put("Suggested accounts in your feed",
                 "Vorgeschlagene Konten in deinem Feed");
+        table.put("Support HushThreads",
+                "HushThreads unterst\u00fctzen");
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
         table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Schaltet beim n\u00e4chsten Start von Threads jeden HushThreads-Schalter au\u00dfer der Debug-Protokollierung aus. Was du beim Patchen gew\u00e4hlt hast, bleibt, und deine Auswahl bleibt gespeichert.");
         table.put("Undo",
                 "R\u00fcckg\u00e4ngig");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
                 "Bis zum Fortsetzen verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv.");
         table.put("Updates",
                 "Updates");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Eigenen Zertifikaten wird vertraut");
         table.put("Version",
@@ -596,7 +600,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(524);
+        Map<String, String> table = new HashMap<>(528);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -682,6 +686,8 @@ public final class L10nTranslations {
                 "Explorar ajustes");
         table.put("Build %1$s",
                 "Compilaci\u00f3n %1$s");
+        table.put("Buy me a coffee on Ko-fi",
+                "Inv\u00edtame a un caf\u00e9 en Ko-fi");
         table.put("Cancel",
                 "Cancelar");
         table.put("Cancel saving this carousel",
@@ -724,11 +730,11 @@ public final class L10nTranslations {
                 "No se pudo importar la configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "No se pudo abrir ese archivo. No se cambi\u00f3 nada.");
-        table.put("Couldn't open the file picker. Try again.",
-                "No se pudo abrir el selector de archivos. Int\u00e9ntalo de nuevo.");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("Couldn't open the file picker. Try again.",
+                "No se pudo abrir el selector de archivos. Int\u00e9ntalo de nuevo.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "No se pudieron restaurar los datos de diagn\u00f3stico. Int\u00e9ntalo de nuevo.");
         table.put("Couldn't reach GitHub. Try again later.",
@@ -847,11 +853,11 @@ public final class L10nTranslations {
                 "Licencias");
         table.put("Link expired. Reopen the post and try again",
                 "El enlace expir\u00f3. Vuelve a abrir la publicaci\u00f3n e int\u00e9ntalo de nuevo");
-        table.put("Links",
-                "Enlaces");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("Links",
+                "Enlaces");
         table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
                 "Los enlaces que tocas se abren en tu navegador o en la app del sitio, sin el seguimiento de enlaces de Threads. Las p\u00e1ginas de Threads e Instagram se siguen abriendo en Threads.");
         table.put("Links, updates, backup and more",
@@ -970,11 +976,11 @@ public final class L10nTranslations {
                 "Buscar ajustes");
         table.put("Selecting links by hand",
                 "Seleccionar enlaces a mano");
-        table.put("Set when you patched",
-                "Aplicado al parchear");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Set when you patched",
+                "Aplicado al parchear");
         table.put("Settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -1009,6 +1015,8 @@ public final class L10nTranslations {
                 "Evita que la mayor\u00eda de los informes de uso lleguen a Meta. Algunos a\u00fan pueden pasar. Desact\u00edvalo para enviarlos como antes.");
         table.put("Suggested accounts in your feed",
                 "Cuentas sugeridas en tu feed");
+        table.put("Support HushThreads",
+                "Apoya HushThreads");
         table.put("Supported links",
                 "Enlaces compatibles");
         table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
@@ -1091,13 +1099,13 @@ public final class L10nTranslations {
                 "Desactiva todos los interruptores de HushThreads, salvo el Registro de depuraci\u00f3n, la pr\u00f3xima vez que se abra Threads. Lo que elegiste al parchear se mantiene y tus preferencias quedan guardadas.");
         table.put("Undo",
                 "Deshacer");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
                 "Hasta que reanudes, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene.");
         table.put("Updates",
                 "Actualizaciones");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Certificados del usuario de confianza");
         table.put("Version",
@@ -1145,7 +1153,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(524);
+        Map<String, String> table = new HashMap<>(528);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1231,6 +1239,8 @@ public final class L10nTranslations {
                 "Jelajahi pengaturan");
         table.put("Build %1$s",
                 "Versi build %1$s");
+        table.put("Buy me a coffee on Ko-fi",
+                "Traktir aku secangkir kopi di Ko-fi");
         table.put("Cancel",
                 "Batal");
         table.put("Cancel saving this carousel",
@@ -1273,11 +1283,11 @@ public final class L10nTranslations {
                 "Pengaturan tidak dapat diimpor. Tidak ada yang diubah.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "File itu tidak dapat dibuka. Tidak ada yang diubah.");
-        table.put("Couldn't open the file picker. Try again.",
-                "Pemilih file tidak dapat dibuka. Coba lagi.");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Couldn't open the file picker. Try again.",
+                "Pemilih file tidak dapat dibuka. Coba lagi.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "Data diagnostik tidak dapat dikembalikan. Coba lagi.");
         table.put("Couldn't reach GitHub. Try again later.",
@@ -1396,11 +1406,11 @@ public final class L10nTranslations {
                 "Lisensi");
         table.put("Link expired. Reopen the post and try again",
                 "Tautan kedaluwarsa. Buka ulang postingan lalu coba lagi");
-        table.put("Links",
-                "Tautan");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Links",
+                "Tautan");
         table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
                 "Tautan yang Anda ketuk terbuka di browser atau aplikasi situsnya, tanpa pelacakan tautan Threads. Halaman Threads dan Instagram tetap terbuka di Threads.");
         table.put("Links, updates, backup and more",
@@ -1519,11 +1529,11 @@ public final class L10nTranslations {
                 "Cari pengaturan");
         table.put("Selecting links by hand",
                 "Memilih tautan secara manual");
-        table.put("Set when you patched",
-                "Diatur saat Anda menambal");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Set when you patched",
+                "Diatur saat Anda menambal");
         table.put("Settings couldn't open",
                 "Pengaturan tidak dapat dibuka");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -1558,6 +1568,8 @@ public final class L10nTranslations {
                 "Menghentikan sebagian besar laporan penggunaan agar tidak sampai ke Meta. Beberapa mungkin masih lolos. Matikan untuk mengirimnya seperti semula.");
         table.put("Suggested accounts in your feed",
                 "Akun yang disarankan di feed Anda");
+        table.put("Support HushThreads",
+                "Dukung HushThreads");
         table.put("Supported links",
                 "Tautan yang didukung");
         table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
@@ -1640,13 +1652,13 @@ public final class L10nTranslations {
                 "Mematikan semua sakelar HushThreads kecuali Pencatatan debug saat Threads dibuka berikutnya. Yang Anda pilih saat menambal tetap berlaku, dan pilihan Anda tersimpan.");
         table.put("Undo",
                 "Urungkan");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
                 "Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif.");
         table.put("Updates",
                 "Pembaruan");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Sertifikat pengguna dipercaya");
         table.put("Version",
@@ -1694,7 +1706,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(524);
+        Map<String, String> table = new HashMap<>(528);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1780,6 +1792,8 @@ public final class L10nTranslations {
                 "Explorar configura\u00e7\u00f5es");
         table.put("Build %1$s",
                 "Compila\u00e7\u00e3o %1$s");
+        table.put("Buy me a coffee on Ko-fi",
+                "Me pague um caf\u00e9 no Ko-fi");
         table.put("Cancel",
                 "Cancelar");
         table.put("Cancel saving this carousel",
@@ -1822,11 +1836,11 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel importar as configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "N\u00e3o foi poss\u00edvel abrir esse arquivo. Nada foi alterado.");
-        table.put("Couldn't open the file picker. Try again.",
-                "N\u00e3o foi poss\u00edvel abrir o seletor de arquivos. Tente de novo.");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Couldn't open the file picker. Try again.",
+                "N\u00e3o foi poss\u00edvel abrir o seletor de arquivos. Tente de novo.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "N\u00e3o foi poss\u00edvel restaurar os dados de diagn\u00f3stico. Tente de novo.");
         table.put("Couldn't reach GitHub. Try again later.",
@@ -1945,11 +1959,11 @@ public final class L10nTranslations {
                 "Licen\u00e7as");
         table.put("Link expired. Reopen the post and try again",
                 "Link expirado. Abra a publica\u00e7\u00e3o novamente e tente de novo");
-        table.put("Links",
-                "Links");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("Links",
+                "Links");
         table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
                 "Os links que voc\u00ea toca abrem no navegador ou no app do site, sem o rastreamento de links do Threads. P\u00e1ginas do Threads e do Instagram continuam abrindo no Threads.");
         table.put("Links, updates, backup and more",
@@ -2068,11 +2082,11 @@ public final class L10nTranslations {
                 "Buscar configura\u00e7\u00f5es");
         table.put("Selecting links by hand",
                 "Selecionar links manualmente");
-        table.put("Set when you patched",
-                "Definido ao aplicar os patches");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Set when you patched",
+                "Definido ao aplicar os patches");
         table.put("Settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -2107,6 +2121,8 @@ public final class L10nTranslations {
                 "Impede que a maioria dos relat\u00f3rios de uso chegue \u00e0 Meta. Alguns ainda podem passar. Desligue para envi\u00e1-los como antes.");
         table.put("Suggested accounts in your feed",
                 "Contas sugeridas no seu feed");
+        table.put("Support HushThreads",
+                "Apoie o HushThreads");
         table.put("Supported links",
                 "Links compat\u00edveis");
         table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
@@ -2189,13 +2205,13 @@ public final class L10nTranslations {
                 "Desliga todas as op\u00e7\u00f5es do HushThreads, menos o Registro de depura\u00e7\u00e3o, na pr\u00f3xima vez que o Threads abrir. O que voc\u00ea escolheu ao aplicar os patches continua, e suas escolhas ficam salvas.");
         table.put("Undo",
                 "Desfazer");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
                 "At\u00e9 voc\u00ea retomar, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo.");
         table.put("Updates",
                 "Atualiza\u00e7\u00f5es");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Certificados do usu\u00e1rio confi\u00e1veis");
         table.put("Version",
@@ -2243,7 +2259,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(524);
+        Map<String, String> table = new HashMap<>(528);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2329,6 +2345,8 @@ public final class L10nTranslations {
                 "Ayarlar\u0131 ke\u015ffet");
         table.put("Build %1$s",
                 "Derleme %1$s");
+        table.put("Buy me a coffee on Ko-fi",
+                "Ko-fi'de bana bir kahve \u0131smarla");
         table.put("Cancel",
                 "\u0130ptal");
         table.put("Cancel saving this carousel",
@@ -2371,11 +2389,11 @@ public final class L10nTranslations {
                 "Ayarlar i\u00e7e aktar\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "Bu dosya a\u00e7\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("Couldn't open the file picker. Try again.",
-                "Dosya se\u00e7ici a\u00e7\u0131lamad\u0131. Tekrar dene.");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("Couldn't open the file picker. Try again.",
+                "Dosya se\u00e7ici a\u00e7\u0131lamad\u0131. Tekrar dene.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "Tan\u0131lama verileri geri getirilemedi. Tekrar dene.");
         table.put("Couldn't reach GitHub. Try again later.",
@@ -2494,11 +2512,11 @@ public final class L10nTranslations {
                 "Lisanslar");
         table.put("Link expired. Reopen the post and try again",
                 "Ba\u011flant\u0131n\u0131n s\u00fcresi doldu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar dene");
-        table.put("Links",
-                "Ba\u011flant\u0131lar");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("Links",
+                "Ba\u011flant\u0131lar");
         table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
                 "Dokundu\u011fun ba\u011flant\u0131lar taray\u0131c\u0131nda veya sitenin uygulamas\u0131nda a\u00e7\u0131l\u0131r, Threads'in ba\u011flant\u0131 takibi atlan\u0131r. Threads ve Instagram sayfalar\u0131 yine Threads'te a\u00e7\u0131l\u0131r.");
         table.put("Links, updates, backup and more",
@@ -2617,11 +2635,11 @@ public final class L10nTranslations {
                 "Ayarlarda ara");
         table.put("Selecting links by hand",
                 "Ba\u011flant\u0131lar\u0131 elle se\u00e7me");
-        table.put("Set when you patched",
-                "Yamalad\u0131\u011f\u0131nda ayarlananlar");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Set when you patched",
+                "Yamalad\u0131\u011f\u0131nda ayarlananlar");
         table.put("Settings couldn't open",
                 "Ayarlar a\u00e7\u0131lamad\u0131");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -2656,6 +2674,8 @@ public final class L10nTranslations {
                 "Kullan\u0131m raporlar\u0131n\u0131n \u00e7o\u011funun Meta'ya ula\u015fmas\u0131n\u0131 engeller. Baz\u0131lar\u0131 yine de ge\u00e7ebilir. Eskisi gibi g\u00f6ndermek i\u00e7in kapat.");
         table.put("Suggested accounts in your feed",
                 "Ak\u0131\u015f\u0131n\u0131zdaki \u00f6nerilen hesaplar");
+        table.put("Support HushThreads",
+                "HushThreads'i destekle");
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
         table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
@@ -2738,13 +2758,13 @@ public final class L10nTranslations {
                 "Threads bir sonraki a\u00e7\u0131l\u0131\u015f\u0131nda Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki t\u00fcm HushThreads anahtarlar\u0131n\u0131 kapat\u0131r. Yamalarken se\u00e7tiklerin kal\u0131r ve tercihlerin kay\u0131tl\u0131 kal\u0131r.");
         table.put("Undo",
                 "Geri al");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
                 "Devam ettirene kadar Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r.");
         table.put("Updates",
                 "G\u00fcncellemeler");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Kullan\u0131c\u0131 sertifikalar\u0131na g\u00fcveniliyor");
         table.put("Version",

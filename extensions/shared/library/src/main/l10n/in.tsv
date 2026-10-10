@@ -275,3 +275,7 @@ Hide screenshots from Threads	Sembunyikan tangkapan layar dari Threads
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	Threads tidak diberi tahu saat kamu mengambil tangkapan layar, jadi tidak bisa mencatat atau menanggapinya.
 Full size photos	Foto ukuran penuh
 Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	Foto dimuat dalam ukuran terbesar yang dimiliki Threads, bukan ukuran yang dipilih untuk layarmu. Foto terlihat lebih tajam dan memakai lebih banyak data.
+# context: title of the last row on the settings home page; a tap opens the maintainer's Ko-fi page in a browser
+Support HushThreads	Dukung HushThreads
+# context: that row's summary; Ko-fi is a tipping site's name and stays as it is
+Buy me a coffee on Ko-fi	Traktir aku secangkir kopi di Ko-fi

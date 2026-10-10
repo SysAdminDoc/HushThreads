@@ -24,6 +24,7 @@ Changes in the source build, then released versions.
 * **Threads:** Patch descriptions in Morphe Manager are rewritten in plain English. Each one says what the patch changes, why you might want it, and ends with where its switch is and whether it starts on or off.
 * **Threads:** Setting rows in HushThreads settings are reworded in plain English, with a restart reminder on Pure black dark mode. Translations for German, Spanish, Indonesian, Brazilian Portuguese and Turkish are updated to match.
 * **Threads:** A few messages are clearer about what happened and what to do next: a failed download, the cancel hint while saving, an unreadable reply from GitHub, and the status line on the overview. Translations are updated to match.
+* **Threads:** The settings home page ends with Support HushThreads, which opens the Ko-fi page in your browser. If nothing on your phone can open it, a tip shows the address and Threads keeps running.
 
 ## 0.0.12 (2026-10-07)
 

@@ -272,3 +272,7 @@ Hide screenshots from Threads	Esconder capturas de tela do Threads
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	O Threads não fica sabendo quando você faz uma captura de tela, então não pode registrá-la nem reagir a ela.
 Full size photos	Fotos em tamanho original
 Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	As fotos carregam no maior tamanho que o Threads tem, não em um escolhido para a sua tela. Ficam mais nítidas e usam mais dados.
+# context: title of the last row on the settings home page; a tap opens the maintainer's Ko-fi page in a browser
+Support HushThreads	Apoie o HushThreads
+# context: that row's summary; Ko-fi is a tipping site's name and stays as it is
+Buy me a coffee on Ko-fi	Me pague um café no Ko-fi

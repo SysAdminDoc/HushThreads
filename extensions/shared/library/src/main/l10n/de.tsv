@@ -275,3 +275,7 @@ Hide screenshots from Threads	Screenshots vor Threads verbergen
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	Threads erfährt nicht, wenn du einen Screenshot machst, und kann ihn daher weder protokollieren noch darauf reagieren.
 Full size photos	Fotos in voller Größe
 Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	Fotos werden in der größten Größe geladen, die Threads hat, nicht in einer für deinen Bildschirm gewählten. Sie wirken schärfer und verbrauchen mehr Daten.
+# context: title of the last row on the settings home page; a tap opens the maintainer's Ko-fi page in a browser
+Support HushThreads	HushThreads unterstützen
+# context: that row's summary; Ko-fi is a tipping site's name and stays as it is
+Buy me a coffee on Ko-fi	Spendier mir einen Kaffee auf Ko-fi
