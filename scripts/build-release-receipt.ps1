@@ -24,6 +24,8 @@
     stops the run at once instead of after the others, which for Threads unpacks gigabytes.
 
     The patched APKs are working files and are deleted on the way out, including after a failure.
+    The merges and patch runs share one slot of the machine's build queue when BUILD_QUEUE_SCRIPT
+    names one (Invoke-HeavyJob in common.ps1), and run straight away when it doesn't.
 
     The bundle has to be a build of HEAD from a clean tree, and a clean tree when the receipt is
     cut doesn't show that. So its stamp has to be HEAD's commit time (the build writes 0 when the
@@ -296,105 +298,110 @@ if ($unfixed.Count -gt 0) {
         'Nothing was patched.')
 }
 
-foreach ($apk in $Fixture) {
-    $label = Split-Path -Leaf $apk
-    Write-Host "[receipt] patching $label with $($patchNames.Count) patches"
+# Every fixture in one slot of the machine's build queue when there is one (Invoke-HeavyJob):
+# merges and CLI runs that unpack gigabytes each, one release's worth, not interleaved with
+# another build's. A throw here ends the job, gives the slot back and stops the receipt.
+Invoke-HeavyJob -Label 'receipt' -ScriptBlock {
+    foreach ($apk in $Fixture) {
+        $label = Split-Path -Leaf $apk
+        Write-Host "[receipt] patching $label with $($patchNames.Count) patches"
 
-    $runId = [guid]::NewGuid().ToString('N')
-    $runDir = Resolve-WithinRoot -Path (Join-Path $workRoot "receipt-$runId") -Root $workRoot
-    New-Item -ItemType Directory -Force -Path $runDir | Out-Null
-    try {
-        $stock = $stockFacts[$apk]
-
-        $out = Resolve-WithinRoot -Path (Join-Path $runDir 'patched.apk') -Root $workRoot
-        $temp = Resolve-WithinRoot -Path (Join-Path $runDir 'tmp') -Root $workRoot
-        $resultPath = Resolve-WithinRoot -Path (Join-Path $runDir 'result.json') -Root $workRoot
-
-        # A fixture of a build the bundle does not declare, by version name or by version code, is
-        # patched under -f, and the receipt says so rather than letting a forced run read like a
-        # declared-compatible one.
-        $forced = -not (Test-DeclaredBuild -Target $expectedTarget -VersionName ([string]$stock.versionName) `
-            -VersionCode ([string]$stock.versionCode))
-
-        # The one APK the CLI patches: the fixture's merge when it's a split bundle, made here
-        # because the CLI deletes its own, or the fixture itself. No merge, no receipt.
-        $mergedApk = Resolve-WithinRoot -Path (Join-Path $runDir 'stock-merged.apk') -Root $workRoot
-        $patchInput = Get-MergedApk -Apk $apk -Destination $mergedApk -Java $Java -DesktopJar $DesktopJar
-
-        $enable = @()
-        foreach ($name in $patchNames) { $enable += '-e'; $enable += $name }
-        $arguments = @('patch', '--exclusive', '--continue-on-error', '--unsigned', '-p', $Bundle,
-            '-o', $out, '-t', $temp, '-r', $resultPath)
-        if ($forced) { $arguments += '-f' }
-        $arguments = $arguments + $enable + @($patchInput)
-        # Continue for the call alone: the CLI logs WARNING and SEVERE on stderr, which Windows
-        # PowerShell 5.1 turns into a terminating error under Stop. The report and the exit code
-        # are what decide.
-        $preference = $ErrorActionPreference
+        $runId = [guid]::NewGuid().ToString('N')
+        $runDir = Resolve-WithinRoot -Path (Join-Path $workRoot "receipt-$runId") -Root $workRoot
+        New-Item -ItemType Directory -Force -Path $runDir | Out-Null
         try {
-            $ErrorActionPreference = 'Continue'
-            $global:LASTEXITCODE = -1
-            & $Java '-jar' $DesktopJar @arguments 2>&1 | Out-Null
-            $cliExitCode = $LASTEXITCODE
+            $stock = $stockFacts[$apk]
+
+            $out = Resolve-WithinRoot -Path (Join-Path $runDir 'patched.apk') -Root $workRoot
+            $temp = Resolve-WithinRoot -Path (Join-Path $runDir 'tmp') -Root $workRoot
+            $resultPath = Resolve-WithinRoot -Path (Join-Path $runDir 'result.json') -Root $workRoot
+
+            # A fixture of a build the bundle does not declare, by version name or by version code, is
+            # patched under -f, and the receipt says so rather than letting a forced run read like a
+            # declared-compatible one.
+            $forced = -not (Test-DeclaredBuild -Target $expectedTarget -VersionName ([string]$stock.versionName) `
+                -VersionCode ([string]$stock.versionCode))
+
+            # The one APK the CLI patches: the fixture's merge when it's a split bundle, made here
+            # because the CLI deletes its own, or the fixture itself. No merge, no receipt.
+            $mergedApk = Resolve-WithinRoot -Path (Join-Path $runDir 'stock-merged.apk') -Root $workRoot
+            $patchInput = Get-MergedApk -Apk $apk -Destination $mergedApk -Java $Java -DesktopJar $DesktopJar
+
+            $enable = @()
+            foreach ($name in $patchNames) { $enable += '-e'; $enable += $name }
+            $arguments = @('patch', '--exclusive', '--continue-on-error', '--unsigned', '-p', $Bundle,
+                '-o', $out, '-t', $temp, '-r', $resultPath)
+            if ($forced) { $arguments += '-f' }
+            $arguments = $arguments + $enable + @($patchInput)
+            # Continue for the call alone: the CLI logs WARNING and SEVERE on stderr, which Windows
+            # PowerShell 5.1 turns into a terminating error under Stop. The report and the exit code
+            # are what decide.
+            $preference = $ErrorActionPreference
+            try {
+                $ErrorActionPreference = 'Continue'
+                $global:LASTEXITCODE = -1
+                & $Java '-jar' $DesktopJar @arguments 2>&1 | Out-Null
+                $cliExitCode = $LASTEXITCODE
+            } finally {
+                $ErrorActionPreference = $preference
+            }
+
+            if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
+                throw "The desktop CLI wrote no result report for $label (exit $cliExitCode)."
+            }
+            $report = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+            $validation = Test-PatchingReport -Report $report -ExpectedNames $patchNames `
+                -AllowedDependencyNames $dependencyNames -OutputPath $out `
+                -ExpectedPackageName $expectedTarget.PackageName `
+                -ExpectedPackageVersion $stock.versionName
+            if (-not $validation.Valid) { throw "$label did not patch cleanly: $($validation.Reason)" }
+            if ($cliExitCode -ne 0) { throw "The desktop CLI exited with $cliExitCode on $label." }
+
+            $patched = Get-ApkManifestFacts -Apk $out -Aapt2 $Aapt2
+            # The manifest the patches started from is the APK the CLI patched, the merge for a split
+            # bundle, not the base APK's: the merge rewrites the manifest itself, and a delta against
+            # the base would record its changes as the patches' own.
+            $baseline = Get-ApkManifestFacts -Apk $patchInput -Aapt2 $Aapt2
+            $nativeStock = Get-NativePageFacts -Apk $patchInput -Java $Java -Aapt2 $Aapt2 `
+                -ReportPath (Join-Path $runDir 'native-stock.json') -ExtractNativeLibs $baseline.extractNativeLibs
+            $nativeRaw = Get-NativePageFacts -Apk $out -Java $Java -Aapt2 $Aapt2 `
+                -ReportPath (Join-Path $runDir 'native-unaligned.json') -ExtractNativeLibs $patched.extractNativeLibs
+            Align-UnsignedNativeApk -Apk $out -Aapt2 $Aapt2 -Java $Java -Facts $nativeRaw
+            $nativePatched = Get-NativePageFacts -Apk $out -Java $Java -Aapt2 $Aapt2 `
+                -ReportPath (Join-Path $runDir 'native-patched.json') -ExtractNativeLibs $patched.extractNativeLibs
+            $nativeAlignment = Get-NativePageDelta -Stock $nativeStock -Patched $nativePatched
+            if ($nativeAlignment.packagingDefects.Count -gt 0) { throw "Native packaging defects for ${label}: $($nativeAlignment.packagingDefects -join ', ')" }
+            if (-not $nativeAlignment.alignmentCompatible) { Write-Warning "[receipt] $label retains vendor ELF incompatibility with 16 KB pages." }
+            $delta = Get-ManifestDelta -Stock $baseline -Patched $patched
+            $verdicts = Get-PatchVerdicts -Report $report -Names $patchNames
+            $changes = @(ConvertTo-ManifestDeltaEntries -Delta $delta)
+            Write-Host ("[receipt] $label" + ": $(@($verdicts | Where-Object { $_.applied }).Count)/" +
+                "$($patchNames.Count) applied, $($changes.Count) manifest changes")
+            foreach ($change in $changes) { Write-Host "[receipt]   $change" }
+
+            $targets.Add([ordered]@{
+                source        = [ordered]@{
+                    file        = $label
+                    package     = $stock.package
+                    versionName = $stock.versionName
+                    versionCode = $stock.versionCode
+                    sha256      = Get-Sha256Hex -Path $apk
+                    forced      = $forced
+                }
+                patches       = $verdicts
+                nativeAlignment = $nativeAlignment
+                manifestDelta = [ordered]@{
+                    permissionsAdded          = @($delta.permissionsAdded)
+                    permissionsRemoved        = @($delta.permissionsRemoved)
+                    exportedComponentsAdded   = @($delta.exportedComponentsAdded)
+                    exportedComponentsRemoved = @($delta.exportedComponentsRemoved)
+                }
+            })
         } finally {
-            $ErrorActionPreference = $preference
-        }
-
-        if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
-            throw "The desktop CLI wrote no result report for $label (exit $cliExitCode)."
-        }
-        $report = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
-        $validation = Test-PatchingReport -Report $report -ExpectedNames $patchNames `
-            -AllowedDependencyNames $dependencyNames -OutputPath $out `
-            -ExpectedPackageName $expectedTarget.PackageName `
-            -ExpectedPackageVersion $stock.versionName
-        if (-not $validation.Valid) { throw "$label did not patch cleanly: $($validation.Reason)" }
-        if ($cliExitCode -ne 0) { throw "The desktop CLI exited with $cliExitCode on $label." }
-
-        $patched = Get-ApkManifestFacts -Apk $out -Aapt2 $Aapt2
-        # The manifest the patches started from is the APK the CLI patched, the merge for a split
-        # bundle, not the base APK's: the merge rewrites the manifest itself, and a delta against
-        # the base would record its changes as the patches' own.
-        $baseline = Get-ApkManifestFacts -Apk $patchInput -Aapt2 $Aapt2
-        $nativeStock = Get-NativePageFacts -Apk $patchInput -Java $Java -Aapt2 $Aapt2 `
-            -ReportPath (Join-Path $runDir 'native-stock.json') -ExtractNativeLibs $baseline.extractNativeLibs
-        $nativeRaw = Get-NativePageFacts -Apk $out -Java $Java -Aapt2 $Aapt2 `
-            -ReportPath (Join-Path $runDir 'native-unaligned.json') -ExtractNativeLibs $patched.extractNativeLibs
-        Align-UnsignedNativeApk -Apk $out -Aapt2 $Aapt2 -Java $Java -Facts $nativeRaw
-        $nativePatched = Get-NativePageFacts -Apk $out -Java $Java -Aapt2 $Aapt2 `
-            -ReportPath (Join-Path $runDir 'native-patched.json') -ExtractNativeLibs $patched.extractNativeLibs
-        $nativeAlignment = Get-NativePageDelta -Stock $nativeStock -Patched $nativePatched
-        if ($nativeAlignment.packagingDefects.Count -gt 0) { throw "Native packaging defects for ${label}: $($nativeAlignment.packagingDefects -join ', ')" }
-        if (-not $nativeAlignment.alignmentCompatible) { Write-Warning "[receipt] $label retains vendor ELF incompatibility with 16 KB pages." }
-        $delta = Get-ManifestDelta -Stock $baseline -Patched $patched
-        $verdicts = Get-PatchVerdicts -Report $report -Names $patchNames
-        $changes = @(ConvertTo-ManifestDeltaEntries -Delta $delta)
-        Write-Host ("[receipt] $label" + ": $(@($verdicts | Where-Object { $_.applied }).Count)/" +
-            "$($patchNames.Count) applied, $($changes.Count) manifest changes")
-        foreach ($change in $changes) { Write-Host "[receipt]   $change" }
-
-        $targets.Add([ordered]@{
-            source        = [ordered]@{
-                file        = $label
-                package     = $stock.package
-                versionName = $stock.versionName
-                versionCode = $stock.versionCode
-                sha256      = Get-Sha256Hex -Path $apk
-                forced      = $forced
+            if ($runDir.StartsWith($workRoot, [System.StringComparison]::OrdinalIgnoreCase) -and
+                (Test-Path -LiteralPath $runDir)) {
+                Remove-Item -LiteralPath $runDir -Recurse -Force -ErrorAction SilentlyContinue
             }
-            patches       = $verdicts
-            nativeAlignment = $nativeAlignment
-            manifestDelta = [ordered]@{
-                permissionsAdded          = @($delta.permissionsAdded)
-                permissionsRemoved        = @($delta.permissionsRemoved)
-                exportedComponentsAdded   = @($delta.exportedComponentsAdded)
-                exportedComponentsRemoved = @($delta.exportedComponentsRemoved)
-            }
-        })
-    } finally {
-        if ($runDir.StartsWith($workRoot, [System.StringComparison]::OrdinalIgnoreCase) -and
-            (Test-Path -LiteralPath $runDir)) {
-            Remove-Item -LiteralPath $runDir -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 }

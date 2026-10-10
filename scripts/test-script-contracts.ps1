@@ -45,6 +45,44 @@ function New-NotFoundAnswer {
     return $answer
 }
 
+# The machine's build queue, which the heavy jobs wait for (Invoke-HeavyJob in common.ps1), is a
+# stand-in for the whole suite: it runs each job at once and notes its label, with a mark when
+# the job came from inside a slot already, so no case waits in the real queue or holds one of its
+# slots, and the cases can read which jobs went through it. The variable set, the pre-push runs
+# below keep it; unset, the hook would import the real one from the registry. The stand-in takes
+# the real script's parameters too, which a dot-source binds in the caller's scope.
+$queueBefore = @{ Script = $env:BUILD_QUEUE_SCRIPT; Ticket = $env:BUILD_QUEUE_TICKET }
+$queueStandIn = [System.IO.Path]::GetFullPath((Join-Path ([System.IO.Path]::GetTempPath()) `
+    ('hushthreads-queue-' + [guid]::NewGuid().ToString('N'))))
+New-Item -ItemType Directory -Path $queueStandIn | Out-Null
+$queueLog = Join-Path $queueStandIn 'queue.log'
+$env:BUILD_QUEUE_SCRIPT = Join-Path $queueStandIn 'build-queue.ps1'
+Remove-Item -LiteralPath Env:\BUILD_QUEUE_TICKET -ErrorAction SilentlyContinue
+[System.IO.File]::WriteAllText($env:BUILD_QUEUE_SCRIPT, @'
+[CmdletBinding()]
+param([switch]$Status, [string]$Label, [ValidateSet('release', 'normal')][string]$Priority, [string]$Run)
+function Invoke-InBuildQueue {
+    param([string]$Label = 'build', [string]$Priority, [Parameter(Mandatory)][scriptblock]$ScriptBlock)
+    $nested = [bool]$env:BUILD_QUEUE_TICKET
+    $note = if ($nested) { "$Label (inside a slot)" } else { $Label }
+    [System.IO.File]::AppendAllText('QUEUE_LOG', $note + "`n")
+    if (-not $nested) { $env:BUILD_QUEUE_TICKET = 'stand-in' }
+    $global:LASTEXITCODE = 0
+    try {
+        & $ScriptBlock | Out-Host
+        return $LASTEXITCODE
+    } finally {
+        if (-not $nested) { Remove-Item -LiteralPath Env:\BUILD_QUEUE_TICKET -ErrorAction SilentlyContinue }
+    }
+}
+'@.Replace('QUEUE_LOG', $queueLog.Replace("'", "''")))
+function Read-QueueLog {
+    # The labels the stand-in queue saw since the last read, which empties it. Call it in @().
+    if (-not (Test-Path -LiteralPath $queueLog -PathType Leaf)) { return }
+    [System.IO.File]::ReadAllLines($queueLog) | Where-Object { $_ }
+    Remove-Item -LiteralPath $queueLog -Force
+}
+
 # --- patch-target.ps1 ------------------------------------------------------------------------
 #
 # Threads ships a build a week, and the catalog declares only the newest stable one, the build the
@@ -4378,6 +4416,110 @@ public final class ApkMerger {
     if (Test-Path -LiteralPath $mergeIsolationPath) { Remove-Item -LiteralPath $mergeIsolationPath -Recurse -Force }
 }
 
+# --- the machine's build queue -------------------------------------------------------------------
+#
+# Gradle reached the machine's build queue through the governor, while the desktop CLI runs, the
+# merges and the DexDiff and fingerprint runs started whenever they were asked for, beside two
+# builds, and the queue's status never showed them. Invoke-HeavyJob in common.ps1 runs each one in
+# a slot when BUILD_QUEUE_SCRIPT names the queue's script, the stand-in at the top of this suite
+# here, and straight away when it doesn't. Either way the block's exit code comes back, the block
+# reads the caller's variables, a throw in it stops the caller, and the queue script's parameters
+# don't land on the caller's names. The release root below runs the scripts through it.
+$null = @(Read-QueueLog)
+$heldOutput = @{ Lines = @() }
+$jobInput = 'from the caller'
+Invoke-HeavyJob -Label 'contract job' -ScriptBlock {
+    $heldOutput.Lines = @("read $jobInput")
+    & cmd.exe /d /c exit 3
+}
+Assert-True ($LASTEXITCODE -eq 3) "Invoke-HeavyJob gave back exit $LASTEXITCODE for a queued job that ended with 3."
+Assert-True (($heldOutput.Lines -join '') -eq 'read from the caller') `
+    "A queued job didn't read the caller's variables or keep what it put in the caller's table: $($heldOutput.Lines)"
+$seen = @(Read-QueueLog)
+Assert-True (($seen -join '|') -eq 'hushthreads contract job') "The queue saw $($seen -join ', ') for one job labeled contract job."
+function Test-QueueKeepsCallerNames {
+    $Label = 'mine'; $Priority = 'mine'; $Run = 'mine'; $Status = 'mine'
+    Invoke-HeavyJob -Label 'names' -ScriptBlock { }
+    return "$Label/$Priority/$Run/$Status"
+}
+Assert-True ((Test-QueueKeepsCallerNames) -eq 'mine/mine/mine/mine') `
+    "Loading the queue script reset the caller's own Label, Priority, Run or Status."
+# A job started from inside one is left to the queue, which runs it at once (the stand-in marks it).
+Invoke-HeavyJob -Label 'outer' -ScriptBlock { Invoke-HeavyJob -Label 'inner' -ScriptBlock { } }
+Assert-Throws { Invoke-HeavyJob -Label 'failing' -ScriptBlock { throw 'the job broke' } } '*the job broke*' `
+    'A queued job that threw did not stop its caller.'
+$seen = @(Read-QueueLog)
+Assert-True (($seen -join '|') -eq 'hushthreads names|hushthreads outer|hushthreads inner (inside a slot)|hushthreads failing') `
+    "The queue saw $($seen -join ', ') for the names, nested and failing jobs."
+# With no queue named, or one that isn't there, the job runs at once, and the second warns.
+$savedQueueScript = $env:BUILD_QUEUE_SCRIPT
+try {
+    Remove-Item -LiteralPath Env:\BUILD_QUEUE_SCRIPT
+    $heldOutput.Lines = @()
+    Invoke-HeavyJob -Label 'direct' -ScriptBlock { $heldOutput.Lines = @("read $jobInput"); & cmd.exe /d /c exit 4 }
+    Assert-True ($LASTEXITCODE -eq 4 -and ($heldOutput.Lines -join '') -eq 'read from the caller') `
+        "With no queue named, the job didn't run here and give back its exit code (exit $LASTEXITCODE)."
+    Assert-Throws { Invoke-HeavyJob -Label 'failing' -ScriptBlock { throw 'the job broke' } } '*the job broke*' `
+        'A job that threw outside the queue did not stop its caller.'
+    $env:BUILD_QUEUE_SCRIPT = Join-Path $queueStandIn 'no-such-queue.ps1'
+    $warned = @(Invoke-HeavyJob -Label 'missing' -ScriptBlock { & cmd.exe /d /c exit 5 } 3>&1 | ForEach-Object { "$_" })
+    Assert-True ($LASTEXITCODE -eq 5 -and ($warned -join ' ') -like '*no-such-queue.ps1*not there*') `
+        "A queue script that isn't there didn't warn and run the job here: exit $LASTEXITCODE, $($warned -join ' ')"
+} finally {
+    $env:BUILD_QUEUE_SCRIPT = $savedQueueScript
+}
+$seen = @(Read-QueueLog)
+Assert-True ($seen.Count -eq 0) "Jobs went through the queue with none named, or one that isn't there: $($seen -join ', ')"
+
+# And every heavy run the scripts make sits in such a job, where the script reaches it
+# (script-wiring.ps1): the desktop CLI, the merge, ResourceTableCheck, DexDiff, the signing and
+# identity checks and FingerprintCandidates. A block handed to anything else, or stored, runs
+# outside the queue.
+function Get-UnqueuedHeavyRuns {
+    param([string]$Path)
+    $live = @(Get-LiveCommands (Get-ScriptAst $Path))
+    $heavy = @($live | Where-Object {
+        ($_.InvocationOperator -eq [System.Management.Automation.Language.TokenKind]::Ampersand -and
+            $_.CommandElements[0].Extent.Text -match '^\$(script:)?\w*java\w*$') -or $_.GetCommandName() -eq 'Get-MergedApk' })
+    if ($heavy.Count -eq 0) { return 'no heavy run at all' }
+    foreach ($call in $heavy) {
+        $queued = $false
+        for ($up = $call.Parent; $null -ne $up -and -not $queued; $up = $up.Parent) {
+            if ($up -isnot [System.Management.Automation.Language.ScriptBlockExpressionAst] -or -not (Test-RunsScriptBlock $up)) { continue }
+            $holder = $up.Parent
+            if ($holder -is [System.Management.Automation.Language.CommandParameterAst]) { $holder = $holder.Parent }
+            $queued = $holder -is [System.Management.Automation.Language.CommandAst] -and $holder.GetCommandName() -eq 'Invoke-HeavyJob'
+        }
+        if (-not $queued) { ($call.Extent.Text -split "`n")[0].Trim() }
+    }
+}
+$heavyScripts = @('verify-all-patches.ps1', 'build-release-receipt.ps1', 'patch-for-device.ps1',
+    'validate-release-facts.ps1', 'verify-injected-registers.ps1', 'fingerprint-candidates.ps1')
+foreach ($name in $heavyScripts) {
+    $unqueued = @(Get-UnqueuedHeavyRuns (Join-Path $PSScriptRoot $name))
+    Assert-True ($unqueued.Count -eq 0) "$name runs these outside the build queue (Invoke-HeavyJob): $($unqueued -join '; ')"
+}
+$queueCopy = Join-Path $queueStandIn 'verify-all-patches.ps1'
+foreach ($unqueuedShape in @(
+        @{ Name = 'handed to another command'; From = 'Invoke-HeavyJob -Label'; To = 'Register-HeavyJob -Label' },
+        @{ Name = 'run with & instead'; From = 'Invoke-HeavyJob -Label "verify $(Split-Path -Leaf $Apk)" -ScriptBlock {'; To = '& {' })) {
+    $text = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot 'verify-all-patches.ps1'))
+    Assert-True ($text.Contains($unqueuedShape.From)) "verify-all-patches.ps1 no longer has the job the '$($unqueuedShape.Name)' case edits."
+    [System.IO.File]::WriteAllText($queueCopy, $text.Replace($unqueuedShape.From, $unqueuedShape.To))
+    Assert-True (@(Get-UnqueuedHeavyRuns $queueCopy).Count -gt 0) `
+        "The queue check passed verify-all-patches.ps1 with its heavy runs $($unqueuedShape.Name)."
+}
+Remove-Item -LiteralPath $queueCopy -Force
+# The pre-push hook imports the variable from the user's registry like its own, since a hook can
+# start without it, and the fixture applies it runs would then skip the queue.
+$importList = (Get-ScriptAst (Join-Path $PSScriptRoot 'pre-push.ps1')).Find({ param($node)
+    $node -is [System.Management.Automation.Language.ForEachStatementAst] -and
+    $node.Variable.VariablePath.UserPath -eq 'envName' }, $true)
+Assert-True ($null -ne $importList -and $importList.Condition.Extent.Text -match "'BUILD_QUEUE_SCRIPT'") `
+    'pre-push.ps1 does not import BUILD_QUEUE_SCRIPT from the user environment.'
+
+Write-Host '[scripts] build queue contracts passed'
+
 # --- relative paths ------------------------------------------------------------------------------
 #
 # .NET reads a relative path against the process directory, which Set-Location doesn't move, while
@@ -4912,11 +5054,16 @@ try {
     # manifest is held to the merge and not to the base.
     $builtBuilds = @($releaseTarget.PackageVersions) + @($newerBuild)
     $allFixtures = @($builtBuilds | ForEach-Object { $fixturePaths[$_] })
+    $null = @(Read-QueueLog)
     try {
         Invoke-ReceiptBuilder -Fixtures $allFixtures
     } catch {
         throw "build-release-receipt.ps1 refused a run of every declared build: $($_.Exception.Message)"
     }
+    # Every merge and patch run in one job of the build queue (the stand-in at the top).
+    $seen = @(Read-QueueLog)
+    Assert-True (($seen -join '|') -eq 'hushthreads receipt') `
+        "The receipt's merges and patch runs did not share one job of the build queue: $($seen -join ', ')"
     $built = Get-Content -LiteralPath $releaseReceipt -Raw | ConvertFrom-Json
     $builtTargets = @($built.targets)
     $builtVersions = @($builtTargets | ForEach-Object { [string]$_.source.versionName })
@@ -5006,9 +5153,15 @@ try {
         return $said
     }
     $newestFixture = $fixturePaths[$releaseTarget.PackageVersion]
+    $null = @(Read-QueueLog)
     $said = Invoke-VerifyAll -Apk $newestFixture
     Assert-True ($said -like "*merged $(Split-Path -Leaf $newestFixture) into one APK for the CLI*" -and
         $said -like '*success: every requested patch applied*') "verify-all-patches.ps1 did not merge the bundle and pass: $said"
+    # The merge, the CLI and the checks in one job of the build queue, and the register check's
+    # DexDiff inside that same slot rather than in line behind it.
+    $seen = @(Read-QueueLog)
+    Assert-True (($seen -join '|') -eq "hushthreads verify $(Split-Path -Leaf $newestFixture)|hushthreads register check (inside a slot)") `
+        "verify-all-patches.ps1 did not run its heavy part as one job of the build queue: $($seen -join ', ')"
     Assert-True ((@(Get-Content -LiteralPath $mergeLog) -join "`n") -eq "merge $newestFixture" -and
         (@(Get-Content -LiteralPath $javaLog) -join "`n") -eq "patch $newestFixture merged forced=0") `
         ("verify-all-patches.ps1 did not merge the bundle once and hand the CLI that merge: " +
@@ -5191,6 +5344,7 @@ try {
     }
     $deviceApk = Join-Path $deviceOut "hushthreads-$releaseVersionHere-signed.apk"
     foreach ($build in $releaseTarget.PackageVersions) {
+        $null = @(Read-QueueLog)
         try {
             Invoke-DeviceBuild -Apk $fixturePaths[$build]
         } catch {
@@ -5200,6 +5354,10 @@ try {
         Assert-True ($deviceRuns.Count -eq 1 -and $deviceRuns[0] -eq "patch $($fixturePaths[$build]) merged forced=0" -and
             (Test-Path -LiteralPath $deviceApk -PathType Leaf)) `
             "patch-for-device.ps1 did not build $build once, without -f: $($deviceRuns -join '; ')"
+        # The merge, the CLI, the signing and the identity check as one job of the build queue.
+        $seen = @(Read-QueueLog)
+        Assert-True (($seen -join '|') -eq "hushthreads device $(Split-Path -Leaf $fixturePaths[$build])") `
+            "patch-for-device.ps1 did not run its heavy part as one job of the build queue: $($seen -join ', ')"
         Assert-True (-not (Test-Path -LiteralPath (Join-Path $deviceOut 'stock-base.apk'))) `
             "patch-for-device.ps1 left the base APK it read for $build behind."
         Assert-True ((@(Get-Content -LiteralPath $mergeLog) -join '') -ceq "merge $($fixturePaths[$build])" -and
@@ -5396,7 +5554,12 @@ try {
         SkipUrlCheck = $true; DesktopJar = $stubJar; Java = $listJava }
     try {
         Invoke-FixtureGit -Root $releaseRepo -Arguments @('tag', '-d', "v$indexVersionHere") | Out-Null
+        $null = @(Read-QueueLog)
         $said = Invoke-IndexPushCheck $publishedRun
+        # The CLI counted the published bundle's patches as a job of the build queue.
+        $seen = @(Read-QueueLog)
+        Assert-True (@($seen | Where-Object { $_ -eq 'hushthreads list published patches' }).Count -eq 1) `
+            "The release check did not count the published patches as one job of the build queue: $($seen -join ', ')"
         Assert-True ($said -like "*published bundle is pinned to v$indexVersionHere ($releaseCommit)*" -and
             $said -like "*the index asks for Morphe Manager $releaseFloor or newer, as tag v$indexVersionHere pins*") `
             "The index push was not held to the Manager floor its published tag pins: $said"
@@ -6012,6 +6175,14 @@ try {
 }
 
 Write-Host '[scripts] upstream drift contracts passed'
+
+# The queue the suite started with, and the stand-in's folder gone.
+foreach ($queueName in 'Script', 'Ticket') {
+    $variable = "Env:\BUILD_QUEUE_$($queueName.ToUpperInvariant())"
+    if ($queueBefore[$queueName]) { Set-Item -LiteralPath $variable -Value $queueBefore[$queueName] }
+    else { Remove-Item -LiteralPath $variable -ErrorAction SilentlyContinue }
+}
+Remove-Item -LiteralPath $queueStandIn -Recurse -Force -ErrorAction SilentlyContinue
 
 $global:LASTEXITCODE = 0
 Write-Host '[scripts] report, target, Java and guarded replacement contracts passed'
