@@ -172,7 +172,7 @@ the removed advertising ID permission	a permissão do ID de publicidade removida
 
 # context: optional feed rule and its scope
 Hide suggested users	Ocultar usuários sugeridos
-Removes the cards that suggest accounts to follow. Normal posts and reposts stay.	Remove os cartões que sugerem contas para seguir. Publicações comuns e reposts continuam.
+Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.	Remove os cartões que sugerem contas para seguir, no seu feed e nos perfis. Publicações comuns e reposts continuam.
 Keep feed position on return	Manter a posição no feed ao voltar
 Returning to Threads within ten minutes keeps your place. Pull to refresh still works.	Ao voltar ao Threads em até dez minutos, você continuará no ponto em que estava. O gesto de puxar para baixo para atualizar continuará funcionando.
 No time limit	Sem limite de tempo

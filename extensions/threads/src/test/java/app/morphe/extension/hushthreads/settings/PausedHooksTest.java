@@ -42,6 +42,7 @@ import app.morphe.extension.hushthreads.misc.ExternalBrowser;
 import app.morphe.extension.hushthreads.misc.LinkCleaner;
 import app.morphe.extension.hushthreads.misc.ScreenshotDetection;
 import app.morphe.extension.hushthreads.profile.InstagramButton;
+import app.morphe.extension.hushthreads.profile.ProfileSuggestions;
 import app.morphe.extension.hushthreads.theme.PureBlack;
 import app.morphe.extension.shared.SettingsContextRule;
 import app.morphe.extension.shared.settings.BaseSettings;
@@ -98,10 +99,14 @@ public class PausedHooksTest {
             List<Object> page = Arrays.asList("a post", ShadowFeedAds.AD, "another post");
             return FeedAds.filter(page).size() != page.size();
         }));
-        probes.put(PatchFamily.HIDE_SUGGESTED_USERS, Collections.singletonList(() -> {
-            List<Object> page = Arrays.asList("a post", ShadowFeedAds.SUGGESTED, "another post");
-            return FeedAds.filter(page).size() != page.size();
-        }));
+        // A feed page loses its suggestion card, and a profile loses its carousel and its row.
+        probes.put(PatchFamily.HIDE_SUGGESTED_USERS, Arrays.asList(
+                () -> {
+                    List<Object> page = Arrays.asList("a post", ShadowFeedAds.SUGGESTED, "another post");
+                    return FeedAds.filter(page).size() != page.size();
+                },
+                () -> ProfileSuggestions.carousel(Collections.singletonList("an account")) == null,
+                () -> !ProfileSuggestions.showRow()));
         // Each of Threads' return checks, straight after its screens were hidden, keeps the feed.
         probes.put(PatchFamily.RETURN_REFRESH, Arrays.asList(
                 () -> {

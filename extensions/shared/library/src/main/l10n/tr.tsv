@@ -175,7 +175,7 @@ the removed advertising ID permission	kaldırılan reklam kimliği izni
 
 # context: optional feed rule and its scope
 Hide suggested users	Önerilen kullanıcıları gizle
-Removes the cards that suggest accounts to follow. Normal posts and reposts stay.	Takip edilecek hesaplar öneren kartları kaldırır. Normal gönderiler ve yeniden paylaşımlar kalır.
+Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.	Takip edilecek hesaplar öneren kartları akışınızdan ve profillerden kaldırır. Normal gönderiler ve yeniden paylaşımlar kalır.
 Keep feed position on return	Geri dönünce akış konumunu koru
 Returning to Threads within ten minutes keeps your place. Pull to refresh still works.	Threads'e on dakika içinde dönersen kaldığın yer korunur. Yenilemek için aşağı çekmeye devam edebilirsin.
 No time limit	Süre sınırı yok

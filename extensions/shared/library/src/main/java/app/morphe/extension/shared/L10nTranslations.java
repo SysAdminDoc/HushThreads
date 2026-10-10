@@ -361,8 +361,8 @@ public final class L10nTranslations {
                 "Zeichnet Patch-Aktivit\u00e4t auf und zeigt Fehler f\u00fcr einen Fehlerbericht. Im Alltag ausgeschaltet lassen.");
         table.put("Remove tracking from shared links",
                 "Tracking aus geteilten Links entfernen");
-        table.put("Removes the cards that suggest accounts to follow. Normal posts and reposts stay.",
-                "Entfernt die Karten, die Konten zum Folgen vorschlagen. Normale Beitr\u00e4ge und Reposts bleiben.");
+        table.put("Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.",
+                "Entfernt die Karten, die Konten zum Folgen vorschlagen, in deinem Feed und in Profilen. Normale Beitr\u00e4ge und Reposts bleiben.");
         table.put("Reopen the post and save again.",
                 "\u00d6ffne den Beitrag erneut und speichere noch einmal.");
         table.put("Resume",
@@ -910,8 +910,8 @@ public final class L10nTranslations {
                 "Registra la actividad de los parches y muestra errores para un informe. D\u00e9jalo desactivado en el uso normal.");
         table.put("Remove tracking from shared links",
                 "Quitar el seguimiento de los enlaces compartidos");
-        table.put("Removes the cards that suggest accounts to follow. Normal posts and reposts stay.",
-                "Quita las tarjetas que sugieren cuentas para seguir. Las publicaciones normales y los reposts se quedan.");
+        table.put("Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.",
+                "Quita las tarjetas que sugieren cuentas para seguir, en tu feed y en los perfiles. Las publicaciones normales y los reposts se quedan.");
         table.put("Reopen the post and save again.",
                 "Vuelve a abrir la publicaci\u00f3n y gu\u00e1rdala otra vez.");
         table.put("Resume",
@@ -1459,8 +1459,8 @@ public final class L10nTranslations {
                 "Catat aktivitas patch dan tampilkan kesalahan untuk laporan bug. Matikan saat penggunaan biasa.");
         table.put("Remove tracking from shared links",
                 "Hapus pelacakan dari tautan yang dibagikan");
-        table.put("Removes the cards that suggest accounts to follow. Normal posts and reposts stay.",
-                "Menghapus kartu yang menyarankan akun untuk diikuti. Postingan biasa dan repost tetap ada.");
+        table.put("Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.",
+                "Menghapus kartu yang menyarankan akun untuk diikuti, di feed Anda dan di profil. Postingan biasa dan repost tetap ada.");
         table.put("Reopen the post and save again.",
                 "Buka kembali postingan dan simpan lagi.");
         table.put("Resume",
@@ -2008,8 +2008,8 @@ public final class L10nTranslations {
                 "Registra a atividade dos patches e mostra os erros para um relat\u00f3rio de problema. Mantenha desativado durante o uso normal.");
         table.put("Remove tracking from shared links",
                 "Remover o rastreamento dos links compartilhados");
-        table.put("Removes the cards that suggest accounts to follow. Normal posts and reposts stay.",
-                "Remove os cart\u00f5es que sugerem contas para seguir. Publica\u00e7\u00f5es comuns e reposts continuam.");
+        table.put("Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.",
+                "Remove os cart\u00f5es que sugerem contas para seguir, no seu feed e nos perfis. Publica\u00e7\u00f5es comuns e reposts continuam.");
         table.put("Reopen the post and save again.",
                 "Abra a publica\u00e7\u00e3o novamente e salve outra vez.");
         table.put("Resume",
@@ -2557,8 +2557,8 @@ public final class L10nTranslations {
                 "Hata raporu i\u00e7in yama etkinli\u011fini kaydeder ve hatalar\u0131 g\u00f6sterir. Normal kullan\u0131mda kapal\u0131 b\u0131rak\u0131n.");
         table.put("Remove tracking from shared links",
                 "Payla\u015f\u0131lan ba\u011flant\u0131lardan izlemeyi kald\u0131r");
-        table.put("Removes the cards that suggest accounts to follow. Normal posts and reposts stay.",
-                "Takip edilecek hesaplar \u00f6neren kartlar\u0131 kald\u0131r\u0131r. Normal g\u00f6nderiler ve yeniden payla\u015f\u0131mlar kal\u0131r.");
+        table.put("Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.",
+                "Takip edilecek hesaplar \u00f6neren kartlar\u0131 ak\u0131\u015f\u0131n\u0131zdan ve profillerden kald\u0131r\u0131r. Normal g\u00f6nderiler ve yeniden payla\u015f\u0131mlar kal\u0131r.");
         table.put("Reopen the post and save again.",
                 "G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
         table.put("Resume",

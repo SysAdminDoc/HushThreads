@@ -175,7 +175,7 @@ the removed advertising ID permission	izin ID iklan yang dihapus
 
 # context: optional feed rule and its scope
 Hide suggested users	Sembunyikan pengguna yang disarankan
-Removes the cards that suggest accounts to follow. Normal posts and reposts stay.	Menghapus kartu yang menyarankan akun untuk diikuti. Postingan biasa dan repost tetap ada.
+Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.	Menghapus kartu yang menyarankan akun untuk diikuti, di feed Anda dan di profil. Postingan biasa dan repost tetap ada.
 Keep feed position on return	Pertahankan posisi feed saat kembali
 Returning to Threads within ten minutes keeps your place. Pull to refresh still works.	Jika kembali ke Threads dalam sepuluh menit, posisi feed tetap sama. Tarik ke bawah untuk memuat ulang masih berfungsi.
 No time limit	Tanpa batas waktu

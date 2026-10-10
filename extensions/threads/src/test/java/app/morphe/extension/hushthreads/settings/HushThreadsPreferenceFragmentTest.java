@@ -227,7 +227,7 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
                     String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getSummary()));
             assertEquals("Hide suggested users", String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_USERS.key).getTitle()));
-            assertEquals("Removes the cards that suggest accounts to follow. Normal posts and reposts stay.",
+            assertEquals("Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.",
                     String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_USERS.key).getSummary()));
             assertEquals("Keep feed position on return", String.valueOf(page.findPreference(Settings.BLOCK_RETURN_REFRESH.key).getTitle()));
             assertEquals("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",

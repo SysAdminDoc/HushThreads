@@ -247,7 +247,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                             + "left.")));
             if (build.contains(PatchFamily.HIDE_SUGGESTED_USERS)) {
                 feed.addPreference(toggle(context, Settings.HIDE_SUGGESTED_USERS, L10n.t("Hide suggested users"),
-                        L10n.t("Removes the cards that suggest accounts to follow. Normal posts and reposts stay.")));
+                        L10n.t("Removes the cards that suggest accounts to follow, in your feed and on "
+                                + "profiles. Normal posts and reposts stay.")));
             }
             if (build.contains(PatchFamily.RETURN_REFRESH)) {
                 feed.addPreference(toggle(context, Settings.BLOCK_RETURN_REFRESH,

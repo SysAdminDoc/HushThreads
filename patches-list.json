@@ -228,7 +228,7 @@
     },
     {
       "name": "Hide suggested users",
-      "description": "Removes the cards that suggest accounts to follow. Normal posts and reposts stay. Good if you only want posts in your feed. On by default. Turn it off in HushThreads settings > Feed.",
+      "description": "Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay, and so does the rest of a profile. Good if you only want posts in your feed. On by default. Turn it off in HushThreads settings > Feed.",
       "category": "Feed",
       "use": true,
       "dependencies": [

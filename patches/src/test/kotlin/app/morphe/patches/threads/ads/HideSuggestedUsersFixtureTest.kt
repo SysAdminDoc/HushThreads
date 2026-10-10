@@ -83,7 +83,10 @@ class HideSuggestedUsersFixtureTest {
                 }?.definingClass
             }.toSet()
             val wrappers = FixtureDex.classes(build, wrapperTypes)
-            return Vendor(build.name, anchors + cache + item + kinds + rawParsers + wrappers.values, parser.type)
+            // The same patch keeps suggested accounts off profiles, and refuses without those classes.
+            val profile = ProfileSuggestionsFixture.classes(build)
+            val classes = (anchors + cache + item + kinds + rawParsers + wrappers.values + profile).distinctBy { it.type }
+            return Vendor(build.name, classes, parser.type)
         }
 
         private val vendors by lazy { Fixtures.declaredBuilds().map(::load) }
@@ -117,6 +120,11 @@ class HideSuggestedUsersFixtureTest {
                 it.getReference<MethodReference>()?.toString() == "$FEED_ADS->filter(Ljava/util/List;)Ljava/util/List;"
             }
             assertEquals(vendor.name, 1, calls)
+            // And on profiles, the carousel and the row each ask once.
+            val profileHooks = vendor.classes.flatMap { context.mutableClassDefBy(it.type).methods }
+                .flatMap { it.instructions() }.mapNotNull { it.getReference<MethodReference>()?.toString() }
+            assertEquals(vendor.name, 1, profileHooks.count { it == CAROUSEL })
+            assertEquals(vendor.name, 1, profileHooks.count { it == SHOW_ROW })
             val capture = context.mutableClassDefBy(targets.wrapper.definingClass).instanceFields.single {
                 it.name == targets.capturedRaw.name
             }
