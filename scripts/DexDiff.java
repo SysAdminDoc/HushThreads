@@ -199,7 +199,7 @@ public class DexDiff {
     private static final String OUTSIDE_FIRST_CALL = "first-call-outside";
     private static final Set<String> THREADS_FEATURES = Set.of(
             "hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
-            "returnRefresh", "disableVideoAutoplay", "pureBlack");
+            "returnRefresh", "disableVideoAutoplay", "pureBlack", "settingsRow");
 
     private static final class Contract {
         final String kind;
@@ -1985,6 +1985,20 @@ public class DexDiff {
     private static final long THREADS_DARK = 0xff101010L, THREADS_WHITE = 0xffffffffL;
     /** A color scheme's constructor takes at least this many colors and nothing else. Threads' takes 39. */
     private static final int SCHEME_COLORS = 20;
+    private static final String SETTINGS_ROW = "Lapp/morphe/extension/hushthreads/settings/ThreadsSettingsRow;";
+    private static final String ADD_ROW = SETTINGS_ROW + "->add(Ljava/lang/Object;)V";
+    private static final String SHOW_ROW = SETTINGS_ROW + "->showRow(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;I)V";
+    private static final String ROW_CLICK = "Lapp/morphe/extension/hushthreads/settings/ThreadsSettingsRow$Click;";
+    private static final String FUNCTION0 = "Lkotlin/jvm/functions/Function0;";
+    /**
+     * Compose's notes in Threads' settings row, in the row it draws Accounts Center with, and in the
+     * lambda that draws each entry of its settings list. They name the source file, so they survive Redex.
+     */
+    private static final String SETTINGS_ROW_NOTE = "com.instagram.barcelona.settings.SettingsRow (SettingsScreen.kt:";
+    private static final String ACCOUNTS_ROW_NOTE = "com.instagram.barcelona.settings.AccountsCenterRow (SettingsScreen.kt:";
+    private static final String SETTINGS_LIST_NOTE = "com.instagram.barcelona.settings.SettingsScreen.<anonymous>";
+    /** The settings entry the HushThreads row goes above. Redex keeps an enum constant's name. */
+    private static final String MORE_ENTRY = "MORE";
 
     /** Keep duplicate definitions visible: choosing whichever dex was visited last hides corruption. */
     private static Map<String, List<Method>> featureMethods(File apk, Map<String, String> parents) throws Exception {
@@ -3859,6 +3873,243 @@ public class DexDiff {
         }
     }
 
+    /**
+     * Where the HushThreads settings row hooks: Threads' settings list and the goto that ends its
+     * More settings case, the composer's register there, Threads' settings row and its Accounts
+     * Center row, and the modifier field the run the case goes to passes the settings row.
+     */
+    private record SettingsRowSites(Method list, int hook, int composer, Method row, Method accounts, String modifier) {}
+
+    /**
+     * The HushThreads row in Threads' settings. The settings list asks ThreadsSettingsRow.add once,
+     * right before the goto that ends its More settings case, on the composer that case starts its
+     * group on, with the list otherwise stock and every branch to that goto landing on the call.
+     * showRow calls Threads' Accounts Center row with that composer, the modifier the case's run
+     * passes Threads' own row, the title, subtitle, click and icon, and three zeros, and nothing else.
+     * The click is a kotlin Function0, which Threads' row takes. Both of Threads' rows stay stock,
+     * and the list is the only host method that calls add.
+     */
+    private static void featureSettingsRow(Map<String, List<Method>> clean, Map<String, List<Method>> patched, File patchedApk) throws Exception {
+        SettingsRowSites sites = featureSettingsRowSites(clean);
+        FeatureBlock hook = (body, at) -> {
+            requireFeature(at < body.size() && isStaticInvoke(body.get(at).getOpcode()) && reference(body.get(at)).equals(ADD_ROW)
+                    && Arrays.equals(invokeRegisters(body.get(at)), new int[]{sites.composer()}),
+                    "missing or miswired " + ADD_ROW + " at instruction " + at + ", which has to pass the More settings case's composer, v" + sites.composer());
+            return 1;
+        };
+        featureBody(sites.list(), featureMethod(patched, featureSig(sites.list())), 0, Map.of(), ADD_ROW, null, Map.of(sites.hook(), hook));
+        featureHostCalls(patched, ADD_ROW, Map.of(featureSig(sites.list()), 1));
+        for (Method row : List.of(sites.row(), sites.accounts())) featureBody(row, featureMethod(patched, featureSig(row)), 0, Map.of(), "");
+        featureShowRow(featureMethod(patched, SHOW_ROW), sites);
+        List<ClassDef> clicks = new ArrayList<>();
+        MultiDexContainer<? extends DexFile> dex = DexFileFactory.loadDexContainer(patchedApk, Opcodes.getDefault());
+        for (String entry : dex.getDexEntryNames()) for (ClassDef cd : dex.getEntry(entry).getDexFile().getClasses()) {
+            if (cd.getType().equals(ROW_CLICK)) clicks.add(cd);
+        }
+        ClassDef click = featureOne(clicks, ROW_CLICK);
+        requireFeature(click.getInterfaces().equals(List.of(FUNCTION0)),
+                ROW_CLICK + " implements " + click.getInterfaces() + ", not " + FUNCTION0 + ", so Threads' row can't take it");
+        Method invoke = featureMethod(patched, ROW_CLICK + "->invoke()Ljava/lang/Object;");
+        requireFeature(AccessFlags.PUBLIC.isSet(invoke.getAccessFlags()) && !AccessFlags.STATIC.isSet(invoke.getAccessFlags()),
+                ROW_CLICK + "'s invoke() isn't a public instance method");
+    }
+
+    /**
+     * showRow as the settings patch writes it: straight-line copies, casts, the modifier's static
+     * read and zeros into one call to Threads' Accounts Center row, then return-void. Each argument
+     * is read back to what it holds: the composer cast to the row's composer type, the modifier, the
+     * title, the subtitle, the click cast to Function0, the icon, and zero for the changed and
+     * defaults words and the badge.
+     */
+    private static void featureShowRow(Method stub, SettingsRowSites sites) {
+        requireFeature(AccessFlags.STATIC.isSet(stub.getAccessFlags()) && stub.getImplementation() != null
+                && stub.getImplementation().getTryBlocks().isEmpty(), SHOW_ROW + " isn't a static method with an unprotected body");
+        List<Instruction> body = instructions(stub);
+        // The arguments sit at the top of the frame: the composer, the click, the title, the subtitle and the icon.
+        int first = stub.getImplementation().getRegisterCount() - 5;
+        Map<Integer, String> held = new HashMap<>();
+        for (int p = 0; p < 5; p++) held.put(first + p, "p" + p);
+        List<String> passed = null;
+        for (int k = 0; k < body.size(); k++) {
+            Instruction i = body.get(k);
+            switch (i.getOpcode()) {
+                case MOVE: case MOVE_FROM16: case MOVE_16: case MOVE_OBJECT: case MOVE_OBJECT_FROM16: case MOVE_OBJECT_16:
+                    held.put(registerA(i), held.get(((TwoRegisterInstruction) i).getRegisterB()));
+                    break;
+                case CHECK_CAST:
+                    held.put(registerA(i), held.get(registerA(i)) + " as " + reference(i));
+                    break;
+                case SGET_OBJECT:
+                    held.put(registerA(i), reference(i));
+                    break;
+                case CONST_4: case CONST_16:
+                    held.put(registerA(i), String.valueOf(((WideLiteralInstruction) i).getWideLiteral()));
+                    break;
+                case INVOKE_STATIC: case INVOKE_STATIC_RANGE:
+                    requireFeature(passed == null && reference(i).equals(featureSig(sites.accounts())),
+                            SHOW_ROW + " calls " + reference(i) + ", not Threads' Accounts Center row once");
+                    passed = new ArrayList<>();
+                    for (int register : invokeRegisters(i)) passed.add(held.get(register));
+                    break;
+                case RETURN_VOID:
+                    requireFeature(passed != null && k == body.size() - 1, SHOW_ROW + " returns before it calls Threads' Accounts Center row");
+                    break;
+                default:
+                    throw new IllegalArgumentException(SHOW_ROW + " runs " + i.getOpcode().name + ", which the settings patch doesn't write");
+            }
+        }
+        requireFeature(passed != null && body.get(body.size() - 1).getOpcode() == Opcode.RETURN_VOID,
+                SHOW_ROW + " doesn't return right after its call");
+        List<String> expected = List.of("p0 as " + sites.accounts().getParameterTypes().get(0), sites.modifier(), "p2", "p3",
+                "p1 as " + FUNCTION0, "p4", "0", "0", "0");
+        requireFeature(expected.equals(passed), SHOW_ROW + " passes Threads' Accounts Center row " + passed + ", not " + expected);
+    }
+
+    /**
+     * Where the row goes, read the way the settings patch reads it and never by obfuscated name.
+     * Threads' settings row and its Accounts Center row are the one method holding each one's note,
+     * taking (composer, modifier, Integer, Function0, four ints, boolean) and (composer, modifier,
+     * two Strings, Function0, three ints, boolean). The list is the one method holding the list note
+     * that switches and calls the settings row. It switches on the ordinal of an entry enum whose
+     * static initializer names MORE, and that case starts its group on the composer once and runs
+     * straight to a goto, reached by no branch, onto a run that calls the settings row with that
+     * composer copied in and a modifier read from a static field.
+     */
+    private static SettingsRowSites featureSettingsRowSites(Map<String, List<Method>> clean) {
+        Method row = featureTarget(clean, m -> holdsNote(m, SETTINGS_ROW_NOTE), "Threads' settings row");
+        Method accounts = featureTarget(clean, m -> holdsNote(m, ACCOUNTS_ROW_NOTE), "Threads' Accounts Center row");
+        List<String> params = row.getParameterTypes().stream().map(CharSequence::toString).toList();
+        requireFeature(AccessFlags.STATIC.isSet(row.getAccessFlags()) && row.getReturnType().equals("V") && params.size() == 9
+                && params.get(2).equals("Ljava/lang/Integer;") && params.get(3).equals(FUNCTION0)
+                && params.subList(4, 8).stream().allMatch("I"::equals) && params.get(8).equals("Z"),
+                "Threads' settings row has changed shape: " + featureSig(row));
+        requireFeature(AccessFlags.STATIC.isSet(accounts.getAccessFlags()) && accounts.getReturnType().equals("V")
+                && accounts.getParameterTypes().stream().map(CharSequence::toString).toList().equals(List.of(params.get(0), params.get(1),
+                        "Ljava/lang/String;", "Ljava/lang/String;", FUNCTION0, "I", "I", "I", "Z")),
+                "Threads' Accounts Center row has changed shape: " + featureSig(accounts));
+        String rowSig = featureSig(row);
+        Method list = featureTarget(clean, m -> holdsNote(m, SETTINGS_LIST_NOTE) && !callSites(instructions(m), rowSig).isEmpty()
+                && instructions(m).stream().anyMatch(i -> i.getOpcode() == Opcode.PACKED_SWITCH), "Threads' settings list");
+        FeatureFlow flow = new FeatureFlow(list);
+        List<Instruction> body = flow.layout.instructions;
+        int switchAt = featureOne(java.util.stream.IntStream.range(0, body.size()).boxed()
+                .filter(k -> body.get(k).getOpcode() == Opcode.PACKED_SWITCH).toList(), "Threads' settings list's packed switch");
+
+        // The switch reads an enum's ordinal straight from ordinal(), called on a value cast to the entry enum.
+        int ordinalAt = featureLastWrite(body, switchAt, registerA(body.get(switchAt)));
+        requireFeature(ordinalAt >= 1 && body.get(ordinalAt).getOpcode() == Opcode.MOVE_RESULT
+                && body.get(ordinalAt - 1) instanceof FiveRegisterInstruction && reference(body.get(ordinalAt - 1)).endsWith("->ordinal()I"),
+                "Threads' settings list doesn't switch on an enum's ordinal");
+        int castAt = featureLastWrite(body, ordinalAt - 1, invokeRegisters(body.get(ordinalAt - 1))[0]);
+        requireFeature(castAt >= 0 && body.get(castAt).getOpcode() == Opcode.CHECK_CAST, "Threads' settings list switches on an ordinal of no known type");
+        String entries = reference(body.get(castAt));
+        int ordinal = featureEnumOrdinal(clean, entries, MORE_ENTRY);
+
+        int switchAddress = flow.layout.addresses.get(switchAt);
+        Instruction payload = flow.layout.byAddress.get(switchAddress + ((OffsetInstruction) body.get(switchAt)).getCodeOffset());
+        requireFeature(payload instanceof SwitchPayload, "Threads' settings list's switch has no payload");
+        SwitchElement more = featureOne(((SwitchPayload) payload).getSwitchElements().stream().filter(e -> e.getKey() == ordinal).map(e -> (SwitchElement) e).toList(),
+                "Threads' settings list's case for " + MORE_ENTRY);
+        int caseAt = flow.layout.addresses.indexOf(switchAddress + more.getOffset());
+        requireFeature(caseAt >= 0, "Threads' settings list's " + MORE_ENTRY + " case lands between instructions");
+        int gotoAt = caseAt;
+        while (gotoAt < body.size() && !(body.get(gotoAt) instanceof OffsetInstruction) && body.get(gotoAt).getOpcode().canContinue()) gotoAt++;
+        requireFeature(gotoAt < body.size() && body.get(gotoAt).getOpcode().name.startsWith("goto"),
+                "Threads' " + MORE_ENTRY + " case doesn't end in a goto to the settings row");
+        for (int n = 0; n < body.size(); n++) {
+            if (n >= caseAt && n < gotoAt) continue;
+            List<Integer> next = new ArrayList<>(flow.normal.get(n));
+            next.addAll(flow.exceptional.get(n));
+            for (int target : next) requireFeature(target <= caseAt || target > gotoAt,
+                    "Threads' settings list branches into its " + MORE_ENTRY + " case, from instruction " + n);
+        }
+        int tailAt = flow.layout.addresses.indexOf(flow.layout.addresses.get(gotoAt) + ((OffsetInstruction) body.get(gotoAt)).getCodeOffset());
+        requireFeature(tailAt >= 0, "Threads' " + MORE_ENTRY + " case's goto lands between instructions");
+        int callAt = tailAt;
+        while (callAt < body.size() && !(body.get(callAt) instanceof OffsetInstruction) && body.get(callAt).getOpcode().canContinue()
+                && !reference(body.get(callAt)).equals(rowSig)) callAt++;
+        requireFeature(callAt < body.size() && isStaticInvoke(body.get(callAt).getOpcode()) && reference(body.get(callAt)).equals(rowSig),
+                "Threads' " + MORE_ENTRY + " case reaches something other than the settings row first");
+
+        // The composer: the one call the case makes on the composer's type, starting its group, and
+        // nothing writes it again before the goto, where the hook reads it.
+        String composerType = params.get(0);
+        int startAt = featureOne(java.util.stream.IntStream.range(caseAt, gotoAt).boxed()
+                .filter(k -> body.get(k).getOpcode() == Opcode.INVOKE_INTERFACE && reference(body.get(k)).startsWith(composerType + "->")).toList(),
+                "the " + MORE_ENTRY + " case's call on its composer");
+        int composer = invokeRegisters(body.get(startAt))[0];
+        requireFeature(featureLastWrite(body, gotoAt, composer) < startAt, "Threads' " + MORE_ENTRY + " case overwrites its composer, v" + composer);
+
+        // The row's composer is copied from that register, and its modifier comes, through copies,
+        // from a static field the shared run reads.
+        List<Integer> path = new ArrayList<>();
+        for (int k = caseAt; k < gotoAt; k++) path.add(k);
+        for (int k = tailAt; k < callAt; k++) path.add(k);
+        int[] arguments = invokeRegisters(body.get(callAt));
+        int copy = featureLastWrite(body, path, path.size(), arguments[0]);
+        requireFeature(copy >= 0 && body.get(path.get(copy)).getOpcode().name.startsWith("move-object")
+                && ((TwoRegisterInstruction) body.get(path.get(copy))).getRegisterB() == composer,
+                "Threads' settings row isn't passed the composer the " + MORE_ENTRY + " case starts its group on");
+        int at = path.size(), register = arguments[1];
+        Instruction modifier;
+        while (true) {
+            at = featureLastWrite(body, path, at, register);
+            requireFeature(at >= 0, "Threads' " + MORE_ENTRY + " case doesn't set the settings row's modifier");
+            modifier = body.get(path.get(at));
+            if (!ROW_ARGUMENT_MOVES.contains(modifier.getOpcode())) break;
+            register = ((TwoRegisterInstruction) modifier).getRegisterB();
+        }
+        requireFeature(modifier.getOpcode() == Opcode.SGET_OBJECT && at >= gotoAt - caseAt,
+                "Threads' settings row isn't passed a modifier from a static field the shared run reads");
+        return new SettingsRowSites(list, gotoAt, composer, row, accounts, reference(modifier));
+    }
+
+    /** The narrow and object copies the settings row's arguments are followed back through. */
+    private static final Set<Opcode> ROW_ARGUMENT_MOVES = Set.of(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16,
+            Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16);
+
+    /** The index of the last instruction before [before] in [body] that writes [register], or -1. */
+    private static int featureLastWrite(List<Instruction> body, int before, int register) {
+        for (int k = before - 1; k >= 0; k--) if (featureWrites(body.get(k), register)) return k;
+        return -1;
+    }
+
+    /** The last position before [end] in [path], a run of [body]'s indices, whose instruction writes [register], or -1. */
+    private static int featureLastWrite(List<Instruction> body, List<Integer> path, int end, int register) {
+        for (int n = end - 1; n >= 0; n--) if (featureWrites(body.get(path.get(n)), register)) return n;
+        return -1;
+    }
+
+    /** Whether [i] writes [register], as its destination or the upper half of a wide one. */
+    private static boolean featureWrites(Instruction i, int register) {
+        return i.getOpcode().setsRegister() && i instanceof OneRegisterInstruction
+                && (registerA(i) == register || i.getOpcode().setsWideRegister() && registerA(i) + 1 == register);
+    }
+
+    /** The ordinal [type]'s static initializer hands its constructor beside [name], as a string and an int literal. */
+    private static int featureEnumOrdinal(Map<String, List<Method>> clean, String type, String name) {
+        Map<Integer, String> strings = new HashMap<>();
+        Map<Integer, Long> literals = new HashMap<>();
+        List<Long> ordinals = new ArrayList<>();
+        for (Instruction i : instructions(featureMethod(clean, type + "-><clinit>()V"))) {
+            if (isPlainInvoke(i.getOpcode()) && reference(i).startsWith(type + "-><init>(Ljava/lang/String;I")) {
+                List<Integer> registers = callRegisters(i);
+                if (name.equals(strings.get(registers.get(1))) && literals.containsKey(registers.get(2))) ordinals.add(literals.get(registers.get(2)));
+                continue;
+            }
+            if (!i.getOpcode().setsRegister() || !(i instanceof OneRegisterInstruction)) continue;
+            strings.remove(registerA(i));
+            literals.remove(registerA(i));
+            Opcode opcode = i.getOpcode();
+            if (opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO) {
+                strings.put(registerA(i), ((StringReference) ((ReferenceInstruction) i).getReference()).getString());
+            } else if (opcode == Opcode.CONST_4 || opcode == Opcode.CONST_16 || opcode == Opcode.CONST || opcode == Opcode.CONST_HIGH16) {
+                literals.put(registerA(i), ((WideLiteralInstruction) i).getWideLiteral());
+            }
+        }
+        return Math.toIntExact(featureOne(ordinals, type + "'s " + name + " constant"));
+    }
+
     private static void featureFalseStub(Map<String, List<Method>> patched, String signature, boolean optional) {
         if (optional && !patched.containsKey(signature)) return;
         Method stub = featureMethod(patched, signature);
@@ -3938,6 +4189,19 @@ public class DexDiff {
         featurePreserveTargets(clean, patched, m -> hooked.contains(featureSig(m)));
     }
 
+    /**
+     * Left out, the settings row makes no call, leaves Threads' settings list and both its rows as
+     * Threads wrote them, and leaves showRow, when the extension has it, the empty stub it ships as.
+     */
+    private static void featureOmittedSettingsRow(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        featureHostCalls(patched, ADD_ROW, Map.of());
+        SettingsRowSites sites = featureSettingsRowSites(clean);
+        Set<String> hooked = new HashSet<>(List.of(featureSig(sites.list()), featureSig(sites.row()), featureSig(sites.accounts())));
+        featurePreserveTargets(clean, patched, m -> hooked.contains(featureSig(m)));
+        if (patched.containsKey(SHOW_ROW)) requireFeature(instructions(featureMethod(patched, SHOW_ROW)).stream().map(Instruction::getOpcode)
+                .toList().equals(List.of(Opcode.RETURN_VOID)), "omitted settings row wrote " + SHOW_ROW);
+    }
+
     private static void featureOmitted(String feature, Map<String, List<Method>> clean, Map<String, List<Method>> patched,
             File cleanApk, File patchedApk) throws Exception {
         switch (feature) {
@@ -3975,6 +4239,7 @@ public class DexDiff {
             case "returnRefresh": featureOmittedReturnRefresh(clean, patched); break;
             case "disableVideoAutoplay": featureOmittedVideoAutoplay(clean, patched); break;
             case "pureBlack": featureOmittedPureBlack(clean, patched); break;
+            case "settingsRow": featureOmittedSettingsRow(clean, patched); break;
             default: throw new IllegalArgumentException("Unknown omitted feature " + feature);
         }
         if (feature.equals("hideAds") || feature.equals("hideSuggestedUsers")) {
@@ -4002,6 +4267,25 @@ public class DexDiff {
             findings.add("contract: selected feature has no contract: " + feature);
         for (String feature : rules) {
             try {
+                // The settings row has no status: HushThreads settings adds it, and every other patch
+                // depends on that one (verify-injected-registers.ps1 counts a selected patch's
+                // dependencies as selected). Without a selection, the row belongs to every bundle
+                // whose extension carries it, and a bundle whose extension has none came before the
+                // row and is read as leaving it out, the way bundles from before Open links in browser are.
+                if (feature.equals("settingsRow")) {
+                    if (selected == null && !hasPayload) {
+                        System.out.println("[diff] threads-feature " + feature + ": no feature payload");
+                        continue;
+                    }
+                    boolean on = selected != null ? selected.contains(feature) : patched.containsKey(ADD_ROW);
+                    if (on || hasPayload) {
+                        if (clean == null) clean = featureMethods(cleanApk, parents);
+                        if (on) featureSettingsRow(clean, patched, patchedApk);
+                        else featureOmitted(feature, clean, patched, cleanApk, patchedApk);
+                    }
+                    System.out.println("[diff] threads-feature " + feature + ": " + (on ? "verified" : "omitted"));
+                    continue;
+                }
                 boolean hasStatus = patched.containsKey(STATUS + feature + "()Z");
                 if (!hasStatus && selected != null && !selected.contains(feature)) {
                     if (hasPayload) {

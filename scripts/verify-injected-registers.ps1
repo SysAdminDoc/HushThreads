@@ -23,7 +23,8 @@
     must retain their feed helpers, typed active-card guards and exact raw-wrapper recording,
     owned permalink hook, recorded analytics address mutations
     and signature wrapper with its stock fallback. -SelectedPatches supplies the independent
-    validated CLI selection; a standalone check uses the patched SettingsStatus flags.
+    validated CLI selection, read with the catalog dependencies the CLI applies along with it; a
+    standalone check uses the patched SettingsStatus flags.
 
     On a device. The Android runtime's own verifier is the authority, so with -Serial the
     clean APK and the patched APK are both put through dex2oat with the verify filter and the
@@ -141,11 +142,21 @@ function Invoke-DexDiff {
             'Block background-return feed refresh' = 'returnRefresh'
             'Disable video autoplay' = 'disableVideoAutoplay'
             'Pure black dark mode' = 'pureBlack'
+            'HushThreads settings' = 'settingsRow'
         }
         foreach ($name in $SelectedPatches) {
             if ($name -cnotin @($catalog.patches | ForEach-Object { $_.name })) { throw "Unknown selected patch: $name" }
         }
-        $selected = @($featureNames.Keys | Where-Object { $_ -cin $SelectedPatches } | ForEach-Object { $featureNames[$_] }) -join ','
+        # The CLI applies a selected patch's dependencies whatever the selection names. Every other
+        # patch depends on HushThreads settings, so its row is in any build with a patch selected.
+        $applied = [System.Collections.Generic.HashSet[string]]::new([string[]]@($SelectedPatches), [System.StringComparer]::Ordinal)
+        do {
+            $count = $applied.Count
+            foreach ($patch in @($catalog.patches | Where-Object { $applied.Contains([string]$_.name) })) {
+                foreach ($dependency in @($patch.dependencies | Where-Object { $_ })) { [void]$applied.Add([string]$dependency) }
+            }
+        } while ($applied.Count -ne $count)
+        $selected = @($featureNames.Keys | Where-Object { $applied.Contains($_) } | ForEach-Object { $featureNames[$_] }) -join ','
         $selectionArguments += $(if ($selected) { $selected } else { 'none' })
     }
     $diffRun = @{ Output = @() }

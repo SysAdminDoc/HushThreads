@@ -24,7 +24,7 @@
     in a host method. Each of the five ShortcutManager calls the settings patch sends to the
     extension is left in the app's code by a build of its own, which has to fail that call's
     no-call rule and no other. The contract file may hold no no-call rule without such a build,
-    and only the nine Threads feature rules with selection and corruption fixtures; a malformed
+    and only the ten Threads feature rules with selection and corruption fixtures; a malformed
     line of every kind the grammar knows is refused.
     The good build carries the joins, copies and reads ART accepts, a zero tested against
     an object among them, so a check made stricter still has to pass them. Each bad build has to
@@ -492,14 +492,12 @@ shift
 shift
 shift
 set "standInFamilies=%~1"
-if not "%~2"=="" set "standInFamilies=%standInFamilies%,%~2"
-if not "%~3"=="" set "standInFamilies=%standInFamilies%,%~3"
-if not "%~4"=="" set "standInFamilies=%standInFamilies%,%~4"
-if not "%~5"=="" set "standInFamilies=%standInFamilies%,%~5"
-if not "%~6"=="" set "standInFamilies=%standInFamilies%,%~6"
-if not "%~7"=="" set "standInFamilies=%standInFamilies%,%~7"
-if not "%~8"=="" set "standInFamilies=%standInFamilies%,%~8"
-if not "%~9"=="" set "standInFamilies=%standInFamilies%,%~9"
+:standInFamily
+shift
+if "%~1"=="" goto standInFamilies
+set "standInFamilies=%standInFamilies%,%~1"
+goto standInFamily
+:standInFamilies
 echo [diff] requested families: %standInFamilies%
 echo [diff] structural findings: 0
 exit /b $DexDiffExit
@@ -555,13 +553,18 @@ try {
     Assert-True ($passed.ExitCode -eq 0 -and $passed.Text -match $reached -and
         $passed.Output -contains '[registers] success.') `
         "The verifier did not pass a comparison DexDiff passed.`n$($passed.Text)"
+    # Every patch depends on HushThreads settings, which the CLI applies whatever the selection names,
+    # so its settingsRow family comes with any selected patch and only with one.
     $suggestions = Invoke-VerifierWithStandIns -Name 'selected-suggestions' -DexDiffExit 0 -SelectedPatches @('Hide suggested users')
-    Assert-True ($suggestions.ExitCode -eq 0 -and $suggestions.Text -match '(?m)^\[registers\] \[diff\] requested families: hideSuggestedUsers$') `
-        "The verifier did not forward independent Suggested Users selection to DexDiff.`n$($suggestions.Text)"
+    Assert-True ($suggestions.ExitCode -eq 0 -and $suggestions.Text -match '(?m)^\[registers\] \[diff\] requested families: hideSuggestedUsers,settingsRow$') `
+        "The verifier did not forward independent Suggested Users selection, with the settings row it depends on, to DexDiff.`n$($suggestions.Text)"
+    $nothing = Invoke-VerifierWithStandIns -Name 'selected-nothing' -DexDiffExit 0 -SelectedPatches @()
+    Assert-True ($nothing.ExitCode -eq 0 -and $nothing.Text -match '(?m)^\[registers\] \[diff\] requested families: none$') `
+        "The verifier did not forward an empty selection to DexDiff as none.`n$($nothing.Text)"
     $allFamilies = Invoke-VerifierWithStandIns -Name 'selected-all-families' -DexDiffExit 0 -SelectedPatches @(
         'Hide ads', 'Hide suggested users', 'Sanitize sharing links', 'Open links in browser', 'Disable analytics', 'Restore screens on re-signed builds',
-        'Block background-return feed refresh', 'Disable video autoplay', 'Pure black dark mode')
-    Assert-True ($allFamilies.ExitCode -eq 0 -and $allFamilies.Text -match '(?m)^\[registers\] \[diff\] requested families: hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh,disableVideoAutoplay,pureBlack$') `
+        'Block background-return feed refresh', 'Disable video autoplay', 'Pure black dark mode', 'HushThreads settings')
+    Assert-True ($allFamilies.ExitCode -eq 0 -and $allFamilies.Text -match '(?m)^\[registers\] \[diff\] requested families: hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh,disableVideoAutoplay,pureBlack,settingsRow$') `
         "The verifier did not forward all independently selected families to DexDiff.`n$($allFamilies.Text)"
     # Change version code raises the patched code to Int.MAX_VALUE. Selected, that code is the one
     # the patched side has to carry; not selected, or selected without the raise, the pair differs.
@@ -662,15 +665,15 @@ try {
             ("The good build's $($shortcut.Call), sent to the stand-in whose own call is inside the extension, " +
             "was not reported clean.`n$($good.Output -join "`n")")
     }
-    # Every rule must have bad builds of its own. The feature fixtures below cover nine families.
+    # Every rule must have bad builds of its own. The feature fixtures below cover ten families.
     $otherRules = @(Get-Content -LiteralPath $contracts | ForEach-Object { $_.Trim() } |
         Where-Object { $_ -and -not $_.StartsWith('#') -and $_ -notmatch '^no-call\s' })
-    Assert-True ((($otherRules | Sort-Object) -join ',') -ceq 'threads-feature disableAnalytics,threads-feature disableVideoAutoplay,threads-feature hideAds,threads-feature hideSuggestedUsers,threads-feature openLinksExternally,threads-feature pureBlack,threads-feature restoreTrust,threads-feature returnRefresh,threads-feature sanitizeSharingLinks') `
+    Assert-True ((($otherRules | Sort-Object) -join ',') -ceq 'threads-feature disableAnalytics,threads-feature disableVideoAutoplay,threads-feature hideAds,threads-feature hideSuggestedUsers,threads-feature openLinksExternally,threads-feature pureBlack,threads-feature restoreTrust,threads-feature returnRefresh,threads-feature sanitizeSharingLinks,threads-feature settingsRow') `
         ("The contract file holds rules this suite builds no bad fixtures for:`n$($otherRules -join "`n")")
 
     $featureClean = New-DexApk -Name 'features-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-clean') })
     $featureCases = [ordered]@{
-        'features-good' = 'hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh,disableVideoAutoplay,pureBlack'
+        'features-good' = 'hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh,disableVideoAutoplay,pureBlack,settingsRow'
         'features-omitted' = 'none'
         'features-only-hideAds' = 'hideAds'
         'features-only-hideSuggestedUsers' = 'hideSuggestedUsers'
@@ -681,6 +684,7 @@ try {
         'features-only-returnRefresh' = 'returnRefresh'
         'features-only-disableVideoAutoplay' = 'disableVideoAutoplay'
         'features-only-pureBlack' = 'pureBlack'
+        'features-only-settingsRow' = 'settingsRow'
     }
     foreach ($mask in 1..7) { $featureCases["features-mask-$mask"] = 'disableAnalytics' }
     foreach ($case in $featureCases.GetEnumerator()) {
@@ -688,11 +692,24 @@ try {
         $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case.Key -Contracts $contracts -Features $case.Value
         Assert-True ($checked.ExitCode -eq 0 -and (Get-Findings $checked).Fails.Count -eq 0) ("Feature selection $($case.Key) failed. " + ($checked.Output -join [Environment]::NewLine))
         foreach ($feature in @('hideAds', 'hideSuggestedUsers', 'sanitizeSharingLinks', 'openLinksExternally', 'disableAnalytics', 'restoreTrust', 'returnRefresh',
-            'disableVideoAutoplay', 'pureBlack')) {
+            'disableVideoAutoplay', 'pureBlack', 'settingsRow')) {
             $state = if ($feature -cin ($case.Value -split ',')) { 'verified' } else { 'omitted' }
             Assert-True (($checked.Output -join [Environment]::NewLine) -match [regex]::Escape("threads-feature ${feature}: $state")) "Feature $feature did not report $state."
         }
     }
+    # The settings row has no status, so a check given no selection reads it from the extension:
+    # the row is there in every build whose extension carries ThreadsSettingsRow, and a build that
+    # carries it without the hook is refused for that alone.
+    $standalone = Invoke-DexDiff -Clean $featureClean -Patched (New-DexApk -Name 'features-standalone-good' -Entries ([ordered]@{
+        'classes.dex' = (Get-Dex 'features-good') })) -Allowlist $emptyAllowlist -Name 'features-standalone-good' -Contracts $contracts
+    Assert-True ($standalone.ExitCode -eq 0 -and (Get-Findings $standalone).Fails.Count -eq 0 -and
+        ($standalone.Output -join [Environment]::NewLine) -match 'threads-feature settingsRow: verified') `
+        ("A standalone check of the good build did not verify the settings row. " + ($standalone.Output -join [Environment]::NewLine))
+    $standaloneBare = Invoke-DexDiff -Clean $featureClean -Patched (New-DexApk -Name 'features-standalone-unhooked' -Entries ([ordered]@{
+        'classes.dex' = (Get-Dex 'features-only-hideAds') })) -Allowlist $emptyAllowlist -Name 'features-standalone-unhooked' -Contracts $contracts
+    Assert-True ($standaloneBare.ExitCode -ne 0 -and (Get-Findings $standaloneBare).Fails.Count -gt 0 -and
+        @((Get-Findings $standaloneBare).Fails | Where-Object { $_ -notlike '`[diff`] FAIL: contract: settingsRow: *' }).Count -eq 0) `
+        ("A standalone check passed an extension with the settings row and a list without its hook. " + ($standaloneBare.Output -join [Environment]::NewLine))
     $discardedClean = New-DexApk -Name 'features-ad-discarded-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-ad-discarded-clean') })
     $featureFaults = @('feed-missing', 'feed-replaced', 'feed-register', 'feed-duplicate', 'item-stub', 'ad-target', 'ad-discarded', 'ad-body', 'ad-helper-body', 'getter-body', 'ad-helper-native', 'getter-static',
         'link-missing', 'link-replaced', 'link-register', 'post-link-missing', 'post-link-register', 'post-link-getter', 'post-link-bypass',
@@ -759,6 +776,21 @@ try {
         Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
             @($findings.Fails | Where-Object { $_ -notlike '`[diff`] FAIL: contract: pureBlack: *' }).Count -eq 0) `
             ("$fault was not rejected solely by the Pure black contract. " + ($checked.Output -join [Environment]::NewLine))
+        $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
+    # One build per broken settings row, selected alone: the hook missing, the hook in the PRIVACY
+    # case instead of the MORE one, the hook on the entry instead of the composer, showRow left the
+    # empty stub, and the click without Function0. Every FAIL has to be that rule's.
+    $settingsRowFaults = @('settings-row-missing', 'settings-row-outside', 'settings-row-register', 'settings-row-stub', 'settings-row-click')
+    foreach ($fault in $settingsRowFaults) {
+        $case = "features-bad-$fault"
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features 'settingsRow'
+        $findings = Get-Findings $checked
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+            @($findings.Fails | Where-Object { $_ -notlike '`[diff`] FAIL: contract: settingsRow: *' }).Count -eq 0) `
+            ("$fault was not rejected solely by the settings row contract. " + ($checked.Output -join [Environment]::NewLine))
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
@@ -867,6 +899,7 @@ try {
         'omitted-returnRefresh' = @('returnRefresh', 'hideSuggestedUsers')
         'omitted-disableVideoAutoplay' = @('disableVideoAutoplay', 'hideSuggestedUsers')
         'omitted-pureBlack' = @('pureBlack', 'hideSuggestedUsers')
+        'omitted-settingsRow' = @('settingsRow', 'hideSuggestedUsers')
         'omitted-suggestion-predicate' = @('hideSuggestedUsers', 'hideAds')
         'omitted-suggestion-capture' = @('hideSuggestedUsers', 'hideAds')
         'omitted-suggestion-constructor' = @('hideSuggestedUsers', 'hideAds')
@@ -901,7 +934,7 @@ try {
         $text = $checked.Output -join [Environment]::NewLine
         Assert-True ($checked.ExitCode -eq 0 -and $text -match 'threads-feature hideSuggestedUsers: omitted' -and $text -match 'threads-feature openLinksExternally: omitted' -and
             $text -match 'threads-feature returnRefresh: omitted' -and $text -match 'threads-feature disableVideoAutoplay: omitted' -and
-            $text -match 'threads-feature pureBlack: omitted') `
+            $text -match 'threads-feature pureBlack: omitted' -and $text -match 'threads-feature settingsRow: omitted') `
             'A historical bundle missing only the new statuses was refused.'
     }
     $legacyMissingAd = New-DexApk -Name 'features-historical-missing-ad-status' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-historical-missing-ad-status') })
@@ -928,6 +961,10 @@ try {
         -Name 'historical-selected-pure-black' -Contracts $contracts -Features 'hideAds,sanitizeSharingLinks,disableAnalytics,restoreTrust,pureBlack'
     Assert-True ($selectedPureBlack.ExitCode -ne 0 -and ($selectedPureBlack.Output -join [Environment]::NewLine) -match 'contract: pureBlack:') `
         'Explicit Pure black selection accepted a historical bundle without its status.'
+    $selectedSettingsRow = Invoke-DexDiff -Clean $featureClean -Patched $historical -Allowlist $emptyAllowlist `
+        -Name 'historical-selected-settings-row' -Contracts $contracts -Features 'hideAds,sanitizeSharingLinks,disableAnalytics,restoreTrust,settingsRow'
+    Assert-True ($selectedSettingsRow.ExitCode -ne 0 -and ($selectedSettingsRow.Output -join [Environment]::NewLine) -match 'contract: settingsRow:') `
+        'Explicit settings row selection accepted a historical bundle without the row.'
     Assert-True ($selectedHistorical.ExitCode -ne 0 -and ($selectedHistorical.Output -join [Environment]::NewLine) -match 'contract: hideSuggestedUsers:') `
         'Explicit suggestion selection accepted a historical bundle without the new status.'
     $exceptionClean = New-DexApk -Name 'features-exception-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-exception-clean') })
@@ -980,7 +1017,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 5) good selections, $($featureFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $suggestionFaults.Count + $omittedFaults.Count + 9) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'

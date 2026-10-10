@@ -745,6 +745,20 @@ public class BadDexFixture {
     private static final ImmutableMethodReference THEME_COLORS_INIT = method(FEATURE_THEME_COLORS, "<init>", "V", "J");
     private static final ImmutableMethodReference PURE_ARGB = method(FEATURE_PURE_BLACK, "argb", "J", "J");
     private static final ImmutableMethodReference PURE_COLOR = method(FEATURE_PURE_BLACK, "color", "J", "J");
+    private static final String FEATURE_SETTINGS_ROW = "Lapp/morphe/extension/hushthreads/settings/ThreadsSettingsRow;";
+    private static final String FEATURE_ROW_CLICK = "Lapp/morphe/extension/hushthreads/settings/ThreadsSettingsRow$Click;";
+    private static final String FEATURE_SETTINGS_SCREEN = "Lfixture/SettingsScreenKt;";
+    private static final String FEATURE_SETTINGS_LIST = "Lfixture/SettingsScreenKt$list$1;";
+    private static final String FEATURE_ENTRY_KIND = "Lfixture/SettingsEntryKind;";
+    private static final String FEATURE_COMPOSER = "Lfixture/Composer;";
+    private static final String FEATURE_MODIFIER = "Lfixture/Modifier;";
+    private static final String FUNCTION0 = "Lkotlin/jvm/functions/Function0;";
+    private static final ImmutableMethodReference SETTINGS_ROW = method(FEATURE_SETTINGS_SCREEN, "SettingsRow", "V",
+            FEATURE_COMPOSER, FEATURE_MODIFIER, "Ljava/lang/Integer;", FUNCTION0, "I", "I", "I", "I", "Z");
+    private static final ImmutableMethodReference ACCOUNTS_ROW = method(FEATURE_SETTINGS_SCREEN, "AccountsCenterRow", "V",
+            FEATURE_COMPOSER, FEATURE_MODIFIER, "Ljava/lang/String;", "Ljava/lang/String;", FUNCTION0, "I", "I", "I", "Z");
+    private static final ImmutableMethodReference START_GROUP = method(FEATURE_COMPOSER, "startGroup", "V", "I");
+    private static final ImmutableMethodReference ADD_ROW = method(FEATURE_SETTINGS_ROW, "add", "V", OBJECT);
 
     /** A Pando getter: it asks for the field by its name's hash and, here, answers null. */
     private static Method pandoGetter(String owner, String name, String returns, String field) {
@@ -1674,6 +1688,112 @@ public class BadDexFixture {
         return List.of(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, register, 2, hook), op(Opcode.MOVE_RESULT_WIDE, register));
     }
 
+    /**
+     * The HushThreads settings row's host shapes: Threads' settings row and Accounts Center row, each
+     * holding its note, an entry enum whose static initializer makes PRIVACY 0 and MORE 1, and the
+     * list lambda that switches on an entry's ordinal. Each case starts its group on the composer in
+     * v12, sets a click, label and icon and goes to a run they share, which copies the composer in
+     * and reads the modifier from a static field for the settings row call. When [hooked], the MORE
+     * case asks ThreadsSettingsRow.add about v12 right before its goto. Faults: the hook missing, the
+     * hook in the PRIVACY case instead, and the hook on the entry in v14 instead of the composer.
+     */
+    private static List<ClassDef> settingsRowClasses(boolean hooked, String fault) {
+        List<ClassDef> classes = new ArrayList<>();
+        classes.add(featureClass(FEATURE_SETTINGS_SCREEN, OBJECT, List.of(),
+                define(FEATURE_SETTINGS_SCREEN, "SettingsRow", "V", true, body(10,
+                        string(0, "com.instagram.barcelona.settings.SettingsRow (SettingsScreen.kt:301)"), op(Opcode.RETURN_VOID)),
+                        SETTINGS_ROW.getParameterTypes().toArray(new String[0])),
+                define(FEATURE_SETTINGS_SCREEN, "AccountsCenterRow", "V", true, body(10,
+                        string(0, "com.instagram.barcelona.settings.AccountsCenterRow (SettingsScreen.kt:342)"), op(Opcode.RETURN_VOID)),
+                        ACCOUNTS_ROW.getParameterTypes().toArray(new String[0]))));
+
+        int enumFlags = AccessFlags.PUBLIC.getValue() | AccessFlags.FINAL.getValue() | AccessFlags.STATIC.getValue() | AccessFlags.ENUM.getValue();
+        ImmutableMethodReference entryInit = method(FEATURE_ENTRY_KIND, "<init>", "V", "Ljava/lang/String;", "I");
+        List<Instruction> entries = new ArrayList<>();
+        List<ImmutableField> constants = new ArrayList<>();
+        String[] names = {"PRIVACY", "MORE"};
+        for (int n = 0; n < names.length; n++) {
+            entries.addAll(List.of(type(Opcode.NEW_INSTANCE, 0, FEATURE_ENTRY_KIND), string(1, names[n]),
+                    new ImmutableInstruction11n(Opcode.CONST_4, 2, n), direct(entryInit, 0, 1, 2),
+                    staticField(Opcode.SPUT_OBJECT, 0, FEATURE_ENTRY_KIND, names[n], FEATURE_ENTRY_KIND)));
+            constants.add(flaggedField(FEATURE_ENTRY_KIND, names[n], FEATURE_ENTRY_KIND, enumFlags));
+        }
+        entries.add(op(Opcode.RETURN_VOID));
+        classes.add(featureClass(FEATURE_ENTRY_KIND, "Ljava/lang/Enum;", constants,
+                define(FEATURE_ENTRY_KIND, "<clinit>", "V", true, body(3, entries.toArray(new Instruction[0]))),
+                define(FEATURE_ENTRY_KIND, "<init>", "V", false, body(3, direct(method("Ljava/lang/Enum;", "<init>", "V", "Ljava/lang/String;", "I"), 0, 1, 2),
+                        op(Opcode.RETURN_VOID)), "Ljava/lang/String;", "I")));
+
+        // invoke(entry, composer): v0..v12 locals, this in v13, the entry in v14 and the composer in v15.
+        List<Instruction> list = new ArrayList<>(List.of(string(0, "com.instagram.barcelona.settings.SettingsScreen.<anonymous> (SettingsScreen.kt:131)"),
+                new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 12, 15), type(Opcode.CHECK_CAST, 12, FEATURE_COMPOSER),
+                type(Opcode.CHECK_CAST, 14, FEATURE_ENTRY_KIND), virtual(method(FEATURE_ENTRY_KIND, "ordinal", "I"), 14), op(Opcode.MOVE_RESULT, 1),
+                new ImmutableInstruction31t(Opcode.PACKED_SWITCH, 1, 0), op(Opcode.RETURN_VOID)));
+        int switchAt = 6;
+        int[] cases = new int[names.length], gotos = new int[names.length];
+        for (int n = 0; n < names.length; n++) {
+            cases[n] = list.size();
+            list.addAll(List.of(new ImmutableInstruction35c(Opcode.INVOKE_INTERFACE, 2, 12, 1, 0, 0, 0, START_GROUP),
+                    new ImmutableInstruction11n(Opcode.CONST_4, 5, 0), new ImmutableInstruction21s(Opcode.CONST_16, 6, 100 + n),
+                    new ImmutableInstruction21s(Opcode.CONST_16, 7, 200 + n)));
+            boolean more = names[n].equals("MORE");
+            if (hooked && (more ? !fault.equals("settings-row-missing") && !fault.equals("settings-row-outside") : fault.equals("settings-row-outside"))) {
+                list.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, more && fault.equals("settings-row-register") ? 14 : 12, 1, ADD_ROW));
+            }
+            gotos[n] = list.size();
+            list.add(new ImmutableInstruction10t(Opcode.GOTO, 0));
+        }
+        int tail = list.size();
+        list.addAll(List.of(new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 2, 12), staticField(Opcode.SGET_OBJECT, 3, FEATURE_MODIFIER, "Companion", FEATURE_MODIFIER),
+                new ImmutableInstruction11n(Opcode.CONST_4, 4, 0), new ImmutableInstruction11n(Opcode.CONST_4, 8, 0),
+                new ImmutableInstruction11n(Opcode.CONST_4, 9, 0), new ImmutableInstruction11n(Opcode.CONST_4, 10, 0),
+                new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 2, 9, SETTINGS_ROW), op(Opcode.RETURN_VOID)));
+        for (int g : gotos) featureBranch(list, g, tail, Opcode.GOTO, 0, 0);
+        int[] address = new int[list.size() + 1];
+        for (int k = 0; k < list.size(); k++) address[k + 1] = address[k] + list.get(k).getCodeUnits();
+        int payload = address[list.size()];
+        // The payload sits on an even address, so the hook, three units, adds or drops the nop before it.
+        if (payload % 2 != 0) {
+            list.add(op(Opcode.NOP));
+            payload++;
+        }
+        list.set(switchAt, new ImmutableInstruction31t(Opcode.PACKED_SWITCH, 1, payload - address[switchAt]));
+        List<ImmutableSwitchElement> targets = new ArrayList<>();
+        for (int n = 0; n < names.length; n++) targets.add(new ImmutableSwitchElement(n, address[cases[n]] - address[switchAt]));
+        list.add(new ImmutablePackedSwitchPayload(targets));
+        classes.add(featureClass(FEATURE_SETTINGS_LIST, OBJECT, List.of(),
+                define(FEATURE_SETTINGS_LIST, "invoke", "V", false, body(16, list.toArray(new Instruction[0])), OBJECT, OBJECT)));
+        return classes;
+    }
+
+    /**
+     * The extension's ThreadsSettingsRow and its click, as a bundle carries them: showRow written to
+     * call the Accounts Center row and the click a kotlin Function0 when [hooked], and otherwise the
+     * empty stub and a plain class. Faults: the stub left empty and the click without Function0.
+     */
+    private static List<ClassDef> settingsRowExtension(boolean hooked, String fault) {
+        // showRow(composer, click, title, subtitle, icon): v0..v8 locals, the arguments in v9 to v13.
+        boolean written = hooked && !fault.equals("settings-row-stub");
+        List<Instruction> stub = !written ? List.of(op(Opcode.RETURN_VOID)) : List.of(
+                new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 0, 9), type(Opcode.CHECK_CAST, 0, FEATURE_COMPOSER),
+                staticField(Opcode.SGET_OBJECT, 1, FEATURE_MODIFIER, "Companion", FEATURE_MODIFIER),
+                new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 2, 11), new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 3, 12),
+                new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 4, 10), type(Opcode.CHECK_CAST, 4, FUNCTION0),
+                new ImmutableInstruction22x(Opcode.MOVE_FROM16, 5, 13), new ImmutableInstruction11n(Opcode.CONST_4, 6, 0),
+                new ImmutableInstruction11n(Opcode.CONST_4, 7, 0), new ImmutableInstruction11n(Opcode.CONST_4, 8, 0),
+                new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 0, 9, ACCOUNTS_ROW), op(Opcode.RETURN_VOID));
+        List<ClassDef> classes = new ArrayList<>();
+        classes.add(featureClass(FEATURE_SETTINGS_ROW, OBJECT, List.of(),
+                define(FEATURE_SETTINGS_ROW, "add", "V", true, body(1, op(Opcode.RETURN_VOID)), OBJECT),
+                define(FEATURE_SETTINGS_ROW, "showRow", "V", true, body(written ? 14 : 5, stub.toArray(new Instruction[0])),
+                        OBJECT, OBJECT, "Ljava/lang/String;", "Ljava/lang/String;", "I")));
+        List<String> interfaces = hooked && !fault.equals("settings-row-click") ? List.of(FUNCTION0) : List.of();
+        classes.add(new ImmutableClassDef(FEATURE_ROW_CLICK, AccessFlags.PUBLIC.getValue() | AccessFlags.FINAL.getValue(), OBJECT, interfaces,
+                null, null, List.of(), List.of(define(FEATURE_ROW_CLICK, "invoke", OBJECT, false,
+                        body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0))))));
+        return classes;
+    }
+
     /** Independent small host shapes. Every faulty build still passes all structural checks. */
     private static List<ClassDef> featureBuild(boolean patched, Set<String> selected, int mask, String fault) {
         List<ClassDef> classes = new ArrayList<>(patched ? good() : clean(cleanHost()));
@@ -1888,6 +2008,7 @@ public class BadDexFixture {
         classes.addAll(returnRefreshClasses(patched && selected.contains("returnRefresh"), fault));
         classes.addAll(videoAutoplayClasses(patched && selected.contains("disableVideoAutoplay"), fault));
         classes.addAll(pureBlackClasses(patched && selected.contains("pureBlack"), fault));
+        classes.addAll(settingsRowClasses(patched && selected.contains("settingsRow"), fault));
         if (fault.startsWith("ambiguous-suggestion-") || fault.startsWith("proven-suggestion-")) corruptSuggestionStock(classes, fault);
         if (!patched) return classes;
 
@@ -1943,6 +2064,8 @@ public class BadDexFixture {
         classes.add(featureClass(FEATURE_PURE_BLACK, OBJECT, List.of(),
                 define(FEATURE_PURE_BLACK, "argb", "J", true, body(2, op(Opcode.RETURN_WIDE, 0)), "J"),
                 define(FEATURE_PURE_BLACK, "color", "J", true, body(2, op(Opcode.RETURN_WIDE, 0)), "J")));
+        // The published bundles came before the settings row too, and their extension has no ThreadsSettingsRow.
+        if (!fault.startsWith("historical")) classes.addAll(settingsRowExtension(selected.contains("settingsRow"), fault));
         if (patched && (fault.equals("ad-body") || fault.equals("ad-helper-body") || fault.equals("getter-body")
                 || fault.equals("ad-helper-native") || fault.equals("getter-static"))) {
             String owner = fault.equals("ad-body") ? FEATURE_MEDIA : fault.startsWith("ad-helper-") ? "Lfixture/AdFlag;" : FEATURE_ITEM;
@@ -2048,7 +2171,7 @@ public class BadDexFixture {
 
         Map<String, List<ClassDef>> dexes = new LinkedHashMap<>();
         Set<String> allFeatures = Set.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
-                "returnRefresh", "disableVideoAutoplay", "pureBlack");
+                "returnRefresh", "disableVideoAutoplay", "pureBlack", "settingsRow");
         dexes.put("features-clean", featureBuild(false, Set.of(), 0, ""));
         dexes.put("features-good", featureBuild(true, allFeatures, 7, ""));
         dexes.put("features-omitted", featureBuild(true, Set.of(), 0, ""));
@@ -2077,6 +2200,10 @@ public class BadDexFixture {
         for (String fault : List.of("pure-black-load-missing", "pure-black-load-register", "pure-black-background-missing",
                 "pure-black-background-register", "pure-black-light")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("pureBlack"), 0, fault));
+        }
+        // And the HushThreads settings row.
+        for (String fault : List.of("settings-row-missing", "settings-row-outside", "settings-row-register", "settings-row-stub", "settings-row-click")) {
+            dexes.put("features-bad-" + fault, featureBuild(true, Set.of("settingsRow"), 0, fault));
         }
         for (String fault : List.of("suggestion-stub", "suggestion-media-guard", "suggestion-type-guard", "suggestion-null-guard",
                 "suggestion-item-missing", "suggestion-media-missing", "suggestion-type-missing", "suggestion-null-missing",
@@ -2132,8 +2259,9 @@ public class BadDexFixture {
         }
         dexes.put("features-metadata-clean", metadataStock);
         dexes.put("features-metadata-good", metadataPatched);
+        // The settings row has no status to clear: a selection without it is what leaves it out.
         for (String feature : List.of("hideAds", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust", "returnRefresh",
-                "disableVideoAutoplay", "pureBlack")) {
+                "disableVideoAutoplay", "pureBlack", "settingsRow")) {
             List<ClassDef> unselected = featureBuild(true, Set.of("hideSuggestedUsers", feature), 7, "");
             omitFeatureStatus(unselected, feature, false);
             dexes.put("features-bad-omitted-" + feature, unselected);

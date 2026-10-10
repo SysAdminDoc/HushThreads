@@ -37,6 +37,8 @@ no-call Landroid/content/pm/ShortcutManager;->removeAllDynamicShortcuts()V outsi
 # Video autoplay asks right before each feed post's call to PostVideo, on the flag PostVideo plays by.
 # Pure black asks after each #101010 load in the theme and its color helpers, and about each of the
 # dark scheme's #101010 backgrounds right before its constructor, leaving the light scheme alone.
+# The settings row asks once, right before the goto ending the More settings case, on its composer,
+# and showRow calls the Accounts Center row. Every other patch depends on HushThreads settings.
 threads-feature hideAds
 threads-feature hideSuggestedUsers
 threads-feature sanitizeSharingLinks
@@ -46,3 +48,4 @@ threads-feature restoreTrust
 threads-feature returnRefresh
 threads-feature disableVideoAutoplay
 threads-feature pureBlack
+threads-feature settingsRow
