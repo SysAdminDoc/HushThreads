@@ -3,7 +3,8 @@
  * https://github.com/SysAdminDoc/HushThreads
  *
  * Found by reading 449 and 448 and by a method trace of 449 on an emulator (2026-10-02), and
- * carried to 450 by reading its reshaped PostVideo and playback effect (2026-10-06).
+ * carried to 450 by reading its reshaped PostVideo and playback effect (2026-10-06). The Instagram
+ * post, trend preview and ad card calls and PostVideo's default mask were read from 450 (2026-10-10).
  */
 package app.morphe.patches.threads.feed.autoplay
 
@@ -50,16 +51,32 @@ internal const val POST_SINGLE_MEDIA = "com.instagram.barcelona.feed.post.ui.Pos
 internal const val POST_CAROUSEL = "com.instagram.barcelona.feed.post.ui.PostCarousel"
 
 /**
+ * Notes in the composables that show a video inside a post rather than as its own media: an
+ * Instagram post shown in a thread, a trend's preview and an ad card.
+ */
+internal const val INLINE_IG_VIDEO = "com.instagram.barcelona.igmedia.InlineIgVideo (InlineIgVideo.kt:"
+internal const val TREND_PREVIEW_VIDEO =
+    "com.instagram.barcelona.common.ui.mediahighlights.AutoplayingMediaHighlightVideo (TrendMediaHighlightsPreview.kt:"
+internal const val AD_CARD = "com.instagram.barcelona.sponsored.ui.AdCard (AdCard.kt:"
+
+/** Every composable whose calls to PostVideo the hook holds. */
+internal val VIDEO_CALLERS = listOf(POST_SINGLE_MEDIA, POST_CAROUSEL, INLINE_IG_VIDEO, TREND_PREVIEW_VIDEO, AD_CARD)
+
+/**
  * Videos in feed posts wait for a tap.
  *
  * A video in a post is Threads' PostVideo composable. One of its booleans says whether this is the
  * video Threads picked to play; PostVideo plays it only when that's true and the player is ready,
  * hands the answer to VideoPlaybackEffect, which starts or releases the player, and only builds the
  * player's surface for the picked video. The posts in a feed, a profile or a thread pass that flag
- * from PostSingleMedia and PostCarousel, and the hook sits on it at those calls. The full-screen
- * viewer a tap opens calls PostVideo from its own composable and isn't touched, so it plays as it
- * always has. So do the Instagram embeds, trend previews and ad cards, which reach PostVideo
- * through their own callers.
+ * from PostSingleMedia and PostCarousel, and the hook sits on it at those calls. So does an
+ * Instagram post shown in a thread. Trend previews and ad cards call PostVideo themselves too, but
+ * leave the flag to PostVideo's default, which plays: Compose's default mask has the flag's bit set,
+ * so PostVideo throws away what they pass. At those calls the hook clears that bit and hands
+ * PostVideo the extension's answer about the default instead. The full-screen viewer a tap opens
+ * calls PostVideo from its own composable, also leaving the flag to the default, and isn't touched,
+ * so it plays as it always has. PostVideo itself isn't touched either, since the viewer goes
+ * through it.
  *
  * Instagram's own autoplay check, which brosssh/morphe-patches turns off for Instagram, is still in
  * Threads but isn't on this path: a trace of 449 showed a feed video starting with it answering
@@ -80,14 +97,22 @@ val disableVideoAutoplayPatch = bytecodePatch(
         requireStatusMethod("disableVideoAutoplay")
         val effect = composable(PLAYBACK_EFFECT, "the video playback effect").also { it.requirePlaybackEffect() }
         val postVideo = composable(POST_VIDEO, "PostVideo")
-        val play = postVideo.playParameter(effect)
-        val sites = listOf(POST_SINGLE_MEDIA, POST_CAROUSEL).flatMap { note ->
-            playSites(postVideo, note, play).ifEmpty { throw PatchException("$PATCH: no call to PostVideo holds \"$note\"") }
+        val shape = postVideo.playTest(effect)
+        val default = postVideo.playDefault(shape)
+        val sites = VIDEO_CALLERS.flatMap { note ->
+            playSites(postVideo, note, shape.parameter, default).ifEmpty { throw PatchException("$PATCH: no call to PostVideo holds \"$note\"") }
         }
         sites.forEach { site ->
+            // A caller that leaves the flag to PostVideo's default gets the bit cleared and the default's value to ask about.
+            val defaulted = site.defaulted?.let {
+                """
+                    const v${it.register}, ${it.mask}
+                    const/16 v${site.register}, ${it.value}
+                """
+            }.orEmpty()
             mutableClassDefBy(site.method.definingClass).findMutableMethodOf(site.method).addInstructionsAtControlFlowLabel(
                 site.call,
-                """
+                defaulted + """
                     invoke-static/range { v${site.register} .. v${site.register} }, $VIDEO_AUTOPLAY->play(Z)Z
                     move-result v${site.register}
                 """,
@@ -97,8 +122,17 @@ val disableVideoAutoplayPatch = bytecodePatch(
     }
 }
 
-/** A feed post's call to PostVideo, and the register carrying whether its video is the one to play. */
-internal data class PlaySite(val method: Method, val call: Int, val register: Int)
+/**
+ * A call to PostVideo, the register carrying whether its video is the one to play, and what to
+ * change when the caller leaves that flag to PostVideo's default.
+ */
+internal data class PlaySite(val method: Method, val call: Int, val register: Int, val defaulted: DefaultedFlag? = null)
+
+/** The caller's default mask [register], the [mask] to hand PostVideo there without the flag's bit, and the [value] PostVideo would've played by. */
+internal data class DefaultedFlag(val register: Int, val mask: Int, val value: Int)
+
+/** PostVideo's default for its play flag: when a caller sets [bit] in its [mask] parameter, PostVideo plays by [value] instead of the flag it's handed. */
+internal data class PlayDefault(val mask: Int, val bit: Int, val value: Int)
 
 internal fun Method.holdsNote(note: String): Boolean = implementation?.instructions?.any {
     it.getReference<StringReference>()?.string?.startsWith(note) == true
@@ -181,10 +215,62 @@ internal fun Method.playTest(effect: Method): PlayTest {
 }
 
 /**
- * Every call to PostVideo from a method holding [note], with the register of its [play] argument.
- * The call must be the last thing to read that register, since the hook leaves its own answer there.
+ * Where PostVideo sets its play flag to Compose's default: the 0 or 1 it writes into the register
+ * it tests, behind an if-eqz on one bit of an int parameter, the caller's default mask. Null when
+ * PostVideo has no default for the flag, so every caller passes its own.
  */
-private fun BytecodePatchContext.playSites(postVideo: Method, note: String, play: Int): List<PlaySite> =
+internal fun Method.playDefault(shape: PlayTest): PlayDefault? {
+    val body = implementation!!.instructions.toList()
+    val tested = (body[shape.test] as OneRegisterInstruction).registerA
+    val write = reaching(shape.test, setOf(tested)).writes.filter { body[it] is NarrowLiteralInstruction }.ifEmpty { return null }
+        .singleOrPatchException("$PATCH: PostVideo's default for its play flag")
+    val address = body.runningFold(0) { at, instruction -> at + instruction.codeUnits }
+    val guard = body.getOrNull(write - 1)
+    if (guard?.opcode != Opcode.IF_EQZ || address[write - 1] + (guard as OffsetInstruction).codeOffset != address[write + 1]) {
+        throw PatchException("$PATCH: PostVideo's default for its play flag isn't behind a test of its default mask")
+    }
+    val (tests, bitRegister) = origin(write - 1, (guard as OneRegisterInstruction).registerA)
+        ?: throw PatchException("$PATCH: PostVideo tests its play flag's default on a value that differs by path")
+    val and = body.getOrNull(tests)
+    val bit = (and as? NarrowLiteralInstruction)?.narrowLiteral
+    if ((and?.opcode != Opcode.AND_INT_LIT16 && and?.opcode != Opcode.AND_INT_LIT8) || bit == null || bit.countOneBits() != 1) {
+        throw PatchException("$PATCH: PostVideo's default for its play flag isn't behind one bit of v$bitRegister")
+    }
+    val (from, mask) = origin(tests, (and as TwoRegisterInstruction).registerB)
+        ?: throw PatchException("$PATCH: PostVideo's default mask differs by path")
+    val first = implementation!!.registerCount - parameterRegisters()
+    val parameter = parameterTypes.indices.takeIf { from < 0 }
+        ?.singleOrNull { parameterTypes[it].toString() == "I" && first + registerOffset(it) == mask }
+        ?: throw PatchException("$PATCH: PostVideo's default mask isn't one of its int parameters")
+    return PlayDefault(parameter, bit, (body[write] as NarrowLiteralInstruction).narrowLiteral)
+}
+
+/**
+ * The instruction whose value [register] holds when the one at [at] runs, the same one on every
+ * path, followed back through moves: its index and the register it wrote, or -1 and the register
+ * as the method got it. Null when paths disagree.
+ */
+private fun Method.origin(at: Int, register: Int): Pair<Int, Int>? {
+    val body = implementation!!.instructions.toList()
+    var index = at
+    var held = register
+    while (true) {
+        val reaching = reaching(index, setOf(held))
+        if (reaching.writes.isEmpty()) return if (reaching.fromEntry) -1 to held else null
+        val write = reaching.writes.singleOrNull()?.takeUnless { reaching.fromEntry } ?: return null
+        if (!body[write].opcode.isMove()) return write to held
+        index = write
+        held = (body[write] as TwoRegisterInstruction).registerB
+    }
+}
+
+/**
+ * Every call to PostVideo from a method holding [note], with the register of its [play] argument.
+ * A call whose default mask, which has to be one constant, leaves the flag to PostVideo's
+ * [default] comes with that mask's register too. The call must be the last thing to read those
+ * registers, since the hook leaves its own values there.
+ */
+private fun BytecodePatchContext.playSites(postVideo: Method, note: String, play: Int, default: PlayDefault?): List<PlaySite> =
     classDefByStrings(note, StringComparisonType.STARTS_WITH).flatMap { it.methods }
         .filter { it.holdsNote(note) }
         .distinctBy { "${it.definingClass}->${it.name}${it.parameterTypes.joinToString("")}${it.returnType}" }
@@ -192,12 +278,25 @@ private fun BytecodePatchContext.playSites(postVideo: Method, note: String, play
             val body = method.implementation!!.instructions.toList()
             body.indices.filter { body[it].calls(postVideo) }.map { call ->
                 val register = body[call].argumentRegister(postVideo.registerOffset(play))!!
-                val later = method.readsAfter(call, register)
-                if (later.isNotEmpty()) throw PatchException("$PATCH: ${method.definingClass}->${method.name} reads v$register again after PostVideo, at $later")
+                val defaulted = default?.let { flag ->
+                    val maskRegister = body[call].argumentRegister(postVideo.registerOffset(flag.mask))!!
+                    val mask = method.origin(call, maskRegister)?.first?.let { body.getOrNull(it) }
+                        ?.takeIf { it.opcode in CONSTANTS }?.let { (it as NarrowLiteralInstruction).narrowLiteral }
+                        ?: throw PatchException("$PATCH: ${method.definingClass}->${method.name} hands PostVideo a default mask in v$maskRegister that isn't one constant")
+                    DefaultedFlag(maskRegister, mask and flag.bit.inv(), flag.value).takeIf { mask and flag.bit != 0 }
+                }
+                for (written in listOfNotNull(register, defaulted?.register)) {
+                    val later = method.readsAfter(call, written)
+                    if (later.isNotEmpty()) throw PatchException("$PATCH: ${method.definingClass}->${method.name} reads v$written again after PostVideo, at $later")
+                }
                 if (register > 255) throw PatchException("$PATCH: ${method.definingClass}->${method.name} passes the play flag in v$register, past move-result's reach")
-                PlaySite(method, call, register)
+                if ((defaulted?.register ?: 0) > 255) throw PatchException("$PATCH: ${method.definingClass}->${method.name} passes its default mask in v${defaulted!!.register}, past const's reach")
+                PlaySite(method, call, register, defaulted)
             }
         }
+
+/** The instructions that load an int constant. */
+private val CONSTANTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opcode.CONST_HIGH16)
 
 private fun Opcode.isMove() = this == Opcode.MOVE || this == Opcode.MOVE_FROM16 || this == Opcode.MOVE_16
 

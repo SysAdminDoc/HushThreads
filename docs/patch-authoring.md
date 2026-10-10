@@ -85,7 +85,7 @@ The script accepts APK, APKM, or XAPK inputs. Candidate ranking suggests methods
 ## Threads 450 lessons
 
 - Redex renames and moves code between releases. Use semantic relationships, not hard-coded LX/...; names by themselves.
-- The autoplay flag is the fourth boolean in the observed 450 call path. The default-argument function can write const/16 #1 into the destination register, so trace reaching writes through the call.
+- The autoplay flag is the fourth boolean in the observed 450 call path. The default-argument function can write const/16 #1 into the destination register, so trace reaching writes through the call. Trend previews and ad cards set the flag's bit in PostVideo's default mask, so PostVideo ignores the flag they pass. Their hook clears that bit and loads the default into the flag before it asks.
 - Compose can tail-merge adjacent menu rows. For Save media, hook the Copy link row path with its own arguments. Do not hook after the shared row call, or the hook can fire for both actions.
 - Compose labels stay on original instructions when code is inserted. Keep branches aimed at the original instruction and put new control flow around it.
 - The pure-black theme value can move from the lambda into a static helper. Follow the helper call before choosing a literal anchor.

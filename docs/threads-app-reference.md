@@ -112,7 +112,7 @@ The base manifest also defines `com.instagram.barcelona.permission.SYSTEM_ONLY`,
 |---|---|---|
 | Feed page merge | BarcelonaFeedCache and the page filter are central to removing sponsored and suggested units without leaving gaps. Feed units also carry their own type fields. | HideAdsPatch.kt, FeedPageFilterPatch.kt, FeedAdAnchors.kt, HideSuggestedUsersPatch.kt |
 | Feed return | BarcelonaActivity.onStart participates in return-to-feed handling. The ten-minute rule and foreground transitions need flow checks. | BlockReturnRefreshPatch.kt |
-| Video autoplay | Redex moved the play flag. It is the fourth boolean in the observed call path. The default-argument method can write a constant into the destination register. | DisableVideoAutoplayPatch.kt, ReachingWrites.kt |
+| Video autoplay | Redex moved the play flag. It is the fourth boolean in the observed call path. The default-argument method can write a constant into the destination register. Trend previews and ad cards leave the flag to PostVideo's default mask, so their hook clears the mask's bit too. | DisableVideoAutoplayPatch.kt, ReachingWrites.kt |
 | Save media menu | A Compose lambda in PostActionMenuSheet builds action rows. Redex can share Copy link's row call with another stock action. Add Save only on Copy link's own path. | SaveMediaPatch.kt, MediaBridges.kt |
 | Analytics | Relevant URL paths are grouped as PIGEON, DEFAULT, and MQTT. These names describe separate matched paths, not every telemetry route in Threads. | DisableAnalyticsPatch.kt |
 | Re-signed trust | The main app and push processes perform separate signature checks. The :fbns check reads its own signatures and can cause push-thread growth if it rejects a re-signed app. | RestoreTrustPatch.kt, ThreadsSignature.java |
