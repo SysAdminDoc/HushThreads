@@ -371,6 +371,32 @@ function Invoke-HeavyJob {
     $global:LASTEXITCODE = [int]$code
 }
 
+function Set-GitHubPackagesCredential {
+    <#
+    .SYNOPSIS
+        Fills GITHUB_ACTOR and GITHUB_TOKEN from the gh CLI when either is missing, or throws.
+    .DESCRIPTION
+        The Morphe settings plugin resolves from GitHub Packages, which needs a reader token. A
+        hook runs with git's environment, not the shell's, and a release script can start from a
+        shell that never set them, so they're usually absent and the build fails while applying
+        the plugin, long before a test runs. The pre-push gate, its advisory comparator step and
+        the release preflight all ask here, so all three say the same thing when neither the
+        variables nor a signed-in gh are there.
+    #>
+    if ($env:GITHUB_ACTOR -and $env:GITHUB_TOKEN) { return }
+    if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+        throw ('Set GITHUB_ACTOR and GITHUB_TOKEN, or install the gh CLI: the patches ' +
+            'plugin resolves from GitHub Packages and cannot be applied without them.')
+    }
+    $login = (& gh api user --jq .login 2>$null)
+    $token = (& gh auth token 2>$null)
+    if ([string]::IsNullOrWhiteSpace($login) -or [string]::IsNullOrWhiteSpace($token)) {
+        throw 'gh is not signed in, so the patches plugin cannot be resolved. Run gh auth login.'
+    }
+    $env:GITHUB_ACTOR = $login
+    $env:GITHUB_TOKEN = $token
+}
+
 function Assert-UrlReachable {
     <#
     .SYNOPSIS

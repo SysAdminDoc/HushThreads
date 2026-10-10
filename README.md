@@ -226,7 +226,7 @@ Query responses must contain readable advisory IDs, aliases and page tokens. Wit
 
 Run `scripts/audit-threads-sources.ps1` when sources change. It stamps a clean census. Releases require a census no more than 14 days old. `scripts/test-threads-sources.ps1` checks the ledger and source documentation.
 
-`scripts/install-hooks.ps1` installs the push checks. `HUSHTHREADS_WORKDIR` or `build/morphe-tools` can locate the desktop JAR. `HUSHTHREADS_BUILD_WRAPPER` optionally runs Gradle as `<wrapper> -ProjectDir <repository> -Tasks <task>...`.
+`scripts/install-hooks.ps1` installs the push checks. When a push changes code, the hook runs Gradle twice. A quick pass without the fixture tests goes first, so a slip there stops the push in minutes, and the full run follows. Before a release, `scripts/release/release.ps1 -Stage preflight -Version <version>` runs the quick checks on the clean source commit in about five minutes. `HUSHTHREADS_WORKDIR` or `build/morphe-tools` can locate the desktop JAR. `HUSHTHREADS_BUILD_WRAPPER` optionally runs Gradle as `<wrapper> -ProjectDir <repository> -Tasks <task>...`.
 
 Device scripts require `HUSHTHREADS_DEVICE_SERIAL` and an exclusive lease. Set `HUSHTHREADS_DEVICE_LEASE_DIR`, `HUSHTHREADS_DEVICE_LEASE_TOKEN` and `HUSHTHREADS_DEVICE_IDENTITY`. Release the lease after testing. Signing conflicts require the installed key. Replacement installs are refused to preserve apps and accounts.
 

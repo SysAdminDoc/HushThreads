@@ -3602,6 +3602,46 @@ try {
         Assert-Throws { & $prePushScript -Root $hookRoot -ChangedPaths @('patches/build.gradle.kts') 6> $null } `
             '*HUSHTHREADS_BUILD_WRAPPER*' 'A build wrapper that is not there was ignored rather than reported.'
 
+        # Two Gradle passes, the quick one first. Everything but the tests that read the Threads
+        # fixtures runs before them, so a slip in a quick test or a lint stops the push before the
+        # fixture scans start, and the full run comes second. The stub logs every pass it's handed
+        # and fails the quick one while a marker file exists.
+        $passLog = Join-Path $hookRoot 'gradle-passes.txt'
+        $quickFails = Join-Path $hookRoot 'quick-pass-fails.txt'
+        $passStub = Join-Path $hookRoot 'pass-wrapper.ps1'
+        Set-Content -LiteralPath $passStub -Encoding UTF8 -Value @(
+            'param([string]$ProjectDir, [string[]]$Tasks)',
+            "Add-Content -LiteralPath '$passLog' -Value (`$Tasks -join ' ')",
+            "if ((`$Tasks -contains '-x') -and (Test-Path -LiteralPath '$quickFails')) { exit 1 }",
+            'exit 0')
+        $env:HUSHTHREADS_BUILD_WRAPPER = $passStub
+        try {
+            Remove-Item -LiteralPath $passLog, $quickFails -Force -ErrorAction SilentlyContinue
+            & $prePushScript -Root $hookRoot -ChangedPaths @('extensions/threads/src/main/java/Any.java') 6> $null
+            $passes = @(Get-Content -LiteralPath $passLog -ErrorAction SilentlyContinue)
+            Assert-True ($passes.Count -eq 2) "The gate did not run Gradle twice, quick then full: $($passes -join ' | ')"
+            $quickPass = " $($passes[0]) "
+            $fullPass = " $($passes[1]) "
+            Assert-True ($quickPass -like '* :patches:test *' -and $quickPass -like '* :extensions:threads:test *' -and
+                $quickPass -like '* :extensions:threads:lint *' -and $quickPass -like '* -x :patches:fixtureTest *' -and
+                $quickPass -like '* -x :patches:verifyPatchTestSelection *') `
+                "The first pass was not the quick one without the fixture tests: $($passes[0])"
+            Assert-True ($fullPass -like '* :patches:test *' -and $fullPass -like '* :extensions:threads:lint *' -and
+                $fullPass -notlike '* -x *') `
+                "The second pass left the fixture tests or their selection check out: $($passes[1])"
+
+            # A failing quick pass stops the push there: the fixture run never starts.
+            Remove-Item -LiteralPath $passLog -Force -ErrorAction SilentlyContinue
+            Set-Content -LiteralPath $quickFails -Value 'fail' -Encoding ASCII
+            Assert-Throws { & $prePushScript -Root $hookRoot -ChangedPaths @('extensions/threads/src/main/java/Any.java') 6> $null } `
+                '*did not pass*' 'A failing quick pass did not stop the push.'
+            $passes = @(Get-Content -LiteralPath $passLog -ErrorAction SilentlyContinue)
+            Assert-True ($passes.Count -eq 1 -and " $($passes[0]) " -like '* -x :patches:fixtureTest *') `
+                "A failing quick pass still started the full run: $($passes -join ' | ')"
+        } finally {
+            Remove-Item -LiteralPath $passLog, $quickFails, $passStub -Force -ErrorAction SilentlyContinue
+        }
+
         # The gate builds what is pushed, not what happens to be in the working tree. A stub build
         # fails on any tree whose marker says broken, and records the tree it was handed.
         $gateRepo = Join-Path ([System.IO.Path]::GetTempPath()) ("hushthreads-gate-" + [guid]::NewGuid().ToString('N'))
@@ -4502,7 +4542,8 @@ function Get-UnqueuedHeavyRuns {
     $live = @(Get-LiveCommands (Get-ScriptAst $Path))
     $heavy = @($live | Where-Object {
         ($_.InvocationOperator -eq [System.Management.Automation.Language.TokenKind]::Ampersand -and
-            $_.CommandElements[0].Extent.Text -match '^\$(script:)?\w*java\w*$') -or $_.GetCommandName() -eq 'Get-MergedApk' })
+            ($_.CommandElements[0].Extent.Text -match '^\$(script:)?\w*java\w*$' -or
+                $_.CommandElements[0].Extent.Text -match 'gradlew')) -or $_.GetCommandName() -eq 'Get-MergedApk' })
     if ($heavy.Count -eq 0) { return 'no heavy run at all' }
     foreach ($call in $heavy) {
         $queued = $false
@@ -4515,8 +4556,9 @@ function Get-UnqueuedHeavyRuns {
         if (-not $queued) { ($call.Extent.Text -split "`n")[0].Trim() }
     }
 }
+# The release script's Gradle run too, when no build wrapper takes it to the queue.
 $heavyScripts = @('verify-all-patches.ps1', 'build-release-receipt.ps1', 'patch-for-device.ps1',
-    'validate-release-facts.ps1', 'verify-injected-registers.ps1', 'fingerprint-candidates.ps1')
+    'validate-release-facts.ps1', 'verify-injected-registers.ps1', 'fingerprint-candidates.ps1', 'release/release.ps1')
 foreach ($name in $heavyScripts) {
     $unqueued = @(Get-UnqueuedHeavyRuns (Join-Path $PSScriptRoot $name))
     Assert-True ($unqueued.Count -eq 0) "$name runs these outside the build queue (Invoke-HeavyJob): $($unqueued -join '; ')"
@@ -6081,6 +6123,114 @@ Assert-True ($libsReaders.Count -eq 0) `
         ($libsReaders -join ', '))
 
 Write-Host '[scripts] release bundle path contracts passed'
+
+# --- scripts/release/release.ps1 -----------------------------------------------------------------
+#
+# The release stages, run in a fixture repository whose checks are stand-ins that log what they
+# were handed: the contract suite, the facts check and the build wrapper. Nothing here builds.
+
+$releaseFlow = Join-Path ([System.IO.Path]::GetTempPath()) ('hushthreads-release-flow-' + [guid]::NewGuid().ToString('N'))
+$flowNames = @('HUSHTHREADS_BUILD_WRAPPER', 'GITHUB_ACTOR', 'GITHUB_TOKEN', 'BUILD_QUEUE_PRIORITY')
+$flowBefore = @{}
+foreach ($name in $flowNames) { $flowBefore[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
+try {
+    $flowRepo = Join-Path $releaseFlow 'repo'
+    $flowLog = Join-Path $releaseFlow 'flow.log'
+    $flowFails = Join-Path $releaseFlow 'fail.txt'
+    New-Item -ItemType Directory -Path (Join-Path $flowRepo 'scripts/release') -Force | Out-Null
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'common.ps1') -Destination (Join-Path $flowRepo 'scripts')
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'release/release.ps1') -Destination (Join-Path $flowRepo 'scripts/release')
+    Set-Content -LiteralPath (Join-Path $flowRepo 'gradle.properties') -Value 'version = 1.2.3' -Encoding ASCII
+    $logLiteral = $flowLog.Replace("'", "''")
+    $failLiteral = $flowFails.Replace("'", "''")
+    # Each stand-in fails when fail.txt names it, so a case can stop the run at any step. The
+    # wrapper answers to 'prepare' for the comparator run and to 'gradle' for the quick run.
+    Set-Content -LiteralPath (Join-Path $flowRepo 'scripts/test-script-contracts.ps1') -Encoding UTF8 -Value @(
+        'param([string]$Root)',
+        "Add-Content -LiteralPath '$logLiteral' -Value ""contracts root=`$Root""",
+        "if ((Get-Content -LiteralPath '$failLiteral' -ErrorAction SilentlyContinue) -eq 'contracts') { exit 1 }",
+        'exit 0')
+    Set-Content -LiteralPath (Join-Path $flowRepo 'scripts/validate-release-facts.ps1') -Encoding UTF8 -Value @(
+        'param([string]$Root, [switch]$SkipDescriptionTestCount, [switch]$AllowPublishedIndexLag, [switch]$SkipTestResults)',
+        "Add-Content -LiteralPath '$logLiteral' -Value (""facts skipCount=`$SkipDescriptionTestCount lag=`$AllowPublishedIndexLag "" +",
+        "    ""skipResults=`$SkipTestResults priority=`$env:BUILD_QUEUE_PRIORITY"")",
+        "if ((Get-Content -LiteralPath '$failLiteral' -ErrorAction SilentlyContinue) -eq 'facts') { exit 1 }",
+        'exit 0')
+    $flowWrapper = Join-Path $releaseFlow 'wrapper.ps1'
+    Set-Content -LiteralPath $flowWrapper -Encoding UTF8 -Value @(
+        'param([string]$ProjectDir, [string[]]$Tasks)',
+        "Add-Content -LiteralPath '$logLiteral' -Value (""gradle dir=`$ProjectDir priority=`$env:BUILD_QUEUE_PRIORITY tasks= "" + (`$Tasks -join ' ') + ' ')",
+        "`$failing = Get-Content -LiteralPath '$failLiteral' -ErrorAction SilentlyContinue",
+        "`$step = if (@(`$Tasks).Count -eq 1 -and `$Tasks[0] -eq 'prepareAdvisoryTool') { 'prepare' } else { 'gradle' }",
+        'if ($failing -eq $step) { exit 1 }',
+        'exit 0')
+    & git -C $flowRepo init --quiet
+    & git -C $flowRepo config user.name 'Release Contract'
+    & git -C $flowRepo config user.email 'release@example.invalid'
+    & git -C $flowRepo config core.autocrlf false
+    & git -C $flowRepo add -A
+    & git -C $flowRepo commit --quiet -m 'release fixture'
+    $flowScript = Join-Path $flowRepo 'scripts/release/release.ps1'
+    $env:HUSHTHREADS_BUILD_WRAPPER = $flowWrapper
+    $env:GITHUB_ACTOR = 'contract'
+    $env:GITHUB_TOKEN = 'contract'
+    Remove-Item -LiteralPath Env:\BUILD_QUEUE_PRIORITY -ErrorAction SilentlyContinue
+    function Read-FlowLog {
+        if (-not (Test-Path -LiteralPath $flowLog -PathType Leaf)) { return }
+        Get-Content -LiteralPath $flowLog
+        Remove-Item -LiteralPath $flowLog -Force
+    }
+
+    # Preflight prepares the comparator the contract suite reads, then runs that suite, one quick
+    # Gradle run and the facts check with the index allowed to lag, in that order, all at release
+    # priority, and puts the priority back after.
+    & $flowScript -Stage preflight -Version 1.2.3 6> $null 3> $null
+    $flow = @(Read-FlowLog)
+    Assert-True ($flow.Count -eq 4 -and $flow[0] -like 'gradle *' -and $flow[1] -like 'contracts root=*' -and
+        $flow[2] -like 'gradle *' -and $flow[3] -like 'facts *') `
+        "Preflight did not prepare the comparator, then run the contracts, Gradle and the facts check in order: $($flow -join ' | ')"
+    Assert-True ($flow[0].EndsWith(' priority=release tasks= prepareAdvisoryTool ')) `
+        "Preflight's first Gradle run was not the comparator alone at release priority: $($flow[0])"
+    Assert-True ([IO.Path]::GetFullPath($flow[1].Substring('contracts root='.Length)).TrimEnd('\', '/') -ieq
+        [IO.Path]::GetFullPath($flowRepo).TrimEnd('\', '/')) "Preflight ran the contract suite on another tree: $($flow[1])"
+    foreach ($wanted in @(' :patches:test -x :patches:fixtureTest -x :patches:verifyPatchTestSelection ',
+            ' :extensions:threads:testDebugUnitTest --tests *L10nTest ', ' --tests *ReleaseCheckTest ',
+            ' :extensions:shared:library:lint ', ' :extensions:threads:lint ', ' priority=release ')) {
+        Assert-True ($flow[2].Contains($wanted)) "Preflight's Gradle run lacks '$($wanted.Trim())': $($flow[2])"
+    }
+    Assert-True ($flow[2] -notmatch '(?<!-x) :patches:fixtureTest ' -and -not $flow[2].Contains(':patches:buildAndroid')) `
+        "Preflight's Gradle run reached the fixture tests or the bundle: $($flow[2])"
+    Assert-True ($flow[3] -eq 'facts skipCount=True lag=True skipResults=True priority=release') `
+        "Preflight's facts check was not the lagging-index precheck at release priority: $($flow[3])"
+    Assert-True (-not $env:BUILD_QUEUE_PRIORITY -and $env:HUSHTHREADS_BUILD_WRAPPER -eq $flowWrapper) `
+        'Preflight left its release priority behind, or lost the wrapper it was given.'
+
+    # Any step that fails stops the run there, so nothing after it reads as checked.
+    foreach ($case in @(@{ Step = 'prepare'; Seen = 1 }, @{ Step = 'contracts'; Seen = 2 }, @{ Step = 'gradle'; Seen = 3 },
+            @{ Step = 'facts'; Seen = 4 })) {
+        Set-Content -LiteralPath $flowFails -Value $case.Step -Encoding ASCII
+        Assert-Throws { & $flowScript -Stage preflight -Version 1.2.3 6> $null 3> $null } '*did not pass*' `
+            "Preflight carried on past a failing $($case.Step) step."
+        $flow = @(Read-FlowLog)
+        Assert-True ($flow.Count -eq $case.Seen) "A failing $($case.Step) step still ran what follows it: $($flow -join ' | ')"
+        Assert-True (-not $env:BUILD_QUEUE_PRIORITY) "A failing $($case.Step) step left the release priority behind."
+    }
+    Remove-Item -LiteralPath $flowFails -Force
+
+    # A version gradle.properties doesn't carry, or a tree with changes, is refused before any check.
+    Assert-Throws { & $flowScript -Stage preflight -Version 1.2.4 6> $null } '*says 1.2.3, not 1.2.4*' `
+        'Preflight checked a version the source does not carry.'
+    Set-Content -LiteralPath (Join-Path $flowRepo 'stray.txt') -Value 'stray' -Encoding ASCII
+    Assert-Throws { & $flowScript -Stage preflight -Version 1.2.3 6> $null } '*working tree has changes*' `
+        'Preflight checked a working tree that is not a commit.'
+    Remove-Item -LiteralPath (Join-Path $flowRepo 'stray.txt') -Force
+    Assert-True (@(Read-FlowLog).Count -eq 0) 'A refused preflight still ran a check.'
+} finally {
+    foreach ($name in $flowNames) { [Environment]::SetEnvironmentVariable($name, $flowBefore[$name], 'Process') }
+    Remove-Item -LiteralPath $releaseFlow -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Write-Host '[scripts] release stage contracts passed'
 
 # --- tracked files name no machine -----------------------------------------------------------
 #

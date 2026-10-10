@@ -622,18 +622,7 @@ try {
     # the pushed tree's verified comparator in each route, including isolated worktrees.
     function Prepare-GateAdvisoryTool([string]$ProjectDir) {
         if (-not (Test-Path -LiteralPath (Join-Path $ProjectDir 'scripts/MavenAdvisoryRanges.java') -PathType Leaf)) { return }
-        if (-not $env:GITHUB_ACTOR -or -not $env:GITHUB_TOKEN) {
-            if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
-                throw 'Set GITHUB_ACTOR and GITHUB_TOKEN, or install the gh CLI to resolve the build plugin.'
-            }
-            $login = (& gh api user --jq .login 2>$null)
-            $token = (& gh auth token 2>$null)
-            if ([string]::IsNullOrWhiteSpace($login) -or [string]::IsNullOrWhiteSpace($token)) {
-                throw 'gh is not signed in, so the build plugin cannot be resolved. Run gh auth login.'
-            }
-            $env:GITHUB_ACTOR = $login
-            $env:GITHUB_TOKEN = $token
-        }
+        Set-GitHubPackagesCredential
         $advisoryWrapper = $env:HUSHTHREADS_BUILD_WRAPPER
         if ($advisoryWrapper -and -not (Test-Path -LiteralPath $advisoryWrapper -PathType Leaf)) {
             throw "HUSHTHREADS_BUILD_WRAPPER names $advisoryWrapper, which is not there."
@@ -734,19 +723,7 @@ try {
         # The Morphe settings plugin resolves from GitHub Packages, which needs a reader token.
         # A hook runs with git's environment, not the shell's, so these are usually absent and
         # the build fails while applying the plugin, long before a test runs.
-        if (-not $env:GITHUB_ACTOR -or -not $env:GITHUB_TOKEN) {
-            if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
-                throw ('Set GITHUB_ACTOR and GITHUB_TOKEN, or install the gh CLI: the patches ' +
-                    'plugin resolves from GitHub Packages and cannot be applied without them.')
-            }
-            $login = (& gh api user --jq .login 2>$null)
-            $token = (& gh auth token 2>$null)
-            if ([string]::IsNullOrWhiteSpace($login) -or [string]::IsNullOrWhiteSpace($token)) {
-                throw 'gh is not signed in, so the patches plugin cannot be resolved. Run gh auth login.'
-            }
-            $env:GITHUB_ACTOR = $login
-            $env:GITHUB_TOKEN = $token
-        }
+        Set-GitHubPackagesCredential
 
         # The lint runs alongside the tests because the tests cannot see this class of defect at
         # all: they run on a desktop JVM, where every java.util method exists whatever the
@@ -760,6 +737,11 @@ try {
             ':extensions:shared:library:lint',
             ':extensions:threads:lint'
         )
+        # Everything but the tests that read the Threads fixtures runs first, so a slip in a quick
+        # test or a lint stops the push in minutes rather than after the fixture scans. The full
+        # run after it finds those tasks up to date. The selection check waits for the full run,
+        # since it reads both partitions' results and a fresh gate worktree has no fixture results.
+        $quickTasks = @($tasks) + @('-x', ':patches:fixtureTest', '-x', ':patches:verifyPatchTestSelection')
         # HUSHTHREADS_BUILD_WRAPPER names a PowerShell script that runs Gradle on this machine,
         # called as <wrapper> -ProjectDir <repository> -Tasks <task>...: a machine that shares its
         # CPU and memory between several builds points it at a governor. Unset, the Gradle
@@ -780,18 +762,20 @@ try {
                     Write-Step "building $gateCommit in $gateRoot"
                 }
                 try {
-                $global:LASTEXITCODE = 0
-                Invoke-WithoutGitEnvironment {
-                    if ($wrapper) {
-                        & $wrapper -ProjectDir $gateRoot -Tasks $tasks
-                    } else {
-                        & (Join-Path $gateRoot 'gradlew.bat') -p $gateRoot @tasks
+                foreach ($passTasks in @(, $quickTasks) + @(, $tasks)) {
+                    $global:LASTEXITCODE = 0
+                    Invoke-WithoutGitEnvironment {
+                        if ($wrapper) {
+                            & $wrapper -ProjectDir $gateRoot -Tasks $passTasks
+                        } else {
+                            & (Join-Path $gateRoot 'gradlew.bat') -p $gateRoot @passTasks
+                        }
                     }
-                }
-                if ($LASTEXITCODE -ne 0) {
-                    throw ('The runtime test build did not pass. Read the output above: it says whether a ' +
-                        'test failed, an API level above the payload floor was reached, or the build could ' +
-                        'not start. Push anyway with HUSHTHREADS_SKIP_PRE_PUSH=1.')
+                    if ($LASTEXITCODE -ne 0) {
+                        throw ('The runtime test build did not pass. Read the output above: it says whether a ' +
+                            'test failed, an API level above the payload floor was reached, or the build could ' +
+                            'not start. Push anyway with HUSHTHREADS_SKIP_PRE_PUSH=1.')
+                    }
                 }
                 } finally {
                     if ($gateRoot -eq $Root) { Assert-TreeUnchanged 'the runtime test build' }
