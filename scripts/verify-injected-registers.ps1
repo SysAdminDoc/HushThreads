@@ -138,6 +138,7 @@ function Invoke-DexDiff {
             'Open links in browser' = 'openLinksExternally'
             'Disable analytics' = 'disableAnalytics'
             'Restore screens on re-signed builds' = 'restoreTrust'
+            'Block background-return feed refresh' = 'returnRefresh'
         }
         foreach ($name in $SelectedPatches) {
             if ($name -cnotin @($catalog.patches | ForEach-Object { $_.name })) { throw "Unknown selected patch: $name" }

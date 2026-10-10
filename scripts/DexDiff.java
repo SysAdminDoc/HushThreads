@@ -198,7 +198,8 @@ public class DexDiff {
     /** The kind a first-call rule that asks only for a call leaving a class prefix is read into. */
     private static final String OUTSIDE_FIRST_CALL = "first-call-outside";
     private static final Set<String> THREADS_FEATURES = Set.of(
-            "hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust");
+            "hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
+            "returnRefresh");
 
     private static final class Contract {
         final String kind;
@@ -1946,6 +1947,18 @@ public class DexDiff {
     private static final String ENDPOINT = "Lapp/morphe/extension/hushthreads/misc/Analytics;->endpoint(Ljava/lang/String;)Ljava/lang/String;";
     private static final String SIGNERS = "Lapp/morphe/extension/hushthreads/misc/ThreadsSignature;->originalSigners(Landroid/content/pm/PackageInfo;)Ljava/util/List;";
     private static final String LOGGING_URL = "https://graph.facebook.com/logging_client_events";
+    private static final String RETURN_REFRESH = "Lapp/morphe/extension/hushthreads/feed/ReturnRefresh;->";
+    private static final String HOLD_HOT_START = RETURN_REFRESH + "holdHotStart()Z";
+    private static final String RESET_TO_FEED = RETURN_REFRESH + "resetToFeed(Z)Z";
+    private static final String WARM_START = RETURN_REFRESH + "warmStart(Z)Z";
+    private static final String CACHED_POSTS = RETURN_REFRESH + "cachedPosts(Z)Z";
+    /** The activity every Threads screen lives in, a kept name, and the strings its return checks log. */
+    private static final String BARCELONA_ACTIVITY = "Lcom/instagram/barcelona/mainactivity/BarcelonaActivity;";
+    private static final String TOO_SHORT = "background_time_too_short_for_hot_start_feed_refresh";
+    private static final String WALL_CLOCK = "hot_start_wall_clock_bg_elapsed_ms";
+    private static final String RESET_TO_MAIN_FEED = "RESET_TO_MAIN_FEED";
+    private static final String RESET_TO_HOME_FEED = "reset_to_home_feed";
+    private static final String BADGE_DECISION = "badge_decision";
 
     /** Keep duplicate definitions visible: choosing whichever dex was visited last hides corruption. */
     private static Map<String, List<Method>> featureMethods(File apk, Map<String, String> parents) throws Exception {
@@ -2017,10 +2030,12 @@ public class DexDiff {
     }
 
     private static void featureCall(List<Instruction> body, int at, String callee, int input, int output) {
+        // A hook answering a boolean hands it back with move-result; the others answer an object.
+        Opcode result = callee.endsWith(")Z") ? Opcode.MOVE_RESULT : Opcode.MOVE_RESULT_OBJECT;
         requireFeature(at >= 0 && at + 1 < body.size() && isStaticInvoke(body.get(at).getOpcode())
                 && reference(body.get(at)).equals(callee)
                 && Arrays.equals(invokeRegisters(body.get(at)), new int[]{input})
-                && body.get(at + 1).getOpcode() == Opcode.MOVE_RESULT_OBJECT
+                && body.get(at + 1).getOpcode() == result
                 && ((OneRegisterInstruction) body.get(at + 1)).getRegisterA() == output,
                 "missing or miswired " + callee + " at instruction " + at);
     }
@@ -3309,6 +3324,156 @@ public class DexDiff {
         return register;
     }
 
+    /** Where one of Threads' return checks makes its boolean answer: the stock method, the instruction the hook goes in front of, and the answer's register. */
+    private static final class ReturnSite {
+        final Method stock;
+        final int at;
+        final int register;
+
+        ReturnSite(Method stock, int at, int register) {
+            this.stock = stock;
+            this.at = at;
+            this.register = register;
+        }
+    }
+
+    /**
+     * Block background-return feed refresh: each of Threads' four return checks asks the extension
+     * once, where its answer is made. The hot-start decision asks first thing and answers null when
+     * the feed is held. The reset to main feed, the warm-start check and For you's swap hand their
+     * own answer to the extension right before it's returned, stored or joined, so every path to
+     * that answer goes through the hook.
+     */
+    private static void featureReturnRefresh(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        for (Map.Entry<String, ReturnSite> e : featureReturnSites(clean).entrySet()) {
+            ReturnSite site = e.getValue();
+            featureBody(site.stock, featureMethod(patched, featureSig(site.stock)), 0, Map.of(site.at, site.register), e.getKey());
+            featureHostCalls(patched, e.getKey(), Map.of(featureSig(site.stock), 1));
+        }
+        Method stock = featureHotStartDecision(clean);
+        Method actual = featureMethod(patched, featureSig(stock));
+        List<Instruction> body = instructions(actual);
+        int locals = stock.getImplementation().getRegisterCount() - stock.getParameterTypes().stream().mapToInt(DexDiff::slots).sum();
+        requireFeature(AccessFlags.STATIC.isSet(stock.getAccessFlags()) && body.size() > 5 && isStaticInvoke(body.get(0).getOpcode())
+                && reference(body.get(0)).equals(HOLD_HOT_START) && invokeRegisters(body.get(0)).length == 0
+                && body.get(1).getOpcode() == Opcode.MOVE_RESULT && body.get(2).getOpcode() == Opcode.IF_EQZ
+                && featureLiteral(body.get(3), 0) && body.get(4).getOpcode() == Opcode.RETURN_OBJECT,
+                "hot-start decision hook is missing");
+        int held = ((OneRegisterInstruction) body.get(1)).getRegisterA();
+        requireFeature(held < locals && ((OneRegisterInstruction) body.get(2)).getRegisterA() == held
+                && ((OneRegisterInstruction) body.get(3)).getRegisterA() == held
+                && ((OneRegisterInstruction) body.get(4)).getRegisterA() == held, "hot-start decision hook uses the wrong register");
+        Layout layout = new Layout(actual.getImplementation());
+        requireFeature(layout.addresses.get(2) + ((OffsetInstruction) body.get(2)).getCodeOffset() == layout.addresses.get(5),
+                "a return the extension doesn't hold doesn't fall through to the hot-start decision");
+        featureBody(stock, actual, 5, Map.of(), HOLD_HOT_START);
+        featureHostCalls(patched, HOLD_HOT_START, Map.of(featureSig(stock), 1));
+    }
+
+    /** The three return checks that hand the extension their own answer, by the call each one makes. */
+    private static Map<String, ReturnSite> featureReturnSites(Map<String, List<Method>> clean) {
+        Map<String, ReturnSite> sites = new LinkedHashMap<>();
+        Method warm = featureTarget(clean, m -> !m.getParameterTypes().isEmpty()
+                && m.getParameterTypes().get(m.getParameterTypes().size() - 1).toString().equals("Z")
+                && holds(m, TOO_SHORT, WALL_CLOCK), "warm-start check");
+        sites.put(WARM_START, featureWarmStore(warm));
+        Method reset = featureTarget(clean, m -> m.getDefiningClass().equals(BARCELONA_ACTIVITY) && m.getReturnType().equals("Z")
+                && holds(m, RESET_TO_MAIN_FEED, RESET_TO_HOME_FEED), "reset to main feed");
+        List<Instruction> body = instructions(reset);
+        int answer = featureOne(java.util.stream.IntStream.range(0, body.size()).boxed()
+                .filter(k -> body.get(k).getOpcode() == Opcode.RETURN).toList(), "reset to main feed's return");
+        sites.put(RESET_TO_FEED, new ReturnSite(reset, answer, ((OneRegisterInstruction) body.get(answer)).getRegisterA()));
+        // For you's swap compares the time away once more, in the warm-start check's class.
+        List<ReturnSite> swaps = new ArrayList<>();
+        for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+            if (m.getDefiningClass().equals(warm.getDefiningClass())) swaps.addAll(featureSwaps(m));
+        }
+        sites.put(CACHED_POSTS, featureOne(swaps, "For you's swap to posts fetched in the background"));
+        return sites;
+    }
+
+    /**
+     * The warm-start check's store of its refresh answer. A cmp-long of the time away with the
+     * threshold, then an if-ltz that sends a short time to the TOO_SHORT log, which runs straight
+     * from the branch's target. The const/4 1 right after the if-ltz is the answer, and the first
+     * iput-boolean of its register after that stores it into the decision Threads hands back.
+     */
+    private static ReturnSite featureWarmStore(Method warm) {
+        Layout layout = new Layout(warm.getImplementation());
+        List<Instruction> body = layout.instructions;
+        int logged = featureOne(java.util.stream.IntStream.range(0, body.size()).boxed()
+                .filter(k -> reference(body.get(k)).equals(TOO_SHORT)).toList(), "warm-start check's short log");
+        int branch = featureOne(java.util.stream.IntStream.range(1, body.size()).boxed().filter(k -> {
+            if (body.get(k).getOpcode() != Opcode.IF_LTZ || body.get(k - 1).getOpcode() != Opcode.CMP_LONG
+                    || ((OneRegisterInstruction) body.get(k)).getRegisterA() != ((OneRegisterInstruction) body.get(k - 1)).getRegisterA()) return false;
+            int target = layout.addresses.indexOf(layout.addresses.get(k) + ((OffsetInstruction) body.get(k)).getCodeOffset());
+            if (target < 0 || target > logged) return false;
+            for (int n = target; n < logged; n++) if (body.get(n) instanceof OffsetInstruction || !body.get(n).getOpcode().canContinue()) return false;
+            return true;
+        }).toList(), "warm-start threshold comparison");
+        requireFeature(featureLiteral(body.get(branch + 1), 1), "warm-start check sets no true answer past its threshold");
+        int register = ((OneRegisterInstruction) body.get(branch + 1)).getRegisterA();
+        for (int k = branch + 2; k < body.size(); k++) {
+            if (body.get(k).getOpcode() == Opcode.IPUT_BOOLEAN && ((TwoRegisterInstruction) body.get(k)).getRegisterA() == register) {
+                return new ReturnSite(warm, k, register);
+            }
+        }
+        throw new IllegalArgumentException("warm-start answer v" + register + " is never stored");
+    }
+
+    /**
+     * For you's swaps to the posts it fetched in the background in [m]: a cmp-long, a const/4 true,
+     * an if-gez on the comparison over a const/4 false into the join, and an if-eqz on that answer
+     * within six instructions of the join, which guards the swap. The hook goes in at the join.
+     */
+    private static List<ReturnSite> featureSwaps(Method m) {
+        List<ReturnSite> sites = new ArrayList<>();
+        if (m.getImplementation() == null) return sites;
+        Layout layout = new Layout(m.getImplementation());
+        List<Instruction> body = layout.instructions;
+        for (int zero = 3; zero + 1 < body.size(); zero++) {
+            int branch = zero - 1, compare = zero - 3, join = zero + 1;
+            if (!featureLiteral(body.get(zero), 0) || !featureLiteral(body.get(zero - 2), 1)
+                    || body.get(branch).getOpcode() != Opcode.IF_GEZ || body.get(compare).getOpcode() != Opcode.CMP_LONG) continue;
+            int answer = ((OneRegisterInstruction) body.get(zero)).getRegisterA();
+            if (((OneRegisterInstruction) body.get(zero - 2)).getRegisterA() != answer
+                    || ((OneRegisterInstruction) body.get(branch)).getRegisterA() != ((OneRegisterInstruction) body.get(compare)).getRegisterA()
+                    || layout.addresses.get(branch) + ((OffsetInstruction) body.get(branch)).getCodeOffset() != layout.addresses.get(join)) continue;
+            for (int k = join; k < Math.min(body.size(), join + 6); k++) {
+                if (body.get(k).getOpcode() == Opcode.IF_EQZ && ((OneRegisterInstruction) body.get(k)).getRegisterA() == answer) {
+                    sites.add(new ReturnSite(m, join, answer));
+                    break;
+                }
+            }
+        }
+        return sites;
+    }
+
+    /**
+     * The hot-start decision. It has no string of its own: BarcelonaActivity's handler of it is the
+     * one method there holding badge_decision, and onStart makes it with one static call answering
+     * the handler's parameter type, from a helper, the last surface and two times.
+     */
+    private static Method featureHotStartDecision(Map<String, List<Method>> clean) {
+        Method handler = featureTarget(clean, m -> m.getDefiningClass().equals(BARCELONA_ACTIVITY) && m.getReturnType().equals("V")
+                && m.getParameterTypes().size() == 1 && holds(m, BADGE_DECISION), "hot-start handler");
+        String decision = handler.getParameterTypes().get(0).toString();
+        Method onStart = featureTarget(clean, m -> m.getDefiningClass().equals(BARCELONA_ACTIVITY) && m.getName().equals("onStart")
+                && m.getParameterTypes().isEmpty(), "BarcelonaActivity.onStart");
+        String call = featureOne(instructions(onStart).stream().filter(i -> isStaticInvoke(i.getOpcode()))
+                .map(i -> (MethodReference) ((ReferenceInstruction) i).getReference())
+                .filter(r -> r.getReturnType().equals(decision) && r.getParameterTypes().size() == 4
+                        && r.getParameterTypes().get(0).toString().startsWith("L")
+                        && r.getParameterTypes().get(1).toString().equals("Ljava/lang/String;")
+                        && r.getParameterTypes().get(2).toString().equals("J") && r.getParameterTypes().get(3).toString().equals("J"))
+                .map(DexDiff::featureSig).distinct().toList(), "onStart's hot-start decision");
+        return featureMethod(clean, call);
+    }
+
+    private static boolean featureLiteral(Instruction i, long value) {
+        return i.getOpcode() == Opcode.CONST_4 && ((WideLiteralInstruction) i).getWideLiteral() == value;
+    }
+
     private static void featureFalseStub(Map<String, List<Method>> patched, String signature, boolean optional) {
         if (optional && !patched.containsKey(signature)) return;
         Method stub = featureMethod(patched, signature);
@@ -3360,6 +3525,15 @@ public class DexDiff {
         featurePreserveCards(featureClasses(cleanApk, owners), featureClasses(patchedApk, owners), patched, null, null);
     }
 
+    /** Left out, Block background-return feed refresh makes no call and leaves the four methods it hooks as Threads wrote them. */
+    private static void featureOmittedReturnRefresh(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        for (String callee : List.of(HOLD_HOT_START, RESET_TO_FEED, WARM_START, CACHED_POSTS)) featureHostCalls(patched, callee, Map.of());
+        Set<String> hooked = new HashSet<>();
+        for (ReturnSite site : featureReturnSites(clean).values()) hooked.add(featureSig(site.stock));
+        hooked.add(featureSig(featureHotStartDecision(clean)));
+        featurePreserveTargets(clean, patched, m -> hooked.contains(featureSig(m)));
+    }
+
     private static void featureOmitted(String feature, Map<String, List<Method>> clean, Map<String, List<Method>> patched,
             File cleanApk, File patchedApk) throws Exception {
         switch (feature) {
@@ -3394,6 +3568,7 @@ public class DexDiff {
                 featurePreserveTargets(clean, patched, m -> !callSites(instructions(m), "Landroid/content/pm/SigningInfo;->getApkContentsSigners()[Landroid/content/pm/Signature;").isEmpty()
                         && !callSites(instructions(m), "Landroid/content/pm/SigningInfo;->getSigningCertificateHistory()[Landroid/content/pm/Signature;").isEmpty());
                 break;
+            case "returnRefresh": featureOmittedReturnRefresh(clean, patched); break;
             default: throw new IllegalArgumentException("Unknown omitted feature " + feature);
         }
         if (feature.equals("hideAds") || feature.equals("hideSuggestedUsers")) {
@@ -3432,7 +3607,8 @@ public class DexDiff {
                 }
                 // Historical bundles predate these independently selectable families. Existing
                 // families still require their statuses whenever an extension payload exists.
-                if (!hasStatus && selected == null && (feature.equals("hideSuggestedUsers") || feature.equals("openLinksExternally"))) {
+                if (!hasStatus && selected == null && (feature.equals("hideSuggestedUsers") || feature.equals("openLinksExternally")
+                        || feature.equals("returnRefresh"))) {
                     if (hasPayload) {
                         if (clean == null) clean = featureMethods(cleanApk, parents);
                         featureOmitted(feature, clean, patched, cleanApk, patchedApk);
@@ -3461,6 +3637,7 @@ public class DexDiff {
                     case "openLinksExternally": featureBrowser(clean, patched); break;
                     case "disableAnalytics": featureAnalytics(clean, patched); break;
                     case "restoreTrust": featureTrust(clean, patched); break;
+                    case "returnRefresh": featureReturnRefresh(clean, patched); break;
                     default: throw new IllegalArgumentException("Unknown feature " + feature);
                 }
                 System.out.println("[diff] threads-feature " + feature + ": verified");

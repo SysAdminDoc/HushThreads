@@ -36,6 +36,7 @@ import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstructio
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction22b;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction22t;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction22x;
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction23x;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction31i;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction31t;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction35c;
@@ -710,6 +711,19 @@ public class BadDexFixture {
     private static final ImmutableMethodReference STRING_EQUALS = method("Ljava/lang/String;", "equals", "Z", OBJECT);
     private static final ImmutableMethodReference MEDIA_AD = method(FEATURE_MEDIA, "sponsored", "Z");
     private static final ImmutableMethodReference INJECTED_AD = method("Lfixture/AdFlag;", "injected", "Z", OBJECT);
+    private static final String FEATURE_RETURN = "Lapp/morphe/extension/hushthreads/feed/ReturnRefresh;";
+    private static final String FEATURE_ACTIVITY = "Lcom/instagram/barcelona/mainactivity/BarcelonaActivity;";
+    private static final String FEATURE_WARM = "Lfixture/WarmStart;";
+    private static final String FEATURE_WARM_DECISION = "Lfixture/WarmDecision;";
+    private static final String FEATURE_HOT_START = "Lfixture/HotStart;";
+    private static final String FEATURE_HOT_HELPER = "Lfixture/HotStartHelper;";
+    private static final String FEATURE_DECIDER = "Lfixture/HotStartDecider;";
+    private static final ImmutableMethodReference HOT_START_DECISION = method(FEATURE_DECIDER, "decide", FEATURE_HOT_START,
+            FEATURE_HOT_HELPER, "Ljava/lang/String;", "J", "J");
+    private static final ImmutableMethodReference HOLD_HOT_START = method(FEATURE_RETURN, "holdHotStart", "Z");
+    private static final ImmutableMethodReference RESET_TO_FEED = method(FEATURE_RETURN, "resetToFeed", "Z", "Z");
+    private static final ImmutableMethodReference WARM_START = method(FEATURE_RETURN, "warmStart", "Z", "Z");
+    private static final ImmutableMethodReference CACHED_POSTS = method(FEATURE_RETURN, "cachedPosts", "Z", "Z");
 
     /** A Pando getter: it asks for the field by its name's hash and, here, answers null. */
     private static Method pandoGetter(String owner, String name, String returns, String field) {
@@ -1410,6 +1424,93 @@ public class BadDexFixture {
         }
     }
 
+    private static int codeUnits(List<Instruction> instructions) {
+        int units = 0;
+        for (Instruction i : instructions) units += i.getCodeUnits();
+        return units;
+    }
+
+    /**
+     * Threads' four return checks, each hooked where Block background-return feed refresh hooks it
+     * on 450 when [hooked]. The warm-start check sets its answer true past the threshold, logs a
+     * short time away and jumps back, then stores the answer. For you's swap joins a true and a false
+     * over an if-gez and guards the swap on the result. The reset to main feed returns its own answer,
+     * and the hot-start decision answers null for a return with no stop time. Faults: each hook
+     * missing, the hot-start branch inverted, the reset's hook on the parameter the answer was copied
+     * from, the warm-start hook past the store, and the swap's if-gez landing past its hook.
+     */
+    private static List<ClassDef> returnRefreshClasses(boolean hooked, String fault) {
+        List<ClassDef> classes = new ArrayList<>();
+        // check(Object, boolean): v0..v5 locals, then the arguments; the answer in v1.
+        List<Instruction> warmHook = hooked && !fault.equals("warm-start-missing")
+                ? List.of(invoke(WARM_START, 1), op(Opcode.MOVE_RESULT, 1)) : List.of();
+        List<Instruction> answered = new ArrayList<>(List.of(type(Opcode.NEW_INSTANCE, 0, FEATURE_WARM_DECISION),
+                direct(method(FEATURE_WARM_DECISION, "<init>", "V"), 0)));
+        if (!fault.equals("warm-start-moved")) answered.addAll(warmHook);
+        answered.add(objectField(Opcode.IPUT_BOOLEAN, 1, 0, FEATURE_WARM_DECISION, "refresh", "Z"));
+        if (fault.equals("warm-start-moved")) answered.addAll(warmHook);
+        answered.add(op(Opcode.RETURN_OBJECT, 0));
+        List<Instruction> check = new ArrayList<>(List.of(string(0, "hot_start_wall_clock_bg_elapsed_ms"),
+                new ImmutableInstruction11n(Opcode.CONST_4, 1, 0), new ImmutableInstruction21s(Opcode.CONST_WIDE_16, 2, 0),
+                new ImmutableInstruction21s(Opcode.CONST_WIDE_16, 4, 0), new ImmutableInstruction23x(Opcode.CMP_LONG, 0, 2, 4),
+                // Past the true and the store to the short log, which jumps back to just past the true.
+                new ImmutableInstruction21t(Opcode.IF_LTZ, 0, 3 + codeUnits(answered)), new ImmutableInstruction11n(Opcode.CONST_4, 1, 1)));
+        check.addAll(answered);
+        check.add(string(0, "background_time_too_short_for_hot_start_feed_refresh"));
+        check.add(new ImmutableInstruction10t(Opcode.GOTO, -2 - codeUnits(answered)));
+        // swap(): v0..v5 locals, this in v6; the answer in v5, joined where the hook goes.
+        List<Instruction> swapHook = hooked && !fault.equals("cached-posts-missing")
+                ? List.of(invoke(CACHED_POSTS, 5), op(Opcode.MOVE_RESULT, 5)) : List.of();
+        List<Instruction> swap = new ArrayList<>(List.of(new ImmutableInstruction21s(Opcode.CONST_WIDE_16, 0, 0),
+                new ImmutableInstruction21s(Opcode.CONST_WIDE_16, 2, 0), new ImmutableInstruction23x(Opcode.CMP_LONG, 4, 0, 2),
+                new ImmutableInstruction11n(Opcode.CONST_4, 5, 1),
+                new ImmutableInstruction21t(Opcode.IF_GEZ, 4, fault.equals("cached-posts-bypass") ? 3 + codeUnits(swapHook) : 3),
+                new ImmutableInstruction11n(Opcode.CONST_4, 5, 0)));
+        swap.addAll(swapHook);
+        swap.addAll(List.of(objectField(Opcode.IGET_OBJECT, 0, 6, FEATURE_WARM, "posts", OBJECT), ifEqz(5, 4),
+                objectField(Opcode.IPUT_OBJECT, 0, 6, FEATURE_WARM, "shown", OBJECT), op(Opcode.RETURN_VOID)));
+        classes.add(featureClass(FEATURE_WARM, OBJECT, List.of(featureField(FEATURE_WARM, "posts", OBJECT), featureField(FEATURE_WARM, "shown", OBJECT)),
+                define(FEATURE_WARM, "check", FEATURE_WARM_DECISION, true, body(8, check.toArray(new Instruction[0])), OBJECT, "Z"),
+                define(FEATURE_WARM, "swap", "V", false, body(7, swap.toArray(new Instruction[0])))));
+        classes.add(featureClass(FEATURE_WARM_DECISION, OBJECT, List.of(featureField(FEATURE_WARM_DECISION, "refresh", "Z")),
+                define(FEATURE_WARM_DECISION, "<init>", "V", false, body(1, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)))));
+
+        // reset(boolean): v0 and v1 locals, this in v2, the answer copied from v3 into v1.
+        List<Instruction> reset = new ArrayList<>(List.of(string(0, "RESET_TO_MAIN_FEED"), string(0, "reset_to_home_feed"),
+                new ImmutableInstruction12x(Opcode.MOVE, 1, 3)));
+        if (hooked && !fault.equals("reset-missing")) {
+            int answer = fault.equals("reset-register") ? 3 : 1;
+            reset.add(invoke(RESET_TO_FEED, answer));
+            reset.add(op(Opcode.MOVE_RESULT, answer));
+        }
+        reset.add(op(Opcode.RETURN, 1));
+        // onStart: v0..v5 locals, this in v6. The decision takes the helper, the last surface and two times.
+        classes.add(featureClass(FEATURE_ACTIVITY, OBJECT, List.of(featureField(FEATURE_ACTIVITY, "helper", FEATURE_HOT_HELPER)),
+                define(FEATURE_ACTIVITY, "onStart", "V", false, body(7, objectField(Opcode.IGET_OBJECT, 0, 6, FEATURE_ACTIVITY, "helper", FEATURE_HOT_HELPER),
+                        string(1, "feed"), new ImmutableInstruction21s(Opcode.CONST_WIDE_16, 2, 0), new ImmutableInstruction21s(Opcode.CONST_WIDE_16, 4, 0),
+                        new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 0, 6, HOT_START_DECISION), op(Opcode.MOVE_RESULT_OBJECT, 0),
+                        virtual(method(FEATURE_ACTIVITY, "handle", "V", FEATURE_HOT_START), 6, 0), op(Opcode.RETURN_VOID))),
+                define(FEATURE_ACTIVITY, "handle", "V", false, body(3, string(0, "badge_decision"), op(Opcode.RETURN_VOID)), FEATURE_HOT_START),
+                define(FEATURE_ACTIVITY, "reset", "Z", false, body(4, reset.toArray(new Instruction[0])), "Z")));
+
+        // decide(helper, surface, stopped, now): v0..v2 locals, then the arguments; null with no stop time.
+        List<Instruction> decide = new ArrayList<>();
+        if (hooked && !fault.equals("hot-start-missing")) {
+            // Past its own two units and the null return's two, onto the decision's first instruction.
+            decide.addAll(List.of(invoke(HOLD_HOT_START), op(Opcode.MOVE_RESULT, 0),
+                    new ImmutableInstruction21t(fault.equals("hot-start-inverted") ? Opcode.IF_NEZ : Opcode.IF_EQZ, 0, 4),
+                    new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0)));
+        }
+        decide.addAll(List.of(new ImmutableInstruction21s(Opcode.CONST_WIDE_16, 0, 0), new ImmutableInstruction23x(Opcode.CMP_LONG, 2, 5, 0),
+                new ImmutableInstruction21t(Opcode.IF_GTZ, 2, 4), new ImmutableInstruction11n(Opcode.CONST_4, 2, 0), op(Opcode.RETURN_OBJECT, 2),
+                type(Opcode.NEW_INSTANCE, 2, FEATURE_HOT_START), direct(method(FEATURE_HOT_START, "<init>", "V"), 2), op(Opcode.RETURN_OBJECT, 2)));
+        classes.add(featureClass(FEATURE_DECIDER, OBJECT, List.of(), define(FEATURE_DECIDER, "decide", FEATURE_HOT_START, true,
+                body(9, decide.toArray(new Instruction[0])), FEATURE_HOT_HELPER, "Ljava/lang/String;", "J", "J")));
+        classes.add(featureClass(FEATURE_HOT_START, OBJECT, List.of(), define(FEATURE_HOT_START, "<init>", "V", false,
+                body(1, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)))));
+        return classes;
+    }
+
     /** Independent small host shapes. Every faulty build still passes all structural checks. */
     private static List<ClassDef> featureBuild(boolean patched, Set<String> selected, int mask, String fault) {
         List<ClassDef> classes = new ArrayList<>(patched ? good() : clean(cleanHost()));
@@ -1621,14 +1722,16 @@ public class BadDexFixture {
                 define(SIGNER_HOST, "read", SIGNER_RESULT, false, body(6, signers.toArray(new Instruction[0])))));
         classes.add(featureClass(SIGNER_RESULT, OBJECT, List.of(), define(SIGNER_RESULT, "<init>", "V", false,
                 body(4, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), SHORTCUT_LIST, "Z", "Z")));
+        classes.addAll(returnRefreshClasses(patched && selected.contains("returnRefresh"), fault));
         if (fault.startsWith("ambiguous-suggestion-") || fault.startsWith("proven-suggestion-")) corruptSuggestionStock(classes, fault);
         if (!patched) return classes;
 
         List<Method> flags = new ArrayList<>();
-        for (String flag : List.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust")) {
+        for (String flag : List.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
+                "returnRefresh")) {
             if ((fault.equals("status-missing") || fault.equals("historical-missing-ad-status")) && flag.equals("hideAds")) continue;
-            // The published bundles came before Open links in browser.
-            if (fault.startsWith("historical") && flag.equals("openLinksExternally")) continue;
+            // The published bundles came before Open links in browser and Block background-return feed refresh.
+            if (fault.startsWith("historical") && (flag.equals("openLinksExternally") || flag.equals("returnRefresh"))) continue;
             if ((fault.equals("suggestion-status-missing") || fault.startsWith("historical")) && flag.equals("hideSuggestedUsers")) continue;
             boolean enabled = selected.contains(flag) && !(fault.equals("status-false") && flag.equals("hideAds"));
             if (fault.equals("suggestion-status-false") && flag.equals("hideSuggestedUsers")) enabled = false;
@@ -1664,6 +1767,11 @@ public class BadDexFixture {
                 body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0)), CONTEXT, "Ljava/lang/String;")));
         classes.add(featureClass(FEATURE_TRUST, OBJECT, List.of(), define(FEATURE_TRUST, "originalSigners", SHORTCUT_LIST, true,
                 body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0)), PACKAGE_INFO)));
+        classes.add(featureClass(FEATURE_RETURN, OBJECT, List.of(),
+                define(FEATURE_RETURN, "holdHotStart", "Z", true, body(1, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0))),
+                define(FEATURE_RETURN, "resetToFeed", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z"),
+                define(FEATURE_RETURN, "warmStart", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z"),
+                define(FEATURE_RETURN, "cachedPosts", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z")));
         if (patched && (fault.equals("ad-body") || fault.equals("ad-helper-body") || fault.equals("getter-body")
                 || fault.equals("ad-helper-native") || fault.equals("getter-static"))) {
             String owner = fault.equals("ad-body") ? FEATURE_MEDIA : fault.startsWith("ad-helper-") ? "Lfixture/AdFlag;" : FEATURE_ITEM;
@@ -1768,7 +1876,8 @@ public class BadDexFixture {
         if (!out.isDirectory() && !out.mkdirs()) throw new IllegalStateException("Cannot create " + out);
 
         Map<String, List<ClassDef>> dexes = new LinkedHashMap<>();
-        Set<String> allFeatures = Set.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust");
+        Set<String> allFeatures = Set.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
+                "returnRefresh");
         dexes.put("features-clean", featureBuild(false, Set.of(), 0, ""));
         dexes.put("features-good", featureBuild(true, allFeatures, 7, ""));
         dexes.put("features-omitted", featureBuild(true, Set.of(), 0, ""));
@@ -1783,6 +1892,11 @@ public class BadDexFixture {
                 "pigeon-missing", "pigeon-replaced", "pigeon-bypass",
                 "default-missing", "mqtt-missing", "trust-missing", "trust-replaced", "trust-fallback", "status-missing", "status-false")) {
             dexes.put("features-bad-" + fault, featureBuild(true, allFeatures, 7, fault));
+        }
+        // Background-return refresh alone, so a failure can only be its own.
+        for (String fault : List.of("hot-start-missing", "hot-start-inverted", "reset-missing", "reset-register",
+                "warm-start-missing", "warm-start-moved", "cached-posts-missing", "cached-posts-bypass")) {
+            dexes.put("features-bad-" + fault, featureBuild(true, Set.of("returnRefresh"), 0, fault));
         }
         for (String fault : List.of("suggestion-stub", "suggestion-media-guard", "suggestion-type-guard", "suggestion-null-guard",
                 "suggestion-item-missing", "suggestion-media-missing", "suggestion-type-missing", "suggestion-null-missing",
@@ -1838,7 +1952,7 @@ public class BadDexFixture {
         }
         dexes.put("features-metadata-clean", metadataStock);
         dexes.put("features-metadata-good", metadataPatched);
-        for (String feature : List.of("hideAds", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust")) {
+        for (String feature : List.of("hideAds", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust", "returnRefresh")) {
             List<ClassDef> unselected = featureBuild(true, Set.of("hideSuggestedUsers", feature), 7, "");
             omitFeatureStatus(unselected, feature, false);
             dexes.put("features-bad-omitted-" + feature, unselected);
