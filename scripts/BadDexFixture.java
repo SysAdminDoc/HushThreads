@@ -724,6 +724,13 @@ public class BadDexFixture {
     private static final ImmutableMethodReference RESET_TO_FEED = method(FEATURE_RETURN, "resetToFeed", "Z", "Z");
     private static final ImmutableMethodReference WARM_START = method(FEATURE_RETURN, "warmStart", "Z", "Z");
     private static final ImmutableMethodReference CACHED_POSTS = method(FEATURE_RETURN, "cachedPosts", "Z", "Z");
+    private static final String FEATURE_AUTOPLAY = "Lapp/morphe/extension/hushthreads/feed/VideoAutoplay;";
+    private static final String FEATURE_VIDEO = "Lfixture/Video;";
+    private static final String FEATURE_POSTS = "Lfixture/FeedPost;";
+    private static final ImmutableMethodReference PLAYBACK_EFFECT = method(FEATURE_VIDEO, "effect", "V", OBJECT, "I", "Z", "Z");
+    /** PostVideo plays by its fourth boolean, as on 450. */
+    private static final ImmutableMethodReference POST_VIDEO = method(FEATURE_VIDEO, "post", "V", OBJECT, "I", "Z", "Z", "Z", "Z", "Z");
+    private static final ImmutableMethodReference HOLD_VIDEO = method(FEATURE_AUTOPLAY, "play", "Z", "Z");
 
     /** A Pando getter: it asks for the field by its name's hash and, here, answers null. */
     private static Method pandoGetter(String owner, String name, String returns, String field) {
@@ -1511,6 +1518,64 @@ public class BadDexFixture {
         return classes;
     }
 
+    /**
+     * Disable video autoplay's shapes: PostVideo, which sets its playback effect's first boolean
+     * from its own fourth, and a single post, a carousel and the viewer that call it with that flag
+     * in v6. Each feed post asks the extension about v6 just before the call when [hooked], and the
+     * carousel's branch to its call lands on the question. Faults: the carousel's hook missing, the
+     * single post's hook on the boolean before the flag, the hook moved into PostVideo itself, and
+     * the carousel's branch landing past its hook.
+     */
+    private static List<ClassDef> videoAutoplayClasses(boolean hooked, String fault) {
+        List<ClassDef> classes = new ArrayList<>();
+        // post(composer, changed, five booleans): v0..v2 locals, then the arguments; the flag in v8.
+        List<Instruction> post = new ArrayList<>();
+        if (hooked && fault.equals("autoplay-inside")) {
+            post.addAll(List.of(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 8, 1, HOLD_VIDEO), op(Opcode.MOVE_RESULT, 8)));
+        }
+        // False lands on the 0; true sets the 1 and jumps past the 0 to the effect.
+        post.addAll(List.of(string(0, "com.instagram.barcelona.feed.post.video.PostVideo (PostVideo.kt:84)"),
+                new ImmutableInstruction12x(Opcode.MOVE, 1, 8), ifEqz(1, 4), new ImmutableInstruction11n(Opcode.CONST_4, 2, 1),
+                new ImmutableInstruction10t(Opcode.GOTO, 2), new ImmutableInstruction11n(Opcode.CONST_4, 2, 0),
+                invoke(PLAYBACK_EFFECT, 3, 4, 2, 9), op(Opcode.RETURN_VOID)));
+        classes.add(featureClass(FEATURE_VIDEO, OBJECT, List.of(),
+                define(FEATURE_VIDEO, "effect", "V", true, body(5, string(0, "com.instagram.video.player.compose.VideoPlaybackEffect (VideoPlaybackEffect.kt:41)"),
+                        op(Opcode.RETURN_VOID)), OBJECT, "I", "Z", "Z"),
+                define(FEATURE_VIDEO, "post", "V", true, body(10, post.toArray(new Instruction[0])), OBJECT, "I", "Z", "Z", "Z", "Z", "Z")));
+        boolean callers = hooked && !fault.equals("autoplay-inside");
+        classes.add(featureClass(FEATURE_POSTS, OBJECT, List.of(),
+                feedPost("single", "com.instagram.barcelona.feed.post.ui.PostSingleMedia.<anonymous> (PostSingleMedia.kt:212)", false,
+                        callers ? fault.equals("autoplay-register") ? 5 : 6 : -1, false),
+                feedPost("carousel", "com.instagram.barcelona.feed.post.ui.PostCarousel.<anonymous> (PostCarousel.kt:131)", true,
+                        callers && !fault.equals("autoplay-missing") ? 6 : -1, fault.equals("autoplay-bypass")),
+                feedPost("viewer", "com.instagram.barcelona.feed.mediaviewer.ui.MediaViewerVideo (MediaViewerVideo.kt:90)", false, -1, false)));
+        return classes;
+    }
+
+    /**
+     * A composable holding [note] that calls PostVideo with its own boolean, copied into v6, as the
+     * flag, asking the extension about v[hook] just before the call (-1 for no hook). [branch] puts
+     * an if-nez on that boolean in front, aimed at the call, and [bypass] lands it past the hook.
+     */
+    private static Method feedPost(String name, String note, boolean branch, int hook, boolean bypass) {
+        List<Instruction> question = hook < 0 ? List.of()
+                : List.of(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, hook, 1, HOLD_VIDEO), op(Opcode.MOVE_RESULT, hook));
+        // PostVideo's composer, changed and five booleans in v1..v7; the arguments in v8 and v9.
+        List<Instruction> body = new ArrayList<>(List.of(string(0, note), new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 1, 8),
+                new ImmutableInstruction11n(Opcode.CONST_4, 2, 0), new ImmutableInstruction11n(Opcode.CONST_4, 3, 0),
+                new ImmutableInstruction11n(Opcode.CONST_4, 4, 1), new ImmutableInstruction11n(Opcode.CONST_4, 5, 0),
+                new ImmutableInstruction12x(Opcode.MOVE, 6, 9), new ImmutableInstruction11n(Opcode.CONST_4, 7, 1)));
+        if (branch) {
+            // Past its own two units and the 0's one, onto the question when there is one.
+            body.add(new ImmutableInstruction21t(Opcode.IF_NEZ, 9, 3 + (bypass ? codeUnits(question) : 0)));
+            body.add(new ImmutableInstruction11n(Opcode.CONST_4, 7, 0));
+        }
+        body.addAll(question);
+        body.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 1, 7, POST_VIDEO));
+        body.add(op(Opcode.RETURN_VOID));
+        return define(FEATURE_POSTS, name, "V", true, body(10, body.toArray(new Instruction[0])), OBJECT, "Z");
+    }
+
     /** Independent small host shapes. Every faulty build still passes all structural checks. */
     private static List<ClassDef> featureBuild(boolean patched, Set<String> selected, int mask, String fault) {
         List<ClassDef> classes = new ArrayList<>(patched ? good() : clean(cleanHost()));
@@ -1723,15 +1788,17 @@ public class BadDexFixture {
         classes.add(featureClass(SIGNER_RESULT, OBJECT, List.of(), define(SIGNER_RESULT, "<init>", "V", false,
                 body(4, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), SHORTCUT_LIST, "Z", "Z")));
         classes.addAll(returnRefreshClasses(patched && selected.contains("returnRefresh"), fault));
+        classes.addAll(videoAutoplayClasses(patched && selected.contains("disableVideoAutoplay"), fault));
         if (fault.startsWith("ambiguous-suggestion-") || fault.startsWith("proven-suggestion-")) corruptSuggestionStock(classes, fault);
         if (!patched) return classes;
 
         List<Method> flags = new ArrayList<>();
         for (String flag : List.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
-                "returnRefresh")) {
+                "returnRefresh", "disableVideoAutoplay")) {
             if ((fault.equals("status-missing") || fault.equals("historical-missing-ad-status")) && flag.equals("hideAds")) continue;
-            // The published bundles came before Open links in browser and Block background-return feed refresh.
-            if (fault.startsWith("historical") && (flag.equals("openLinksExternally") || flag.equals("returnRefresh"))) continue;
+            // The published bundles came before Open links in browser, Block background-return feed refresh and Disable video autoplay.
+            if (fault.startsWith("historical") && (flag.equals("openLinksExternally") || flag.equals("returnRefresh")
+                    || flag.equals("disableVideoAutoplay"))) continue;
             if ((fault.equals("suggestion-status-missing") || fault.startsWith("historical")) && flag.equals("hideSuggestedUsers")) continue;
             boolean enabled = selected.contains(flag) && !(fault.equals("status-false") && flag.equals("hideAds"));
             if (fault.equals("suggestion-status-false") && flag.equals("hideSuggestedUsers")) enabled = false;
@@ -1772,6 +1839,7 @@ public class BadDexFixture {
                 define(FEATURE_RETURN, "resetToFeed", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z"),
                 define(FEATURE_RETURN, "warmStart", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z"),
                 define(FEATURE_RETURN, "cachedPosts", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z")));
+        classes.add(featureClass(FEATURE_AUTOPLAY, OBJECT, List.of(), define(FEATURE_AUTOPLAY, "play", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z")));
         if (patched && (fault.equals("ad-body") || fault.equals("ad-helper-body") || fault.equals("getter-body")
                 || fault.equals("ad-helper-native") || fault.equals("getter-static"))) {
             String owner = fault.equals("ad-body") ? FEATURE_MEDIA : fault.startsWith("ad-helper-") ? "Lfixture/AdFlag;" : FEATURE_ITEM;
@@ -1877,7 +1945,7 @@ public class BadDexFixture {
 
         Map<String, List<ClassDef>> dexes = new LinkedHashMap<>();
         Set<String> allFeatures = Set.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
-                "returnRefresh");
+                "returnRefresh", "disableVideoAutoplay");
         dexes.put("features-clean", featureBuild(false, Set.of(), 0, ""));
         dexes.put("features-good", featureBuild(true, allFeatures, 7, ""));
         dexes.put("features-omitted", featureBuild(true, Set.of(), 0, ""));
@@ -1897,6 +1965,10 @@ public class BadDexFixture {
         for (String fault : List.of("hot-start-missing", "hot-start-inverted", "reset-missing", "reset-register",
                 "warm-start-missing", "warm-start-moved", "cached-posts-missing", "cached-posts-bypass")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("returnRefresh"), 0, fault));
+        }
+        // Disable video autoplay alone too.
+        for (String fault : List.of("autoplay-missing", "autoplay-register", "autoplay-inside", "autoplay-bypass")) {
+            dexes.put("features-bad-" + fault, featureBuild(true, Set.of("disableVideoAutoplay"), 0, fault));
         }
         for (String fault : List.of("suggestion-stub", "suggestion-media-guard", "suggestion-type-guard", "suggestion-null-guard",
                 "suggestion-item-missing", "suggestion-media-missing", "suggestion-type-missing", "suggestion-null-missing",
@@ -1952,7 +2024,8 @@ public class BadDexFixture {
         }
         dexes.put("features-metadata-clean", metadataStock);
         dexes.put("features-metadata-good", metadataPatched);
-        for (String feature : List.of("hideAds", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust", "returnRefresh")) {
+        for (String feature : List.of("hideAds", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust", "returnRefresh",
+                "disableVideoAutoplay")) {
             List<ClassDef> unselected = featureBuild(true, Set.of("hideSuggestedUsers", feature), 7, "");
             omitFeatureStatus(unselected, feature, false);
             dexes.put("features-bad-omitted-" + feature, unselected);

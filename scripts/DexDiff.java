@@ -199,7 +199,7 @@ public class DexDiff {
     private static final String OUTSIDE_FIRST_CALL = "first-call-outside";
     private static final Set<String> THREADS_FEATURES = Set.of(
             "hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
-            "returnRefresh");
+            "returnRefresh", "disableVideoAutoplay");
 
     private static final class Contract {
         final String kind;
@@ -1959,6 +1959,13 @@ public class DexDiff {
     private static final String RESET_TO_MAIN_FEED = "RESET_TO_MAIN_FEED";
     private static final String RESET_TO_HOME_FEED = "reset_to_home_feed";
     private static final String BADGE_DECISION = "badge_decision";
+    private static final String HOLD_VIDEO = "Lapp/morphe/extension/hushthreads/feed/VideoAutoplay;->play(Z)Z";
+    /** Compose's notes naming Threads' video in a post and the effect that starts its player. They name the source file, so they survive Redex. */
+    private static final String POST_VIDEO_NOTE = "com.instagram.barcelona.feed.post.video.PostVideo (PostVideo.kt:";
+    private static final String PLAYBACK_EFFECT_NOTE = "com.instagram.video.player.compose.VideoPlaybackEffect (VideoPlaybackEffect.kt:";
+    /** The notes of the feed post composables that put a video in a post: one on its own, and one in a carousel. */
+    private static final List<String> FEED_POST_NOTES = List.of("com.instagram.barcelona.feed.post.ui.PostSingleMedia",
+            "com.instagram.barcelona.feed.post.ui.PostCarousel");
 
     /** Keep duplicate definitions visible: choosing whichever dex was visited last hides corruption. */
     private static Map<String, List<Method>> featureMethods(File apk, Map<String, String> parents) throws Exception {
@@ -2364,6 +2371,34 @@ public class DexDiff {
 
         boolean parsedOnEveryPath(int definition, int use, int register) {
             return sourceOnEveryPath(definition, -1, use, register, true);
+        }
+
+        /**
+         * Whether [register] holds the boolean [parameter] arrived in at [use] on every path: as it
+         * arrived, through narrow moves, or as the 0 or 1 Compose writes when a caller leaves it out.
+         */
+        boolean booleanOnEveryPath(int use, int register, int parameter) {
+            BitSet[] before = new BitSet[layout.instructions.size()];
+            before[0] = new BitSet(method.getImplementation().getRegisterCount());
+            before[0].set(parameter);
+            Deque<Integer> work = new ArrayDeque<>(List.of(0));
+            while (!work.isEmpty()) {
+                int n = work.removeFirst();
+                Instruction i = layout.instructions.get(n);
+                BitSet input = before[n], output = (BitSet) input.clone();
+                if (i.getOpcode().setsRegister()) {
+                    int destination = ((OneRegisterInstruction) i).getRegisterA();
+                    boolean copy = i.getOpcode() == Opcode.MOVE || i.getOpcode() == Opcode.MOVE_FROM16 || i.getOpcode() == Opcode.MOVE_16;
+                    boolean literal = (i.getOpcode() == Opcode.CONST_4 || i.getOpcode() == Opcode.CONST_16 || i.getOpcode() == Opcode.CONST)
+                            && (((WideLiteralInstruction) i).getWideLiteral() == 0 || ((WideLiteralInstruction) i).getWideLiteral() == 1);
+                    output.set(destination, literal || copy && input.get(((TwoRegisterInstruction) i).getRegisterB()));
+                    if (i.getOpcode().setsWideRegister()) output.clear(destination + 1);
+                }
+                for (int next : normal.get(n)) if (mergeSource(before, next, output)) work.add(next);
+                // A throwing instruction's destination is written only along its normal edge.
+                for (int next : exceptional.get(n)) if (mergeSource(before, next, input)) work.add(next);
+            }
+            return before[use] != null && before[use].get(register);
         }
 
         boolean sourceOnEveryPath(int definition, int parameter, int use, int register, boolean allowNull) {
@@ -3474,6 +3509,107 @@ public class DexDiff {
         return i.getOpcode() == Opcode.CONST_4 && ((WideLiteralInstruction) i).getWideLiteral() == value;
     }
 
+    /** Where Disable video autoplay hooks: PostVideo, its playback effect, and each feed post method's calls to PostVideo with their play flag's register. */
+    private record VideoSites(Method postVideo, Method effect, Map<Method, Map<Integer, Integer>> calls) {}
+
+    /**
+     * Disable video autoplay: every call a feed post makes to PostVideo, from PostSingleMedia and
+     * PostCarousel, asks the extension first about the flag it hands PostVideo as whether to play,
+     * on that flag's own register, with every branch to the call landing on the hook. PostVideo and
+     * its playback effect keep their stock bodies, so the full-screen viewer and the other callers
+     * play as they always have.
+     */
+    private static void featureVideoAutoplay(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        VideoSites sites = featureVideoSites(clean);
+        for (Method stock : List.of(sites.postVideo(), sites.effect())) {
+            featureBody(stock, featureMethod(patched, featureSig(stock)), 0, Map.of(), HOLD_VIDEO);
+        }
+        Map<String, Integer> calls = new TreeMap<>();
+        for (Map.Entry<Method, Map<Integer, Integer>> e : sites.calls().entrySet()) {
+            featureBody(e.getKey(), featureMethod(patched, featureSig(e.getKey())), 0, e.getValue(), HOLD_VIDEO);
+            calls.put(featureSig(e.getKey()), e.getValue().size());
+        }
+        featureHostCalls(patched, HOLD_VIDEO, calls);
+    }
+
+    /**
+     * PostVideo and its playback effect, each the one method holding its note, and every call to
+     * PostVideo from a method holding a feed post's note, by the register its play flag goes in.
+     * Each of the two notes has to hold at least one.
+     */
+    private static VideoSites featureVideoSites(Map<String, List<Method>> clean) {
+        Method effect = featureTarget(clean, m -> holdsNote(m, PLAYBACK_EFFECT_NOTE), "video playback effect");
+        Method postVideo = featureTarget(clean, m -> holdsNote(m, POST_VIDEO_NOTE), "PostVideo");
+        requireFeature(AccessFlags.STATIC.isSet(postVideo.getAccessFlags()) && AccessFlags.STATIC.isSet(effect.getAccessFlags()),
+                "PostVideo or its playback effect isn't static");
+        int play = featurePlayFlag(postVideo, effect), offset = 0;
+        for (int p = 0; p < play; p++) offset += slots(postVideo.getParameterTypes().get(p));
+        String target = featureSig(postVideo);
+        Map<Method, Map<Integer, Integer>> calls = new LinkedHashMap<>();
+        for (String note : FEED_POST_NOTES) {
+            int found = 0;
+            for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+                if (!holdsNote(m, note)) continue;
+                List<Instruction> body = instructions(m);
+                for (int k = 0; k < body.size(); k++) {
+                    if (!isStaticInvoke(body.get(k).getOpcode()) || !reference(body.get(k)).equals(target)) continue;
+                    calls.computeIfAbsent(m, unused -> new TreeMap<>()).put(k, invokeRegisters(body.get(k))[offset]);
+                    found++;
+                }
+            }
+            requireFeature(found > 0, "no call to PostVideo holds \"" + note + "\"");
+        }
+        return new VideoSites(postVideo, effect, calls);
+    }
+
+    /**
+     * Which of PostVideo's parameters says whether its video plays: the boolean it tests last before
+     * its one call to the playback effect, on a branch whose false side writes a 0 as the effect's
+     * play argument, the effect's first boolean. The tested register has to hold that one boolean on
+     * every path. It's the fourth boolean on 450.
+     */
+    private static int featurePlayFlag(Method postVideo, Method effect) {
+        List<Instruction> body = instructions(postVideo);
+        String effectSig = featureSig(effect);
+        int call = featureOne(java.util.stream.IntStream.range(0, body.size()).boxed()
+                .filter(k -> isStaticInvoke(body.get(k).getOpcode()) && reference(body.get(k)).equals(effectSig)).toList(),
+                "PostVideo's call to the playback effect");
+        List<String> types = effect.getParameterTypes().stream().map(CharSequence::toString).toList();
+        int first = types.indexOf("Z"), offset = 0;
+        requireFeature(first >= 0, "the video playback effect takes no boolean");
+        for (int p = 0; p < first; p++) offset += slots(types.get(p));
+        int argument = invokeRegisters(body.get(call))[offset];
+        FeatureFlow flow = new FeatureFlow(postVideo);
+        for (int k = call - 1; k >= 0; k--) {
+            Opcode opcode = body.get(k).getOpcode();
+            if (opcode != Opcode.IF_EQZ && opcode != Opcode.IF_NEZ) continue;
+            int side = opcode == Opcode.IF_NEZ ? k + 1 : lands(body, k);
+            if (side <= k || side >= call || !(body.get(side) instanceof WideLiteralInstruction) || !body.get(side).getOpcode().setsRegister()
+                    || registerA(body.get(side)) != argument || ((WideLiteralInstruction) body.get(side)).getWideLiteral() != 0) continue;
+            List<Integer> held = featureBooleans(postVideo, flow, k, registerA(body.get(k)));
+            if (held.size() == 1) return held.get(0);
+        }
+        throw new IllegalArgumentException("PostVideo never tests one of its booleans before the playback effect");
+    }
+
+    /** The boolean parameters of static [method] that [register] holds at [use] on every path. */
+    private static List<Integer> featureBooleans(Method method, FeatureFlow flow, int use, int register) {
+        List<Integer> held = new ArrayList<>();
+        int at = method.getImplementation().getRegisterCount() - method.getParameterTypes().stream().mapToInt(DexDiff::slots).sum();
+        for (int p = 0; p < method.getParameterTypes().size(); p++) {
+            if (method.getParameterTypes().get(p).toString().equals("Z") && flow.booleanOnEveryPath(use, register, at)) held.add(p);
+            at += slots(method.getParameterTypes().get(p));
+        }
+        return held;
+    }
+
+    /** Whether [m] loads a string starting with [note], as Compose's source notes, which end in a line number, are matched. */
+    private static boolean holdsNote(Method m, String note) {
+        for (Instruction i : instructions(m)) if (i instanceof ReferenceInstruction && ((ReferenceInstruction) i).getReference() instanceof StringReference
+                && ((StringReference) ((ReferenceInstruction) i).getReference()).getString().startsWith(note)) return true;
+        return false;
+    }
+
     private static void featureFalseStub(Map<String, List<Method>> patched, String signature, boolean optional) {
         if (optional && !patched.containsKey(signature)) return;
         Method stub = featureMethod(patched, signature);
@@ -3534,6 +3670,15 @@ public class DexDiff {
         featurePreserveTargets(clean, patched, m -> hooked.contains(featureSig(m)));
     }
 
+    /** Left out, Disable video autoplay makes no call and leaves PostVideo, its effect and the feed posts that call it as Threads wrote them. */
+    private static void featureOmittedVideoAutoplay(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        featureHostCalls(patched, HOLD_VIDEO, Map.of());
+        VideoSites sites = featureVideoSites(clean);
+        Set<String> hooked = new HashSet<>(List.of(featureSig(sites.postVideo()), featureSig(sites.effect())));
+        for (Method caller : sites.calls().keySet()) hooked.add(featureSig(caller));
+        featurePreserveTargets(clean, patched, m -> hooked.contains(featureSig(m)));
+    }
+
     private static void featureOmitted(String feature, Map<String, List<Method>> clean, Map<String, List<Method>> patched,
             File cleanApk, File patchedApk) throws Exception {
         switch (feature) {
@@ -3569,6 +3714,7 @@ public class DexDiff {
                         && !callSites(instructions(m), "Landroid/content/pm/SigningInfo;->getSigningCertificateHistory()[Landroid/content/pm/Signature;").isEmpty());
                 break;
             case "returnRefresh": featureOmittedReturnRefresh(clean, patched); break;
+            case "disableVideoAutoplay": featureOmittedVideoAutoplay(clean, patched); break;
             default: throw new IllegalArgumentException("Unknown omitted feature " + feature);
         }
         if (feature.equals("hideAds") || feature.equals("hideSuggestedUsers")) {
@@ -3608,7 +3754,7 @@ public class DexDiff {
                 // Historical bundles predate these independently selectable families. Existing
                 // families still require their statuses whenever an extension payload exists.
                 if (!hasStatus && selected == null && (feature.equals("hideSuggestedUsers") || feature.equals("openLinksExternally")
-                        || feature.equals("returnRefresh"))) {
+                        || feature.equals("returnRefresh") || feature.equals("disableVideoAutoplay"))) {
                     if (hasPayload) {
                         if (clean == null) clean = featureMethods(cleanApk, parents);
                         featureOmitted(feature, clean, patched, cleanApk, patchedApk);
@@ -3638,6 +3784,7 @@ public class DexDiff {
                     case "disableAnalytics": featureAnalytics(clean, patched); break;
                     case "restoreTrust": featureTrust(clean, patched); break;
                     case "returnRefresh": featureReturnRefresh(clean, patched); break;
+                    case "disableVideoAutoplay": featureVideoAutoplay(clean, patched); break;
                     default: throw new IllegalArgumentException("Unknown feature " + feature);
                 }
                 System.out.println("[diff] threads-feature " + feature + ": verified");

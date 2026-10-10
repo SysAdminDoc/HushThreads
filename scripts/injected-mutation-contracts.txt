@@ -34,6 +34,7 @@ no-call Landroid/content/pm/ShortcutManager;->removeAllDynamicShortcuts()V outsi
 # original Raw-absent branch. Each typed reader is controlled by its expected JSON key's true
 # edge and preserves the original unsafe-parser JSON input. Analytics checks each address bit.
 # Background-return refresh holds each of its four calls to where Threads makes that check's answer.
+# Video autoplay asks right before each feed post's call to PostVideo, on the flag PostVideo plays by.
 threads-feature hideAds
 threads-feature hideSuggestedUsers
 threads-feature sanitizeSharingLinks
@@ -41,3 +42,4 @@ threads-feature openLinksExternally
 threads-feature disableAnalytics
 threads-feature restoreTrust
 threads-feature returnRefresh
+threads-feature disableVideoAutoplay

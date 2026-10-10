@@ -24,7 +24,7 @@
     in a host method. Each of the five ShortcutManager calls the settings patch sends to the
     extension is left in the app's code by a build of its own, which has to fail that call's
     no-call rule and no other. The contract file may hold no no-call rule without such a build,
-    and only the seven Threads feature rules with selection and corruption fixtures; a malformed
+    and only the eight Threads feature rules with selection and corruption fixtures; a malformed
     line of every kind the grammar knows is refused.
     The good build carries the joins, copies and reads ART accepts, a zero tested against
     an object among them, so a check made stricter still has to pass them. Each bad build has to
@@ -498,6 +498,7 @@ if not "%~4"=="" set "standInFamilies=%standInFamilies%,%~4"
 if not "%~5"=="" set "standInFamilies=%standInFamilies%,%~5"
 if not "%~6"=="" set "standInFamilies=%standInFamilies%,%~6"
 if not "%~7"=="" set "standInFamilies=%standInFamilies%,%~7"
+if not "%~8"=="" set "standInFamilies=%standInFamilies%,%~8"
 echo [diff] requested families: %standInFamilies%
 echo [diff] structural findings: 0
 exit /b $DexDiffExit
@@ -558,8 +559,8 @@ try {
         "The verifier did not forward independent Suggested Users selection to DexDiff.`n$($suggestions.Text)"
     $allFamilies = Invoke-VerifierWithStandIns -Name 'selected-all-families' -DexDiffExit 0 -SelectedPatches @(
         'Hide ads', 'Hide suggested users', 'Sanitize sharing links', 'Open links in browser', 'Disable analytics', 'Restore screens on re-signed builds',
-        'Block background-return feed refresh')
-    Assert-True ($allFamilies.ExitCode -eq 0 -and $allFamilies.Text -match '(?m)^\[registers\] \[diff\] requested families: hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh$') `
+        'Block background-return feed refresh', 'Disable video autoplay')
+    Assert-True ($allFamilies.ExitCode -eq 0 -and $allFamilies.Text -match '(?m)^\[registers\] \[diff\] requested families: hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh,disableVideoAutoplay$') `
         "The verifier did not forward all independently selected families to DexDiff.`n$($allFamilies.Text)"
     # Change version code raises the patched code to Int.MAX_VALUE. Selected, that code is the one
     # the patched side has to carry; not selected, or selected without the raise, the pair differs.
@@ -660,15 +661,15 @@ try {
             ("The good build's $($shortcut.Call), sent to the stand-in whose own call is inside the extension, " +
             "was not reported clean.`n$($good.Output -join "`n")")
     }
-    # Every rule must have bad builds of its own. The feature fixtures below cover seven families.
+    # Every rule must have bad builds of its own. The feature fixtures below cover eight families.
     $otherRules = @(Get-Content -LiteralPath $contracts | ForEach-Object { $_.Trim() } |
         Where-Object { $_ -and -not $_.StartsWith('#') -and $_ -notmatch '^no-call\s' })
-    Assert-True ((($otherRules | Sort-Object) -join ',') -ceq 'threads-feature disableAnalytics,threads-feature hideAds,threads-feature hideSuggestedUsers,threads-feature openLinksExternally,threads-feature restoreTrust,threads-feature returnRefresh,threads-feature sanitizeSharingLinks') `
+    Assert-True ((($otherRules | Sort-Object) -join ',') -ceq 'threads-feature disableAnalytics,threads-feature disableVideoAutoplay,threads-feature hideAds,threads-feature hideSuggestedUsers,threads-feature openLinksExternally,threads-feature restoreTrust,threads-feature returnRefresh,threads-feature sanitizeSharingLinks') `
         ("The contract file holds rules this suite builds no bad fixtures for:`n$($otherRules -join "`n")")
 
     $featureClean = New-DexApk -Name 'features-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-clean') })
     $featureCases = [ordered]@{
-        'features-good' = 'hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh'
+        'features-good' = 'hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh,disableVideoAutoplay'
         'features-omitted' = 'none'
         'features-only-hideAds' = 'hideAds'
         'features-only-hideSuggestedUsers' = 'hideSuggestedUsers'
@@ -677,13 +678,15 @@ try {
         'features-only-disableAnalytics' = 'disableAnalytics'
         'features-only-restoreTrust' = 'restoreTrust'
         'features-only-returnRefresh' = 'returnRefresh'
+        'features-only-disableVideoAutoplay' = 'disableVideoAutoplay'
     }
     foreach ($mask in 1..7) { $featureCases["features-mask-$mask"] = 'disableAnalytics' }
     foreach ($case in $featureCases.GetEnumerator()) {
         $apk = New-DexApk -Name $case.Key -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case.Key) })
         $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case.Key -Contracts $contracts -Features $case.Value
         Assert-True ($checked.ExitCode -eq 0 -and (Get-Findings $checked).Fails.Count -eq 0) ("Feature selection $($case.Key) failed. " + ($checked.Output -join [Environment]::NewLine))
-        foreach ($feature in @('hideAds', 'hideSuggestedUsers', 'sanitizeSharingLinks', 'openLinksExternally', 'disableAnalytics', 'restoreTrust', 'returnRefresh')) {
+        foreach ($feature in @('hideAds', 'hideSuggestedUsers', 'sanitizeSharingLinks', 'openLinksExternally', 'disableAnalytics', 'restoreTrust', 'returnRefresh',
+            'disableVideoAutoplay')) {
             $state = if ($feature -cin ($case.Value -split ',')) { 'verified' } else { 'omitted' }
             Assert-True (($checked.Output -join [Environment]::NewLine) -match [regex]::Escape("threads-feature ${feature}: $state")) "Feature $feature did not report $state."
         }
@@ -722,6 +725,21 @@ try {
         Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
             @($findings.Fails | Where-Object { $_ -notlike '`[diff`] FAIL: contract: returnRefresh: *' }).Count -eq 0) `
             ("$fault was not rejected solely by the background-return refresh contract. " + ($checked.Output -join [Environment]::NewLine))
+        $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
+    # One build per misplaced video autoplay hook, selected alone: the carousel's hook gone, the
+    # single post's hook on the boolean before the play flag, the hook moved into PostVideo itself,
+    # and the carousel's branch to PostVideo landing past its hook. Every FAIL has to be that rule's.
+    $autoplayFaults = @('autoplay-missing', 'autoplay-register', 'autoplay-inside', 'autoplay-bypass')
+    foreach ($fault in $autoplayFaults) {
+        $case = "features-bad-$fault"
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features 'disableVideoAutoplay'
+        $findings = Get-Findings $checked
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+            @($findings.Fails | Where-Object { $_ -notlike '`[diff`] FAIL: contract: disableVideoAutoplay: *' }).Count -eq 0) `
+            ("$fault was not rejected solely by the video autoplay contract. " + ($checked.Output -join [Environment]::NewLine))
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
@@ -828,6 +846,7 @@ try {
         'omitted-disableAnalytics' = @('disableAnalytics', 'hideSuggestedUsers')
         'omitted-restoreTrust' = @('restoreTrust', 'hideSuggestedUsers')
         'omitted-returnRefresh' = @('returnRefresh', 'hideSuggestedUsers')
+        'omitted-disableVideoAutoplay' = @('disableVideoAutoplay', 'hideSuggestedUsers')
         'omitted-suggestion-predicate' = @('hideSuggestedUsers', 'hideAds')
         'omitted-suggestion-capture' = @('hideSuggestedUsers', 'hideAds')
         'omitted-suggestion-constructor' = @('hideSuggestedUsers', 'hideAds')
@@ -861,7 +880,7 @@ try {
         $checked = Invoke-DexDiff -Clean $featureClean -Patched $historical -Allowlist $emptyAllowlist -Name "historical-$selection" -Contracts $contracts -Features $selection
         $text = $checked.Output -join [Environment]::NewLine
         Assert-True ($checked.ExitCode -eq 0 -and $text -match 'threads-feature hideSuggestedUsers: omitted' -and $text -match 'threads-feature openLinksExternally: omitted' -and
-            $text -match 'threads-feature returnRefresh: omitted') `
+            $text -match 'threads-feature returnRefresh: omitted' -and $text -match 'threads-feature disableVideoAutoplay: omitted') `
             'A historical bundle missing only the new statuses was refused.'
     }
     $legacyMissingAd = New-DexApk -Name 'features-historical-missing-ad-status' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-historical-missing-ad-status') })
@@ -880,6 +899,10 @@ try {
         -Name 'historical-selected-return' -Contracts $contracts -Features 'hideAds,sanitizeSharingLinks,disableAnalytics,restoreTrust,returnRefresh'
     Assert-True ($selectedReturn.ExitCode -ne 0 -and ($selectedReturn.Output -join [Environment]::NewLine) -match 'contract: returnRefresh:') `
         'Explicit background-return refresh selection accepted a historical bundle without its status.'
+    $selectedAutoplay = Invoke-DexDiff -Clean $featureClean -Patched $historical -Allowlist $emptyAllowlist `
+        -Name 'historical-selected-autoplay' -Contracts $contracts -Features 'hideAds,sanitizeSharingLinks,disableAnalytics,restoreTrust,disableVideoAutoplay'
+    Assert-True ($selectedAutoplay.ExitCode -ne 0 -and ($selectedAutoplay.Output -join [Environment]::NewLine) -match 'contract: disableVideoAutoplay:') `
+        'Explicit video autoplay selection accepted a historical bundle without its status.'
     Assert-True ($selectedHistorical.ExitCode -ne 0 -and ($selectedHistorical.Output -join [Environment]::NewLine) -match 'contract: hideSuggestedUsers:') `
         'Explicit suggestion selection accepted a historical bundle without the new status.'
     $exceptionClean = New-DexApk -Name 'features-exception-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-exception-clean') })
@@ -932,7 +955,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 5) good selections, $($featureFaults.Count + $returnFaults.Count + $suggestionFaults.Count + $omittedFaults.Count + 7) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 5) good selections, $($featureFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $suggestionFaults.Count + $omittedFaults.Count + 8) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'
