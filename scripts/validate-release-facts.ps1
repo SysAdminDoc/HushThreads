@@ -470,10 +470,15 @@ if ($SkipDescriptionTestCount) {
 # them: they are a fact about the release, and a push that rewrites no description has no count
 # to compare them with and no reason to have run them.
 if (-not $SkipDescriptionTestCount) {
-    $patchTestRoot = Join-Path $rootPath 'patches/build/test-results/test'
-    $patchTestFiles = @(Get-ChildItem -LiteralPath $patchTestRoot -Filter '*.xml' -File -ErrorAction SilentlyContinue)
+    # :patches:test runs in two parts, fixtureTest for the tests that read the Threads fixtures
+    # and test for the rest, each with its own results folder. Together they're one run, and
+    # every check below reads both.
+    $patchTestRoot = Join-Path $rootPath 'patches/build/test-results'
+    $patchTestFiles = @(foreach ($partition in @('test', 'fixtureTest')) {
+            Get-ChildItem -LiteralPath (Join-Path $patchTestRoot $partition) -Filter '*.xml' -File -ErrorAction SilentlyContinue
+        })
     if ($patchTestFiles.Count -eq 0) {
-        throw ("No patch test results found under $patchTestRoot. Run :patches:test with " +
+        throw ("No patch test results found under $patchTestRoot (test and fixtureTest). Run :patches:test with " +
             'HUSHTHREADS_FIXTURE_DIR set first.')
     }
     # Stale and partial runs, read the same way as the runtime results above: the trees the patch
@@ -490,7 +495,7 @@ if (-not $SkipDescriptionTestCount) {
         throw ("Patch test results are older than the sources. The newest result " +
             "$($newestPatchResult.Name) was written $($newestPatchResult.LastWriteTimeUtc.ToString('u')) but " +
             "$($newestPatchSource.FullName) changed $($newestPatchSource.LastWriteTimeUtc.ToString('u')). " +
-            'Run :patches:test --rerun.')
+            'Run :patches:fixtureTest --rerun :patches:test --rerun.')
     }
     $patchTestSourceRoot = Join-Path $rootPath 'patches/src/test'
     if (Test-Path -LiteralPath $patchTestSourceRoot) {
@@ -507,7 +512,7 @@ if (-not $SkipDescriptionTestCount) {
         if ($orphaned.Count -gt 0) {
             throw ("Patch test results include " + $orphaned.Count + " test class(es) with no source " +
                 "any more, left from a run before they were deleted or renamed: " +
-                (($orphaned | Select-Object -First 8) -join ', ') + ". Run :patches:test --rerun.")
+                (($orphaned | Select-Object -First 8) -join ', ') + ". Run :patches:fixtureTest --rerun :patches:test --rerun.")
         }
     }
     $patchTestCount = 0

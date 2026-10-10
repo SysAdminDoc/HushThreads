@@ -2685,6 +2685,28 @@ try {
         Assert-True ($LASTEXITCODE -eq 0 -or $null -eq $LASTEXITCODE) `
             'The strict release check refused test results that match the description.'
 
+        # The patch tests run in two partitions, test and fixtureTest, each with its own results
+        # folder: the count is both together, and a fixture test that skipped in its own folder is
+        # refused as one in test would be.
+        $fixtureResults = 'patches/build/test-results/fixtureTest'
+        try {
+            Write-FactsResults $patchResults 'PatchTest' ($patchQuoted - 2)
+            Write-FactsResults $fixtureResults 'PatchFixtureTest' 2
+            Invoke-StrictFacts
+            Assert-True ($LASTEXITCODE -eq 0 -or $null -eq $LASTEXITCODE) `
+                'The strict release check refused patch results split between test and fixtureTest.'
+            Write-FactsResults $fixtureResults 'PatchFixtureTest' 2 -Skipped 1
+            Assert-Throws { Invoke-StrictFacts } '*PatchFixtureTest*skipped 1 test*' `
+                'A release was checked against fixtureTest results with a skipped fixture test.'
+            Write-FactsResults $patchResults 'PatchTest' $patchQuoted
+            Write-FactsResults $fixtureResults 'PatchFixtureTest' 1
+            Assert-Throws { Invoke-StrictFacts } '*patch test count*' `
+                'The strict release check left the fixtureTest results out of the patch test count.'
+        } finally {
+            Remove-Item -LiteralPath (Join-Path $factsRoot $fixtureResults) -Recurse -Force -ErrorAction SilentlyContinue
+            Write-FactsResults $patchResults 'PatchTest' $patchQuoted
+        }
+
         # A fixture test that skipped, which Gradle reports as a pass.
         Write-FactsResults $patchResults 'PatchTest' $patchQuoted -Skipped 1
         Assert-Throws { Invoke-StrictFacts } '*skipped 1 test*' `
@@ -6006,6 +6028,32 @@ Assert-True ($gradleFile -match 'val releaseBundleName = "patches-\$\{project\.v
 Assert-True ($gradleFile -match 'commandLine\("git", "--no-optional-locks", "status", "--porcelain"\)' -and
     $gradleFile -match '(?s)val sourceDateEpoch: Long = run \{.*?if \(uncommittedChanges\?\.isEmpty\(\) != true\) return@run 0L.*?"log", "-1", "--format=%ct"') `
     'patches/build.gradle.kts stamps the bundle with the commit time without asking git whether the tree has uncommitted changes.'
+
+# The patch tests run in two partitions. fixtureTest takes the classes whose source calls Fixtures
+# or FixtureDex and declares the fixture folder's files and SHA-256 digests as inputs; test runs the
+# rest without HUSHTHREADS_FIXTURE_DIR, after fixtureTest when it's asked for by name, and
+# verifyPatchTestSelection holds both result sets to every *Test.kt. The pick holds only while
+# Fixtures.kt is the one patch test source that reads the environment, so that's checked too.
+foreach ($wired in @(
+        @{ Pattern = 'tasks\.register<Test>\("fixtureTest"\)'; What = 'registers no fixtureTest' },
+        @{ Pattern = 'Regex\("""\\b\(Fixtures\|FixtureDex\)\\\.\[A-Za-z\]"""\)'; What = 'picks fixture tests by another rule' },
+        @{ Pattern = '(?s)register<Test>\("fixtureTest"\).*?include\(fixtureTestPatterns\).*?inputs\.files\(fixtureFiles\)\.withPropertyName\("fixtures"\).*?inputs\.property\("fixtureBytes"'
+            What = 'does not give fixtureTest the fixture classes, files and digests' },
+        @{ Pattern = '(?s)\n    test \{\s*dependsOn\(fixtureTest\)\s*finalizedBy\(verifyPatchTestSelection\)\s*exclude\(fixtureTestPatterns\)\s*environment\.remove\("HUSHTHREADS_FIXTURE_DIR"\)'
+            What = 'does not run test after fixtureTest, without the fixture classes and the fixture folder' },
+        @{ Pattern = 'check\(skipped\.getValue\("fixtureTest"\)\.isEmpty\(\)\)'; What = 'lets fixture tests skip with the folder set' })) {
+    Assert-True ($gradleFile -match $wired.Pattern) "patches/build.gradle.kts $($wired.What)."
+}
+$environmentReaders = @(Get-ChildItem -LiteralPath (Join-Path $Root 'patches/src/test') -Recurse -File -Filter '*.kt' |
+    Where-Object { [System.IO.File]::ReadAllText($_.FullName) -match '\b(System\.getenv|getenv)\s*\(' } | ForEach-Object { $_.Name })
+Assert-True (($environmentReaders -join ',') -eq 'Fixtures.kt') `
+    "Patch test sources other than Fixtures.kt read the environment, which fixtureTest's pick can't see: $($environmentReaders -join ', ')"
+# FixtureParseMemoTest reads synthetic bundles through the same reader and belongs in the quick
+# half, so its source must never name the two helpers the pick looks for.
+$memoTest = [System.IO.File]::ReadAllText((Join-Path $Root 'patches/src/test/kotlin/app/morphe/FixtureParseMemoTest.kt'))
+Assert-True ($memoTest -notmatch '\b(Fixtures|FixtureDex)\.[A-Za-z]') `
+    'FixtureParseMemoTest.kt calls Fixtures or FixtureDex, which moves it into fixtureTest.'
+Write-Host '[scripts] patch test partition contracts passed'
 
 # Code only: a comment may say where the bundle used to be read from.
 $libsReaders = New-Object System.Collections.Generic.List[string]

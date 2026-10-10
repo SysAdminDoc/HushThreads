@@ -115,7 +115,7 @@ Use the toolchain and environment variables documented in [README.md](../README.
     ./gradlew.bat :extensions:threads:lintRelease :extensions:shared:library:lintRelease
     ./scripts/verify-all-patches.ps1 -Apk <Threads XAPK> -DesktopJar <Morphe desktop JAR> -WorkDir <scratch folder>
 
-Keep fixture binaries and verification output out of tracked files. The local fixture directory is ignored. When HUSHTHREADS_FIXTURE_DIR is unset, the real-build fixture tests skip, so check the test summary rather than treating a green task name as proof that the APK fixtures ran.
+Keep fixture binaries and verification output out of tracked files. The local fixture directory is ignored. When HUSHTHREADS_FIXTURE_DIR is unset, the real-build fixture tests skip, so check the test summary rather than treating a green task name as proof that the APK fixtures ran. Those tests run in their own task, `:patches:fixtureTest`, which `:patches:test` runs first. A new fixture test has to call `Fixtures` or `FixtureDex` in its own source, since that's how the task picks its classes. One that reaches them some other way lands in `:patches:test`, which runs without the fixture folder.
 
 The distributable bundle, SHA-256, and CycloneDX SBOM are written to `patches/build/release`. Tests can rebuild the intermediate jar under `patches/build/libs`, so use the release directory's bundle for verification and distribution.
 
