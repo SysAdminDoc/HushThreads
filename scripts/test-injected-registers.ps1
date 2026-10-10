@@ -794,6 +794,27 @@ try {
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
+    # One build per share-link hook that writes a register its method still reads, selected alone:
+    # the fetch's second hook taking the post's code into v2, the first link, which the fetch still
+    # stores; the holder's hook taking its post into v3, the response it casts again; and Send's
+    # recall taking the post into v3, which only the handler of the try around its return reads.
+    # Every FAIL has to be the scratch register check's, naming that register.
+    $liveFaults = [ordered]@{
+        'post-link-live' = 'post link hook at instruction * writes v2, which *'
+        'holder-link-live' = 'holder link hook at instruction * writes v3, which *'
+        'resume-recall-live' = 'resumed link hook at instruction * writes v3, which *'
+    }
+    foreach ($fault in $liveFaults.Keys) {
+        $case = "features-bad-$fault"
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features 'sanitizeSharingLinks'
+        $findings = Get-Findings $checked
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+            @($findings.Fails | Where-Object { $_ -notlike ('`[diff`] FAIL: contract: sanitizeSharingLinks: ' + $liveFaults[$fault]) }).Count -eq 0) `
+            ("$fault was not rejected solely by the share-link scratch register check. " + ($checked.Output -join [Environment]::NewLine))
+        $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
     $suggestionFaults = @('suggestion-stub', 'suggestion-media-guard', 'suggestion-type-guard', 'suggestion-null-guard',
         'suggestion-item-missing', 'suggestion-media-missing', 'suggestion-type-missing', 'suggestion-null-missing',
         'suggestion-enum', 'suggestion-slot', 'suggestion-kickstart-slot', 'suggestion-raw', 'suggestion-wire', 'suggestion-kickstart-wire',
@@ -1017,7 +1038,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $liveFaults.Count + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'

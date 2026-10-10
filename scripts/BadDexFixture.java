@@ -767,29 +767,31 @@ public class BadDexFixture {
     }
 
     /**
-     * The share-link hook after a read of the link into [link], with the post in v7 and v0/v1 free.
-     * Faults: the link register swapped for the code's, the code getter swapped for another field's,
-     * and the post check jumping past the call.
+     * The share-link hook after a read of the link into [link], with the post in [post] and the
+     * post's code going in [code] and its author's name in v1. Faults: the link register swapped for
+     * the code's, the code getter swapped for another field's, and the post check jumping past the call.
      */
-    private static List<Instruction> postLinkHook(int link, String fault) {
-        return List.of(new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), new ImmutableInstruction11n(Opcode.CONST_4, 1, 0),
-                ifEqz(7, fault.equals("post-link-bypass") ? 20 : 16),
-                virtual(fault.equals("post-link-getter") ? POST_TITLE : POST_CODE, 7), op(Opcode.MOVE_RESULT_OBJECT, 0),
-                virtual(POST_AUTHOR, 7), op(Opcode.MOVE_RESULT_OBJECT, 1),
+    private static List<Instruction> postLinkHook(int link, int post, int code, String fault) {
+        return List.of(new ImmutableInstruction11n(Opcode.CONST_4, code, 0), new ImmutableInstruction11n(Opcode.CONST_4, 1, 0),
+                ifEqz(post, fault.equals("post-link-bypass") ? 20 : 16),
+                virtual(fault.equals("post-link-getter") ? POST_TITLE : POST_CODE, post), op(Opcode.MOVE_RESULT_OBJECT, code),
+                virtual(POST_AUTHOR, post), op(Opcode.MOVE_RESULT_OBJECT, 1),
                 ifEqz(1, 6),
                 virtual(USERNAME, 1), op(Opcode.MOVE_RESULT_OBJECT, 1),
-                invoke(POST_LINKER, fault.equals("post-link-register") ? 0 : link, 1, 0), op(Opcode.MOVE_RESULT_OBJECT, link));
+                invoke(POST_LINKER, fault.equals("post-link-register") ? code : link, 1, code), op(Opcode.MOVE_RESULT_OBJECT, link));
     }
 
     /**
      * A resumed share's hook after a read into [link]: the post kept against [key] back into v7,
-     * cast to a post, then the share-link hook. Faults named [prefix] plus recall-key, recall-cast or
-     * post-link-bypass break only this copy.
+     * cast to a post, then the share-link hook. Faults named [prefix] plus recall-key, recall-cast,
+     * recall-live (the post back into v3, which the method still reads) or post-link-bypass break
+     * only this copy.
      */
     private static List<Instruction> recallHook(int key, int link, String fault, String prefix) {
+        int post = fault.equals(prefix + "recall-live") ? 3 : 7;
         List<Instruction> hook = new ArrayList<>(List.of(invoke(POST_RECALL, fault.equals(prefix + "recall-key") ? link : key),
-                op(Opcode.MOVE_RESULT_OBJECT, 7), type(Opcode.CHECK_CAST, 7, fault.equals(prefix + "recall-cast") ? FEATURE_USER : FEATURE_MEDIA)));
-        hook.addAll(postLinkHook(link, fault.equals(prefix + "post-link-bypass") ? "post-link-bypass" : ""));
+                op(Opcode.MOVE_RESULT_OBJECT, post), type(Opcode.CHECK_CAST, post, fault.equals(prefix + "recall-cast") ? FEATURE_USER : FEATURE_MEDIA)));
+        hook.addAll(postLinkHook(link, post, 0, fault.equals(prefix + "post-link-bypass") ? "post-link-bypass" : ""));
         return hook;
     }
 
@@ -1869,9 +1871,10 @@ public class BadDexFixture {
         List<Instruction> fetch = new ArrayList<>(List.of(string(0, "itas-android"),
                 new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 3, 8), type(Opcode.CHECK_CAST, 3, FEATURE_RESPONSE),
                 virtual(LINK_GETTER, 3), op(Opcode.MOVE_RESULT_OBJECT, 2)));
-        if (links && !fault.equals("post-link-missing")) fetch.addAll(postLinkHook(2, fault));
+        if (links && !fault.equals("post-link-missing")) fetch.addAll(postLinkHook(2, 7, 0, fault));
         fetch.addAll(List.of(virtual(LINK_GETTER, 3), op(Opcode.MOVE_RESULT_OBJECT, 4)));
-        if (links && !fault.equals("post-link-missing")) fetch.addAll(postLinkHook(4, fault));
+        // post-link-live: the second hook takes the post's code into v2, the first link, which the fetch still stores.
+        if (links && !fault.equals("post-link-missing")) fetch.addAll(postLinkHook(4, 7, fault.equals("post-link-live") ? 2 : 0, fault));
         fetch.addAll(List.of(type(Opcode.NEW_INSTANCE, 1, FEATURE_SHARE), direct(method(FEATURE_SHARE, "<init>", "V"), 1),
                 objectField(Opcode.IPUT_OBJECT, 4, 1, FEATURE_SHARE, "raw", "Ljava/lang/String;"),
                 objectField(Opcode.IPUT_OBJECT, 2, 1, FEATURE_SHARE, "link", "Ljava/lang/String;"),
@@ -1884,30 +1887,39 @@ public class BadDexFixture {
                 featureField(FEATURE_SHARE, "link", "Ljava/lang/String;"), featureField(FEATURE_SHARE, "post", FEATURE_MEDIA)),
                 define(FEATURE_SHARE, "<init>", "V", false, body(1, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)))));
         // Copy link: an object holding its post in one post field reads the response's link itself.
-        // v0..v7 locals, this in v8 and the response in v9; the hook takes the post into v7.
+        // v0..v7 locals, this in v8 and the response in v9; the hook takes the post into v7. The
+        // response in v3 is cast again after the read, so a hook there may not take v3.
         List<Instruction> copied = new ArrayList<>(List.of(new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 3, 9),
                 type(Opcode.CHECK_CAST, 3, FEATURE_RESPONSE), virtual(LINK_GETTER, 3), op(Opcode.MOVE_RESULT_OBJECT, 2)));
         if (links && !fault.equals("holder-link-missing")) {
-            copied.add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 7, fault.equals("holder-link-receiver") ? 9 : 8));
-            copied.add(objectField(Opcode.IGET_OBJECT, 7, 7, fault.equals("holder-link-field") ? FEATURE_SHARE : FEATURE_HOLDER, "post", FEATURE_MEDIA));
+            int media = fault.equals("holder-link-live") ? 3 : 7;
+            copied.add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, media, fault.equals("holder-link-receiver") ? 9 : 8));
+            copied.add(objectField(Opcode.IGET_OBJECT, media, media, fault.equals("holder-link-field") ? FEATURE_SHARE : FEATURE_HOLDER, "post", FEATURE_MEDIA));
             // The holder-post-link faults break only this copy of the hook, so the fetch's passes first.
-            copied.addAll(postLinkHook(2, fault.startsWith("holder-post-link-") ? fault.substring("holder-".length()) : fault));
+            copied.addAll(postLinkHook(2, media, 0, fault.startsWith("holder-post-link-") ? fault.substring("holder-".length()) : fault));
         }
+        copied.add(type(Opcode.CHECK_CAST, 3, FEATURE_RESPONSE));
         copied.add(op(Opcode.RETURN_OBJECT, 2));
         classes.add(featureClass(FEATURE_HOLDER, OBJECT, List.of(featureField(FEATURE_HOLDER, "post", FEATURE_MEDIA)),
                 define(FEATURE_HOLDER, "copied", OBJECT, false, body(10, copied.toArray(new Instruction[0])), OBJECT)));
         // Send: a static use case hands the plain fetch its post and its continuation, then reads the
         // link after resuming without the post. v0..v7 locals, the use case in v8, the post in v9 and
-        // the continuation in v10, copied into v5.
+        // the continuation in v10, copied into v5. Its return sits in a try whose handler answers the
+        // response in v3: the return can't throw, but a hook in front of it can, so the hook may
+        // not take v3 either.
         List<Instruction> send = new ArrayList<>(List.of(new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 5, 10),
                 type(Opcode.NEW_INSTANCE, 2, FEATURE_REPOSITORY)));
         if (links && !fault.equals("resume-remember-missing")) send.add(invoke(POST_KEEPER, fault.equals("resume-remember-key") ? 8 : 5, 9));
         send.addAll(List.of(virtual(PLAIN_FETCH, 2, 8, 9, 8, 5), op(Opcode.MOVE_RESULT_OBJECT, 3),
                 type(Opcode.CHECK_CAST, 3, FEATURE_RESPONSE), virtual(LINK_GETTER, 3), op(Opcode.MOVE_RESULT_OBJECT, 4)));
+        int guarded = codeUnits(send);
         if (links && !fault.equals("resume-recall-missing")) send.addAll(recallHook(5, 4, fault, "resume-"));
         send.add(op(Opcode.RETURN_OBJECT, 4));
+        int handler = codeUnits(send);
+        send.add(op(Opcode.RETURN_OBJECT, 3));
         classes.add(featureClass(FEATURE_SEND, OBJECT, List.of(), define(FEATURE_SEND, "send", OBJECT, true,
-                body(11, send.toArray(new Instruction[0])), FEATURE_SEND, FEATURE_MEDIA, OBJECT)));
+                body(11, List.of(tryBlock(guarded, handler - guarded, handler)), send.toArray(new Instruction[0])),
+                FEATURE_SEND, FEATURE_MEDIA, OBJECT)));
         // Quick sends: a coroutine body takes its post out of its own Object field and empties the
         // field before it waits, in one case of a switch. v0..v7 locals, this in v8 and the resumed
         // result in v9.
@@ -2204,6 +2216,10 @@ public class BadDexFixture {
         // And the HushThreads settings row.
         for (String fault : List.of("settings-row-missing", "settings-row-outside", "settings-row-register", "settings-row-stub", "settings-row-click")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("settingsRow"), 0, fault));
+        }
+        // And share-link hooks that write a register the method still reads after them, sanitize sharing links alone.
+        for (String fault : List.of("post-link-live", "holder-link-live", "resume-recall-live")) {
+            dexes.put("features-bad-" + fault, featureBuild(true, Set.of("sanitizeSharingLinks"), 0, fault));
         }
         for (String fault : List.of("suggestion-stub", "suggestion-media-guard", "suggestion-type-guard", "suggestion-null-guard",
                 "suggestion-item-missing", "suggestion-media-missing", "suggestion-type-missing", "suggestion-null-missing",

@@ -2344,6 +2344,8 @@ public class DexDiff {
         final Method method;
         final Layout layout;
         final List<List<Integer>> normal = new ArrayList<>(), exceptional = new ArrayList<>();
+        /** The handlers of every try each instruction sits in, whether or not it can throw: code a hook puts in front of it can. */
+        final List<List<Integer>> guarded = new ArrayList<>();
 
         FeatureFlow(Method method) {
             this.method = method;
@@ -2364,12 +2366,14 @@ public class DexDiff {
                         for (SwitchElement e : ((SwitchPayload) payload).getSwitchElements()) targets.add(address + e.getOffset());
                     } else targets.add(target);
                 }
-                if (i.getOpcode().canThrow()) for (TryBlock<? extends ExceptionHandler> t : method.getImplementation().getTryBlocks()) {
+                for (TryBlock<? extends ExceptionHandler> t : method.getImplementation().getTryBlocks()) {
                     if (address < t.getStartCodeAddress() || address >= t.getStartCodeAddress() + t.getCodeUnitCount()) continue;
                     for (ExceptionHandler h : t.getExceptionHandlers()) handlers.add(h.getHandlerCodeAddress());
                 }
+                List<Integer> caught = handlers.stream().map(indices::get).filter(java.util.Objects::nonNull).distinct().toList();
                 normal.add(targets.stream().map(indices::get).filter(java.util.Objects::nonNull).distinct().toList());
-                exceptional.add(handlers.stream().map(indices::get).filter(java.util.Objects::nonNull).distinct().toList());
+                exceptional.add(i.getOpcode().canThrow() ? caught : List.of());
+                guarded.add(caught);
             }
         }
 
@@ -2444,11 +2448,28 @@ public class DexDiff {
          * writes nothing, so its handlers see the value.
          */
         List<Integer> readsAfter(int index, int register) {
+            List<Integer> starts = new ArrayList<>(normal.get(index));
+            starts.addAll(exceptional.get(index));
+            return reads(starts, register, exceptional);
+        }
+
+        /**
+         * The instructions that can read [register] on a path from the one at [index], that one
+         * included, before something writes it again: empty when code put in front of it may
+         * write the register for itself. It's the patches' RegisterLiveness.liveInto, which the
+         * fixture tests hold each hook's scratch registers to: reads count as [readsAfter] counts
+         * them, and inside a try a handler's reads count before an instruction's own write even
+         * where it can't throw, since the code put in front of it can.
+         */
+        List<Integer> readsFrom(int index, int register) {
+            return reads(List.of(index), register, guarded);
+        }
+
+        /** The reads of [register] on a path from [starts] before a write, a handler in [handlers] seeing the value from before it. */
+        private List<Integer> reads(List<Integer> starts, int register, List<List<Integer>> handlers) {
             Set<Integer> reads = new TreeSet<>();
             BitSet seen = new BitSet();
             Deque<Integer> work = new ArrayDeque<>();
-            List<Integer> starts = new ArrayList<>(normal.get(index));
-            starts.addAll(exceptional.get(index));
             for (int next : starts) if (!seen.get(next)) { seen.set(next); work.add(next); }
             while (!work.isEmpty()) {
                 int n = work.removeFirst();
@@ -2460,7 +2481,7 @@ public class DexDiff {
                 for (int k = plainWrite ? 1 : 0; k < named.size(); k++) {
                     if (named.get(k) == register || wide && named.get(k) + 1 == register) reads.add(n);
                 }
-                List<Integer> next = new ArrayList<>(exceptional.get(n));
+                List<Integer> next = new ArrayList<>(handlers.get(n));
                 boolean writes = i.getOpcode().setsRegister() && i instanceof OneRegisterInstruction
                         && (registerA(i) == register || i.getOpcode().setsWideRegister() && registerA(i) + 1 == register);
                 if (!writes) next.addAll(normal.get(n));
@@ -3089,10 +3110,11 @@ public class DexDiff {
         }
         requireFeature(posts.size() == 1, "post link fetch stores " + posts.size() + " posts with the link");
         int post = ((TwoRegisterInstruction) body.get(posts.get(0))).getRegisterA();
+        FeatureFlow fetchFlow = new FeatureFlow(fetch);
         Map<Integer, FeatureBlock> blocks = new HashMap<>();
         for (int read : reads) {
             int value = ((OneRegisterInstruction) body.get(read + 1)).getRegisterA();
-            blocks.put(read + 2, (now, at) -> featurePostLink(clean, now, at, value, post));
+            blocks.put(read + 2, (now, at) -> featurePostLink(clean, now, at, value, post, fetchFlow, read + 2));
         }
         featureBody(fetch, featureMethod(patched, featureSig(fetch)), 0, Map.of(), POST_LINK, null, blocks);
 
@@ -3110,10 +3132,11 @@ public class DexDiff {
             int self = m.getImplementation().getRegisterCount() - m.getParameterTypes().size() - 1
                     - (int) m.getParameterTypes().stream().filter(p -> p.toString().equals("J") || p.toString().equals("D")).count();
             String held = type + "->" + postFields.get(0) + ":" + MEDIA;
+            FeatureFlow holderFlow = new FeatureFlow(m);
             Map<Integer, FeatureBlock> holderBlocks = new HashMap<>();
             for (int read : holderReads) {
                 int value = ((OneRegisterInstruction) holder.get(read + 1)).getRegisterA();
-                holderBlocks.put(read + 2, (now, at) -> featureHolderLink(clean, now, at, value, self, held));
+                holderBlocks.put(read + 2, (now, at) -> featureHolderLink(clean, now, at, value, self, held, holderFlow, read + 2));
             }
             featureBody(m, featureMethod(patched, featureSig(m)), 0, Map.of(), POST_LINK, null, holderBlocks);
             calls.put(featureSig(m), holderReads.size());
@@ -3161,9 +3184,10 @@ public class DexDiff {
                 continue;
             }
             remembers.put(featureSig(m), resumed.size());
+            FeatureFlow resumedFlow = new FeatureFlow(m);
             for (int read : stockReads) {
                 int value = registerA(stock.get(read + 1));
-                resumed.put(read + 2, (now, at) -> featureResumeLink(clean, now, at, value, key));
+                resumed.put(read + 2, (now, at) -> featureResumeLink(clean, now, at, value, key, resumedFlow, read + 2));
             }
             featureBody(m, featureMethod(patched, featureSig(m)), 0, Map.of(), POST_LINK, null, resumed);
             recalls.put(featureSig(m), stockReads.size());
@@ -3201,8 +3225,12 @@ public class DexDiff {
         return 1;
     }
 
-    /** A resumed share's hook: the post kept against [key] back out of the extension, cast to a post, then the fetch's hook with it. */
-    private static int featureResumeLink(Map<String, List<Method>> clean, List<Instruction> body, int at, int link, int key) {
+    /**
+     * A resumed share's hook in front of [stock]'s instruction [site]: the post kept against [key]
+     * back out of the extension into a free local, cast to a post, then the fetch's hook with it.
+     */
+    private static int featureResumeLink(Map<String, List<Method>> clean, List<Instruction> body, int at, int link, int key,
+            FeatureFlow stock, int site) {
         requireFeature(at + 3 <= body.size() && isStaticInvoke(body.get(at).getOpcode()) && reference(body.get(at)).equals(REMEMBERED_POST)
                 && Arrays.equals(invokeRegisters(body.get(at)), new int[]{key}) && body.get(at + 1).getOpcode() == Opcode.MOVE_RESULT_OBJECT,
                 "missing or miswired " + REMEMBERED_POST + " at instruction " + at);
@@ -3210,7 +3238,24 @@ public class DexDiff {
         requireFeature(post != key && post != link && body.get(at + 2).getOpcode() == Opcode.CHECK_CAST
                 && registerA(body.get(at + 2)) == post && reference(body.get(at + 2)).equals(MEDIA),
                 "resumed link hook doesn't cast the post it got back at " + (at + 2));
-        return 3 + featurePostLink(clean, body, at + 3, link, post);
+        featureScratch(stock, site, "resumed link hook at instruction " + at, post);
+        return 3 + featurePostLink(clean, body, at + 3, link, post, stock, site);
+    }
+
+    /**
+     * Throws naming [hook] unless each of [scratch], registers a hook in front of [stock]'s
+     * instruction [site] writes for itself, is one nothing reads from there on before writing it,
+     * a handler of a try the site sits in included. Every path out of the hook goes to the site or
+     * those handlers: featureBody holds branches to the site to the hook's first instruction and
+     * relocates each try range around it. A register still read there would be swapped for the
+     * hook's own value without a word; the method verifies all the same when the kinds agree.
+     */
+    private static void featureScratch(FeatureFlow stock, int site, String hook, int... scratch) {
+        for (int register : scratch) {
+            List<Integer> reads = stock.readsFrom(site, register);
+            requireFeature(reads.isEmpty(), hook + " writes v" + register + ", which " + featureSig(stock.method)
+                    + " reads from its instruction " + site + " on, at " + reads);
+        }
     }
 
     /** The reads of the permalink in [body]: a call to one of [getters] on [owners], and its result. */
@@ -3227,8 +3272,12 @@ public class DexDiff {
         return reads;
     }
 
-    /** A holder's hook: this into a free local, the post out of the holder's post field, then the fetch's hook with that post. */
-    private static int featureHolderLink(Map<String, List<Method>> clean, List<Instruction> body, int at, int link, int self, String post) {
+    /**
+     * A holder's hook in front of [stock]'s instruction [site]: this into a free local, the post out
+     * of the holder's post field, then the fetch's hook with that post.
+     */
+    private static int featureHolderLink(Map<String, List<Method>> clean, List<Instruction> body, int at, int link, int self, String post,
+            FeatureFlow stock, int site) {
         requireFeature(at + 2 <= body.size() && body.get(at).getOpcode() == Opcode.MOVE_OBJECT_FROM16
                 && body.get(at + 1).getOpcode() == Opcode.IGET_OBJECT, "holder link hook doesn't load its post at " + at);
         TwoRegisterInstruction copy = (TwoRegisterInstruction) body.get(at), load = (TwoRegisterInstruction) body.get(at + 1);
@@ -3236,15 +3285,18 @@ public class DexDiff {
         requireFeature(copy.getRegisterB() == self && media < self, "holder link hook reads its post through another register than this");
         requireFeature(load.getRegisterA() == media && load.getRegisterB() == media && reference(body.get(at + 1)).equals(post),
                 "holder link hook reads another field than " + post);
-        return 2 + featurePostLink(clean, body, at + 2, link, media);
+        featureScratch(stock, site, "holder link hook at instruction " + at, media);
+        return 2 + featurePostLink(clean, body, at + 2, link, media, stock, site);
     }
 
     /**
-     * The hook after one link read: null code and name, the post's code and its author's username
-     * when there is a post and an author, then the extension with the link, the name and the code,
-     * its answer replacing the link.
+     * The hook after one link read, in front of [stock]'s instruction [site]: null code and name,
+     * the post's code and its author's username when there is a post and an author, then the
+     * extension with the link, the name and the code, its answer replacing the link. The code and
+     * the name go in registers nothing reads from the site on.
      */
-    private static int featurePostLink(Map<String, List<Method>> clean, List<Instruction> body, int at, int link, int post) {
+    private static int featurePostLink(Map<String, List<Method>> clean, List<Instruction> body, int at, int link, int post,
+            FeatureFlow stock, int site) {
         Opcode[] shape = {Opcode.CONST_4, Opcode.CONST_4, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT,
                 Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT,
                 Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT};
@@ -3264,6 +3316,7 @@ public class DexDiff {
                 && readsField(clean, body.get(at + 8), USER, "Ljava/lang/String;", "username"), "post link hook reads another user field than username");
         requireFeature(reference(body.get(at + 10)).equals(POST_LINK) && Arrays.equals(invokeRegisters(body.get(at + 10)), new int[]{link, name, code})
                 && registerA(body.get(at + 11)) == link, "missing or miswired " + POST_LINK + " at instruction " + (at + 10));
+        featureScratch(stock, site, "post link hook at instruction " + at, code, name);
         return shape.length;
     }
 
