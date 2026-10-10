@@ -3411,6 +3411,14 @@ public class DexDiff {
                 && ((TwoRegisterInstruction) body.get(0)).getRegisterB() == self
                 && ((TwoRegisterInstruction) body.get(1)).getRegisterA() == 0 && ((TwoRegisterInstruction) body.get(1)).getRegisterB() == 0,
                 "signature wrapper uses the wrong PackageInfo receiver");
+        // The prefix writes v0 (the receiver copy, the PackageInfo, the result), v1 (the signers) and v2 (the false flag)
+        // before the stock body runs. Each has to be a local, below the register `this` and the parameters start at.
+        int locals = actual.getImplementation().getRegisterCount() - 1 - actual.getParameterTypes().stream().mapToInt(DexDiff::slots).sum();
+        for (int k : new int[]{0, 1, 3, 5, 6}) {
+            int written = ((OneRegisterInstruction) body.get(k)).getRegisterA();
+            requireFeature(written < locals, "signature wrapper writes v" + written + ", which is " + (written == locals ? "this" : "a parameter")
+                    + " and not one of the method's " + locals + (locals == 1 ? " local" : " locals"));
+        }
         featureCall(body, 2, SIGNERS, 0, 1);
         requireFeature(((OneRegisterInstruction) body.get(4)).getRegisterA() == 1
                 && ((OneRegisterInstruction) body.get(5)).getRegisterA() == 0 && reference(body.get(5)).equals(stock.getReturnType())

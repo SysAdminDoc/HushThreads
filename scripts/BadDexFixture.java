@@ -1989,9 +1989,11 @@ public class BadDexFixture {
         classes.add(featureClass("Lfixture/Mqtt;", OBJECT, List.of(featureField("Lfixture/Mqtt;", "endpoint", "Ljava/lang/String;")),
                 define("Lfixture/Mqtt;", "<init>", "V", false, body(4, mqtt.toArray(new Instruction[0])), "Lorg/json/JSONObject;")));
 
+        // trust-locals gives the method three registers, so `this` is v2 and the prefix writes it. Stock and patched agree on that.
+        int signerSelf = fault.equals("trust-locals") ? 2 : 5;
         List<Instruction> signers = new ArrayList<>();
         if (trust && !fault.equals("trust-missing")) {
-            signers.add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 0, 5));
+            signers.add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 0, signerSelf));
             signers.add(objectField(Opcode.IGET_OBJECT, 0, 0, SIGNER_HOST, "info", PACKAGE_INFO));
             signers.add(invoke(fault.equals("trust-replaced") ? method("Ljava/util/Collections;", "singletonList", SHORTCUT_LIST, OBJECT) : ORIGINAL_SIGNERS, 0));
             signers.add(op(Opcode.MOVE_RESULT_OBJECT, 1));
@@ -2001,11 +2003,11 @@ public class BadDexFixture {
             signers.add(direct(method(SIGNER_RESULT, "<init>", "V", SHORTCUT_LIST, "Z", "Z"), 0, 1, 2, 2));
             signers.add(op(Opcode.RETURN_OBJECT, 0));
         }
-        signers.addAll(List.of(objectField(Opcode.IGET_OBJECT, 0, 5, SIGNER_HOST, "info", PACKAGE_INFO),
+        signers.addAll(List.of(objectField(Opcode.IGET_OBJECT, 0, signerSelf, SIGNER_HOST, "info", PACKAGE_INFO),
                 objectField(Opcode.IGET_OBJECT, 1, 0, PACKAGE_INFO, "signingInfo", "Landroid/content/pm/SigningInfo;"),
                 virtual(method("Landroid/content/pm/SigningInfo;", "getApkContentsSigners", "[Landroid/content/pm/Signature;"), 1),
                 op(Opcode.MOVE_RESULT_OBJECT, 1),
-                objectField(Opcode.IGET_OBJECT, 0, 5, SIGNER_HOST, "info", PACKAGE_INFO),
+                objectField(Opcode.IGET_OBJECT, 0, signerSelf, SIGNER_HOST, "info", PACKAGE_INFO),
                 objectField(Opcode.IGET_OBJECT, 1, 0, PACKAGE_INFO, "signingInfo", "Landroid/content/pm/SigningInfo;"),
                 virtual(method("Landroid/content/pm/SigningInfo;", "getSigningCertificateHistory", "[Landroid/content/pm/Signature;"), 1),
                 op(Opcode.MOVE_RESULT_OBJECT, 1),
@@ -2014,7 +2016,7 @@ public class BadDexFixture {
                 new ImmutableInstruction11n(Opcode.CONST_4, 2, 0),
                 direct(method(SIGNER_RESULT, "<init>", "V", SHORTCUT_LIST, "Z", "Z"), 0, 1, 2, 2), op(Opcode.RETURN_OBJECT, 0)));
         classes.add(featureClass(SIGNER_HOST, OBJECT, List.of(featureField(SIGNER_HOST, "info", PACKAGE_INFO)),
-                define(SIGNER_HOST, "read", SIGNER_RESULT, false, body(6, signers.toArray(new Instruction[0])))));
+                define(SIGNER_HOST, "read", SIGNER_RESULT, false, body(signerSelf + 1, signers.toArray(new Instruction[0])))));
         classes.add(featureClass(SIGNER_RESULT, OBJECT, List.of(), define(SIGNER_RESULT, "<init>", "V", false,
                 body(4, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), SHORTCUT_LIST, "Z", "Z")));
         classes.addAll(returnRefreshClasses(patched && selected.contains("returnRefresh"), fault));
@@ -2302,6 +2304,8 @@ public class BadDexFixture {
         dexes.put("features-no-default-pigeon", featureBuild(true, Set.of("disableAnalytics"), 1, "default-coverage-missing"));
         dexes.put("features-bad-default-coverage", featureBuild(true, Set.of("disableAnalytics"), 3, "default-coverage-missing"));
         dexes.put("features-ad-discarded-clean", featureBuild(false, Set.of(), 0, "ad-discarded"));
+        dexes.put("features-trust-locals-clean", featureBuild(false, Set.of(), 0, "trust-locals"));
+        dexes.put("features-bad-trust-locals", featureBuild(true, Set.of("restoreTrust"), 0, "trust-locals"));
         dexes.put("features-exception-clean", featureExceptionBuild(false, ""));
         dexes.put("features-exception-good", featureExceptionBuild(true, ""));
         for (String fault : List.of("range", "type", "target", "order")) {

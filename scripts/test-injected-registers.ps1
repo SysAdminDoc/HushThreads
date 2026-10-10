@@ -815,6 +815,18 @@ try {
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
+    # Restore screens on re-signed builds with the prefix writing a register that isn't a local: the
+    # method has three registers, so `this` is v2, which the prefix's false flag overwrites. Stock
+    # and patched agree on the count, so only the locals rule can refuse it, and the FAIL has to be that rule's.
+    $trustLocalsClean = New-DexApk -Name 'features-trust-locals-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-trust-locals-clean') })
+    $trustLocalsApk = New-DexApk -Name 'features-bad-trust-locals' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-bad-trust-locals') })
+    $trustLocals = Invoke-DexDiff -Clean $trustLocalsClean -Patched $trustLocalsApk -Allowlist $emptyAllowlist -Name 'features-bad-trust-locals' -Contracts $contracts -Features 'restoreTrust'
+    $trustLocalsFindings = Get-Findings $trustLocals
+    Assert-True ($trustLocals.ExitCode -ne 0 -and $trustLocalsFindings.Fails.Count -gt 0 -and
+        @($trustLocalsFindings.Fails | Where-Object { $_ -notlike '`[diff`] FAIL: contract: restoreTrust: signature wrapper writes v2, which is this *' }).Count -eq 0) `
+        ("trust-locals was not rejected solely by the restoreTrust locals rule. " + ($trustLocals.Output -join [Environment]::NewLine))
+    $trustLocalsStructural = Invoke-DexDiff -Clean $trustLocalsClean -Patched $trustLocalsApk -Allowlist $emptyAllowlist -Name 'features-bad-trust-locals-structural'
+    Assert-True ($trustLocalsStructural.ExitCode -eq 0 -and (Get-Findings $trustLocalsStructural).Fails.Count -eq 0) 'trust-locals was not structurally valid.'
     $suggestionFaults = @('suggestion-stub', 'suggestion-media-guard', 'suggestion-type-guard', 'suggestion-null-guard',
         'suggestion-item-missing', 'suggestion-media-missing', 'suggestion-type-missing', 'suggestion-null-missing',
         'suggestion-enum', 'suggestion-slot', 'suggestion-kickstart-slot', 'suggestion-raw', 'suggestion-wire', 'suggestion-kickstart-wire',
@@ -1038,7 +1050,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $liveFaults.Count + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $liveFaults.Count + 1 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'
