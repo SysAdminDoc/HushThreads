@@ -12,6 +12,7 @@ import com.android.tools.smali.dexlib2.iface.MultiDexContainer;
 import com.android.tools.smali.dexlib2.iface.TryBlock;
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction;
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction;
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction;
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction;
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction;
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction;
@@ -1976,6 +1977,12 @@ public class DexDiff {
     /** The notes of the feed post composables that put a video in a post: one on its own, and one in a carousel. */
     private static final List<String> FEED_POST_NOTES = List.of("com.instagram.barcelona.feed.post.ui.PostSingleMedia",
             "com.instagram.barcelona.feed.post.ui.PostCarousel");
+    /** The notes of the composables that show a video inside a post: an Instagram post shown in a thread, a trend's preview and an ad card. */
+    private static final List<String> EMBED_NOTES = List.of("com.instagram.barcelona.igmedia.InlineIgVideo (InlineIgVideo.kt:",
+            "com.instagram.barcelona.common.ui.mediahighlights.AutoplayingMediaHighlightVideo (TrendMediaHighlightsPreview.kt:",
+            "com.instagram.barcelona.sponsored.ui.AdCard (AdCard.kt:");
+    /** The note of the full-screen viewer's video composable, which plays by PostVideo's default and has to stay as Threads wrote it. */
+    private static final String MEDIA_VIEWER_NOTE = "com.instagram.barcelona.feed.mediaviewer.ui.MediaViewerVideo";
     private static final String PURE_BLACK = "Lapp/morphe/extension/hushthreads/theme/PureBlack;->";
     private static final String PURE_ARGB = PURE_BLACK + "argb(J)J";
     private static final String PURE_COLOR = PURE_BLACK + "color(J)J";
@@ -2438,6 +2445,60 @@ public class DexDiff {
                 for (int next : exceptional.get(n)) if (mergeSource(before, next, input)) work.add(next);
             }
             return before[use] != null && before[use].get(register);
+        }
+
+        private List<List<Integer>> into, thrownInto;
+
+        /**
+         * The writes of [register] that reach the instruction at [use], -1 standing for a path from
+         * the entry that writes none. A throwing instruction writes nothing along its handler edge.
+         * It's the patches' ReachingWrites.reaching.
+         */
+        Set<Integer> reaching(int use, int register) {
+            if (into == null) {
+                into = new ArrayList<>();
+                thrownInto = new ArrayList<>();
+                for (int n = 0; n < layout.instructions.size(); n++) { into.add(new ArrayList<>()); thrownInto.add(new ArrayList<>()); }
+                for (int n = 0; n < layout.instructions.size(); n++) {
+                    for (int next : normal.get(n)) into.get(next).add(n);
+                    for (int next : exceptional.get(n)) thrownInto.get(next).add(n);
+                }
+            }
+            Set<Integer> writes = new TreeSet<>();
+            Set<List<Integer>> seen = new HashSet<>();
+            Deque<List<Integer>> work = new ArrayDeque<>();
+            java.util.function.IntConsumer before = at -> {
+                if (at == 0) writes.add(-1);
+                for (int from : into.get(at)) if (seen.add(List.of(from, 0))) work.add(List.of(from, 0));
+                for (int from : thrownInto.get(at)) if (seen.add(List.of(from, 1))) work.add(List.of(from, 1));
+            };
+            before.accept(use);
+            while (!work.isEmpty()) {
+                List<Integer> step = work.removeFirst();
+                Instruction i = layout.instructions.get(step.get(0));
+                boolean writesIt = i.getOpcode().setsRegister() && i instanceof OneRegisterInstruction
+                        && (registerA(i) == register || i.getOpcode().setsWideRegister() && registerA(i) + 1 == register);
+                if (step.get(1) == 0 && writesIt) writes.add(step.get(0)); else before.accept(step.get(0));
+            }
+            return writes;
+        }
+
+        /**
+         * The one instruction whose value [register] holds at [use] on every path, followed back
+         * through narrow moves, as {its index, the register it wrote}, or {-1, the register} for the
+         * value the method got. Null when paths disagree.
+         */
+        int[] origin(int use, int register) {
+            while (true) {
+                Set<Integer> writes = reaching(use, register);
+                if (writes.size() != 1) return null;
+                int write = writes.iterator().next();
+                if (write < 0) return new int[]{-1, register};
+                Instruction i = layout.instructions.get(write);
+                if (i.getOpcode() != Opcode.MOVE && i.getOpcode() != Opcode.MOVE_FROM16 && i.getOpcode() != Opcode.MOVE_16) return new int[]{write, register};
+                use = write;
+                register = ((TwoRegisterInstruction) i).getRegisterB();
+            }
         }
 
         /**
@@ -3638,44 +3699,105 @@ public class DexDiff {
         return i.getOpcode() == Opcode.CONST_4 && ((WideLiteralInstruction) i).getWideLiteral() == value;
     }
 
-    /** Where Disable video autoplay hooks: PostVideo, its playback effect, and each feed post method's calls to PostVideo with their play flag's register. */
-    private record VideoSites(Method postVideo, Method effect, Map<Method, Map<Integer, Integer>> calls) {}
+    /**
+     * Where Disable video autoplay hooks: PostVideo, its playback effect, its play flag, each feed
+     * post, Instagram post, trend preview and ad card method's calls to PostVideo with their play
+     * flag's register, and the viewer's methods that call PostVideo.
+     */
+    private record VideoSites(Method postVideo, Method effect, PlayFlag flag, Map<Method, Map<Integer, Integer>> calls, List<Method> viewers) {}
+
+    /** PostVideo's play flag: the [parameter] it plays by, and the [test] of the register holding it. */
+    private record PlayFlag(int parameter, int test) {}
+
+    /** PostVideo's default for its play flag: a caller that sets [bit] of its [mask] parameter gets [value] instead of the flag it hands over. */
+    private record PlayDefault(int mask, long bit, long value) {}
 
     /**
-     * Disable video autoplay: every call a feed post makes to PostVideo, from PostSingleMedia and
-     * PostCarousel, asks the extension first about the flag it hands PostVideo as whether to play,
-     * on that flag's own register, with every branch to the call landing on the hook. PostVideo and
-     * its playback effect keep their stock bodies, so the full-screen viewer and the other callers
-     * play as they always have.
+     * Disable video autoplay: every call a feed post, an Instagram post shown in a thread, a trend
+     * preview or an ad card makes to PostVideo asks the extension first about the flag it hands
+     * PostVideo as whether to play, on that flag's own register, with every branch to the call
+     * landing on the hook. A call whose default mask, one constant, leaves the flag to PostVideo's
+     * default, as the trend preview and the ad card do on 450, would have PostVideo ignore that
+     * register, so it first gets the mask without the flag's bit and the default's value in the
+     * flag's register, and nothing may read either after the call. PostVideo, its playback effect
+     * and the full-screen viewer keep their stock bodies, so the viewer plays as it always has.
      */
     private static void featureVideoAutoplay(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
         VideoSites sites = featureVideoSites(clean);
-        for (Method stock : List.of(sites.postVideo(), sites.effect())) {
-            featureBody(stock, featureMethod(patched, featureSig(stock)), 0, Map.of(), HOLD_VIDEO);
-        }
+        List<Method> stock = new ArrayList<>(List.of(sites.postVideo(), sites.effect()));
+        stock.addAll(sites.viewers());
+        for (Method m : stock) featureBody(m, featureMethod(patched, featureSig(m)), 0, Map.of(), HOLD_VIDEO);
+        PlayDefault fallback = featurePlayDefault(sites.postVideo(), sites.flag());
+        int maskOffset = 0;
+        if (fallback != null) for (int p = 0; p < fallback.mask(); p++) maskOffset += slots(sites.postVideo().getParameterTypes().get(p));
         Map<String, Integer> calls = new TreeMap<>();
         for (Map.Entry<Method, Map<Integer, Integer>> e : sites.calls().entrySet()) {
-            featureBody(e.getKey(), featureMethod(patched, featureSig(e.getKey())), 0, e.getValue(), HOLD_VIDEO);
-            calls.put(featureSig(e.getKey()), e.getValue().size());
+            Method caller = e.getKey();
+            List<Instruction> body = instructions(caller);
+            FeatureFlow flow = new FeatureFlow(caller);
+            Map<Integer, Integer> asked = new TreeMap<>();
+            Map<Integer, FeatureBlock> defaulted = new HashMap<>();
+            for (Map.Entry<Integer, Integer> call : e.getValue().entrySet()) {
+                int k = call.getKey(), play = call.getValue();
+                if (fallback == null) { asked.put(k, play); continue; }
+                int mask = invokeRegisters(body.get(k))[maskOffset];
+                int[] origin = flow.origin(k, mask);
+                requireFeature(origin != null && origin[0] >= 0 && featureConstant(body.get(origin[0])),
+                        featureSig(caller) + " hands PostVideo a default mask in v" + mask + " at instruction " + k + " that isn't one constant");
+                long value = ((WideLiteralInstruction) body.get(origin[0])).getWideLiteral();
+                if ((value & fallback.bit()) == 0) { asked.put(k, play); continue; }
+                for (int written : new int[]{mask, play}) {
+                    List<Integer> reads = flow.readsAfter(k, written);
+                    requireFeature(reads.isEmpty(), "the default flag's hook at instruction " + k + " writes v" + written + ", which "
+                            + featureSig(caller) + " reads after PostVideo, at " + reads);
+                }
+                defaulted.put(k, featureDefaultedFlag(mask, value & ~fallback.bit(), play, fallback.value()));
+            }
+            featureBody(caller, featureMethod(patched, featureSig(caller)), 0, asked, HOLD_VIDEO, null, defaulted);
+            calls.put(featureSig(caller), e.getValue().size());
         }
         featureHostCalls(patched, HOLD_VIDEO, calls);
     }
 
+    /** A defaulted call's hook: [mask] in its mask's register, [value] in the flag's, then the question on the flag. */
+    private static FeatureBlock featureDefaultedFlag(int maskRegister, long mask, int play, long value) {
+        return (body, at) -> {
+            requireFeature(at + 1 < body.size() && featureConstant(body.get(at)) && registerA(body.get(at)) == maskRegister
+                    && ((WideLiteralInstruction) body.get(at)).getWideLiteral() == mask,
+                    "missing or miswired default mask " + mask + " in v" + maskRegister + " at instruction " + at);
+            requireFeature(featureConstant(body.get(at + 1)) && registerA(body.get(at + 1)) == play
+                    && ((WideLiteralInstruction) body.get(at + 1)).getWideLiteral() == value,
+                    "missing or miswired default flag " + value + " in v" + play + " at instruction " + (at + 1));
+            featureCall(body, at + 2, HOLD_VIDEO, play, play);
+            return 4;
+        };
+    }
+
+    /** Whether [i] loads an int constant. */
+    private static boolean featureConstant(Instruction i) {
+        Opcode opcode = i.getOpcode();
+        return opcode == Opcode.CONST_4 || opcode == Opcode.CONST_16 || opcode == Opcode.CONST || opcode == Opcode.CONST_HIGH16;
+    }
+
     /**
-     * PostVideo and its playback effect, each the one method holding its note, and every call to
-     * PostVideo from a method holding a feed post's note, by the register its play flag goes in.
-     * Each of the two notes has to hold at least one.
+     * PostVideo and its playback effect, each the one method holding its note, every call to
+     * PostVideo from a method holding a feed post's, an Instagram post's, a trend preview's or an
+     * ad card's note, by the register its play flag goes in, and the viewer's methods that call
+     * PostVideo. Each of the five notes and the viewer's has to hold at least one.
      */
     private static VideoSites featureVideoSites(Map<String, List<Method>> clean) {
         Method effect = featureTarget(clean, m -> holdsNote(m, PLAYBACK_EFFECT_NOTE), "video playback effect");
         Method postVideo = featureTarget(clean, m -> holdsNote(m, POST_VIDEO_NOTE), "PostVideo");
         requireFeature(AccessFlags.STATIC.isSet(postVideo.getAccessFlags()) && AccessFlags.STATIC.isSet(effect.getAccessFlags()),
                 "PostVideo or its playback effect isn't static");
-        int play = featurePlayFlag(postVideo, effect), offset = 0;
-        for (int p = 0; p < play; p++) offset += slots(postVideo.getParameterTypes().get(p));
+        PlayFlag flag = featurePlayFlag(postVideo, effect);
+        int offset = 0;
+        for (int p = 0; p < flag.parameter(); p++) offset += slots(postVideo.getParameterTypes().get(p));
         String target = featureSig(postVideo);
         Map<Method, Map<Integer, Integer>> calls = new LinkedHashMap<>();
-        for (String note : FEED_POST_NOTES) {
+        List<String> notes = new ArrayList<>(FEED_POST_NOTES);
+        notes.addAll(EMBED_NOTES);
+        for (String note : notes) {
             int found = 0;
             for (List<Method> definitions : clean.values()) for (Method m : definitions) {
                 if (!holdsNote(m, note)) continue;
@@ -3688,7 +3810,44 @@ public class DexDiff {
             }
             requireFeature(found > 0, "no call to PostVideo holds \"" + note + "\"");
         }
-        return new VideoSites(postVideo, effect, calls);
+        List<Method> viewers = new ArrayList<>();
+        for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+            if (holdsNote(m, MEDIA_VIEWER_NOTE) && !callSites(instructions(m), target).isEmpty()) viewers.add(m);
+        }
+        requireFeature(!viewers.isEmpty(), "no call to PostVideo holds \"" + MEDIA_VIEWER_NOTE + "\"");
+        return new VideoSites(postVideo, effect, flag, calls, viewers);
+    }
+
+    /**
+     * PostVideo's default for its play flag: the 0 or 1 it writes into the register it tests, right
+     * behind an if-eqz that jumps over it unless one bit of an int parameter, the caller's default
+     * mask, is set. Null when PostVideo has no default for the flag, so every caller hands its own.
+     */
+    private static PlayDefault featurePlayDefault(Method postVideo, PlayFlag flag) {
+        List<Instruction> body = instructions(postVideo);
+        FeatureFlow flow = new FeatureFlow(postVideo);
+        List<Integer> literals = flow.reaching(flag.test(), registerA(body.get(flag.test()))).stream()
+                .filter(k -> k >= 0 && body.get(k) instanceof NarrowLiteralInstruction).toList();
+        if (literals.isEmpty()) return null;
+        int write = featureOne(literals, "PostVideo's default for its play flag");
+        requireFeature(write > 0 && body.get(write - 1).getOpcode() == Opcode.IF_EQZ && lands(body, write - 1) == write + 1,
+                "PostVideo's default for its play flag isn't behind a test of its default mask");
+        int[] tests = flow.origin(write - 1, registerA(body.get(write - 1)));
+        Instruction and = tests == null || tests[0] < 0 ? null : body.get(tests[0]);
+        requireFeature(and != null && (and.getOpcode() == Opcode.AND_INT_LIT16 || and.getOpcode() == Opcode.AND_INT_LIT8)
+                && Long.bitCount(((WideLiteralInstruction) and).getWideLiteral()) == 1,
+                "PostVideo's default for its play flag isn't behind one bit of its default mask");
+        int[] mask = flow.origin(tests[0], ((TwoRegisterInstruction) and).getRegisterB());
+        int parameter = -1;
+        if (mask != null && mask[0] < 0) {
+            int at = postVideo.getImplementation().getRegisterCount() - postVideo.getParameterTypes().stream().mapToInt(DexDiff::slots).sum();
+            for (int p = 0; p < postVideo.getParameterTypes().size(); p++) {
+                if (at == mask[1] && postVideo.getParameterTypes().get(p).toString().equals("I")) parameter = p;
+                at += slots(postVideo.getParameterTypes().get(p));
+            }
+        }
+        requireFeature(parameter >= 0, "PostVideo's default mask isn't one of its int parameters");
+        return new PlayDefault(parameter, ((WideLiteralInstruction) and).getWideLiteral(), ((WideLiteralInstruction) body.get(write)).getWideLiteral());
     }
 
     /**
@@ -3697,7 +3856,7 @@ public class DexDiff {
      * play argument, the effect's first boolean. The tested register has to hold that one boolean on
      * every path. It's the fourth boolean on 450.
      */
-    private static int featurePlayFlag(Method postVideo, Method effect) {
+    private static PlayFlag featurePlayFlag(Method postVideo, Method effect) {
         List<Instruction> body = instructions(postVideo);
         String effectSig = featureSig(effect);
         int call = featureOne(java.util.stream.IntStream.range(0, body.size()).boxed()
@@ -3716,7 +3875,7 @@ public class DexDiff {
             if (side <= k || side >= call || !(body.get(side) instanceof WideLiteralInstruction) || !body.get(side).getOpcode().setsRegister()
                     || registerA(body.get(side)) != argument || ((WideLiteralInstruction) body.get(side)).getWideLiteral() != 0) continue;
             List<Integer> held = featureBooleans(postVideo, flow, k, registerA(body.get(k)));
-            if (held.size() == 1) return held.get(0);
+            if (held.size() == 1) return new PlayFlag(held.get(0), k);
         }
         throw new IllegalArgumentException("PostVideo never tests one of its booleans before the playback effect");
     }
@@ -4231,12 +4390,16 @@ public class DexDiff {
         featurePreserveTargets(clean, patched, m -> hooked.contains(featureSig(m)));
     }
 
-    /** Left out, Disable video autoplay makes no call and leaves PostVideo, its effect and the feed posts that call it as Threads wrote them. */
+    /**
+     * Left out, Disable video autoplay makes no call and leaves PostVideo, its effect, the viewer
+     * and the feed posts, Instagram posts, trend previews and ad cards that call it as Threads wrote them.
+     */
     private static void featureOmittedVideoAutoplay(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
         featureHostCalls(patched, HOLD_VIDEO, Map.of());
         VideoSites sites = featureVideoSites(clean);
         Set<String> hooked = new HashSet<>(List.of(featureSig(sites.postVideo()), featureSig(sites.effect())));
         for (Method caller : sites.calls().keySet()) hooked.add(featureSig(caller));
+        for (Method viewer : sites.viewers()) hooked.add(featureSig(viewer));
         featurePreserveTargets(clean, patched, m -> hooked.contains(featureSig(m)));
     }
 

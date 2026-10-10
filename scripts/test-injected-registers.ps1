@@ -749,8 +749,12 @@ try {
     }
     # One build per misplaced video autoplay hook, selected alone: the carousel's hook gone, the
     # single post's hook on the boolean before the play flag, the hook moved into PostVideo itself,
-    # and the carousel's branch to PostVideo landing past its hook. Every FAIL has to be that rule's.
-    $autoplayFaults = @('autoplay-missing', 'autoplay-register', 'autoplay-inside', 'autoplay-bypass')
+    # the carousel's branch to PostVideo landing past its hook, the Instagram post's hook gone, the
+    # trend preview and ad card hooked on the flag their default masks have PostVideo ignore, the
+    # ad card asking about a 0 instead of PostVideo's default 1, and the viewer's default bit
+    # cleared with no question, so it would never play. Every FAIL has to be that rule's.
+    $autoplayFaults = @('autoplay-missing', 'autoplay-register', 'autoplay-inside', 'autoplay-bypass',
+        'autoplay-inline-missing', 'autoplay-default-ignored', 'autoplay-ad-literal', 'autoplay-viewer')
     foreach ($fault in $autoplayFaults) {
         $case = "features-bad-$fault"
         $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
@@ -762,6 +766,19 @@ try {
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
+    # An ad card whose stock code reads its default mask again after PostVideo, hooked as a good
+    # build hooks it, so the mask without the play bit leaks past the call. Stock and patched agree
+    # on everything else, so only the check of what the hook writes can refuse it, and the FAIL has
+    # to be that check's, naming v3.
+    $autoplayLiveClean = New-DexApk -Name 'features-autoplay-live-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-autoplay-live-clean') })
+    $autoplayLiveApk = New-DexApk -Name 'features-bad-autoplay-ad-live' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-bad-autoplay-ad-live') })
+    $autoplayLive = Invoke-DexDiff -Clean $autoplayLiveClean -Patched $autoplayLiveApk -Allowlist $emptyAllowlist -Name 'features-bad-autoplay-ad-live' -Contracts $contracts -Features 'disableVideoAutoplay'
+    $autoplayLiveFindings = Get-Findings $autoplayLive
+    Assert-True ($autoplayLive.ExitCode -ne 0 -and $autoplayLiveFindings.Fails.Count -gt 0 -and
+        @($autoplayLiveFindings.Fails | Where-Object { $_ -notlike "``[diff``] FAIL: contract: disableVideoAutoplay: the default flag's hook at instruction * writes v3, which *" }).Count -eq 0) `
+        ("autoplay-ad-live was not rejected solely by the video autoplay check of what its hook writes. " + ($autoplayLive.Output -join [Environment]::NewLine))
+    $autoplayLiveStructural = Invoke-DexDiff -Clean $autoplayLiveClean -Patched $autoplayLiveApk -Allowlist $emptyAllowlist -Name 'features-bad-autoplay-ad-live-structural'
+    Assert-True ($autoplayLiveStructural.ExitCode -eq 0 -and (Get-Findings $autoplayLiveStructural).Fails.Count -eq 0) 'autoplay-ad-live was not structurally valid.'
     # One build per misplaced Pure black hook, selected alone: the helper's #101010 load not asked
     # about, the theme's hook on the gray loaded before its #101010, the dark scheme's second
     # background not asked about or the hook on its third color instead, and the background hooks
@@ -1050,7 +1067,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $liveFaults.Count + 1 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'

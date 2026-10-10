@@ -34,6 +34,7 @@ import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstructio
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction21t;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction22c;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction22b;
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction22s;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction22t;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction22x;
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction23x;
@@ -729,8 +730,10 @@ public class BadDexFixture {
     private static final String FEATURE_VIDEO = "Lfixture/Video;";
     private static final String FEATURE_POSTS = "Lfixture/FeedPost;";
     private static final ImmutableMethodReference PLAYBACK_EFFECT = method(FEATURE_VIDEO, "effect", "V", OBJECT, "I", "Z", "Z");
-    /** PostVideo plays by its fourth boolean, as on 450. */
-    private static final ImmutableMethodReference POST_VIDEO = method(FEATURE_VIDEO, "post", "V", OBJECT, "I", "Z", "Z", "Z", "Z", "Z");
+    /** PostVideo plays by its fourth boolean, as on 450, after its changed and default masks. */
+    private static final ImmutableMethodReference POST_VIDEO = method(FEATURE_VIDEO, "post", "V", OBJECT, "I", "I", "Z", "Z", "Z", "Z", "Z");
+    /** The bit of PostVideo's default mask that has it play by its default, a 1, instead of the flag it's handed. */
+    private static final int PLAY_DEFAULT = 0x4000;
     private static final ImmutableMethodReference HOLD_VIDEO = method(FEATURE_AUTOPLAY, "play", "Z", "Z");
     private static final String FEATURE_PURE_BLACK = "Lapp/morphe/extension/hushthreads/theme/PureBlack;";
     private static final String FEATURE_THEME = "Lfixture/BdsTheme;";
@@ -1550,60 +1553,91 @@ public class BadDexFixture {
 
     /**
      * Disable video autoplay's shapes: PostVideo, which sets its playback effect's first boolean
-     * from its own fourth, and a single post, a carousel and the viewer that call it with that flag
-     * in v6. Each feed post asks the extension about v6 just before the call when [hooked], and the
-     * carousel's branch to its call lands on the question. Faults: the carousel's hook missing, the
-     * single post's hook on the boolean before the flag, the hook moved into PostVideo itself, and
-     * the carousel's branch landing past its hook.
+     * from its own fourth, or from the 1 it defaults to when its default mask's 0x4000 bit is set,
+     * and its callers. A single post, a carousel and an Instagram post hand it their own boolean in
+     * v7 as the flag. A trend preview and an ad card set the bit and pass a 0, and so does the
+     * viewer. When [hooked], each caller but the viewer asks the extension about v7 just before the
+     * call, the carousel's branch to its call landing on the question, and the trend preview and ad
+     * card first clear the bit in v3 and load the default's 1 into v7. Faults: the carousel's hook
+     * missing, the single post's hook on the boolean before the flag, the hook moved into PostVideo
+     * itself, the carousel's branch landing past its hook, the Instagram post's hook missing, the
+     * trend preview and ad card hooked like posts with their bits left set, the ad card asking
+     * about a 0, the viewer's bit cleared, and an ad card that reads its mask again after PostVideo.
      */
     private static List<ClassDef> videoAutoplayClasses(boolean hooked, String fault) {
         List<ClassDef> classes = new ArrayList<>();
-        // post(composer, changed, five booleans): v0..v2 locals, then the arguments; the flag in v8.
+        // post(composer, changed, defaults, five booleans): v0..v2 locals, then the arguments; the mask in v5, the flag in v9.
         List<Instruction> post = new ArrayList<>();
         if (hooked && fault.equals("autoplay-inside")) {
-            post.addAll(List.of(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 8, 1, HOLD_VIDEO), op(Opcode.MOVE_RESULT, 8)));
+            post.addAll(List.of(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 9, 1, HOLD_VIDEO), op(Opcode.MOVE_RESULT, 9)));
         }
-        // False lands on the 0; true sets the 1 and jumps past the 0 to the effect.
+        // The default's 1 replaces the flag when the mask's bit is set. False lands on the 0; true
+        // sets the 1 and jumps past the 0 to the effect.
         post.addAll(List.of(string(0, "com.instagram.barcelona.feed.post.video.PostVideo (PostVideo.kt:84)"),
-                new ImmutableInstruction12x(Opcode.MOVE, 1, 8), ifEqz(1, 4), new ImmutableInstruction11n(Opcode.CONST_4, 2, 1),
+                new ImmutableInstruction12x(Opcode.MOVE, 1, 9), new ImmutableInstruction22s(Opcode.AND_INT_LIT16, 2, 5, PLAY_DEFAULT), ifEqz(2, 3),
+                new ImmutableInstruction11n(Opcode.CONST_4, 1, 1), ifEqz(1, 4), new ImmutableInstruction11n(Opcode.CONST_4, 2, 1),
                 new ImmutableInstruction10t(Opcode.GOTO, 2), new ImmutableInstruction11n(Opcode.CONST_4, 2, 0),
-                invoke(PLAYBACK_EFFECT, 3, 4, 2, 9), op(Opcode.RETURN_VOID)));
+                invoke(PLAYBACK_EFFECT, 3, 4, 2, 10), op(Opcode.RETURN_VOID)));
         classes.add(featureClass(FEATURE_VIDEO, OBJECT, List.of(),
                 define(FEATURE_VIDEO, "effect", "V", true, body(5, string(0, "com.instagram.video.player.compose.VideoPlaybackEffect (VideoPlaybackEffect.kt:41)"),
                         op(Opcode.RETURN_VOID)), OBJECT, "I", "Z", "Z"),
-                define(FEATURE_VIDEO, "post", "V", true, body(10, post.toArray(new Instruction[0])), OBJECT, "I", "Z", "Z", "Z", "Z", "Z")));
+                define(FEATURE_VIDEO, "post", "V", true, body(11, post.toArray(new Instruction[0])), OBJECT, "I", "I", "Z", "Z", "Z", "Z", "Z")));
         boolean callers = hooked && !fault.equals("autoplay-inside");
         classes.add(featureClass(FEATURE_POSTS, OBJECT, List.of(),
-                feedPost("single", "com.instagram.barcelona.feed.post.ui.PostSingleMedia.<anonymous> (PostSingleMedia.kt:212)", false,
-                        callers ? fault.equals("autoplay-register") ? 5 : 6 : -1, false),
-                feedPost("carousel", "com.instagram.barcelona.feed.post.ui.PostCarousel.<anonymous> (PostCarousel.kt:131)", true,
-                        callers && !fault.equals("autoplay-missing") ? 6 : -1, fault.equals("autoplay-bypass")),
-                feedPost("viewer", "com.instagram.barcelona.feed.mediaviewer.ui.MediaViewerVideo (MediaViewerVideo.kt:90)", false, -1, false)));
+                videoCaller("single", "com.instagram.barcelona.feed.post.ui.PostSingleMedia.<anonymous> (PostSingleMedia.kt:212)", 0,
+                        callers ? asked(fault.equals("autoplay-register") ? 6 : 7) : List.of(), false, false, false),
+                videoCaller("carousel", "com.instagram.barcelona.feed.post.ui.PostCarousel.<anonymous> (PostCarousel.kt:131)", 0,
+                        callers && !fault.equals("autoplay-missing") ? asked(7) : List.of(), true, fault.equals("autoplay-bypass"), false),
+                videoCaller("inline", "com.instagram.barcelona.igmedia.InlineIgVideo (InlineIgVideo.kt:38)", 0x20,
+                        callers && !fault.equals("autoplay-inline-missing") ? asked(7) : List.of(), false, false, false),
+                videoCaller("trend", "com.instagram.barcelona.common.ui.mediahighlights.AutoplayingMediaHighlightVideo (TrendMediaHighlightsPreview.kt:235)",
+                        PLAY_DEFAULT | 0x20, !callers ? List.of() : fault.equals("autoplay-default-ignored") ? asked(7) : defaultAsked(0x20, 1), false, false, false),
+                videoCaller("ad", "com.instagram.barcelona.sponsored.ui.AdCard (AdCard.kt:143)", PLAY_DEFAULT | 0x40,
+                        !callers ? List.of() : fault.equals("autoplay-default-ignored") ? asked(7) : defaultAsked(0x40, fault.equals("autoplay-ad-literal") ? 0 : 1),
+                        false, false, fault.equals("autoplay-ad-live")),
+                // The viewer's bit cleared without a question: it would play by the 0 it passes, never at all.
+                videoCaller("viewer", "com.instagram.barcelona.feed.mediaviewer.ui.MediaViewerVideo (MediaViewerVideo.kt:90)", PLAY_DEFAULT | 0x80,
+                        callers && fault.equals("autoplay-viewer") ? List.of(new ImmutableInstruction31i(Opcode.CONST, 3, 0x80)) : List.of(), false, false, false)));
         return classes;
     }
 
+    /** The extension asked about v[register], its answer back in it. */
+    private static List<Instruction> asked(int register) {
+        return List.of(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, register, 1, HOLD_VIDEO), op(Opcode.MOVE_RESULT, register));
+    }
+
+    /** The default mask without its play bit, [mask], in v3, [value] in the flag's v7, and the extension asked about v7. */
+    private static List<Instruction> defaultAsked(int mask, int value) {
+        List<Instruction> block = new ArrayList<>(List.of(new ImmutableInstruction31i(Opcode.CONST, 3, mask), new ImmutableInstruction21s(Opcode.CONST_16, 7, value)));
+        block.addAll(asked(7));
+        return block;
+    }
+
     /**
-     * A composable holding [note] that calls PostVideo with its own boolean, copied into v6, as the
-     * flag, asking the extension about v[hook] just before the call (-1 for no hook). [branch] puts
-     * an if-nez on that boolean in front, aimed at the call, and [bypass] lands it past the hook.
+     * A composable holding [note] that calls PostVideo with [defaults] as its default mask, in v3,
+     * and the flag in v7: its own boolean, or a 0 when the mask leaves the flag to PostVideo's
+     * default. [question] goes just before the call. [branch] puts an if-nez on that boolean in
+     * front, aimed at the call, and [bypass] lands it past the question. [readsMask] reads v3 again
+     * after the call.
      */
-    private static Method feedPost(String name, String note, boolean branch, int hook, boolean bypass) {
-        List<Instruction> question = hook < 0 ? List.of()
-                : List.of(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, hook, 1, HOLD_VIDEO), op(Opcode.MOVE_RESULT, hook));
-        // PostVideo's composer, changed and five booleans in v1..v7; the arguments in v8 and v9.
-        List<Instruction> body = new ArrayList<>(List.of(string(0, note), new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 1, 8),
-                new ImmutableInstruction11n(Opcode.CONST_4, 2, 0), new ImmutableInstruction11n(Opcode.CONST_4, 3, 0),
-                new ImmutableInstruction11n(Opcode.CONST_4, 4, 1), new ImmutableInstruction11n(Opcode.CONST_4, 5, 0),
-                new ImmutableInstruction12x(Opcode.MOVE, 6, 9), new ImmutableInstruction11n(Opcode.CONST_4, 7, 1)));
+    private static Method videoCaller(String name, String note, int defaults, List<Instruction> question, boolean branch, boolean bypass, boolean readsMask) {
+        // PostVideo's composer, changed, defaults and five booleans in v1..v8; the arguments in v9 and v10.
+        List<Instruction> body = new ArrayList<>(List.of(string(0, note), new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 1, 9),
+                new ImmutableInstruction11n(Opcode.CONST_4, 2, 0), new ImmutableInstruction21s(Opcode.CONST_16, 3, defaults),
+                new ImmutableInstruction11n(Opcode.CONST_4, 4, 0), new ImmutableInstruction11n(Opcode.CONST_4, 5, 1),
+                new ImmutableInstruction11n(Opcode.CONST_4, 6, 0),
+                (defaults & PLAY_DEFAULT) == 0 ? new ImmutableInstruction12x(Opcode.MOVE, 7, 10) : new ImmutableInstruction11n(Opcode.CONST_4, 7, 0),
+                new ImmutableInstruction11n(Opcode.CONST_4, 8, 1)));
         if (branch) {
             // Past its own two units and the 0's one, onto the question when there is one.
-            body.add(new ImmutableInstruction21t(Opcode.IF_NEZ, 9, 3 + (bypass ? codeUnits(question) : 0)));
-            body.add(new ImmutableInstruction11n(Opcode.CONST_4, 7, 0));
+            body.add(new ImmutableInstruction21t(Opcode.IF_NEZ, 10, 3 + (bypass ? codeUnits(question) : 0)));
+            body.add(new ImmutableInstruction11n(Opcode.CONST_4, 8, 0));
         }
         body.addAll(question);
-        body.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 1, 7, POST_VIDEO));
+        body.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 1, 8, POST_VIDEO));
+        if (readsMask) body.add(new ImmutableInstruction12x(Opcode.MOVE, 0, 3));
         body.add(op(Opcode.RETURN_VOID));
-        return define(FEATURE_POSTS, name, "V", true, body(10, body.toArray(new Instruction[0])), OBJECT, "Z");
+        return define(FEATURE_POSTS, name, "V", true, body(11, body.toArray(new Instruction[0])), OBJECT, "Z");
     }
 
     /**
@@ -2206,10 +2240,12 @@ public class BadDexFixture {
                 "warm-start-missing", "warm-start-moved", "cached-posts-missing", "cached-posts-bypass")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("returnRefresh"), 0, fault));
         }
-        // Disable video autoplay alone too.
-        for (String fault : List.of("autoplay-missing", "autoplay-register", "autoplay-inside", "autoplay-bypass")) {
+        // Disable video autoplay alone too. The ad card that reads its mask after PostVideo does so in its own stock build.
+        for (String fault : List.of("autoplay-missing", "autoplay-register", "autoplay-inside", "autoplay-bypass",
+                "autoplay-inline-missing", "autoplay-default-ignored", "autoplay-ad-literal", "autoplay-viewer", "autoplay-ad-live")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("disableVideoAutoplay"), 0, fault));
         }
+        dexes.put("features-autoplay-live-clean", featureBuild(false, Set.of(), 0, "autoplay-ad-live"));
         // And Pure black dark mode.
         for (String fault : List.of("pure-black-load-missing", "pure-black-load-register", "pure-black-background-missing",
                 "pure-black-background-register", "pure-black-light")) {

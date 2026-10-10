@@ -34,7 +34,10 @@ no-call Landroid/content/pm/ShortcutManager;->removeAllDynamicShortcuts()V outsi
 # original Raw-absent branch. Each typed reader is controlled by its expected JSON key's true
 # edge and preserves the original unsafe-parser JSON input. Analytics checks each address bit.
 # Background-return refresh holds each of its four calls to where Threads makes that check's answer.
-# Video autoplay asks right before each feed post's call to PostVideo, on the flag PostVideo plays by.
+# Video autoplay asks right before each call a feed post, an Instagram post, a trend preview or an
+# ad card makes to PostVideo, on the flag PostVideo plays by. A call whose default mask leaves the
+# flag to PostVideo's default first clears that bit and loads the default into the flag. PostVideo
+# and the viewer stay as they were.
 # Pure black asks after each #101010 load in the theme and its color helpers, and about each of the
 # dark scheme's #101010 backgrounds right before its constructor, leaving the light scheme alone.
 # The settings row asks once, right before the goto ending the More settings case, on its composer,
