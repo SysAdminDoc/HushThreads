@@ -220,10 +220,15 @@ $cleanBase = Get-BaseApk -Apk $CleanApk -Destination (Join-Path $work 'clean-bas
 # or another version: two patched files differ from each other, both halves report differences,
 # and the run would pass while comparing nothing against a clean baseline.
 $clean = Get-ApkManifestFacts -Apk $cleanBase -Aapt2 $Aapt2
+# Change version code writes the highest code Android allows (HIGHEST_VERSION_CODE, Int.MAX_VALUE, in
+# VersionCodeReads.kt) on purpose, so with it selected the patched side carries exactly that code and
+# the name still has to match. A standalone check of such a build names the patch in -SelectedPatches.
+$patchedCode = if ($null -ne $SelectedPatches -and $SelectedPatches -ccontains 'Change version code') { '2147483647' } else { $clean.versionCode }
 if ($clean.package -ne $patched.package -or $clean.versionName -ne $patched.versionName -or
-        $clean.versionCode -ne $patched.versionCode) {
+        [string]$patched.versionCode -cne [string]$patchedCode) {
     throw ("The clean APK is $($clean.package) $($clean.versionName) ($($clean.versionCode)) and the " +
-        "patched one $($patched.package) $($patched.versionName) ($($patched.versionCode)); they have to be the same build.")
+        "patched one $($patched.package) $($patched.versionName) ($($patched.versionCode)); they have to be the same build, " +
+        "with version code $patchedCode on the patched side. A build with Change version code needs it in -SelectedPatches.")
 }
 $metaSigners = @($catalog.patches | ForEach-Object { $_.compatibility } |
     Where-Object { $_.packageName -eq $package } |

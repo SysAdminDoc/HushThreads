@@ -5048,7 +5048,13 @@ try {
         }
         return ($lines -join "`n") + "`n"
     }
-    $dependencyNamesHere = @(Get-PatchDependencyNames -PatchList $releaseCatalog -RequestedNames $releaseNames)
+    # Change version code, one of the release's patches, raises the patched build's code to
+    # Int.MAX_VALUE; the verifier holds the patched side to exactly that code when it's selected.
+    function Get-PatchedFixtureCode([string]$Code) {
+        if (@($releaseNames) -ccontains 'Change version code') { return '2147483647' }
+        return $Code
+    }
+    $dependencyNamesHere =@(Get-PatchDependencyNames -PatchList $releaseCatalog -RequestedNames $releaseNames)
     $fixturePaths = @{}
     # Beside the declared builds, a newer one the catalog doesn't declare, the kind a release run
     # patches under -f to see what still applies on it. Each declared build carries the version code
@@ -5067,7 +5073,7 @@ try {
         Set-Content -LiteralPath "$apkm.merged.txt" -Encoding ASCII -NoNewline `
             -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit)
         Set-Content -LiteralPath "$apkm.patched.txt" -Encoding ASCII -NoNewline `
-            -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit -Patched)
+            -Value (Get-FixtureManifest -Build $build -Code (Get-PatchedFixtureCode "$versionCode") -WithSplit -Patched)
         # The report the CLI writes: every patch and the internal dependencies applied, one step,
         # and the input's own version, which is what the CLI reports.
         Set-Content -LiteralPath "$apkm.result.json" -Encoding ASCII -Value ([ordered]@{
@@ -5270,7 +5276,7 @@ try {
     # Patched from the plain APK itself: its manifest with the patches' change and no split's
     # component, which verify-all-patches.ps1 would refuse as a change nobody approved.
     Set-Content -LiteralPath "$plainFixture.patched.txt" -Encoding ASCII -NoNewline `
-        -Value (Get-FixtureManifest -Build $releaseTarget.PackageVersion -Code $newestCode -Patched)
+        -Value (Get-FixtureManifest -Build $releaseTarget.PackageVersion -Code (Get-PatchedFixtureCode $newestCode) -Patched)
     try {
         $said = Invoke-VerifyAll -Apk $plainFixture
         Assert-True ($said -like '*success: every requested patch applied*' -and $said -notlike '*into one APK for the CLI*' -and

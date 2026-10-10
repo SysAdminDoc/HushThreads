@@ -470,7 +470,8 @@ function Write-StandIn {
 }
 
 function Invoke-VerifierWithStandIns {
-    param([string]$Name, [int]$DexDiffExit, [switch]$JavaGone, [string[]]$SelectedPatches)
+    param([string]$Name, [int]$DexDiffExit, [switch]$JavaGone, [string[]]$SelectedPatches,
+        [string]$PatchedVersionCode = '512008342')
     $case = Join-Path $standIns $Name
     New-Item -ItemType Directory -Path $case -Force | Out-Null
     $javaStandIn = Join-Path $case 'java.cmd'
@@ -500,10 +501,13 @@ echo [diff] requested families: %standInFamilies%
 echo [diff] structural findings: 0
 exit /b $DexDiffExit
 "@
+    # The patched APK can report a version code of its own, as Change version code makes it.
     Write-StandIn (Join-Path $case 'aapt2.cmd') @"
 @echo off
+set "standInCode=512008342"
+echo %* | findstr /c:"patched.apk" >nul && set "standInCode=$PatchedVersionCode"
 echo   E: manifest (line=2)
-echo     A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=512008342
+echo     A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=%standInCode%
 echo     A: http://schemas.android.com/apk/res/android:versionName(0x0101021c)="450.0.0.51.78" (Raw: "450.0.0.51.78")
 echo     A: package="$standInPackage" (Raw: "$standInPackage")
 exit /b 0
@@ -555,6 +559,21 @@ try {
         'Hide ads', 'Hide suggested users', 'Sanitize sharing links', 'Open links in browser', 'Disable analytics', 'Restore screens on re-signed builds')
     Assert-True ($allFamilies.ExitCode -eq 0 -and $allFamilies.Text -match '(?m)^\[registers\] \[diff\] requested families: hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust$') `
         "The verifier did not forward all independently selected families to DexDiff.`n$($allFamilies.Text)"
+    # Change version code raises the patched code to Int.MAX_VALUE. Selected, that code is the one
+    # the patched side has to carry; not selected, or selected without the raise, the pair differs.
+    $raised = Invoke-VerifierWithStandIns -Name 'version-code-raised' -DexDiffExit 0 -PatchedVersionCode '2147483647' `
+        -SelectedPatches @('Change version code')
+    Assert-True ($raised.ExitCode -eq 0 -and $raised.Text -match $reached -and $raised.Output -contains '[registers] success.') `
+        "The verifier refused the version code Change version code writes with that patch selected.`n$($raised.Text)"
+    $unselected = Invoke-VerifierWithStandIns -Name 'version-code-unselected' -DexDiffExit 0 -PatchedVersionCode '2147483647' `
+        -SelectedPatches @('Hide ads')
+    Assert-True ($unselected.ExitCode -ne 0 -and $unselected.Text -notmatch $reached -and
+        $unselected.Text -match 'they have to be the same build') `
+        "The verifier passed a raised version code without Change version code selected.`n$($unselected.Text)"
+    $notRaised = Invoke-VerifierWithStandIns -Name 'version-code-not-raised' -DexDiffExit 0 -SelectedPatches @('Change version code')
+    Assert-True ($notRaised.ExitCode -ne 0 -and $notRaised.Text -notmatch $reached -and
+        $notRaised.Text -match 'with version code 2147483647 on the patched side') `
+        "The verifier passed a build Change version code was selected for but didn't raise.`n$($notRaised.Text)"
     $refused = Invoke-VerifierWithStandIns -Name 'refused' -DexDiffExit 1
     Assert-True ($refused.ExitCode -eq 1 -and $refused.Text -match $reached -and
         $refused.Text -match 'FAIL: the dex comparison exited 1' -and
