@@ -32,9 +32,21 @@
     when BUILD_QUEUE_SCRIPT names one (Invoke-HeavyJob in common.ps1), and run straight away when
     it doesn't.
 
+    -KeepIn keeps a passing run: the patched APK (native-aligned, as every check after the CLI read
+    it), the CLI's result report and the merge it patched go into that folder, with stamp.json
+    written last naming the bundle, APK, patch list and CLI by SHA-256. build-release-receipt.ps1
+    -AppliedDir reads a kept run whose stamp matches instead of patching that fixture again. The
+    folder is emptied first, so a failed run leaves nothing to read.
+
 .EXAMPLE
     scripts/verify-all-patches.ps1 -Apk C:\path\to\native-fixture.apk `
         -DesktopJar C:\path\to\morphe-desktop.jar -WorkDir C:\path\to\scratch
+
+.EXAMPLE
+    A release run kept for the receipt, one folder per fixture file:
+
+    scripts/verify-all-patches.ps1 -Apk C:\fixtures\threads-a.xapk -DesktopJar C:\path\to\morphe-desktop.jar `
+        -WorkDir C:\path\to\scratch -KeepIn patches/build/fixture-apply/threads-a.xapk
 
 .EXAMPLE
     scripts/verify-all-patches.ps1 -Apk C:\fixtures\threads-older.xapk -Force `
@@ -49,7 +61,9 @@ param(
     [string]$PatchList,
     [string]$Java,
     [switch]$Force,
-    [string]$Aapt2
+    [string]$Aapt2,
+    # A folder that keeps a passing run for the release receipt. See the description.
+    [string]$KeepIn
 )
 
 $ErrorActionPreference = 'Stop'
@@ -73,6 +87,23 @@ if (-not $Bundle -or -not (Test-Path -LiteralPath $Bundle -PathType Leaf)) { thr
 if (-not (Test-Path -LiteralPath $PatchList -PathType Leaf)) { throw "No patch list found: $PatchList" }
 if (-not (Test-Path -LiteralPath $Apk -PathType Leaf)) { throw "APK not found: $Apk" }
 if (-not (Test-Path -LiteralPath $DesktopJar -PathType Leaf)) { throw "Desktop CLI jar not found: $DesktopJar" }
+
+# Emptied before anything runs, so a run that fails leaves nothing a receipt could read, stamp
+# first. Only what a keep writes is removed: a folder holding anything else was named by mistake.
+$keptNames = @('stamp.json', 'patched.apk', 'result.json', 'stock-merged.apk')
+if ($KeepIn) {
+    $KeepIn = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($KeepIn)
+    if (Test-Path -LiteralPath $KeepIn -PathType Leaf) { throw "-KeepIn names a file, not a folder: $KeepIn" }
+    if (Test-Path -LiteralPath $KeepIn -PathType Container) {
+        $foreign = @(Get-ChildItem -LiteralPath $KeepIn -Force | Where-Object { $_.PSIsContainer -or $keptNames -notcontains $_.Name })
+        if ($foreign.Count -gt 0) {
+            throw "-KeepIn names $KeepIn, which holds $($foreign[0].Name) as well as a kept run, so nothing there was touched."
+        }
+        foreach ($name in $keptNames) {
+            Remove-Item -LiteralPath (Join-Path $KeepIn $name) -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
 
 try {
     $catalog = Get-Content -LiteralPath $PatchList -Raw | ConvertFrom-Json
@@ -132,6 +163,21 @@ $result = Resolve-WithinRoot -Path (Join-Path $workRoot "verify-all-result-$runI
 # The run's verdict, in a table the block below fills in: the block runs in a scope of its own, so
 # a plain assignment there wouldn't reach this script.
 $verdict = @{ ExitCode = 1 }
+# What a kept run is stamped with, read before the run: a bundle rebuilt while the CLI ran would
+# otherwise be named as the one it patched with.
+$keepStamp = $null
+if ($KeepIn) {
+    $keepStamp = [ordered]@{
+        bundleSha256     = Get-Sha256Hex -Path $Bundle
+        apkSha256        = Get-Sha256Hex -Path $Apk
+        patchListSha256  = Get-Sha256Hex -Path $PatchList
+        desktopJarSha256 = Get-Sha256Hex -Path $DesktopJar
+        versionName      = [string]$stock.versionName
+        versionCode      = [string]$stock.versionCode
+        forced           = [bool]$forced
+        merged           = $false
+    }
+}
 
 # The merge, the CLI and the checks that read its output, the heavy part of the run, in a slot of
 # the machine's build queue when there is one (Invoke-HeavyJob).
@@ -268,6 +314,18 @@ try {
                         Write-Host ('[verify] success: every requested patch applied to a valid APK whose manifest changes ' +
                             'are all approved, whose resource table holds every stock resource, whose injected code ' +
                             'passes structural and selected feature contracts, and whose build identity matches the bundle.')
+                        if ($KeepIn) {
+                            New-Item -ItemType Directory -Force -Path $KeepIn | Out-Null
+                            Move-Item -LiteralPath $out -Destination (Join-Path $KeepIn 'patched.apk') -Force
+                            Copy-Item -LiteralPath $result -Destination (Join-Path $KeepIn 'result.json') -Force
+                            if ($patchInput -eq $mergedApk) {
+                                Move-Item -LiteralPath $mergedApk -Destination (Join-Path $KeepIn 'stock-merged.apk') -Force
+                                $keepStamp.merged = $true
+                            }
+                            # Written last, so a keep cut short has no stamp and is never read.
+                            $keepStamp | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $KeepIn 'stamp.json') -Encoding UTF8
+                            Write-Host "[verify] kept this run for the release receipt in $KeepIn"
+                        }
                         $verdict.ExitCode = 0
                     } else {
                         Write-Warning "[verify] the final APK did not preserve the defining bundle identity (exit $identityExitCode)."

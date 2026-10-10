@@ -27,6 +27,14 @@
     The merges and patch runs share one slot of the machine's build queue when BUILD_QUEUE_SCRIPT
     names one (Invoke-HeavyJob in common.ps1), and run straight away when it doesn't.
 
+    -AppliedDir names the runs verify-all-patches.ps1 -KeepIn kept, one folder per fixture file
+    (patches/build/fixture-apply/<fixture file> by convention). A fixture whose kept stamp names
+    this bundle, this APK, this patch list and this CLI by SHA-256, and the same version, version
+    code and forced flag, is read from there: its CLI report, patched APK and merge go through the
+    same checks a fresh run's do, and only the patching is skipped. The kept APK was native-aligned
+    by verify-all-patches.ps1 before its own checks, so its alignment is read as it is rather than
+    redone. Any other fixture is patched here as before, and kept runs are read, never changed.
+
     The bundle has to be a build of HEAD from a clean tree, and a clean tree when the receipt is
     cut doesn't show that. So its stamp has to be HEAD's commit time (the build writes 0 when the
     tree had uncommitted changes as it started), and no source may be newer than it. Both are
@@ -61,7 +69,10 @@ param(
     [string]$Sbom,
     # For working with no network only: OSV isn't asked about the SBOM's libraries, and the run
     # says so. The index push asks again, so a release can't go out on it.
-    [switch]$SkipAdvisoryCheck
+    [switch]$SkipAdvisoryCheck,
+    # The runs verify-all-patches.ps1 -KeepIn kept, read instead of patching again when their
+    # stamps match. See the description.
+    [string]$AppliedDir
 )
 
 $ErrorActionPreference = 'Stop'
@@ -298,13 +309,60 @@ if ($unfixed.Count -gt 0) {
         'Nothing was patched.')
 }
 
+if ($AppliedDir) {
+    $AppliedDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($AppliedDir)
+    $patchListHash = Get-Sha256Hex -Path $PatchList
+    $desktopJarHash = Get-Sha256Hex -Path $DesktopJar
+}
+
+function Get-KeptRun {
+    <#
+    .SYNOPSIS
+        The run verify-all-patches.ps1 -KeepIn kept for -Apk, or $null.
+    .DESCRIPTION
+        It counts only when its stamp names the bundle, APK, patch list and CLI this receipt is cut
+        from by SHA-256, the same version name, version code and forced flag, and a merge exactly
+        when the fixture is a split bundle, and when every file the stamp stands for is there.
+        Anything less and the fixture is patched here, as it would be with no kept runs at all.
+    #>
+    param([string]$Apk, [object]$Stock, [bool]$Forced)
+
+    if (-not $AppliedDir) { return $null }
+    $label = Split-Path -Leaf $Apk
+    $dir = Join-Path $AppliedDir $label
+    $stampPath = Join-Path $dir 'stamp.json'
+    if (-not (Test-Path -LiteralPath $stampPath -PathType Leaf)) {
+        Write-Host "[receipt] no kept run of $label"
+        return $null
+    }
+    try { $stamp = Get-Content -LiteralPath $stampPath -Raw | ConvertFrom-Json }
+    catch {
+        Write-Host "[receipt] the kept stamp for $label can't be read, so it's patched here"
+        return $null
+    }
+    $splitBundle = [System.IO.Path]::GetExtension($Apk).TrimStart('.').ToLowerInvariant() -in @('apkm', 'apks', 'xapk')
+    $files = @('patched.apk', 'result.json')
+    if ($splitBundle) { $files += 'stock-merged.apk' }
+    $missing = @($files | Where-Object { -not (Test-Path -LiteralPath (Join-Path $dir $_) -PathType Leaf) })
+    $same = $missing.Count -eq 0 -and
+        [string]$stamp.bundleSha256 -ceq $bundleHash -and [string]$stamp.patchListSha256 -ceq $patchListHash -and
+        [string]$stamp.desktopJarSha256 -ceq $desktopJarHash -and
+        [string]$stamp.versionName -ceq [string]$Stock.versionName -and [string]$stamp.versionCode -ceq [string]$Stock.versionCode -and
+        $stamp.forced -is [bool] -and $stamp.forced -eq $Forced -and $stamp.merged -is [bool] -and $stamp.merged -eq $splitBundle -and
+        [string]$stamp.apkSha256 -ceq (Get-Sha256Hex -Path $Apk)
+    if (-not $same) {
+        Write-Host "[receipt] the kept run of $label was made with another bundle, APK, patch list or CLI, so it's patched here"
+        return $null
+    }
+    return $dir
+}
+
 # Every fixture in one slot of the machine's build queue when there is one (Invoke-HeavyJob):
 # merges and CLI runs that unpack gigabytes each, one release's worth, not interleaved with
 # another build's. A throw here ends the job, gives the slot back and stops the receipt.
 Invoke-HeavyJob -Label 'receipt' -ScriptBlock {
     foreach ($apk in $Fixture) {
         $label = Split-Path -Leaf $apk
-        Write-Host "[receipt] patching $label with $($patchNames.Count) patches"
 
         $runId = [guid]::NewGuid().ToString('N')
         $runDir = Resolve-WithinRoot -Path (Join-Path $workRoot "receipt-$runId") -Root $workRoot
@@ -322,28 +380,42 @@ Invoke-HeavyJob -Label 'receipt' -ScriptBlock {
             $forced = -not (Test-DeclaredBuild -Target $expectedTarget -VersionName ([string]$stock.versionName) `
                 -VersionCode ([string]$stock.versionCode))
 
-            # The one APK the CLI patches: the fixture's merge when it's a split bundle, made here
-            # because the CLI deletes its own, or the fixture itself. No merge, no receipt.
-            $mergedApk = Resolve-WithinRoot -Path (Join-Path $runDir 'stock-merged.apk') -Root $workRoot
-            $patchInput = Get-MergedApk -Apk $apk -Destination $mergedApk -Java $Java -DesktopJar $DesktopJar
+            # A kept run of this very fixture with this very bundle, when there is one: its report,
+            # patched APK and merge go through every check below, and only the patching is skipped.
+            # The kept folder is read, never written.
+            $keptRun = Get-KeptRun -Apk $apk -Stock $stock -Forced $forced
+            if ($keptRun) {
+                Write-Host "[receipt] reading the kept run of ${label}: same bundle, APK, patch list and CLI"
+                $out = Join-Path $keptRun 'patched.apk'
+                $resultPath = Join-Path $keptRun 'result.json'
+                $patchInput = if (Test-Path -LiteralPath (Join-Path $keptRun 'stock-merged.apk') -PathType Leaf) {
+                    Join-Path $keptRun 'stock-merged.apk' } else { $apk }
+                $cliExitCode = 0
+            } else {
+                Write-Host "[receipt] patching $label with $($patchNames.Count) patches"
+                # The one APK the CLI patches: the fixture's merge when it's a split bundle, made here
+                # because the CLI deletes its own, or the fixture itself. No merge, no receipt.
+                $mergedApk = Resolve-WithinRoot -Path (Join-Path $runDir 'stock-merged.apk') -Root $workRoot
+                $patchInput = Get-MergedApk -Apk $apk -Destination $mergedApk -Java $Java -DesktopJar $DesktopJar
 
-            $enable = @()
-            foreach ($name in $patchNames) { $enable += '-e'; $enable += $name }
-            $arguments = @('patch', '--exclusive', '--continue-on-error', '--unsigned', '-p', $Bundle,
-                '-o', $out, '-t', $temp, '-r', $resultPath)
-            if ($forced) { $arguments += '-f' }
-            $arguments = $arguments + $enable + @($patchInput)
-            # Continue for the call alone: the CLI logs WARNING and SEVERE on stderr, which Windows
-            # PowerShell 5.1 turns into a terminating error under Stop. The report and the exit code
-            # are what decide.
-            $preference = $ErrorActionPreference
-            try {
-                $ErrorActionPreference = 'Continue'
-                $global:LASTEXITCODE = -1
-                & $Java '-jar' $DesktopJar @arguments 2>&1 | Out-Null
-                $cliExitCode = $LASTEXITCODE
-            } finally {
-                $ErrorActionPreference = $preference
+                $enable = @()
+                foreach ($name in $patchNames) { $enable += '-e'; $enable += $name }
+                $arguments = @('patch', '--exclusive', '--continue-on-error', '--unsigned', '-p', $Bundle,
+                    '-o', $out, '-t', $temp, '-r', $resultPath)
+                if ($forced) { $arguments += '-f' }
+                $arguments = $arguments + $enable + @($patchInput)
+                # Continue for the call alone: the CLI logs WARNING and SEVERE on stderr, which Windows
+                # PowerShell 5.1 turns into a terminating error under Stop. The report and the exit code
+                # are what decide.
+                $preference = $ErrorActionPreference
+                try {
+                    $ErrorActionPreference = 'Continue'
+                    $global:LASTEXITCODE = -1
+                    & $Java '-jar' $DesktopJar @arguments 2>&1 | Out-Null
+                    $cliExitCode = $LASTEXITCODE
+                } finally {
+                    $ErrorActionPreference = $preference
+                }
             }
 
             if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
@@ -364,9 +436,13 @@ Invoke-HeavyJob -Label 'receipt' -ScriptBlock {
             $baseline = Get-ApkManifestFacts -Apk $patchInput -Aapt2 $Aapt2
             $nativeStock = Get-NativePageFacts -Apk $patchInput -Java $Java -Aapt2 $Aapt2 `
                 -ReportPath (Join-Path $runDir 'native-stock.json') -ExtractNativeLibs $baseline.extractNativeLibs
-            $nativeRaw = Get-NativePageFacts -Apk $out -Java $Java -Aapt2 $Aapt2 `
-                -ReportPath (Join-Path $runDir 'native-unaligned.json') -ExtractNativeLibs $patched.extractNativeLibs
-            Align-UnsignedNativeApk -Apk $out -Aapt2 $Aapt2 -Java $Java -Facts $nativeRaw
+            # A kept APK was aligned the same way by verify-all-patches.ps1 before its own checks, and
+            # aligning it here would write into the kept folder, so it's read as it is.
+            if (-not $keptRun) {
+                $nativeRaw = Get-NativePageFacts -Apk $out -Java $Java -Aapt2 $Aapt2 `
+                    -ReportPath (Join-Path $runDir 'native-unaligned.json') -ExtractNativeLibs $patched.extractNativeLibs
+                Align-UnsignedNativeApk -Apk $out -Aapt2 $Aapt2 -Java $Java -Facts $nativeRaw
+            }
             $nativePatched = Get-NativePageFacts -Apk $out -Java $Java -Aapt2 $Aapt2 `
                 -ReportPath (Join-Path $runDir 'native-patched.json') -ExtractNativeLibs $patched.extractNativeLibs
             $nativeAlignment = Get-NativePageDelta -Stock $nativeStock -Patched $nativePatched

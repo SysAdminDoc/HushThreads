@@ -4575,7 +4575,7 @@ foreach ($unqueuedShape in @(
 }
 Remove-Item -LiteralPath $queueCopy -Force
 # The pre-push hook imports the variable from the user's registry like its own, since a hook can
-# start without it, and the fixture applies it runs would then skip the queue.
+# start without it, and the heavy runs of its suites and release facts check would then skip the queue.
 $importList = (Get-ScriptAst (Join-Path $PSScriptRoot 'pre-push.ps1')).Find({ param($node)
     $node -is [System.Management.Automation.Language.ForEachStatementAst] -and
     $node.Variable.VariablePath.UserPath -eq 'envName' }, $true)
@@ -5091,7 +5091,8 @@ try {
     # above, and what the builder says is kept in $builderSaid, warnings included.
     $builderSaid = ''
     function Invoke-ReceiptBuilder([string[]]$Fixtures, [string]$Bundle,
-            [string]$WorkDir = (Join-Path $releaseRoot 'work'), [string]$DesktopJar = $stubJar, [switch]$SkipAdvisoryCheck) {
+            [string]$WorkDir = (Join-Path $releaseRoot 'work'), [string]$DesktopJar = $stubJar, [switch]$SkipAdvisoryCheck,
+            [string]$AppliedDir) {
         Remove-Item -LiteralPath $javaLog, $mergeLog -Force -ErrorAction SilentlyContinue
         $saved = @{}
         foreach ($variable in @(Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_*' })) {
@@ -5105,6 +5106,7 @@ try {
                 Java = $stubJava; Aapt2 = $stubAapt2 }
             if ($Bundle) { $arguments['Bundle'] = $Bundle }
             if ($SkipAdvisoryCheck) { $arguments['SkipAdvisoryCheck'] = $true }
+            if ($AppliedDir) { $arguments['AppliedDir'] = $AppliedDir }
             $script:builderSaid = @(& (Join-Path $PSScriptRoot 'build-release-receipt.ps1') @arguments 3>&1 6>&1 |
                 ForEach-Object { "$_" }) -join "`n"
             if ($LASTEXITCODE -ne 0) { throw "build-release-receipt.ps1 exited $LASTEXITCODE." }
@@ -5207,12 +5209,15 @@ try {
     Set-Content -LiteralPath (Join-Path $tools 'apksigner.bat') -Encoding ASCII -Value @(
         '@echo off', "echo Signer #1 certificate SHA-256 digest: $($releaseSigner[0])", 'exit /b 0')
     $verifyAllScript = Join-Path $PSScriptRoot 'verify-all-patches.ps1'
-    function Invoke-VerifyAll([string]$Apk) {
+    function Invoke-VerifyAll([string]$Apk, [string]$KeepIn, [switch]$Force) {
         Remove-Item -LiteralPath $javaLog, $mergeLog, $resourceStock -Force -ErrorAction SilentlyContinue
         $global:LASTEXITCODE = 0
+        $keep = @{}
+        if ($KeepIn) { $keep['KeepIn'] = $KeepIn }
+        if ($Force) { $keep['Force'] = $true }
         $said = @(& $verifyAllScript -Apk $Apk -DesktopJar $stubJar -WorkDir (Join-Path $releaseRoot 'verify-work') `
             -Bundle $releaseBundle -PatchList (Join-Path $releaseRepo 'patches-list.json') -Java $stubJava `
-            -Aapt2 $stubAapt2 3>&1 6>&1 | ForEach-Object { "$_" }) -join "`n"
+            -Aapt2 $stubAapt2 @keep 3>&1 6>&1 | ForEach-Object { "$_" }) -join "`n"
         if ($LASTEXITCODE -ne 0) { throw "verify-all-patches.ps1 exited $LASTEXITCODE`: $said" }
         return $said
     }
@@ -5266,6 +5271,93 @@ try {
     }
     Assert-True (@(Get-ChildItem -LiteralPath (Join-Path $releaseRoot 'verify-work') -Directory -Filter 'verify-*').Count -eq 0) `
         'verify-all-patches.ps1 left a run folder behind.'
+
+    # Kept runs. verify-all-patches.ps1 -KeepIn keeps a passing run of each fixture with a stamp
+    # naming what it patched with, and build-release-receipt.ps1 -AppliedDir reads a kept run whose
+    # stamp names its own bundle, APK, patch list and CLI instead of patching that fixture again.
+    # The checks run on what was kept, so the receipt comes out as a fresh one does. The stand-in
+    # aapt2 reads a patched APK's manifest from the .xmltree file the stand-in CLI writes beside its
+    # output, which a keep doesn't carry, so each case puts it back beside the kept APK.
+    $appliedRoot = Join-Path $releaseRoot 'fixture-apply'
+    $null = @(Read-QueueLog)
+    Invoke-ReceiptBuilder -Fixtures $allFixtures
+    $freshTargets = (Get-Content -LiteralPath $releaseReceipt -Raw | ConvertFrom-Json).targets | ConvertTo-Json -Depth 12
+    $listHash = Get-Sha256Hex -Path (Join-Path $releaseRepo 'patches-list.json')
+    foreach ($build in $builtBuilds) {
+        $fixture = $fixturePaths[$build]
+        $keptDir = Join-Path $appliedRoot (Split-Path -Leaf $fixture)
+        $forcedHere = $releaseTarget.PackageVersions -notcontains $build
+        $said = Invoke-VerifyAll -Apk $fixture -KeepIn $keptDir -Force:$forcedHere
+        Assert-True ($said -like "*kept this run for the release receipt in $keptDir*") "verify-all-patches.ps1 did not keep its run of ${build}: $said"
+        $keptNames = @(Get-ChildItem -LiteralPath $keptDir -File | ForEach-Object { $_.Name } | Sort-Object)
+        Assert-True (($keptNames -join ',') -eq 'patched.apk,result.json,stamp.json,stock-merged.apk') `
+            "The kept run of $build is not the patched APK, the report, the merge and the stamp: $($keptNames -join ', ')"
+        $stamp = Get-Content -LiteralPath (Join-Path $keptDir 'stamp.json') -Raw | ConvertFrom-Json
+        Assert-True ($stamp.bundleSha256 -ceq (Get-Sha256Hex -Path $releaseBundle) -and $stamp.apkSha256 -ceq (Get-Sha256Hex -Path $fixture) -and
+            $stamp.patchListSha256 -ceq $listHash -and $stamp.desktopJarSha256 -ceq (Get-Sha256Hex -Path $stubJar) -and
+            $stamp.versionName -ceq $build -and $stamp.forced -eq $forcedHere -and $stamp.merged -eq $true) `
+            "The kept run of $build is stamped with something else than what it patched: $($stamp | ConvertTo-Json -Compress)"
+        Copy-Item -LiteralPath "$fixture.patched.txt" -Destination (Join-Path $keptDir 'patched.apk.xmltree')
+    }
+    function Get-KeptHashes {
+        @(Get-ChildItem -LiteralPath $appliedRoot -File -Recurse | Sort-Object FullName |
+            ForEach-Object { "$($_.FullName)=$(Get-Sha256Hex -Path $_.FullName)" }) -join "`n"
+    }
+    $keptBefore = Get-KeptHashes
+    $null = @(Read-QueueLog)
+    Invoke-ReceiptBuilder -Fixtures $allFixtures -AppliedDir $appliedRoot
+    Assert-True (-not (Test-Path -LiteralPath $javaLog) -and -not (Test-Path -LiteralPath $mergeLog)) `
+        "The receipt patched or merged a fixture whose kept run matched: $(@(Get-Content -LiteralPath $javaLog -ErrorAction SilentlyContinue) -join '; ')"
+    Assert-True (@([regex]::Matches($builderSaid, 'reading the kept run of')).Count -eq $builtBuilds.Count) `
+        "The receipt did not say it read each kept run: $builderSaid"
+    Assert-True (((Get-Content -LiteralPath $releaseReceipt -Raw | ConvertFrom-Json).targets | ConvertTo-Json -Depth 12) -ceq $freshTargets) `
+        'The receipt read from kept runs differs from the one fresh runs gave.'
+    Assert-True ((Get-KeptHashes) -ceq $keptBefore) 'The receipt changed the kept runs it read.'
+
+    # A kept run that doesn't match is patched again, that fixture alone: a stamp naming another
+    # bundle, one gone, and one that says a split bundle wasn't merged.
+    $declaredFixture = $fixturePaths[$releaseTarget.PackageVersion]
+    $declaredStamp = Join-Path $appliedRoot "$(Split-Path -Leaf $declaredFixture)/stamp.json"
+    $stampText = [System.IO.File]::ReadAllText($declaredStamp)
+    $staleStamps = @(
+        @{ Name = 'another bundle'; Text = $stampText.Replace((Get-Sha256Hex -Path $releaseBundle), ('0' * 64)); Said = '*made with another bundle*' },
+        @{ Name = 'no stamp'; Text = $null; Said = '*no kept run of*' },
+        @{ Name = 'no merge'; Text = ($stampText -replace '"merged":\s*true', '"merged": false'); Said = '*made with another bundle*' })
+    foreach ($stale in $staleStamps) {
+        if ($null -eq $stale.Text) { Remove-Item -LiteralPath $declaredStamp -Force }
+        else {
+            Assert-True ($stale.Text -cne $stampText) "The '$($stale.Name)' stamp case changed nothing."
+            [System.IO.File]::WriteAllText($declaredStamp, $stale.Text)
+        }
+        try {
+            Invoke-ReceiptBuilder -Fixtures $allFixtures -AppliedDir $appliedRoot
+            Assert-True ((@(Get-Content -LiteralPath $javaLog) -join "`n") -eq "patch $declaredFixture merged forced=0" -and
+                $builderSaid -like $stale.Said) `
+                "With $($stale.Name) the receipt did not patch that fixture alone: $(@(Get-Content -LiteralPath $javaLog -ErrorAction SilentlyContinue) -join '; ')"
+        } finally {
+            [System.IO.File]::WriteAllText($declaredStamp, $stampText)
+        }
+    }
+
+    # A run that fails leaves no stamp behind, and a keep folder holding anything else is left alone.
+    $declaredKept = Split-Path -Parent $declaredStamp
+    Remove-Item -LiteralPath (Join-Path $declaredKept 'patched.apk.xmltree') -Force
+    Set-Content -LiteralPath (Join-Path $tools 'merge-fails.txt') -Value 'on' -Encoding ASCII
+    try {
+        Assert-Throws { Invoke-VerifyAll -Apk $declaredFixture -KeepIn $declaredKept } '*Could not merge*' `
+            'verify-all-patches.ps1 went ahead with a merge that failed.'
+    } finally {
+        Remove-Item -LiteralPath (Join-Path $tools 'merge-fails.txt') -Force
+    }
+    Assert-True (-not (Test-Path -LiteralPath $declaredStamp)) 'A failed run left the stamp of the run before it to be read.'
+    $foreignKeep = Join-Path $appliedRoot 'not-a-keep'
+    New-Item -ItemType Directory -Path $foreignKeep -Force | Out-Null
+    Set-Content -LiteralPath (Join-Path $foreignKeep 'notes.txt') -Value 'mine' -Encoding ASCII
+    Assert-Throws { Invoke-VerifyAll -Apk $declaredFixture -KeepIn $foreignKeep } '*as well as a kept run*' `
+        'verify-all-patches.ps1 emptied a keep folder that holds something else.'
+    Assert-True ((Test-Path -LiteralPath (Join-Path $foreignKeep 'notes.txt')) -and -not (Test-Path -LiteralPath $javaLog)) `
+        'verify-all-patches.ps1 touched a keep folder holding something else, or patched first.'
+    Remove-Item -LiteralPath $appliedRoot -Recurse -Force
 
     # The newest build alone, or beside the undeclared one, is not enough for a receipt: the older
     # declared build has no run. The builder says so before it patches anything. It used to patch
