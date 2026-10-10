@@ -20,6 +20,7 @@ import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.threads.misc.extension.THREADS_APPLICATION
 import app.morphe.patches.threads.misc.extension.patchLog
 import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
+import app.morphe.patches.threads.misc.resignedtrust.fbnsSignersPatch
 import app.morphe.util.superclassChain
 import com.android.tools.smali.dexlib2.Opcode
 import org.w3c.dom.Element
@@ -115,7 +116,9 @@ val settingsPatch = bytecodePatch(
     default = true,
 ) {
     category("Settings")
-    dependsOn(threadsExtensionPatch, settingsManifestPatch)
+    // fbnsSignersPatch is the #6 fix. Every HushThreads patch depends on this one, so naming it here
+    // puts it in every build.
+    dependsOn(threadsExtensionPatch, settingsManifestPatch, fbnsSignersPatch)
     compatibleWith(*AppCompatibilities.threads())
 
     execute {

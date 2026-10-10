@@ -11,6 +11,7 @@ import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patches.threads.misc.settings.settingsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
@@ -23,7 +24,10 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
+import com.google.gson.JsonParser
+import java.io.File
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -31,7 +35,8 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 
 /**
  * FBNS's package check on each declared build reads the signers it hashes through the extension,
- * straight after its own read, and a check shaped so the call can't be placed stops the patch.
+ * straight after its own read, a check shaped so the call can't be placed stops the patch, and every
+ * build carries the fix.
  */
 class RestoreTrustFbnsFixtureTest {
     private val fbnsSigners = "Lapp/morphe/extension/hushthreads/misc/ThreadsSignature;->" +
@@ -77,6 +82,29 @@ class RestoreTrustFbnsFixtureTest {
         assertTrue(assertThrows(PatchException::class.java) { none.routeFbnsSigners() }.message!!.contains("found 0"))
         val overwrites = check("iget-object v0, v0, $SIGNATURES")
         assertTrue(assertThrows(PatchException::class.java) { overwrites.routeFbnsSigners() }.message!!.contains("can't name"))
+    }
+
+    /**
+     * No selection leaves the fix out: it has no name to deselect, the settings patch depends on it,
+     * and every other patch in the catalog depends on the settings patch. A re-signed build leaks
+     * without it whatever else is patched in (#6).
+     */
+    @Test
+    fun `every patch in the catalog brings the FBNS fix through the settings patch`() {
+        assertNull("a named patch can be deselected", fbnsSignersPatch.name)
+        assertTrue(settingsPatch.dependencies.any { it === fbnsSignersPatch })
+
+        // The repository root first, as CatalogDependencyTest explains.
+        val catalog = File("patches-list.json").takeIf { it.isFile } ?: File("../patches-list.json")
+        assertTrue("could not find the patch list from ${File(".").absolutePath}", catalog.isFile)
+        val rows = JsonParser.parseString(catalog.readText()).asJsonObject.getAsJsonArray("patches").map { it.asJsonObject }
+        assertTrue("the catalog has almost no patches in it: ${rows.size}", rows.size >= 10)
+        val settings = settingsPatch.name!!
+        val without = rows.filter { row ->
+            row["name"].asString != settings &&
+                row.getAsJsonArray("dependencies")?.none { it.asString == settings } != false
+        }.map { it["name"].asString }
+        assertEquals("patches that could be selected without the settings patch", emptyList<String>(), without)
     }
 
     /** A static check taking the package in v0, with [read] where its signatures are read. */
