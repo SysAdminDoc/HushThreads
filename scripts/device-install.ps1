@@ -65,9 +65,17 @@ function Assert-HushThreadsDeviceLease {
             -not [string]::Equals($lease.ownershipToken, $OwnershipToken, [StringComparison]::Ordinal)) {
             throw "The device lease for $Serial belongs to another project or chat."
         }
+        # PowerShell 7's ConvertFrom-Json hands back a DateTime for an ISO string, and that DateTime as
+        # a string has no zone, so "...Z" read back as local time. Its Kind says which zone it's in.
         $expiry = [DateTimeOffset]::MinValue
-        if (-not [DateTimeOffset]::TryParse([string]$lease.expiresUtc, [ref]$expiry) -or
-            $expiry -le [DateTimeOffset]::UtcNow) {
+        $parsed = if ($lease.expiresUtc -is [DateTime]) {
+            $expiry = [DateTimeOffset]$lease.expiresUtc
+            $true
+        } else {
+            [DateTimeOffset]::TryParse([string]$lease.expiresUtc, [Globalization.CultureInfo]::InvariantCulture,
+                [Globalization.DateTimeStyles]::AssumeUniversal, [ref]$expiry)
+        }
+        if (-not $parsed -or $expiry -le [DateTimeOffset]::UtcNow) {
             throw "The device lease for $Serial is expired or has no valid UTC expiration."
         }
         $serialRead = Invoke-HushThreadsAdbCommand -Adb $Adb -Invoker $AdbInvoker -Arguments @('-s', $Serial, 'get-serialno')
@@ -88,8 +96,11 @@ function Assert-HushThreadsDeviceLease {
             throw "Device identity does not match HUSHTHREADS_DEVICE_IDENTITY for $Serial."
         }
         if ($expiry -le [DateTimeOffset]::UtcNow) { throw "The device lease for $Serial expired during identity verification." }
-        # Renew only the token-checked lease held open exclusively. Never reclaim an expired lease.
-        $lease.expiresUtc = [DateTimeOffset]::UtcNow.AddMinutes(20).ToString('o')
+        # Renew only the token-checked lease held open exclusively. Never reclaim an expired lease,
+        # and never shorten one: a holder who leased the device for a long check keeps the rest of
+        # it. Cutting it to 20 minutes let the lease lapse mid-check, where another chat could take it.
+        $renewal = [DateTimeOffset]::UtcNow.AddMinutes(20)
+        $lease.expiresUtc = $(if ($expiry -gt $renewal) { $expiry } else { $renewal }).ToUniversalTime().ToString('o')
         $bytes = [Text.UTF8Encoding]::new($false).GetBytes(($lease | ConvertTo-Json -Depth 8))
         $stream.Position = 0
         $stream.SetLength(0)

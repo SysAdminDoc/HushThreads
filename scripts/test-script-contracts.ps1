@@ -339,13 +339,17 @@ exit /b 19
         if ($Variant -eq 'foreign') { $lease.ownershipToken = 'another-chat' }
         if ($Variant -eq 'other-project') { $lease.project = 'AnotherProject' }
         if ($Variant -eq 'expired') { $lease.expiresUtc = [DateTimeOffset]::UtcNow.AddMinutes(-1).ToString('o') }
+        # PowerShell 7 reads this back as a DateTime, which used to lose its zone and pass west of UTC.
+        if ($Variant -eq 'expired-zulu') {
+            $lease.expiresUtc = [DateTime]::UtcNow.AddMinutes(-1).ToString('yyyy-MM-ddTHH:mm:ssZ', [Globalization.CultureInfo]::InvariantCulture)
+        }
         if ($Variant -eq 'wrong-recorded-serial') { $lease.serial = 'ANOTHER' }
         [IO.File]::WriteAllText((Join-Path $leaseRoot ($Serial + '.json')), ($lease | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
     }
     $leaseArguments = @{Adb = $fakeAdb; Serial = 'READY'; OwnershipToken = $leaseToken;
         ExpectedIdentity = 'FixtureModel'; LeaseDirectory = $leaseRoot}
     Assert-Throws { Assert-HushThreadsDeviceLease @leaseArguments } '*No readable exclusive device lease*' 'A missing lease passed.'
-    foreach ($variant in @('foreign', 'other-project', 'expired', 'wrong-recorded-serial')) {
+    foreach ($variant in @('foreign', 'other-project', 'expired', 'expired-zulu', 'wrong-recorded-serial')) {
         Write-TestDeviceLease -Variant $variant
         $before = [IO.File]::ReadAllText((Join-Path $leaseRoot 'READY.json'))
         Assert-Throws { Assert-HushThreadsDeviceLease @leaseArguments } '*device lease*' "Lease variant $variant passed."
@@ -367,6 +371,19 @@ exit /b 19
     $renewed = Get-Content (Join-Path $leaseRoot 'READY.json') -Raw | ConvertFrom-Json
     Assert-True ([DateTimeOffset]$renewed.expiresUtc -gt [DateTimeOffset]::UtcNow.AddMinutes(19)) 'The owned lease was not renewed.'
     Assert-True ($renewed.ownershipToken -ceq $leaseToken) 'Renewal changed the ownership token.'
+    Remove-Item -LiteralPath $log -Force
+    # A lease taken for longer than a renewal keeps its own end, written the way the pool's own
+    # lease scripts write it, in whole seconds with a Z.
+    Write-TestDeviceLease
+    $longPath = Join-Path $leaseRoot 'READY.json'
+    $long = Get-Content -LiteralPath $longPath -Raw | ConvertFrom-Json
+    $now = [DateTimeOffset]::UtcNow
+    $longEnd = $now.AddMinutes(90).AddTicks(-($now.Ticks % [TimeSpan]::TicksPerSecond))
+    $long.expiresUtc = $longEnd.UtcDateTime.ToString('yyyy-MM-ddTHH:mm:ssZ', [Globalization.CultureInfo]::InvariantCulture)
+    [IO.File]::WriteAllText($longPath, ($long | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
+    Assert-HushThreadsDeviceLease @leaseArguments
+    $kept = Get-Content -LiteralPath $longPath -Raw | ConvertFrom-Json
+    Assert-True ([Math]::Abs(([DateTimeOffset]$kept.expiresUtc - $longEnd).TotalSeconds) -lt 1) 'Renewal shortened a longer lease.'
     Remove-Item -LiteralPath $log -Force
     Write-TestDeviceLease -Serial 'emulator-5554'
     Assert-HushThreadsDeviceLease -Adb $fakeAdb -Serial 'emulator-5554' -OwnershipToken $leaseToken `
