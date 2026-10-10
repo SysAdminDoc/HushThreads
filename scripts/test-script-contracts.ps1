@@ -4104,6 +4104,18 @@ $wrappedTooling = Test-ChangelogManagerEntry -Current ($readable -replace '(\* \
     "`$1`n* **Tooling:** a development-only`n  change.") -ExpectedVersion '0.42.0'
 Assert-True ($wrappedTooling.Reason -like '*continues the bullet*') `
     "A wrapped Tooling bullet was not held to one line like the others: $($wrappedTooling.Reason)"
+# A documentation change is written "* **Docs:** ...", and Manager shows it to nobody the same way.
+# Unreleased held three when the release stages came in, and the check refused every one.
+$withDocs = Test-ChangelogManagerEntry -Current ($readable -replace '(\* \*\*Threads:\*\* a third\.)',
+    "`$1`n* **Docs:** the README says more.") -ExpectedVersion '0.42.0'
+Assert-True ($withDocs.Valid -and $withDocs.Bullets -eq 3) `
+    "A Docs bullet in the released entry was refused or counted: $($withDocs.Reason), $($withDocs.Bullets) bullets"
+$docsOnly = Test-ChangelogManagerEntry -Current "## 0.42.0 (2026-09-20)`n`n* **Docs:** only this.`n" -ExpectedVersion '0.42.0'
+Assert-True (-not $docsOnly.Valid -and $docsOnly.Reason -like '*no "* **Threads:** " bullet*') `
+    "An entry with Docs bullets alone, which gets no update badge, was not refused for that: $($docsOnly.Reason)"
+$lowerDocs = Test-ChangelogManagerEntry -Current ($readable -replace '(\* \*\*Threads:\*\* a third\.)',
+    "`$1`n* **docs:** spelled another way.") -ExpectedVersion '0.42.0'
+Assert-True (-not $lowerDocs.Valid) 'A scope spelled "docs" passed as the Docs scope.'
 
 Assert-True (-not (Test-ChangelogManagerEntry -Current $readable -ExpectedVersion '0.43.0').Valid) `
     'An entry for a version the CHANGELOG does not name was accepted.'
