@@ -6588,8 +6588,13 @@ exit 0
     Assert-True (@(Read-FlowLog).Count -eq 0) 'A refused preflight still ran a check.'
 
     # All five in order at release priority, then the prep commit pushed, the gate at release
-    # priority too, and the priority put back after.
+    # priority too, and the priority put back after. The results a filtered run leaves are gone
+    # before the push: the gate reads that folder and refused every preflight's own push over them.
+    $flowResults = Join-Path $flowRepo 'extensions/threads/build/test-results/testDebugUnitTest'
+    New-Item -ItemType Directory -Force -Path $flowResults | Out-Null
+    Set-Content -LiteralPath (Join-Path $flowResults 'TEST-app.morphe.extension.hushthreads.L10nTest.xml') -Value '<testsuite tests="1"/>'
     Invoke-FlowStage -Stage preflight -Version 1.2.3
+    Assert-True (-not (Test-Path -LiteralPath $flowResults)) 'Preflight left its filtered run''s partial test results for the push to read.'
     $flow = @(Read-FlowLog)
     Assert-True ((Get-FlowSteps $flow) -eq 'gradle prepare | contracts | python pytests | gradle quick | facts precheck | push priority=release') `
         "Preflight did not run the comparator, the contracts, the text tests, Gradle and the facts check, then push: $($flow -join ' | ')"

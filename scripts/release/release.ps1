@@ -408,6 +408,13 @@ try {
                 '--tests', '*ReleaseCheckTest',
                 ':extensions:shared:library:lint', ':extensions:threads:lint')
 
+            # Gradle clears the runtime results before a run and writes only the classes it ran, so
+            # the filtered run above leaves part of a run there. The push below has the gate read that
+            # folder for the commit it carries, and a partial one stops it before any test runs.
+            # Nothing else reads these: build reruns every test before anything is counted.
+            $partialResults = Join-Path $root 'extensions/threads/build/test-results/testDebugUnitTest'
+            if (Test-Path -LiteralPath $partialResults) { Remove-Item -LiteralPath $partialResults -Recurse -Force }
+
             Invoke-FactsPrecheck
 
             $minutes = ((Get-Date) - $started).TotalMinutes
