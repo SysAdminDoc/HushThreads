@@ -2,7 +2,7 @@
 
 Changes in the source build, then released versions.
 
-## 0.0.13 (2026-10-09)
+## 0.0.13 (2026-10-10)
 
 * **Threads:** This release patches Threads 450.0.0.51.78 only, the newest stable version. 449.0.0.54.82 and 448.0.0.54.85 aren't offered any more, so if you're still on one of them, update Threads to 450 before you patch. From here on each release moves to the newest stable Threads and drops the one before.
 * **Threads:** New `Hide the Instagram button` patch takes the Instagram button off the top of profiles, yours and other people's, and leaves the other buttons where they are. Its switch is on the Appearance page under More settings and starts off. Restart Threads after you change it.
