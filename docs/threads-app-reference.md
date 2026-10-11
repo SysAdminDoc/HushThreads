@@ -1,6 +1,6 @@
 # Threads app reference for HushThreads
 
-Updated 2026-10-09
+Updated 2026-10-10
 
 This page records the unmodified Android Threads app that HushThreads patches. The package binary is a local fixture and is not committed. Version 450 is the repository's primary declared target. Check Google Play separately for the current public release.
 
@@ -216,7 +216,7 @@ The product controls that matter most for a user audit are the home-feed selecto
 | Usage reports | The analytics patch intercepts Pigeon, default-address, and MQTT settings paths. | Trace endpoint overrides and events that use a different uploader. Keep the patch's wording limited to matched reports until each path has evidence. |
 | Advertising ID | The patch removes the AD_ID permission, which makes Google Play services return zeroes on API 33 and later for this target. | Keep the setting and description specific to this one identifier. Other identifiers remain in the app binary and require their own trace. |
 | Notifications and permission prompts | The manifest contains several sensitive capability declarations. Actual prompts depend on Android version and user flow. | Record first-run and permission prompts on a clean install, then compare each prompt with the feature that needs it before changing declarations. |
-| Re-signed app background behavior | [Issue #6](https://github.com/SysAdminDoc/HushThreads/issues/6) reported thread growth in the separate `:fbns` process. HushThreads routes its signer check separately from the main process. | Keep the main and FBNS process checks distinct when changing signer handling or process startup. The signer fix shipped in 0.0.12. A 0.0.13 build still grew by about seven threads per return after Android's idle stop of the push service, so the next release also ends the push process once that service is destroyed. The issue awaits confirmation from its reporter. |
+| Re-signed app background behavior | [Issue #6](https://github.com/SysAdminDoc/HushThreads/issues/6) reported thread growth in the separate `:fbns` process. HushThreads routes its signer check separately from the main process. | Keep the main and FBNS process checks distinct when changing signer handling or process startup. The signer fix shipped in 0.0.12. A development build after it still grew by about seven threads per return after Android's idle stop of the push service, so 0.0.13 also ends the push process once that service is destroyed. On a phone, six returns two minutes apart each got a fresh push process that closed after the idle stop, and the main process stayed level. The issue awaits confirmation from its reporter. |
 
 The signed-in 450 walkthrough confirms the Instagram profile button, a separate profile suggestion carousel, stock notification categories, and account ad controls. Keep account content out of committed screenshots. A future decrypted trace must distinguish ad delivery, ad measurement, general analytics, and essential account traffic before proposing any broader block. Shared encrypted destinations cannot make that distinction.
 
