@@ -16,11 +16,9 @@ import org.junit.Test
 import java.nio.ByteBuffer
 
 class BuildIdentityFixtureTest {
-    @Test fun `packaged runtime readers still call the injected stub`() {
-        val callers = mutableSetOf<String>()
-        val summaryCallers = mutableSetOf<String>()
+    @Test fun `packaged About status and reports still read the injected identity`() {
+        val callers = mutableMapOf<String, MutableSet<String>>()
         val summaryClass = "Lapp/morphe/extension/hushthreads/settings/HushThreadsPreferenceFragment;"
-        var summaryReadsIdentity = false
         for (payload in listOf("shared", "threads")) {
             val bytes = javaClass.classLoader.getResourceAsStream("extensions/$payload.mpe")!!.use { it.readBytes() }
             for (clazz in DexBackedDexFile(Opcodes.getDefault(), ByteBuffer.wrap(bytes)).classes) {
@@ -29,23 +27,19 @@ class BuildIdentityFixtureTest {
                         val ref = (it as? ReferenceInstruction)?.reference as? MethodReference
                         ref?.definingClass == EXTENSION_CLASS_DESCRIPTOR && ref.name == "getPatchesBuildIdentity"
                     } == true) {
-                        callers += clazz.type
-                        if (clazz.type == summaryClass && method.name == "buildIdentitySummary") summaryReadsIdentity = true
+                        callers.getOrPut(clazz.type) { mutableSetOf() } += method.name
                     }
-                    if (method.implementation?.instructions?.any {
-                        val ref = (it as? ReferenceInstruction)?.reference as? MethodReference
-                        ref?.definingClass == summaryClass && ref.name == "buildIdentitySummary"
-                                && ref.parameterTypes.isEmpty() && ref.returnType == "Ljava/lang/String;"
-                    } == true) summaryCallers += clazz.type
                 }
             }
         }
-        if (summaryReadsIdentity) callers += summaryCallers
-        for (reader in listOf("Lapp/morphe/extension/hushthreads/settings/HushThreadsPreferenceFragment;",
-                "Lapp/morphe/extension/hushthreads/settings/SettingsNavigation;",
+        for (reader in listOf(summaryClass,
                 "Lapp/morphe/extension/shared/settings/preference/LogBufferManager;")) {
-            assertTrue("Identity call was optimized away in $reader: $callers", reader in callers)
+            assertTrue("Packaged identity reader is missing in $reader: $callers", reader in callers)
         }
+        // Navigation now renders the model's compact status. About and recovery own the identity.
+        val settingsMethods = callers[summaryClass].orEmpty()
+        assertTrue("About must read the complete identity", "initialize" in settingsMethods)
+        assertTrue("Recovery status must read the identity", "buildIdentitySummary" in settingsMethods)
     }
 
 }
