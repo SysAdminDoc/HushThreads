@@ -9,7 +9,9 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference;
 import com.android.tools.smali.dexlib2.iface.reference.StringReference;
 import java.io.File;
 import java.net.URLClassLoader;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
 
@@ -39,9 +41,7 @@ class IdentityApkCheck {
         String utils = "Lapp/morphe/extension/shared/Utils;";
         String summaryClass = "Lapp/morphe/extension/hushthreads/settings/HushThreadsPreferenceFragment;";
         int definitions = 0;
-        Set<String> callers = new HashSet<>();
-        Set<String> summaryCallers = new HashSet<>();
-        boolean summaryReadsIdentity = false;
+        Map<String, Set<String>> callers = new HashMap<>();
         MultiDexContainer<? extends DexFile> dex = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault());
         for (String entry : dex.getDexEntryNames()) {
             for (ClassDef clazz : dex.getEntry(entry).getDexFile().getClasses()) {
@@ -63,37 +63,26 @@ class IdentityApkCheck {
                                 reference.getReference() instanceof MethodReference call &&
                                 call.getDefiningClass().equals(utils) &&
                                 call.getName().equals("getPatchesBuildIdentity")) {
-                            callers.add(clazz.getType());
-                            if (clazz.getType().equals(summaryClass) && method.getName().equals("buildIdentitySummary")) {
-                                summaryReadsIdentity = true;
-                            }
-                        }
-                        if (instruction instanceof ReferenceInstruction reference &&
-                                reference.getReference() instanceof MethodReference call &&
-                                call.getDefiningClass().equals(summaryClass) &&
-                                call.getName().equals("buildIdentitySummary") &&
-                                call.getParameterTypes().isEmpty() &&
-                                call.getReturnType().equals("Ljava/lang/String;")) {
-                            summaryCallers.add(clazz.getType());
+                            callers.computeIfAbsent(clazz.getType(), ignored -> new HashSet<>()).add(method.getName());
                         }
                     }
                 }
             }
         }
-        if (summaryReadsIdentity) {
-            callers.addAll(summaryCallers);
-        }
         if (definitions != 1) {
             throw new AssertionError("Expected exactly one injected identity getter, got " + definitions);
         }
         for (String caller : new String[]{
-                "Lapp/morphe/extension/hushthreads/settings/HushThreadsPreferenceFragment;",
-                "Lapp/morphe/extension/hushthreads/settings/SettingsNavigation;",
+                summaryClass,
                 "Lapp/morphe/extension/shared/settings/preference/LogBufferManager;"}) {
-            if (!callers.contains(caller)) {
+            if (!callers.containsKey(caller)) {
                 throw new AssertionError("Final APK lost identity consumer " + caller);
             }
         }
-        System.out.println(apk.getName() + ": exact verified identity and all three runtime readers preserved");
+        Set<String> settingsMethods = callers.get(summaryClass);
+        if (!settingsMethods.contains("initialize") || !settingsMethods.contains("buildIdentitySummary")) {
+            throw new AssertionError("Final APK lost the About or recovery identity reader");
+        }
+        System.out.println(apk.getName() + ": exact verified identity preserved in About, recovery and reports");
     }
 }

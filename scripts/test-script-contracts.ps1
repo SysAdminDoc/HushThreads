@@ -5009,7 +5009,7 @@ try {
         'copy /y "%~4.xmltree" "%~5.xmltree" >nul || exit /b 13',
         'exit /b 0',
         ':identity',
-        'echo verify-all.apk: exact verified identity and all three runtime readers preserved',
+        'echo verify-all.apk: exact verified identity preserved in About, recovery and reports',
         'exit /b 0',
         ':dexdiff',
         'echo [diff] structural findings: 0',
