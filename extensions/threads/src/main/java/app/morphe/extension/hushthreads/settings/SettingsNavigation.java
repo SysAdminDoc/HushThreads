@@ -100,14 +100,14 @@ final class SettingsNavigation extends BaseAdapter {
         section("Appearance", L10n.t("Appearance"), null, SettingsIcons.APPEARANCE, false);
         section("Links", L10n.t("Links"), null, SettingsIcons.LINKS, false);
         section("Updates", L10n.t("Updates"), null, SettingsIcons.UPDATES, false);
-        section("Set when you patched", L10n.t("Set when you patched"), null, SettingsIcons.PATCHED, false);
-        section("Pause, backup and diagnostics", L10n.t("Pause, backup and diagnostics"), null, SettingsIcons.TOOLS, false);
+        section("Set when you patched", L10n.t("Set when you patched"), null, SettingsIcons.CALENDAR, false);
+        section("Pause, backup and diagnostics", L10n.t("Pause, backup and diagnostics"), null, SettingsIcons.STORAGE, false);
         section("About", L10n.t("About"), null, SettingsIcons.ABOUT, false);
         browse = new HushThreadsPreferenceFragment.Heading(context);
         browse.setTitle(L10n.t("Browse settings"));
         more = link(context, L10n.t("More settings"), L10n.t("Links, updates, backup and more"), SettingsIcons.SETTINGS);
         more.setOnPreferenceClickListener(ignored -> { navigate(MORE); return true; });
-        support = link(context, L10n.t("Support HushThreads"), L10n.t("Buy me a coffee on Ko-fi"), SettingsIcons.OPENING);
+        support = link(context, L10n.t("Support HushThreads"), L10n.t("Buy me a coffee on Ko-fi"), SettingsIcons.HEART);
         support.setKey(HushThreadsPreferenceFragment.SUPPORT);
         support.setOnPreferenceClickListener(row -> { HushThreadsPreferenceFragment.openSupport(row.getContext()); return true; });
         empty = new HushThreadsPreferenceFragment.Row(context);
@@ -274,6 +274,7 @@ final class SettingsNavigation extends BaseAdapter {
                 boolean headingAdded = false;
                 for (int i = 0; i < section.category.getPreferenceCount(); i++) {
                     Preference row = section.category.getPreference(i);
+                    if ("hushthreads_saves_heading".equals(row.getKey())) continue;
                     String text = normalized(section.category.getTitle() + " " + row.getTitle() + " " + row.getSummary());
                     boolean matches = true;
                     for (String term : terms.split("\\s+")) if (!text.contains(term)) matches = false;
@@ -384,21 +385,19 @@ final class SettingsNavigation extends BaseAdapter {
             // Posted from the new row, it runs after this layout has put the row in the window.
             row.post(() -> row.performAccessibilityAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null));
         }
-        if (!(item instanceof PreferenceCategory)) {
-            Object group = group(item);
-            boolean first = position == 0 || group(getItem(position - 1)) != group;
-            boolean last = position + 1 == getCount() || group(getItem(position + 1)) != group;
-            palette().paintSurface(row, item, first, last);
-            if (MORE.equals(route)) {
-                row.setMinimumHeight(dp(56));
-                row.setPaddingRelative(dp(34), dp(12), dp(34), dp(12));
-            }
+        if (item == support) palette().paintSurface(row, item, 24);
+        if (MORE.equals(route)) {
+            palette().paintSurface(row, item, 4);
+            row.setPaddingRelative(dp(28), dp(17), dp(28), dp(18));
         }
         if (item == screen.getPreference(0)) {
             TextView title = row.findViewById(android.R.id.title);
             if (title != null) title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", 0));
         }
-        if (item == screen.getPreference(0)) bindStatus(row);
+        if (item == screen.getPreference(0)) {
+            palette().paintStatus(row);
+            bindStatus(row);
+        }
         if (item == pageStatus && pageAction) {
             bindAction(row, HushThreadsPause.isPaused(), HushThreadsPause.pausesNextStart(screen.getContext()));
         }
@@ -409,13 +408,12 @@ final class SettingsNavigation extends BaseAdapter {
         boolean nextPaused = HushThreadsPause.pausesNextStart(screen.getContext());
         boolean paused = HushThreadsPause.isPaused();
         TextView summary = row.findViewById(android.R.id.summary);
-        String build = "\n" + L10n.f("Build %1$s", L10n.isolate(HushThreadsPreferenceFragment.buildIdentitySummary()));
         if (!paused && !nextPaused && ReleaseCheck.statusLine() == null) {
-            summary.setText(L10n.t("Your switches are working.") + build);
+            summary.setText(L10n.t("Your controls are active."));
         } else if (paused && nextPaused && HushThreadsPause.reason() == HushThreadsPause.Reason.SWITCH
                 && !markerLeft()) {
             // A marker Resume couldn't remove keeps the card's own line, which says what to do.
-            summary.setText(L10n.t("Your choices are saved. Tap Resume, then restart Threads.") + build);
+            summary.setText(L10n.t("Your choices are saved. Tap Resume, then restart Threads."));
         }
         bindAction(row, paused, nextPaused);
     }
@@ -439,12 +437,11 @@ final class SettingsNavigation extends BaseAdapter {
         action.setAllCaps(false);
         action.setTextSize(14);
         action.setTextColor(palette().heading);
-        action.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        palette().paintStatusAction(action);
         action.setMinWidth(dp(48));
         action.setMinHeight(dp(48));
         action.setMinimumWidth(dp(48));
         action.setMinimumHeight(dp(48));
-        action.setPadding(0, 0, 0, 0);
         action.setOnClickListener(ignored -> {
             if (nextPaused) {
                 page.resumeFromOverview();
@@ -486,12 +483,6 @@ final class SettingsNavigation extends BaseAdapter {
     }
 
     private int dp(int value) { return Math.round(value * screen.getContext().getResources().getDisplayMetrics().density); }
-
-    private Object group(Preference item) {
-        if (item == more || item == support || item == browse || item == screen.getPreference(0)) return item;
-        if (item.getParent() != null) return item.getParent();
-        return sections;
-    }
 
     private static ScreenColors palette() { return ScreenColors.DEFAULT; }
 

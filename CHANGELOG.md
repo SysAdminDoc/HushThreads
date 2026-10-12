@@ -2,6 +2,12 @@
 
 Changes in the source build, then released versions.
 
+## Unreleased
+
+* **Threads:** Redesigned all 11 settings pages with separate cards and blue icons. Search and Pause stay at the top of the home page, and long descriptions wrap without hiding controls.
+* **Threads:** No time limit is dimmed until Keep feed position on return is on. Its saved choice stays intact when that switch is off.
+* **Threads:** Downloads has a Saves section that says when nothing is in progress. Active saves still show progress and Cancel.
+
 ## 0.0.13 (2026-10-10)
 
 * **Threads:** This release patches Threads 450.0.0.51.78 only, the newest stable version. 449.0.0.54.82 and 448.0.0.54.85 aren't offered any more, so if you're still on one of them, update Threads to 450 before you patch. From here on each release moves to the newest stable Threads and drops the one before.

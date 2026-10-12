@@ -78,7 +78,7 @@ public class SettingsAccessibilityTest {
     public void everySectionTitleIsAHeadingAndNothingElseIs() {
         int headings = 0;
         for (View row : rows(SettingsL10nTest.show(controller.get()))) {
-            boolean section = item(row) instanceof PreferenceCategory;
+            boolean section = item(row) instanceof PreferenceCategory || "hushthreads_saves_heading".equals(item(row).getKey());
             assertEquals(item(row) + " heading", section, node(row).isHeading());
             if (section) headings++;
         }
@@ -219,8 +219,8 @@ public class SettingsAccessibilityTest {
         assertTrue(info.getActionList().contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK));
         assertNotNull("the back icon is missing", back.getDrawable());
 
-        View title = ((android.view.ViewGroup) back.getParent()).getChildAt(1);
-        assertEquals("HushThreads", String.valueOf(((TextView) title).getText()));
+        View title = dialog.getView().findViewWithTag("hushthreads_page_title");
+        assertEquals("Settings", String.valueOf(((TextView) title).getText()));
         assertTrue("the screen's title isn't a heading", node(title).isHeading());
     }
 
@@ -251,7 +251,7 @@ public class SettingsAccessibilityTest {
             assertEquals(L10n.t(back.getContext(), "Back"), String.valueOf(node(back).getContentDescription()));
             assertTrue(back.getDrawable().isAutoMirrored());
             assertEquals(View.LAYOUT_DIRECTION_RTL, back.getDrawable().getLayoutDirection());
-            View title = ((android.view.ViewGroup) back.getParent()).getChildAt(1);
+            View title = dialog.getView().findViewWithTag("hushthreads_page_title");
             assertTrue(node(title).isHeading());
 
             int headings = 0;
@@ -260,7 +260,8 @@ public class SettingsAccessibilityTest {
             for (View row : rows(dialog, dp(320))) {
                 Preference preference = item(row);
                 AccessibilityNodeInfo info = node(row);
-                assertEquals(preference.getKey(), preference instanceof PreferenceCategory, info.isHeading());
+                assertEquals(preference.getKey(), preference instanceof PreferenceCategory
+                        || "hushthreads_saves_heading".equals(preference.getKey()), info.isHeading());
                 if (info.isHeading()) headings++;
                 if (info.isClickable()) assertTrue(preference.getKey(), row.getMinimumHeight() >= dp(48));
                 for (int id : new int[]{android.R.id.title, android.R.id.summary}) {

@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(532);
+        Map<String, String> table = new HashMap<>(540);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -317,6 +317,8 @@ public final class L10nTranslations {
                 "Keine App auf diesem Handy kann den Link \u00f6ffnen. Die Adresse ist %1$s.");
         table.put("No matching settings",
                 "Keine passenden Einstellungen");
+        table.put("No saves in progress.",
+                "Keine Speichervorg\u00e4nge aktiv.");
         table.put("No time limit",
                 "Kein Zeitlimit");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
@@ -409,6 +411,8 @@ public final class L10nTranslations {
                 "In der Galerie gespeichert, in geringerer Qualit\u00e4t als auf Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Gespeichert. Starte Threads neu, um diese \u00c4nderung zu \u00fcbernehmen.");
+        table.put("Saves",
+                "Gespeicherte Medien");
         table.put("Saving a carousel",
                 "Karussell wird gespeichert");
         table.put("Saving a photo",
@@ -419,17 +423,19 @@ public final class L10nTranslations {
                 "Einstellungsdatei wird gespeichert");
         table.put("Saving...",
                 "Wird gespeichert \u2026");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Speichern ... Zum Abbrechen \u00f6ffne Downloads in den HushThreads-Einstellungen.");
         table.put("Search settings",
                 "Einstellungen suchen");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Links von Hand ausw\u00e4hlen");
         table.put("Set when you patched",
                 "Beim Patchen festgelegt");
+        table.put("Settings",
+                "Einstellungen");
         table.put("Settings couldn't open",
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -540,15 +546,15 @@ public final class L10nTranslations {
                 "Die Webadressen von Threads sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
         table.put("Tracking in links and analytics uploads",
                 "Tracking in Links und Analyse-Uploads");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Try a different word or clear the search.",
                 "Versuch ein anderes Wort oder l\u00f6sche die Suche.");
         table.put("Try again, or go back to Threads.",
                 "Versuche es noch einmal oder kehre zu Threads zur\u00fcck.");
         table.put("Turn features on or off",
                 "Funktionen ein- oder ausschalten");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
                 "Schaltet beim n\u00e4chsten Start von Threads jeden HushThreads-Schalter au\u00dfer der Debug-Protokollierung aus. Was du beim Patchen gew\u00e4hlt hast, bleibt, und deine Auswahl bleibt gespeichert.");
         table.put("Undo",
@@ -585,6 +591,8 @@ public final class L10nTranslations {
                 "Du hast HushThreads pausiert.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Deine Auswahl bleibt gespeichert. Tippe auf Fortsetzen und starte Threads dann neu.");
+        table.put("Your controls are active.",
+                "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
         table.put("Your switches are working.",
@@ -604,7 +612,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(532);
+        Map<String, String> table = new HashMap<>(540);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -874,6 +882,8 @@ public final class L10nTranslations {
                 "Ninguna app de este tel\u00e9fono puede abrir el enlace. La direcci\u00f3n es %1$s.");
         table.put("No matching settings",
                 "No hay ajustes coincidentes");
+        table.put("No saves in progress.",
+                "No hay guardados en curso.");
         table.put("No time limit",
                 "Sin l\u00edmite de tiempo");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
@@ -966,6 +976,8 @@ public final class L10nTranslations {
                 "Se guard\u00f3 en la galer\u00eda con menos calidad que en Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Guardado. Reinicia Threads para aplicar este cambio.");
+        table.put("Saves",
+                "Guardados");
         table.put("Saving a carousel",
                 "Guardando un carrusel");
         table.put("Saving a photo",
@@ -976,17 +988,19 @@ public final class L10nTranslations {
                 "Guardando el archivo de configuraci\u00f3n");
         table.put("Saving...",
                 "Guardando...");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Guardando... Para cancelar, abre Descargas en los ajustes de HushThreads.");
         table.put("Search settings",
                 "Buscar ajustes");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Seleccionar enlaces a mano");
         table.put("Set when you patched",
                 "Aplicado al parchear");
+        table.put("Settings",
+                "Ajustes");
         table.put("Settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -1097,15 +1111,15 @@ public final class L10nTranslations {
                 "Las direcciones web de Threads est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
         table.put("Tracking in links and analytics uploads",
                 "Seguimiento en enlaces y env\u00edo de anal\u00edticas");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Try a different word or clear the search.",
                 "Prueba otra palabra o borra la b\u00fasqueda.");
         table.put("Try again, or go back to Threads.",
                 "Int\u00e9ntalo de nuevo o vuelve a Threads.");
         table.put("Turn features on or off",
                 "Activa o desactiva funciones");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
                 "Desactiva todos los interruptores de HushThreads, salvo el Registro de depuraci\u00f3n, la pr\u00f3xima vez que se abra Threads. Lo que elegiste al parchear se mantiene y tus preferencias quedan guardadas.");
         table.put("Undo",
@@ -1142,6 +1156,8 @@ public final class L10nTranslations {
                 "Pausaste HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Tus preferencias est\u00e1n guardadas. Toca Reanudar y luego reinicia Threads.");
+        table.put("Your controls are active.",
+                "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
         table.put("Your switches are working.",
@@ -1161,7 +1177,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(532);
+        Map<String, String> table = new HashMap<>(540);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1431,6 +1447,8 @@ public final class L10nTranslations {
                 "Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.");
         table.put("No matching settings",
                 "Tidak ada pengaturan yang cocok");
+        table.put("No saves in progress.",
+                "Tidak ada penyimpanan yang berlangsung.");
         table.put("No time limit",
                 "Tanpa batas waktu");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
@@ -1523,6 +1541,8 @@ public final class L10nTranslations {
                 "Disimpan ke galeri dengan kualitas lebih rendah daripada di Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Tersimpan. Mulai ulang Threads untuk menerapkan perubahan ini.");
+        table.put("Saves",
+                "Penyimpanan");
         table.put("Saving a carousel",
                 "Menyimpan carousel");
         table.put("Saving a photo",
@@ -1533,17 +1553,19 @@ public final class L10nTranslations {
                 "Menyimpan file pengaturan");
         table.put("Saving...",
                 "Menyimpan...");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Menyimpan... Untuk membatalkan, buka Unduhan di pengaturan HushThreads.");
         table.put("Search settings",
                 "Cari pengaturan");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Memilih tautan secara manual");
         table.put("Set when you patched",
                 "Diatur saat Anda menambal");
+        table.put("Settings",
+                "Pengaturan");
         table.put("Settings couldn't open",
                 "Pengaturan tidak dapat dibuka");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -1654,15 +1676,15 @@ public final class L10nTranslations {
                 "Alamat web Threads dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
         table.put("Tracking in links and analytics uploads",
                 "Pelacakan di tautan dan unggahan analitik");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Try a different word or clear the search.",
                 "Coba kata lain atau hapus pencarian.");
         table.put("Try again, or go back to Threads.",
                 "Coba lagi, atau kembali ke Threads.");
         table.put("Turn features on or off",
                 "Aktifkan atau nonaktifkan fitur");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
                 "Mematikan semua sakelar HushThreads kecuali Pencatatan debug saat Threads dibuka berikutnya. Yang Anda pilih saat menambal tetap berlaku, dan pilihan Anda tersimpan.");
         table.put("Undo",
@@ -1699,6 +1721,8 @@ public final class L10nTranslations {
                 "Anda menjeda HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Threads.");
+        table.put("Your controls are active.",
+                "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
         table.put("Your switches are working.",
@@ -1718,7 +1742,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(532);
+        Map<String, String> table = new HashMap<>(540);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1988,6 +2012,8 @@ public final class L10nTranslations {
                 "Nenhum aplicativo neste dispositivo consegue abrir o link. O endere\u00e7o \u00e9 %1$s.");
         table.put("No matching settings",
                 "Nenhuma configura\u00e7\u00e3o encontrada");
+        table.put("No saves in progress.",
+                "Nenhum salvamento em andamento.");
         table.put("No time limit",
                 "Sem limite de tempo");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
@@ -2080,6 +2106,8 @@ public final class L10nTranslations {
                 "Salvo na galeria com qualidade menor que no Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Salvo. Reinicie o Threads para aplicar esta altera\u00e7\u00e3o.");
+        table.put("Saves",
+                "Salvamentos");
         table.put("Saving a carousel",
                 "Salvando um carrossel");
         table.put("Saving a photo",
@@ -2090,17 +2118,19 @@ public final class L10nTranslations {
                 "Salvando o arquivo de configura\u00e7\u00f5es");
         table.put("Saving...",
                 "Salvando...");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Salvando... Para cancelar, abra Downloads nas configura\u00e7\u00f5es do HushThreads.");
         table.put("Search settings",
                 "Buscar configura\u00e7\u00f5es");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Selecionar links manualmente");
         table.put("Set when you patched",
                 "Definido ao aplicar os patches");
+        table.put("Settings",
+                "Configura\u00e7\u00f5es");
         table.put("Settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -2211,15 +2241,15 @@ public final class L10nTranslations {
                 "Os endere\u00e7os web do Threads est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
         table.put("Tracking in links and analytics uploads",
                 "Rastreamento em links e envio de dados de an\u00e1lise");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Try a different word or clear the search.",
                 "Tente outra palavra ou limpe a busca.");
         table.put("Try again, or go back to Threads.",
                 "Tente novamente ou volte para o Threads.");
         table.put("Turn features on or off",
                 "Ative ou desative recursos");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
                 "Desliga todas as op\u00e7\u00f5es do HushThreads, menos o Registro de depura\u00e7\u00e3o, na pr\u00f3xima vez que o Threads abrir. O que voc\u00ea escolheu ao aplicar os patches continua, e suas escolhas ficam salvas.");
         table.put("Undo",
@@ -2256,6 +2286,8 @@ public final class L10nTranslations {
                 "Voc\u00ea pausou o HushThreads.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Suas escolhas est\u00e3o salvas. Toque em Retomar e depois reinicie o Threads.");
+        table.put("Your controls are active.",
+                "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
         table.put("Your switches are working.",
@@ -2275,7 +2307,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(532);
+        Map<String, String> table = new HashMap<>(540);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2545,6 +2577,8 @@ public final class L10nTranslations {
                 "Bu telefondaki hi\u00e7bir uygulama ba\u011flant\u0131y\u0131 a\u00e7am\u0131yor. Adres: %1$s.");
         table.put("No matching settings",
                 "E\u015fle\u015fen ayar yok");
+        table.put("No saves in progress.",
+                "Devam eden kaydetme yok.");
         table.put("No time limit",
                 "S\u00fcre s\u0131n\u0131r\u0131 yok");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
@@ -2637,6 +2671,8 @@ public final class L10nTranslations {
                 "Galeriye Threads'tekinden d\u00fc\u015f\u00fck kalitede kaydedildi");
         table.put("Saved. Restart Threads to apply this change.",
                 "Kaydedildi. Bu de\u011fi\u015fikli\u011fi uygulamak i\u00e7in Threads'i yeniden ba\u015flat.");
+        table.put("Saves",
+                "Kaydetmeler");
         table.put("Saving a carousel",
                 "\u00c7oklu g\u00f6nderi kaydediliyor");
         table.put("Saving a photo",
@@ -2647,17 +2683,19 @@ public final class L10nTranslations {
                 "Ayar dosyas\u0131 kaydediliyor");
         table.put("Saving...",
                 "Kaydediliyor...");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Kaydediliyor... \u0130ptal etmek i\u00e7in HushThreads ayarlar\u0131nda \u0130ndirmeler'i a\u00e7.");
         table.put("Search settings",
                 "Ayarlarda ara");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Ba\u011flant\u0131lar\u0131 elle se\u00e7me");
         table.put("Set when you patched",
                 "Yamalad\u0131\u011f\u0131nda ayarlananlar");
+        table.put("Settings",
+                "Ayarlar");
         table.put("Settings couldn't open",
                 "Ayarlar a\u00e7\u0131lamad\u0131");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -2768,15 +2806,15 @@ public final class L10nTranslations {
                 "Threads'in web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
         table.put("Tracking in links and analytics uploads",
                 "Ba\u011flant\u0131lardaki izleme ve analiz y\u00fcklemeleri");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Try a different word or clear the search.",
                 "Ba\u015fka bir kelime deneyin veya aramay\u0131 temizleyin.");
         table.put("Try again, or go back to Threads.",
                 "Tekrar dene veya Threads'e geri d\u00f6n.");
         table.put("Turn features on or off",
                 "\u00d6zellikleri a\u00e7 veya kapat");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
                 "Threads bir sonraki a\u00e7\u0131l\u0131\u015f\u0131nda Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki t\u00fcm HushThreads anahtarlar\u0131n\u0131 kapat\u0131r. Yamalarken se\u00e7tiklerin kal\u0131r ve tercihlerin kay\u0131tl\u0131 kal\u0131r.");
         table.put("Undo",
@@ -2813,6 +2851,8 @@ public final class L10nTranslations {
                 "HushThreads'u duraklatt\u0131n.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Tercihleriniz kay\u0131tl\u0131. Devam et'e dokunun, sonra Threads'i yeniden ba\u015flat\u0131n.");
+        table.put("Your controls are active.",
+                "Ayarlar\u0131n etkin.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
         table.put("Your switches are working.",

@@ -74,6 +74,8 @@ public class SettingsNavigationTest {
         PatchFamily.inBuildForTests = null;
         Settings.HIDE_ADS.resetToDefault();
         Settings.SANITIZE_SHARING_LINKS.resetToDefault();
+        Settings.BLOCK_RETURN_REFRESH.resetToDefault();
+        Settings.RETURN_REFRESH_NO_LIMIT.resetToDefault();
         BaseSettings.PAUSED.resetToDefault();
         app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.remove(
                 Settings.HIDE_ADS.key);
@@ -137,6 +139,24 @@ public class SettingsNavigationTest {
         assertFalse(Settings.SANITIZE_SHARING_LINKS.savedValue());
         assertTrue(Settings.DISABLE_ANALYTICS.savedValue());
         assertTrue(Settings.HIDE_ADS.savedValue());
+    }
+
+    @Test public void noTimeLimitFollowsTheFeedPositionSwitchWithoutLosingItsChoice() {
+        Settings.BLOCK_RETURN_REFRESH.save(false);
+        Settings.RETURN_REFRESH_NO_LIMIT.save(true);
+        recreate();
+        page.navigation.open(page.findPreference(Settings.BLOCK_RETURN_REFRESH.key));
+        Preference noLimit = page.findPreference(Settings.RETURN_REFRESH_NO_LIMIT.key);
+        assertFalse(noLimit.isEnabled());
+        assertTrue(((SwitchPreference) noLimit).isChecked());
+        tap(Settings.BLOCK_RETURN_REFRESH.key);
+        ShadowLooper.idleMainLooper();
+        assertTrue(noLimit.isEnabled());
+        assertTrue(Settings.RETURN_REFRESH_NO_LIMIT.savedValue());
+        tap(Settings.BLOCK_RETURN_REFRESH.key);
+        ShadowLooper.idleMainLooper();
+        assertFalse(noLimit.isEnabled());
+        assertTrue(Settings.RETURN_REFRESH_NO_LIMIT.savedValue());
     }
 
     @Test public void overviewPauseAndUndoUpdateTheSavedSwitchAndRestartNotice() {
@@ -379,10 +399,10 @@ public class SettingsNavigationTest {
         recreate();
         layout(dialog.getView());
         TextView summary = list().getChildAt(0).findViewById(android.R.id.summary);
-        String[] lines = summary.getText().toString().split("\n", 2);
-        assertEquals("Your choices are saved. Tap Resume, then restart Threads.", lines[0]);
-        assertEquals(app.morphe.extension.shared.L10n.f("Build %1$s",
-                app.morphe.extension.shared.L10n.isolate(app.morphe.extension.shared.Utils.getPatchesBuildIdentity())), lines[1]);
+        assertEquals("Your choices are saved. Tap Resume, then restart Threads.", summary.getText().toString());
+        page.navigation.navigate("About");
+        assertTrue(((PreferenceCategory) page.sections().get(page.sections().size() - 1)).getPreference(0)
+                .getSummary().toString().contains(app.morphe.extension.shared.Utils.getPatchesBuildIdentity()));
     }
 
     /**
@@ -660,7 +680,7 @@ public class SettingsNavigationTest {
                 recreate();
                 page.navigation.open(page.findPreference(Settings.DISABLE_ANALYTICS.key));
                 assertTrue(titles().contains("Analytics address coverage"));
-                capture(mask == 7 ? "analytics-complete" : "analytics-partial");
+                capture(mask == 7 ? "analytics-complete" : "analytics-partial", 1734);
             }
         } finally {
             AnalyticsCoverageTest.Status.mask = 0;
@@ -701,13 +721,19 @@ public class SettingsNavigationTest {
     /** All pages are rendered with the same viewport as the design reference. */
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
     public void renderEveryPageAndSearchOffscreen() throws Exception {
-        capture("00-overview");
+        capture("00-overview", 1734);
         for (Preference section : page.sections()) {
             page.navigation.open(section);
-            capture(section.getTitle().toString().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z]+", "-"));
+            String name = section.getTitle().toString().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z]+", "-");
+            int height = name.equals("feed") ? 1829 : 1734;
+            capture(name, height);
+            if (list().canScrollVertically(1)) {
+                list().setSelection(list().getCount() - 1);
+                capture(name + "-end", height);
+            }
         }
         page.navigation.navigate("more");
-        capture("more-settings");
+        capture("more-settings", 1734);
         page.navigation.back();
         findSearch(dialog.getView()).setText("links");
         ShadowLooper.idleMainLooper(1, java.util.concurrent.TimeUnit.SECONDS);
@@ -733,6 +759,15 @@ public class SettingsNavigationTest {
         AlertDialog notice = (AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
         captureDialog("dialog-licenses", notice);
         notice.dismiss();
+
+        PatchFamily.inBuildForTests = PatchFamily.DEFAULT_SELECTION;
+        recreate();
+        capture("default-overview", 1734);
+        for (Preference section : page.sections()) {
+            page.navigation.open(section);
+            String name = section.getTitle().toString().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z]+", "-");
+            capture("default-" + name, name.equals("feed") ? 1829 : 1734);
+        }
     }
 
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -827,12 +862,21 @@ public class SettingsNavigationTest {
     }
 
     private void capture(String name) throws Exception {
+        capture(name, 1688);
+    }
+
+    private void capture(String name, int height) throws Exception {
         File folder = new File("build/reports/settings-design");
         assertTrue(folder.isDirectory() || folder.mkdirs());
         View root = dialog.getView();
-        layout(root);
-        Bitmap image = Bitmap.createBitmap(780, 1688, Bitmap.Config.ARGB_8888);
-        root.draw(new Canvas(image));
+        layout(root, height);
+        // Match the reference raster density while keeping the native viewport 390 dp wide.
+        int width = height == 1734 ? 841 : height == 1829 ? 819 : 780;
+        float densityScale = width / 780f;
+        Bitmap image = Bitmap.createBitmap(width, Math.round(height * densityScale), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(image);
+        canvas.scale(densityScale, densityScale);
+        root.draw(canvas);
         try (FileOutputStream out = new FileOutputStream(new File(folder, name + ".png"))) {
             assertTrue(image.compress(Bitmap.CompressFormat.PNG, 100, out));
         }

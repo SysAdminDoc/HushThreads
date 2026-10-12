@@ -60,6 +60,7 @@ final class SaveSettingsRows {
     static QualityRow qualityRow(Context context) {
         QualityRow row = new QualityRow(context);
         row.setKey(SaveSettings.DOWNLOAD_QUALITY.key);
+        row.setIcon(SettingsIcons.icon(context, SettingsIcons.SETTINGS, ScreenColors.DEFAULT.heading));
         row.setTitle(L10n.t("Download quality"));
         row.setDialogTitle(L10n.t("Download quality"));
         // A list's dialog keeps DialogPreference's Cancel, which Android fills in the activity's
@@ -115,6 +116,7 @@ final class SaveSettingsRows {
     static FolderRow folderRow(Context context) {
         FolderRow row = new FolderRow(context);
         row.setKey(SaveSettings.SAVE_FOLDER.key);
+        row.setIcon(SettingsIcons.icon(context, SettingsIcons.FOLDER, ScreenColors.DEFAULT.heading));
         row.setTitle(L10n.t("Save folder"));
         row.setDialogTitle(L10n.t("Save folder"));
         row.setDialogMessage(L10n.f("Choose a folder name under Movies and Pictures. Invalid characters become "
@@ -148,6 +150,7 @@ final class SaveSettingsRows {
     static FileNameRow fileNameRow(Context context) {
         FileNameRow row = new FileNameRow(context);
         row.setKey(SaveSettings.FILENAME_TEMPLATE.key);
+        row.setIcon(SettingsIcons.icon(context, SettingsIcons.LICENSE, ScreenColors.DEFAULT.heading));
         row.setTitle(L10n.t("Video file name"));
         row.setDialogTitle(L10n.t("Video file name"));
         row.setDialogMessage(L10n.f("%1$s becomes the date and time of the save, %2$s the video's number on "
@@ -207,9 +210,30 @@ final class SaveSettingsRows {
 
         /** The rows of the saves running now, by save number. */
         private final Map<Integer, SaveRow> saveRows = new HashMap<>();
+        private final Preference savesHeading;
+        private final Preference empty;
 
         Saves(PreferenceCategory group) {
             this.group = group;
+            savesHeading = new Preference(group.getContext()) {
+                @Override protected void onBindView(View row) {
+                    super.onBindView(row);
+                    row.setAccessibilityHeading(true);
+                    HushThreadsPreferenceFragment.showAllText(row);
+                    ScreenColors.heading(row);
+                }
+            };
+            savesHeading.setTitle(L10n.t("Saves"));
+            savesHeading.setKey("hushthreads_saves_heading");
+            savesHeading.setSelectable(false);
+            savesHeading.setPersistent(false);
+            savesHeading.setOrder(Integer.MAX_VALUE - 2);
+            empty = new EmptyRow(group.getContext());
+            empty.setKey("hushthreads_no_saves");
+            empty.setTitle(L10n.t("No saves in progress."));
+            empty.setSelectable(false);
+            empty.setPersistent(false);
+            empty.setOrder(Integer.MAX_VALUE - 1);
         }
 
         /** The page is showing: follow the saves, and say once if Android stopped one. */
@@ -259,6 +283,15 @@ final class SaveSettingsRows {
                 group.removePreference(lastCarouselSave);
             }
             List<SaveControl.Running> running = SaveControl.running();
+            if (running.isEmpty()) {
+                if (group.findPreference(empty.getKey()) == null) {
+                    group.addPreference(savesHeading);
+                    group.addPreference(empty);
+                }
+            } else if (group.findPreference(empty.getKey()) != null) {
+                group.removePreference(empty);
+                group.removePreference(savesHeading);
+            }
             Set<Integer> now = new HashSet<>();
             for (SaveControl.Running save : running) now.add(save.id);
             for (Iterator<Map.Entry<Integer, SaveRow>> rows = saveRows.entrySet().iterator(); rows.hasNext(); ) {
@@ -277,6 +310,41 @@ final class SaveSettingsRows {
                 saveRows.put(save.id, row);
                 group.addPreference(row);
             }
+        }
+    }
+
+    /** The empty Downloads state still says where active saves would appear. */
+    private static final class EmptyRow extends Preference {
+        EmptyRow(Context context) { super(context); }
+
+        @Override protected View onCreateView(ViewGroup parent) {
+            LinearLayout row = new LinearLayout(getContext());
+            row.setOrientation(LinearLayout.VERTICAL);
+            row.setGravity(android.view.Gravity.CENTER);
+            android.widget.ImageView icon = new android.widget.ImageView(getContext());
+            icon.setImageDrawable(SettingsIcons.icon(getContext(), SettingsIcons.DOWNLOADS, ScreenColors.DEFAULT.summary));
+            icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            row.addView(icon, new LinearLayout.LayoutParams(dp(row, 30), dp(row, 30)));
+            TextView title = new TextView(getContext());
+            title.setId(android.R.id.title);
+            title.setGravity(android.view.Gravity.CENTER);
+            title.setTextColor(ScreenColors.DEFAULT.title);
+            title.setTextSize(16);
+            title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", 0));
+            title.setPadding(0, dp(row, 12), 0, 0);
+            row.addView(title);
+            return row;
+        }
+
+        @Override protected void onBindView(View row) {
+            super.onBindView(row);
+            HushThreadsPreferenceFragment.showAllText(row);
+            ScreenColors.DEFAULT.paintSurface(row, this);
+            row.setPaddingRelative(dp(row, 28), dp(row, 32), dp(row, 28), dp(row, 32));
+        }
+
+        private static int dp(View view, int value) {
+            return Math.round(value * view.getResources().getDisplayMetrics().density);
         }
     }
 

@@ -259,9 +259,11 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 feed.addPreference(toggle(context, Settings.BLOCK_RETURN_REFRESH,
                         L10n.t("Keep feed position on return"),
                         L10n.t("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.")));
-                feed.addPreference(toggle(context, Settings.RETURN_REFRESH_NO_LIMIT,
+                SwitchPreference noLimit = toggle(context, Settings.RETURN_REFRESH_NO_LIMIT,
                         L10n.t("No time limit"),
-                        L10n.t("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.")));
+                        L10n.t("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts."));
+                feed.addPreference(noLimit);
+                noLimit.setDependency(Settings.BLOCK_RETURN_REFRESH.key);
             }
             if (build.contains(PatchFamily.VIDEO_AUTOPLAY)) {
                 feed.addPreference(toggle(context, Settings.DISABLE_VIDEO_AUTOPLAY, L10n.t("Tap to play videos"),
@@ -396,12 +398,12 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
             if (build.contains(PatchFamily.REMOVE_SHARE_TARGETS)) {
                 patched.addPreference(mark(info(context, L10n.t("Share sheet entry removed"),
                         L10n.t("Threads doesn't show up when you share from other apps. Sharing from Threads to other "
-                                + "apps still works.")), SettingsIcons.BLOCK));
+                                + "apps still works.")), SettingsIcons.SHARE));
             }
             if (build.contains(PatchFamily.TRUST_USER_CERTIFICATES)) {
                 patched.addPreference(mark(info(context, L10n.t("User certificates trusted"),
                         L10n.t("Threads accepts security certificates you added to your phone. Its own checks on "
-                            + "Meta's certificates are unchanged, so a proxy still can't read most of its traffic.")), SettingsIcons.TOOLS));
+                            + "Meta's certificates are unchanged, so a proxy still can't read most of its traffic.")), SettingsIcons.PATCHED));
             }
             patched.addPreference(info(context, L10n.t("Changing these"),
                     L10n.t("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. "
@@ -412,7 +414,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         PreferenceCategory hushthreads = category(screen, L10n.t("Pause, backup and diagnostics"));
         hushthreads.addPreference(mark(toggle(context, BaseSettings.PAUSED, L10n.t("Pause HushThreads"),
                 L10n.t("Turns off every HushThreads switch except Debug logging the next time Threads starts. What "
-                    + "you chose when you patched stays, and your choices are saved.")), SettingsIcons.PATCHED));
+                    + "you chose when you patched stays, and your choices are saved.")), SettingsIcons.PAUSE));
         String stays = PatchFamily.staysWhilePausedSummary(build);
         // Morphe Manager can export the patch choices and the signing key, not these switches.
         hushthreads.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.EXPORT,
@@ -719,6 +721,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         Row row = new Row(context);
         row.setKey(CHECK_NOW);
         row.setTitle(L10n.t("Check now"));
+        row.setIcon(SettingsIcons.icon(context, SettingsIcons.OPENING, ScreenColors.DEFAULT.heading));
         row.setPersistent(false);
         // The tap starts the check and the row says how it went: nothing opens, so no chevron.
         row.actsAtOnce = true;
@@ -741,6 +744,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         Row row = new Row(context);
         row.setKey(SUPPORTED_LINKS);
         row.setTitle(L10n.t("Supported links"));
+        row.setIcon(SettingsIcons.icon(context, SettingsIcons.LINKS, ScreenColors.DEFAULT.heading));
         row.setPersistent(false);
         row.setSummary(SupportedLinks.summary(SupportedLinks.read(context)));
         row.setOnPreferenceClickListener(p -> {
@@ -856,6 +860,23 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         preference.setKey(setting.key);
         preference.setTitle(title);
         preference.setSummary(summary);
+        String icon = SettingsIcons.SETTINGS;
+        if (setting == Settings.HIDE_ADS) icon = SettingsIcons.BLOCK;
+        else if (setting == Settings.HIDE_SUGGESTED_USERS) icon = SettingsIcons.PERSON;
+        else if (setting == Settings.BLOCK_RETURN_REFRESH) icon = SettingsIcons.BOOKMARK;
+        else if (setting == Settings.RETURN_REFRESH_NO_LIMIT) icon = SettingsIcons.CLOCK;
+        else if (setting == Settings.DISABLE_VIDEO_AUTOPLAY || setting == Settings.DOWNLOAD_COMPATIBLE) icon = SettingsIcons.PLAY;
+        else if (setting == Settings.MAX_IMAGE_QUALITY) icon = SettingsIcons.PHOTO;
+        else if (setting == Settings.SANITIZE_SHARING_LINKS) icon = SettingsIcons.LINKS;
+        else if (setting == Settings.OPEN_LINKS_EXTERNALLY) icon = SettingsIcons.OPENING;
+        else if (setting == Settings.DISABLE_ANALYTICS) icon = SettingsIcons.ANALYTICS;
+        else if (setting == Settings.DISABLE_SCREENSHOT_DETECTION) icon = SettingsIcons.SCREENSHOT;
+        else if (setting == Settings.SAVE_MEDIA) icon = SettingsIcons.DOWNLOADS;
+        else if (setting == Settings.PURE_BLACK) icon = SettingsIcons.MOON;
+        else if (setting == Settings.HIDE_INSTAGRAM_BUTTON) icon = SettingsIcons.CAMERA;
+        else if (setting == Settings.HIDE_GHOST_POST_BUBBLES) icon = SettingsIcons.CHAT;
+        else if (setting == Settings.CHECK_FOR_RELEASES) icon = SettingsIcons.UPDATES;
+        mark(preference, icon);
         return preference;
     }
 
@@ -870,6 +891,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         preference.setSummary(summary);
         preference.setSelectable(false);
         preference.setPersistent(false);
+        mark(preference, SettingsIcons.ABOUT);
         return preference;
     }
 

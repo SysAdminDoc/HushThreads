@@ -86,6 +86,9 @@ public class ScreenColorsTest {
         text.put("row title on its card", new int[]{c.title, c.card});
         text.put("title of a row a tap acts on, on its card", new int[]{c.heading, c.card});
         text.put("row summary on its card", new int[]{c.summary, c.card});
+        text.put("overview status title", new int[]{c.title, c.statusCard});
+        text.put("overview status summary", new int[]{c.summary, c.statusCard});
+        text.put("overview action", new int[]{c.heading, c.statusCard});
         text.put("section title on the page", new int[]{c.heading, c.background});
         text.put("title bar and back arrow on the page", new int[]{c.title, c.background});
         text.put("dialog title on the dialog", new int[]{c.title, c.dialog});
@@ -103,6 +106,7 @@ public class ScreenColorsTest {
     static Map<String, int[]> controls(ScreenColors c) {
         Map<String, int[]> parts = new LinkedHashMap<>();
         parts.put("switch on, against its card", new int[]{c.accent, c.card});
+        parts.put("icon against its tile", new int[]{c.heading, c.iconTile});
         parts.put("switch off, against its card", new int[]{c.switchOff, c.card});
         // The thumb shows where the switch is, so it needs 3:1 against the track it sits on.
         parts.put("switch off's thumb, against its track", new int[]{c.offThumb(), c.switchOff});

@@ -131,16 +131,19 @@ public class SaveSettingsRowsTest {
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SAVE_MEDIA);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             HushThreadsPreferenceFragment page = pageOf(controller);
+            assertNotNull(page.findPreference("hushthreads_no_saves"));
             int id = SavesForTests.begin(controller.get(), true);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             Preference row = page.findPreference("running_save_" + id);
             assertNotNull("the running save isn't listed", row);
+            assertNull("an active save still shows the empty state", page.findPreference("hushthreads_no_saves"));
             assertEquals("Saving a video", String.valueOf(row.getTitle()));
 
             SavesForTests.finishCarousel(SavesForTests.beginCarousel(controller.get(), 2), 2, 0, 0, 0, false);
             SavesForTests.end(id);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             assertNull("an ended save is still listed", page.findPreference("running_save_" + id));
+            assertNotNull("the empty state didn't return", page.findPreference("hushthreads_no_saves"));
             Preference outcome = page.findPreference("hushthreads_last_carousel_save");
             assertNotNull(outcome);
             assertEquals("Saved 2. Failed 0. Skipped 0.", String.valueOf(outcome.getSummary()));

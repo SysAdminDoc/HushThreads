@@ -116,9 +116,25 @@ In Threads, open your profile, tap the settings button at the top and tap HushTh
 
 The settings home page ends with Support HushThreads, under More settings. It opens the Ko-fi page in your browser.
 
+The source build has a refreshed layout across all 11 settings pages. Each control has its own card, with blue icons on a black background. Search and Pause stay at the top of the home page. Downloads shows active saves or an empty Saves section. On Feed, No time limit becomes available when Keep feed position on return is on, and keeps its saved choice when that switch is off.
+
 The row in Threads' settings grows with large text, and TalkBack reads it out and opens it with a double tap. That was checked on Threads 449 and 448 on Android 16.
 
-<p><img src="assets/settings-overview.png" width="320" alt="HushThreads settings with search, Pause and the Feed and Privacy pages"><img src="assets/settings-privacy.png" width="320" alt="Privacy preview with clean shared links, analytics uploads and all three address kinds matched"></p>
+These previews show the native settings layout in the source build. The redesign hasn't been released yet.
+
+<p><img src="assets/settings-overview.png" width="320" alt="Source preview of HushThreads settings with search, Pause, Feed, Privacy, Downloads and More settings"><img src="assets/settings-privacy.png" width="320" alt="Source preview of Privacy with link tracking, browser, analytics and screenshot controls"></p>
+
+<details>
+<summary>Preview the other settings pages</summary>
+
+<p><img src="assets/settings-feed.png" width="240" alt="Feed settings"><img src="assets/settings-downloads.png" width="240" alt="Download controls"><img src="assets/settings-more-settings.png" width="240" alt="More settings navigation"></p>
+<p><img src="assets/settings-appearance.png" width="240" alt="Appearance settings"><img src="assets/settings-links.png" width="240" alt="Supported links and Android link selection"><img src="assets/settings-updates.png" width="240" alt="Release checks and Check now"></p>
+<p><img src="assets/settings-set-when-you-patched.png" width="240" alt="Changes set when patching"><img src="assets/settings-pause-backup-and-diagnostics.png" width="240" alt="Pause, backup and diagnostics"><img src="assets/settings-about.png" width="240" alt="Version, source code and licenses"></p>
+
+The longer pages scroll. See the [empty Saves state](assets/settings-downloads-end.png), [patch-time instructions](assets/settings-set-when-you-patched-end.png) and [remaining diagnostic controls](assets/settings-pause-backup-and-diagnostics-end.png).
+
+</details>
+
 <p><img src="assets/launcher-shortcut.png" width="320" alt="The HushThreads shortcut on Threads' launcher icon"></p>
 
 If Threads crashes within a minute of starting three times in a row, HushThreads pauses itself from the next start and says why at the top of its settings. Your switches stay saved. Tap Resume and restart Threads to turn it back on. A force-stop doesn't count as a crash. On Android 9 and 10 only ordinary crashes count. Android 11 and later also count crashes in Threads' native code and freezes that Android reports as not responding. This was checked on a Galaxy S22 with Threads 449.
@@ -249,13 +265,13 @@ Local APK verification inspects every ELF's load segments and checks uncompresse
 
 ## Reporting a problem
 
-Use [Issues](https://github.com/SysAdminDoc/HushThreads/issues) for bugs and [Discussions](https://github.com/SysAdminDoc/HushThreads/discussions) for questions. Include the Threads version, version code and ABI, Morphe Manager and HushThreads versions, selected patches, reproduction steps and expected/actual behavior. Attach diagnostics or relevant screenshots after removing private messages and account details. Reports stay open until you or another user confirms the fix works.
+Use [Issues](https://github.com/SysAdminDoc/HushThreads/issues) for bugs and [Discussions](https://github.com/SysAdminDoc/HushThreads/discussions) for questions. Include the Threads version, version code and ABI, Morphe Manager and HushThreads versions, selected patches, reproduction steps and expected/actual behavior. Attach diagnostics or relevant screenshots after removing private messages and account details. Reports stay open until the person who opened them confirms the fix works.
 
 HushThreads redacts filesystem paths from exported events and saved crashes, including paths with spaces and escaped forms. Stack-trace filenames and current signing-certificate hashes remain available for troubleshooting. Review an export before sharing it.
 
 The settings overview shows which default patches were left out of your build. Reports also include Android's selections for the app's declared web domains. Android 9 through 11 explicitly report that this platform detail isn't available.
 
-HushThreads shows the bundle's payload hash and source state in the overview. About and both report exports include the full source record. The identity covers the packaged code and extension bytes. Repacking identical contents keeps it stable. Changed or damaged contents can't retain the old identity. Source metadata distinguishes a clean commit, modified inputs and an archive with unknown source. This checks consistency, not the publisher's signature.
+Tap the status card on the settings home page to read the bundle's payload hash and source state. About and both report exports include the full source record. The identity covers the packaged code and extension bytes. Repacking identical contents keeps it stable. Changed or damaged contents can't retain the old identity. Source metadata distinguishes a clean commit, modified inputs and an archive with unknown source. This checks consistency, not the publisher's signature.
 
 ## When Threads updates
 
