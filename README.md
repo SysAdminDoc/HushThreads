@@ -271,7 +271,7 @@ HushThreads redacts filesystem paths from exported events and saved crashes, inc
 
 The settings overview shows which default patches were left out of your build. Reports also include Android's selections for the app's declared web domains. Android 9 through 11 explicitly report that this platform detail isn't available.
 
-Tap the status card on the settings home page to read the bundle's payload hash and source state. About and both report exports include the full source record. The identity covers the packaged code and extension bytes. Repacking identical contents keeps it stable. Changed or damaged contents can't retain the old identity. Source metadata distinguishes a clean commit, modified inputs and an archive with unknown source. This checks consistency, not the publisher's signature.
+Open More settings, then About to read the bundle's payload hash and full source record. Both report exports include it too. The identity covers the packaged code and extension bytes. Repacking identical contents keeps it stable. Changed or damaged contents can't retain the old identity. Source metadata distinguishes a clean commit, modified inputs and an archive with unknown source. This checks consistency, not the publisher's signature.
 
 ## When Threads updates
 

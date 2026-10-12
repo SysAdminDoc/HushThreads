@@ -4,7 +4,7 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
-* **Threads:** Redesigned all 11 settings pages with separate cards and blue icons. Search and Pause stay at the top of the home page, and long descriptions wrap without hiding controls.
+* **Threads:** Redesigned all 11 settings pages with separate cards and blue icons. Search and Pause stay at the top of the home page, and long descriptions wrap without hiding controls. About and diagnostic exports retain the full build details.
 * **Threads:** No time limit is dimmed until Keep feed position on return is on. Its saved choice stays intact when that switch is off.
 * **Threads:** Downloads has a Saves section that says when nothing is in progress. Active saves still show progress and Cancel.
 

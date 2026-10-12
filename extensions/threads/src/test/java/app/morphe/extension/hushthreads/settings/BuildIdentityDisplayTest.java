@@ -71,7 +71,7 @@ public class BuildIdentityDisplayTest {
 
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
     @Config(qualifiers = "w390dp-h844dp-night-xhdpi")
-    public void actualOverviewKeepsTheIdentityInEveryPauseState() throws Exception {
+    public void actualOverviewAndAboutKeepTheIdentityInEveryPauseState() throws Exception {
         renderedPauseStates("identity-overview");
     }
 
@@ -107,8 +107,16 @@ public class BuildIdentityDisplayTest {
                     TextView summary = list.getChildAt(0).findViewById(android.R.id.summary);
                     String text = summary.getText().toString();
                     String identity = L10n.f("Build %1$s", L10n.isolate("sha256=" + "1".repeat(64) + "; source=dirty"));
-                    assertTrue(reason + "/" + savedPause + ": " + text, text.contains(identity));
-                    assertEquals("the identity is shown once", text.indexOf(identity), text.lastIndexOf(identity));
+                    String storedStatus = String.valueOf(((Preference) list.getItemAtPosition(0)).getSummary());
+                    assertTrue(storedStatus, storedStatus.contains(identity));
+                    if (reason == HushThreadsPause.Reason.NONE && !savedPause) {
+                        assertEquals(L10n.t("Your controls are active."), text);
+                    } else if (reason == HushThreadsPause.Reason.SWITCH && savedPause) {
+                        assertEquals(L10n.t("Your choices are saved. Tap Resume, then restart Threads."), text);
+                    } else {
+                        assertTrue(reason + "/" + savedPause + ": " + text, text.contains(identity));
+                        assertEquals("the identity is shown once", text.indexOf(identity), text.lastIndexOf(identity));
+                    }
                     android.text.Layout layout = summary.getLayout();
                     assertNotNull(layout);
                     assertEquals("the final identity bytes aren't cut off", text.length(),
@@ -132,6 +140,22 @@ public class BuildIdentityDisplayTest {
                             assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, out));
                         }
                         bitmap.recycle();
+                    }
+                    HushThreadsPreferenceFragment page = (HushThreadsPreferenceFragment) dialog.getChildFragmentManager()
+                            .findFragmentById(SettingsDialog.CONTAINER_ID);
+                    page.navigation.navigate("About");
+                    root.measure(View.MeasureSpec.makeMeasureSpec(780, View.MeasureSpec.EXACTLY),
+                            View.MeasureSpec.makeMeasureSpec(1688, View.MeasureSpec.EXACTLY));
+                    root.layout(0, 0, 780, 1688);
+                    ShadowLooper.idleMainLooper();
+                    TextView about = list.getChildAt(0).findViewById(android.R.id.summary);
+                    assertTrue("About keeps the complete source record in every pause state",
+                            about.getText().toString().contains(L10n.isolate(IdentityUtils.value)));
+                    android.text.Layout aboutLayout = about.getLayout();
+                    assertNotNull(aboutLayout);
+                    assertEquals(about.length(), aboutLayout.getLineEnd(aboutLayout.getLineCount() - 1));
+                    for (int line = 0; line < aboutLayout.getLineCount(); line++) {
+                        assertEquals("About doesn't truncate the identity", 0, aboutLayout.getEllipsisCount(line));
                     }
                 }
             }

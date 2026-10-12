@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(540);
+        Map<String, String> table = new HashMap<>(538);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -595,8 +595,6 @@ public final class L10nTranslations {
                 "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
-        table.put("Your switches are working.",
-                "Deine Schalter sind aktiv.");
         table.put("none",
                 "keine");
         table.put("the raised version code",
@@ -612,7 +610,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(540);
+        Map<String, String> table = new HashMap<>(538);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1160,8 +1158,6 @@ public final class L10nTranslations {
                 "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
-        table.put("Your switches are working.",
-                "Tus interruptores est\u00e1n funcionando.");
         table.put("none",
                 "ninguna");
         table.put("the raised version code",
@@ -1177,7 +1173,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(540);
+        Map<String, String> table = new HashMap<>(538);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1725,8 +1721,6 @@ public final class L10nTranslations {
                 "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
-        table.put("Your switches are working.",
-                "Sakelar Anda aktif.");
         table.put("none",
                 "tidak ada");
         table.put("the raised version code",
@@ -1742,7 +1736,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(540);
+        Map<String, String> table = new HashMap<>(538);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2290,8 +2284,6 @@ public final class L10nTranslations {
                 "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
-        table.put("Your switches are working.",
-                "Suas op\u00e7\u00f5es est\u00e3o funcionando.");
         table.put("none",
                 "nenhum");
         table.put("the raised version code",
@@ -2307,7 +2299,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(540);
+        Map<String, String> table = new HashMap<>(538);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2855,8 +2847,6 @@ public final class L10nTranslations {
                 "Ayarlar\u0131n etkin.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
-        table.put("Your switches are working.",
-                "Anahtarlar\u0131n \u00e7al\u0131\u015f\u0131yor.");
         table.put("none",
                 "yok");
         table.put("the raised version code",
