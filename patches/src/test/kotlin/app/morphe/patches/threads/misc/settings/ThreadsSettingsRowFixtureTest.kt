@@ -196,7 +196,7 @@ class ThreadsSettingsRowFixtureTest {
     /**
      * Every patch depends on the settings patch, and HushThreads opens from its launcher shortcut
      * and App info without the row, so a build the row doesn't fit still gets the settings patch,
-     * with one warning in the patch log naming why the row was left out, and no part of the row.
+     * with a warning in the patch log naming why the row was left out, and no part of the row.
      */
     @Test
     fun `a build the row doesn't fit gets the rest of the settings patch and a warning`() {
@@ -219,8 +219,11 @@ class ThreadsSettingsRowFixtureTest {
             patchLog.removeHandler(handler)
         }
 
-        assertEquals(warnings.toString(), 1, warnings.size)
-        assertTrue(warnings.single(), warnings.single().contains("Threads' settings row") && warnings.single().contains("left out"))
+        // These stand-ins carry no Threads logo either, so the logo's long press warns too.
+        assertEquals(warnings.toString(), 2, warnings.size)
+        val row = warnings.single { it.contains("Threads' settings row") }
+        assertTrue(row, row.contains("HushThreads row is left out"))
+        assertTrue(warnings.toString(), warnings.any { it.contains("long press on the Threads logo is left out") })
         val onCreate = context.mutableClassDefBy(THREADS_APPLICATION).methods.single { it.name == "onCreate" }.body()
         assertTrue("the application still starts HushThreads", onCreate.any { it.method()?.name == "onApplicationCreate" })
         val stub = context.mutableClassDefBy(SETTINGS_ROW).methods.single { it.name == "showRow" }.body()

@@ -19,6 +19,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import app.morphe.extension.shared.SettingsContextRule;
+import app.morphe.extension.shared.settings.HushThreadsPause;
+import app.morphe.extension.shared.settings.PauseForTests;
 
 import org.junit.After;
 import org.junit.Before;
@@ -254,6 +256,47 @@ public class SettingsEntryTest {
 
         assertNull(answer);
         assertNotNull("the row didn't open the screen", dialogOver(activity.get()));
+    }
+
+    /**
+     * A long press on the Threads logo at the top of the home feed opens the screen over the Threads
+     * screen in front. Compose calls the long press as a Kotlin Function0 and drops what it answers.
+     */
+    @Test public void aLongPressOnTheThreadsLogoOpensTheScreen() {
+        ActivityController<Activity> activity = resumedLauncher();
+        assertNull("a launch from the icon opened the screen", dialogOver(activity.get()));
+
+        Object answer = ThreadsLogo.LONG_PRESS.invoke();
+        ShadowLooper.idleMainLooper();
+
+        assertNull(answer);
+        assertNotNull("the long press didn't open the screen", dialogOver(activity.get()));
+    }
+
+    /** The screen is where HushThreads is resumed, so the logo opens it while HushThreads is paused. */
+    @Test public void aLongPressOnTheThreadsLogoOpensTheScreenWhilePaused() {
+        PauseForTests.pause(HushThreadsPause.Reason.SWITCH);
+        try {
+            assertTrue("the test didn't pause HushThreads", HushThreadsPause.isPaused());
+            ActivityController<Activity> activity = resumedLauncher();
+
+            new ThreadsLogo.LongPress().invoke();
+            ShadowLooper.idleMainLooper();
+
+            assertNotNull("the long press didn't open the screen while paused", dialogOver(activity.get()));
+        } finally {
+            PauseForTests.resume();
+        }
+    }
+
+    /** Threads' launcher activity, started from the icon and in front. */
+    private static ActivityController<Activity> resumedLauncher() {
+        ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class,
+                new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)).create();
+        SettingsEntry.onActivityCreate(activity.get());
+        activity.start().resume();
+        ShadowLooper.idleMainLooper();
+        return activity;
     }
 
     /**

@@ -51,7 +51,8 @@ import app.morphe.extension.shared.Utils;
  * next Threads activity to resume shows the screen as a full screen dialog. The shortcut is kept
  * first among Threads' own, because a launcher shows only the first few, and some launchers have no
  * shortcut menu at all. Inside Threads, a HushThreads row above More settings in Threads' own
- * settings opens it over the screen in front ({@link ThreadsSettingsRow}).
+ * settings opens it over the screen in front ({@link ThreadsSettingsRow}), and so does a long press
+ * on the Threads logo at the top of the home feed ({@link ThreadsLogo}).
  */
 @SuppressWarnings("unused")
 public final class SettingsEntry {
@@ -413,7 +414,20 @@ public final class SettingsEntry {
 
     /** The HushThreads row in Threads' own settings was tapped, over the screen in front. */
     static void openFromThreadsSettings() {
-        request("the row in Threads' settings");
+        openOverFront("the row in Threads' settings");
+    }
+
+    /**
+     * The Threads logo at the top of the home feed was long-pressed. Like the row, it opens the
+     * screen while HushThreads is paused, since the screen is where it's resumed.
+     */
+    static void openFromLogo() {
+        openOverFront("a long press on the Threads logo");
+    }
+
+    /** Asks for the screen and shows it over the Threads screen in front, once that has settled. */
+    private static void openOverFront(String from) {
+        request(from);
         WeakReference<Activity> front = OpenWhenResumed.resumed;
         Activity current = front == null ? null : front.get();
         if (current != null) OpenWhenResumed.openWhenSettled(current);

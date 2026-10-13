@@ -300,6 +300,17 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ThreadsLogo.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/misc/settings/ThreadsLogo.kt"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "A long press on the Threads logo at the top of the home feed that opens HushThreads settings, made by sending the logo's Compose clickable to the combined clickable with Threads' own tap kept, found by the LogoTap refresh reason and the main feed's Compose notes in 450, with no outside code."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/ReturnRefresh.java"
       ],
       "origin": "ported",

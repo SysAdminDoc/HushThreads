@@ -100,20 +100,22 @@ internal val settingsManifestPatch = resourcePatch {
 }
 
 /**
- * Makes the HushThreads screen reachable three ways. From the home screen, a long-press shortcut on
+ * Makes the HushThreads screen reachable four ways. From the home screen, a long-press shortcut on
  * Threads' launcher icon opens Threads with an extra; from Android's App info page for Threads,
  * "Additional settings in the app" opens it with [APPLICATION_PREFERENCES]. Threads' launcher
  * activity reports its intent, and the screen opens over the next Threads activity to resume.
  * Every name used for those is a manifest component or a framework override or call. Inside
  * Threads, a HushThreads row above More settings in Threads' own settings opens it too
- * ([addThreadsSettingsRow]), found by Compose's notes and the settings list's enum names.
+ * ([addThreadsSettingsRow]), found by Compose's notes and the settings list's enum names, and so
+ * does a long press on the Threads logo at the top of the home feed ([addLogoLongPress]), found by
+ * the refresh reason the logo's tap sends. Neither asks whether HushThreads is paused.
  */
 @Suppress("unused")
 val settingsPatch = bytecodePatch(
     name = "HushThreads settings",
     description = "Adds a HushThreads page to Threads where you turn features on or off, pause HushThreads, back up" +
-        " your settings and read the licenses. Open it from Threads' own settings. Works as soon as you " +
-        "patch it in, with no switch.",
+        " your settings and read the licenses. Open it from Threads' own settings, or long-press the Threads " +
+        "logo at the top of your feed. Works as soon as you patch it in, with no switch.",
     default = true,
 ) {
     category("Settings")
@@ -160,6 +162,14 @@ val settingsPatch = bytecodePatch(
             addThreadsSettingsRow()
         } catch (e: PatchException) {
             patchLog.warning("${e.message} The HushThreads row is left out of Threads' settings; HushThreads still opens from its launcher shortcut and App info.")
+        }
+
+        // The same for the long press on the Threads logo, which also reads everything before it
+        // writes anything, so a build it doesn't fit keeps the row and the other ways in.
+        try {
+            addLogoLongPress()
+        } catch (e: PatchException) {
+            patchLog.warning("${e.message} The long press on the Threads logo is left out. HushThreads still opens from the row in Threads' settings, its launcher shortcut and App info.")
         }
     }
 }
