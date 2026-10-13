@@ -13,7 +13,7 @@ Changes in the source build, then released versions.
 * **Tooling:** Source updates can keep an Unreleased changelog while Manager serves the previous release. The published release's date and history remain required.
 * **Tooling:** The signed-app check now requires the logo's settings action exactly once and rejects missing, duplicated or misdirected calls.
 * **Docs:** The README's Help section now explains why the regular Instagram app says "Sorry, we weren't able to load that website" for a post when your Threads is patched.
-* **Threads:** Flip a switch that needs a restart and a Restart row shows up at the top of settings. Tap it and Threads reopens on the page you were on.
+* **Threads:** Flip a switch that needs a restart and a Restart row shows up at the top of settings. Tap it and Threads reopens on the page you were on. Importing a settings file that changes one of those switches brings up the same row.
 
 * **Threads:** Redesigned all 11 settings pages with separate cards and blue icons. Search and Pause stay at the top of the home page, and long descriptions wrap without hiding controls. About and diagnostic exports retain the full build details.
 * **Threads:** No time limit is dimmed until Keep feed position on return is on. Its saved choice stays intact when that switch is off.

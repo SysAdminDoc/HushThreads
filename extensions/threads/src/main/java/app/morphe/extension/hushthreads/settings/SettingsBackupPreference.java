@@ -36,13 +36,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
 import app.morphe.extension.shared.L10n;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.morphe.extension.shared.settings.preference.LogBufferManager;
 
@@ -389,6 +392,9 @@ public class SettingsBackupPreference extends Preference {
         try {
             // Counted before the write, which makes every change match the store.
             String done = importedMessage(snapshot.switchChanges());
+            // What each switch the file changes holds now, to measure the restart it owes against.
+            Map<Setting<?>, Object> before = new LinkedHashMap<>();
+            for (Setting<?> setting : snapshot.changes().keySet()) before.put(setting, setting.savedValue());
             accepted = Utils.runOnBackgroundThread(() -> {
                 try {
                     SettingsBackup.apply(snapshot);
@@ -404,8 +410,16 @@ public class SettingsBackupPreference extends Preference {
                     Utils.runOnMainThread(() -> {
                         AbstractPreferenceFragment.settingImportInProgress = false;
                         finish(run);
+                        // An imported switch that waits for a restart owes one like a flipped one
+                        // does. Measured against the store, so a failed import owes what it left.
+                        for (Map.Entry<Setting<?>, Object> entry : before.entrySet()) {
+                            AbstractPreferenceFragment.recordRestartPending(entry.getKey(), entry.getValue());
+                        }
                         HushThreadsPreferenceFragment current = latestPage.get();
-                        if (current != null && current.isAdded()) current.refreshSwitches();
+                        if (current != null && current.isAdded()) {
+                            current.refreshSwitches();
+                            current.onRestartPendingChanged();
+                        }
                     });
                 }
             });

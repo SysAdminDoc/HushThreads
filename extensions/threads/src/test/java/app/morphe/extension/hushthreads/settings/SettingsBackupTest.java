@@ -717,6 +717,39 @@ public class SettingsBackupTest {
         }
     }
 
+    /** An imported switch that waits for a restart owes one, the same as a flipped one. */
+    @Test
+    public void importingARestartGatedSwitchShowsTheRestartRow() throws Exception {
+        boolean pureBlack = Settings.PURE_BLACK.savedValue();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            SettingsDialog dialog = SettingsL10nTest.show(activity);
+            HushThreadsPreferenceFragment page = SettingsL10nTest.pageOf(dialog);
+            deliver(activity, tap(activity, page, IMPORT_ROW),
+                    fileWith(Settings.PURE_BLACK, !pureBlack, Settings.HIDE_ADS, !Settings.HIDE_ADS.savedValue()));
+            shownPreview().getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("only the restart-gated switch owes one", Collections.singleton(Settings.PURE_BLACK.key),
+                    new HashSet<>(AbstractPreferenceFragment.restartPending));
+            assertTrue("the import left no restart row", restartRowShown(dialog));
+
+            // Importing the value Threads is running with pays the debt back.
+            deliver(activity, tap(activity, page, IMPORT_ROW), fileWith(Settings.PURE_BLACK, pureBlack));
+            shownPreview().getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
+            assertFalse("the restart row stayed with nothing waiting", restartRowShown(dialog));
+        }
+    }
+
+    private static boolean restartRowShown(SettingsDialog dialog) {
+        android.widget.ListView list = dialog.getView().findViewById(android.R.id.list);
+        for (int i = 0; i < list.getCount(); i++) {
+            if (SettingsNavigation.RESTART.equals(((Preference) list.getItemAtPosition(i)).getKey())) return true;
+        }
+        return false;
+    }
+
     @Test
     public void aFileThatChangesNothingSaysSoAndOffersNoImport() throws Exception {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
