@@ -169,9 +169,9 @@ class ReturnRefreshFixtureTest {
     }
 
     @Test
-    fun `450's short log that doesn't go back, sets the answer, or follows a true answer is refused`() {
-        val builds = Fixtures.declaredBuilds().filter { it.name.startsWith("threads-450.") }
-        assertTrue("450 is a declared build", builds.isNotEmpty())
+    fun `a short log that doesn't go back, sets the answer, or follows a true answer is refused`() {
+        val builds = Fixtures.declaredBuilds()
+        assertTrue("a build is declared", builds.isNotEmpty())
         for (build in builds) {
             val fixture = fixture(build)
             val body = fixture.warm.implementation!!.instructions.toList()

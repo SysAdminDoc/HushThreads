@@ -4,6 +4,8 @@
  */
 package app.morphe.extension.hushthreads.settings;
 
+import app.morphe.extension.shared.L10n;
+
 /**
  * A long press on the Threads logo at the top of the home feed opens the HushThreads screen.
  * Threads makes its logo clickable with Compose's clickable, and the settings patch sends that one
@@ -20,6 +22,11 @@ public final class ThreadsLogo {
     static final LongPress LONG_PRESS = new LongPress();
 
     private ThreadsLogo() {
+    }
+
+    /** TalkBack names the action in the current app language each time the header is drawn. */
+    public static String longClickLabel() {
+        return L10n.t("Open HushThreads settings");
     }
 
     /**

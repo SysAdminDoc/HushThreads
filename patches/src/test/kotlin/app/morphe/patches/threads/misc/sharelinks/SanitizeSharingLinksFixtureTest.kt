@@ -16,6 +16,7 @@ import app.morphe.patches.threads.ads.MEDIA
 import app.morphe.patches.threads.misc.extension.SETTINGS_STATUS
 import app.morphe.patcher.util.proxy.mutableTypes.MutableField
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import app.morphe.util.ControlFlow
 import app.morphe.util.RegisterLiveness
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.immutable.ImmutableField
@@ -41,6 +42,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import java.io.File
+import java.util.BitSet
 
 /**
  * Sanitize sharing links on each declared build: one parser of the permalink answer in the whole
@@ -134,6 +136,41 @@ class SanitizeSharingLinksFixtureTest {
     }
 
     @Test
+    fun `the fetch selector skips a result without a post and refuses missing or duplicate post results`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val classes = parserClasses(build)
+            val fetch = fetchOf(classes)
+            for (variant in listOf("decoy", "missing", "duplicate")) {
+                clearMatches()
+                val context = PatchContexts.of(ExtensionDex.classes() + classes)
+                val repository = context.mutableClassDefBy(PERMALINK_REPOSITORY)
+                val selected = repository.methods.single { it.name == fetch.method.name && it.parameterTypes == fetch.method.parameterTypes }
+                val duplicate = ImmutableMethod(
+                    PERMALINK_REPOSITORY, "decoyFetch", fetch.method.parameters, fetch.method.returnType,
+                    fetch.method.accessFlags, fetch.method.annotations, fetch.method.hiddenApiRestrictions, fetch.method.implementation,
+                ).toMutable()
+                if (variant == "missing") {
+                    selected.replaceInstruction(fetch.store, "nop")
+                } else {
+                    if (variant == "decoy") duplicate.replaceInstruction(fetch.store, "nop")
+                    repository.methods.add(duplicate)
+                }
+                if (variant == "decoy") {
+                    sanitizeSharingLinksPatch.execute(context)
+                    assertEquals("${build.name}: the real fetch still gets both hooks", 2,
+                        selected.instructions().count { it.method()?.toString() == POST_LINK })
+                    assertEquals("${build.name}: the decoy gets no hook", 0,
+                        duplicate.instructions().count { it.method()?.toString() == POST_LINK })
+                } else {
+                    val error = assertThrows(PatchException::class.java) { sanitizeSharingLinksPatch.execute(context) }.message.orEmpty()
+                    assertTrue("$variant: $error", error.contains("the fetch that stores the post with its links"))
+                    assertTrue("$variant: $error", error.contains("found ${if (variant == "missing") 0 else 2}"))
+                }
+            }
+        }
+    }
+
+    @Test
     fun `each declared build hands the post out of its holder where Copy link and the other rows read the link`() {
         val share = "Lcom/instagram/barcelona/share/"
         val copy = "${share}usecase/CopyToClipboardUseCase\$copyLink\$result\$1;"
@@ -221,9 +258,15 @@ class SanitizeSharingLinksFixtureTest {
                 val arguments = (body[call] as FiveRegisterInstruction).let { listOf(it.registerC, it.registerD, it.registerE, it.registerF, it.registerG) }
                 val coroutine = arguments[4]
                 val last = stock.implementation!!.registerCount - 1
-                assertTrue("$name: v$coroutine holds the continuation the method was called with",
-                    body.any { it.opcode == Opcode.MOVE_OBJECT && (it as TwoRegisterInstruction).registerA == coroutine && it.registerB == last })
-                assertTrue("$name: and the post is a parameter it gets back null on resume", arguments[2] > last - stock.parameterTypes.size)
+                val copy = body.indices.single { body[it].isObjectMoveTo(coroutine) }
+                assertTrue("$name: v$coroutine copies the continuation the method was called with",
+                    stock.keepsEntryObjectAt(copy, (body[copy] as TwoRegisterInstruction).registerB, last))
+                val mediaParameter = stock.parameterTypes.indexOfFirst { it.toString() == MEDIA }
+                assertTrue("$name: a typed post parameter", mediaParameter >= 0)
+                val parametersStart = stock.implementation!!.registerCount - stock.parameterTypes.sumOf { it.registerWidth() }
+                assertTrue("$name: the fetch gets its typed post parameter, including a low-register copy",
+                    stock.keepsEntryObjectAt(call, arguments[2],
+                        parametersStart + stock.parameterTypes.take(mediaParameter).sumOf { it.registerWidth() }))
 
                 val patched = context.mutableClassDefBy(stock.definingClass).methods
                     .single { it.name == stock.name && it.parameterTypes == stock.parameterTypes }.instructions()
@@ -251,13 +294,16 @@ class SanitizeSharingLinksFixtureTest {
             val stock = quickSends(classes) ?: continue
             seen++
             val body = stock.instructions()
-            val self = stock.implementation!!.registerCount - 2
+            val owner = stock.implementation!!.registerCount - 2
             val stockReads = linkReader(classes)(stock)
             val cast = (0 until stockReads.first()).last { body[it].opcode == Opcode.CHECK_CAST && body[it].type() == MEDIA }
             val load = body[cast - 1] as TwoRegisterInstruction
             val post = (body[cast] as OneRegisterInstruction).registerA
+            val self = load.registerB
             assertEquals("$where: the post comes out of the coroutine's own field", listOf(Opcode.IGET_OBJECT, post, self),
                 listOf(body[cast - 1].opcode, load.registerA, load.registerB))
+            assertTrue("$where: the field receiver copies the coroutine's entry this",
+                stock.keepsEntryObjectAt(cast - 1, self, owner))
             assertTrue("$where: which it empties before it waits",
                 body.any { it.opcode == Opcode.IPUT_OBJECT && it.field() == body[cast - 1].field() })
 
@@ -273,6 +319,58 @@ class SanitizeSharingLinksFixtureTest {
             }
         }
         assertTrue("a declared build has quick sends", seen > 0)
+    }
+
+    @Test
+    fun `continuation and coroutine aliases refuse foreign values wide clobbers and mixed paths`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val classes = parserClasses(build)
+            val reads = linkReader(classes)
+            val story = classes.single { it.type == RESUMED.last() }.methods.single { reads(it).isNotEmpty() }
+            val body = story.instructions()
+            val call = body.indices.single { body[it].isPlainFetchCall() }
+            val key = (body[call] as FiveRegisterInstruction).registerG
+            val copy = body.indices.single { body[it].isObjectMoveTo(key) }
+            val source = (body[copy] as TwoRegisterInstruction).registerB
+            val mediaParameter = story.parameterTypes.indexOfFirst { it.toString() == MEDIA }
+            val post = story.implementation!!.registerCount - story.parameterTypes.sumOf { it.registerWidth() } +
+                story.parameterTypes.take(mediaParameter).sumOf { it.registerWidth() }
+            for ((label, code) in listOf(
+                "foreign alias" to "move-object/from16 v$source, v$post",
+                "alias overwritten" to "const/16 v$source, 0x0",
+                "wide alias overwritten" to "const-wide/16 v${source - 1}, 0x0",
+                "mixed alias paths" to "if-eqz v$source, :kept\nconst/16 v$source, 0x0\n:kept\nnop",
+            )) {
+                clearMatches()
+                val context = PatchContexts.of(ExtensionDex.classes() + classes)
+                context.mutableClassDefBy(story.definingClass).methods.single { it.name == story.name && it.parameterTypes == story.parameterTypes }
+                    .addInstructions(copy, code)
+                val error = assertThrows(label, PatchException::class.java) { sanitizeSharingLinksPatch.execute(context) }.message.orEmpty()
+                assertTrue("$label: $error", error.contains("copies something other than its continuation"))
+            }
+            val quick = quickSends(classes) ?: continue
+            val quickBody = quick.instructions()
+            val read = reads(quick).first()
+            val cast = (0 until read).last { quickBody[it].opcode == Opcode.CHECK_CAST && quickBody[it].type() == MEDIA }
+            val self = (quickBody[cast - 1] as TwoRegisterInstruction).registerB
+            val owner = quick.implementation!!.registerCount - 2
+            val entryCopy = quickBody.indices.first { quickBody[it].isObjectMoveTo(self) && (quickBody[it] as TwoRegisterInstruction).registerB == owner }
+            val result = quick.implementation!!.registerCount - 1
+            for ((label, at, code) in listOf(
+                Triple("foreign field receiver", entryCopy, "move-object/from16 v$self, v$result"),
+                Triple("receiver overwritten before recall", read, "const/16 v$self, 0x0"),
+                Triple("wide receiver overwritten before recall", read, "const-wide/16 v${self - 1}, 0x0"),
+                Triple("mixed field receiver paths", cast - 1, "if-eqz v$self, :kept\nconst/16 v$self, 0x0\n:kept\nnop"),
+            )) {
+                clearMatches()
+                val context = PatchContexts.of(ExtensionDex.classes() + classes)
+                val mutable = context.mutableClassDefBy(quick.definingClass).methods.single { it.name == quick.name }
+                if (label == "foreign field receiver") mutable.replaceInstruction(at, code) else mutable.addInstructions(at, code)
+                val error = assertThrows(label, PatchException::class.java) { sanitizeSharingLinksPatch.execute(context) }.message.orEmpty()
+                val expected = if (at == read) "writes over its coroutine alias" else "without one cast of its own post field"
+                assertTrue("$label: $error", error.contains(expected))
+            }
+        }
     }
 
     @Test
@@ -688,9 +786,11 @@ class SanitizeSharingLinksFixtureTest {
             PostAuthorFingerprint, UsernameFingerprint)) fingerprint.clearMatch()
     }
 
+    // Read independently from the patch's post store guard: this fetch has its own resume state,
+    // while the plain network fetch returns the task directly, even when both name itas-android.
     private fun Method.isPostLinkFetch(): Boolean = definingClass == PERMALINK_REPOSITORY &&
         returnType == "Ljava/lang/Object;" && parameterTypes.size == 4 && parameterTypes[1].toString() == MEDIA &&
-        instructions().any { it.string() == "itas-android" }
+        instructions().any { it.string() == "call to 'resume' before 'invoke' with coroutine" }
 
     /** The stock shape the hook reads, found apart from the patch. */
     private class Fetch(val method: Method, val body: List<Instruction>, val reads: List<Int>, val store: Int) {
@@ -718,6 +818,44 @@ class SanitizeSharingLinksFixtureTest {
     }
 
     private fun Instruction.method(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
+
+    private fun Instruction.isObjectMoveTo(register: Int) =
+        opcode in setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16) &&
+            (this as TwoRegisterInstruction).registerA == register
+
+    private fun CharSequence.registerWidth() = if (toString() in setOf("J", "D")) 2 else 1
+
+    /** Independent forward oracle: intersect object identity at joins, rather than the patch's backwards traversal. */
+    private fun Method.keepsEntryObjectAt(use: Int, register: Int, parameter: Int): Boolean {
+        val flow = ControlFlow.of(this)
+        val before = arrayOfNulls<BitSet>(flow.instructions.size)
+        before[0] = BitSet().apply { set(parameter) }
+        val pending = ArrayDeque<Int>().apply { add(0) }
+        fun merge(at: Int, incoming: BitSet) {
+            val old = before[at]
+            val joined = incoming.clone() as BitSet
+            if (old != null) joined.and(old)
+            if (old == null || old != joined) {
+                before[at] = joined
+                pending += at
+            }
+        }
+        while (pending.isNotEmpty()) {
+            val at = pending.removeFirst()
+            val instruction = flow.instructions[at]
+            val input = before[at]!!
+            val output = input.clone() as BitSet
+            if (instruction.opcode.setsRegister() && instruction.opcode != Opcode.CHECK_CAST) {
+                val destination = (instruction as OneRegisterInstruction).registerA
+                val copy = instruction.isObjectMoveTo(destination)
+                output.set(destination, copy && input[(instruction as TwoRegisterInstruction).registerB])
+                if (instruction.opcode.setsWideRegister()) output.clear(destination + 1)
+            }
+            flow.normal[at].forEach { merge(it, output) }
+            flow.exceptional[at].forEach { merge(it, input) }
+        }
+        return before[use]?.get(register) == true
+    }
 
     /** The index [index]'s branch lands on. */
     private fun List<Instruction>.target(index: Int): Int {

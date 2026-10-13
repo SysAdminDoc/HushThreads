@@ -2,7 +2,7 @@
  * Copyright 2026 HushThreads contributors
  * https://github.com/SysAdminDoc/HushThreads
  *
- * Found by reading 450 (2026-10-10).
+ * Found by reading 450 (2026-10-10), and the moved tray in 451 (2026-10-13).
  */
 package app.morphe.patches.threads.profile
 
@@ -44,6 +44,8 @@ internal const val SHOW_TRAY = "$GHOST_POST_BUBBLES->showTray(Z)Z"
 internal const val PROFILE_BUBBLE_NOTE =
     "com.instagram.barcelona.profile.ui.ProfileGhostPostEntryBubble (ProfileGhostPostEntryBubble.kt:"
 internal const val FEED_TRAY_NOTE = "com.instagram.barcelona.feed.ui.GhostPostFeedTray (GhostPostFeedTray.kt:"
+internal const val MOVED_FEED_TRAY_NOTE = "com.instagram.barcelona.ghost.tray.ui.GhostPostFeedTray (GhostPostFeedTray.kt:"
+internal val FEED_TRAY_NOTES = listOf(FEED_TRAY_NOTE, MOVED_FEED_TRAY_NOTE)
 internal const val MAIN_FEED_NOTE = "com.instagram.barcelona.feed.ui.MainFeedTabContent"
 internal const val ANIMATED_VISIBILITY_NOTE = "androidx.compose.animation.AnimatedVisibility (AnimatedVisibility.kt:"
 
@@ -127,7 +129,7 @@ internal fun BytecodePatchContext.profileBubble(): ProfileBubble {
  * that lambda for the row's case in the one place that hands it to AnimatedVisibility.
  */
 internal fun BytecodePatchContext.feedTray(): VisibilityCall {
-    val tray = composable(FEED_TRAY_NOTE, "the feed's row of ghost post bubbles")
+    val tray = composable(FEED_TRAY_NOTES, "the feed's row of ghost post bubbles")
     val feed = classDefByStrings(MAIN_FEED_NOTE, StringComparisonType.STARTS_WITH)
         .filterNot { it.type.startsWith(EXTENSION_ROOT) }
         .flatMap { it.methods }
@@ -152,15 +154,21 @@ internal fun BytecodePatchContext.feedTray(): VisibilityCall {
 
 /** The one method outside the extension that holds [note], and holds it once, as a Compose function does. */
 private fun BytecodePatchContext.composable(note: String, label: String): Method =
-    classDefByStrings(note, StringComparisonType.STARTS_WITH)
+    composable(listOf(note), label)
+
+/** The tray moved packages in 451. Its two exact notes still have to identify one function once. */
+private fun BytecodePatchContext.composable(notes: List<String>, label: String): Method =
+    notes.flatMap { classDefByStrings(it, StringComparisonType.STARTS_WITH) }
         .filterNot { it.type.startsWith(EXTENSION_ROOT) }
         .flatMap { it.methods }
         .distinctBy { it.signature() }
-        .filter { it.holdsNote(note) }
+        .filter { method -> notes.any { method.holdsNote(it) } }
         // Read through the mutable copy, so what's checked is what the hook goes into.
         .map { mutable(it) }
-        .flatMap { method -> method.body().filter { it.getReference<StringReference>()?.string?.startsWith(note) == true }.map { method } }
-        .singleOrPatchException("$PATCH: $label, the method holding \"$note\"")
+        .flatMap { method -> method.body().filter { instruction ->
+            instruction.getReference<StringReference>()?.string?.let { text -> notes.any { text.startsWith(it) } } == true
+        }.map { method } }
+        .singleOrPatchException("$PATCH: $label, the method holding one of $notes")
 
 /** The one call in [method] to an AnimatedVisibility function, and the register its visible flag goes in. */
 private fun BytecodePatchContext.visibilityCall(method: Method, label: String): VisibilityCall {

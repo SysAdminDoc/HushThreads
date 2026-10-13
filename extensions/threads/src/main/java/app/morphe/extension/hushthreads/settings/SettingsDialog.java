@@ -11,7 +11,6 @@ package app.morphe.extension.hushthreads.settings;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -117,15 +116,13 @@ public final class SettingsDialog extends DialogFragment {
         bar.setPaddingRelative(dp(16), dp(48), dp(16), dp(14));
 
         android.widget.ImageButton back = new android.widget.ImageButton(getContext());
-        android.graphics.drawable.Drawable arrow = SettingsIcons.icon(getContext(), SettingsIcons.BACK, Color.WHITE);
+        android.graphics.drawable.Drawable arrow = SettingsIcons.icon(getContext(), SettingsIcons.BACK, ScreenColors.DEFAULT.title);
         arrow.setBounds(0, 0, dp(24), dp(24));
         arrow.setLayoutDirection(rightToLeft() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         back.setImageDrawable(arrow);
         back.setPadding(dp(12), dp(12), dp(12), dp(12));
-        android.graphics.drawable.GradientDrawable backSurface = new android.graphics.drawable.GradientDrawable();
-        backSurface.setColor(ScreenColors.DEFAULT.card);
-        backSurface.setCornerRadius(dp(12));
-        backSurface.setStroke(dp(1), ScreenColors.DEFAULT.outline);
+        android.graphics.drawable.Drawable backSurface = ScreenColors.DEFAULT.controlSurface(
+                back, ScreenColors.DEFAULT.card, 12, ScreenColors.DEFAULT.outline);
         back.setBackground(new android.graphics.drawable.RippleDrawable(
                 android.content.res.ColorStateList.valueOf(ScreenColors.half(ScreenColors.DEFAULT.accent)), backSurface, null));
         back.setMinimumWidth(dp(48));
@@ -200,11 +197,8 @@ public final class SettingsDialog extends DialogFragment {
         ScreenColors palette = ScreenColors.DEFAULT;
         searchBox = new LinearLayout(getContext());
         searchBox.setGravity(Gravity.CENTER_VERTICAL);
-        android.graphics.drawable.GradientDrawable surface = new android.graphics.drawable.GradientDrawable();
-        surface.setColor(palette.card);
-        surface.setCornerRadius(dp(14));
-        surface.setStroke(dp(1), palette.outline);
-        searchBox.setBackground(surface);
+        searchBox.setAddStatesFromChildren(true);
+        searchBox.setBackground(palette.controlSurface(searchBox, palette.card, 12, palette.outline));
         searchBox.setPaddingRelative(dp(16), 0, 0, 0);
         ImageView icon = new ImageView(getContext());
         icon.setImageDrawable(SettingsIcons.icon(getContext(), SettingsIcons.SEARCH, palette.summary));
@@ -220,12 +214,13 @@ public final class SettingsDialog extends DialogFragment {
         search.setBackground(null);
         search.setTextColor(palette.title);
         search.setHintTextColor(palette.summary);
+        palette.paintTextEditing(search);
         search.setPaddingRelative(dp(12), dp(12), 0, dp(12));
         search.setMinimumHeight(dp(52));
         searchBox.addView(search, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         android.widget.ImageButton clear = new android.widget.ImageButton(getContext());
         clear.setImageDrawable(SettingsIcons.icon(getContext(), SettingsIcons.CLOSE, palette.summary));
-        clear.setBackgroundColor(Color.TRANSPARENT);
+        palette.paintInlineAction(clear);
         clear.setPadding(dp(12), dp(12), dp(12), dp(12));
         clear.setContentDescription(L10n.t("Clear search"));
         clear.setVisibility(View.INVISIBLE);

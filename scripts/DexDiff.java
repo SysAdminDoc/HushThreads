@@ -306,7 +306,19 @@ public class DexDiff {
             shape = parts[at++];
         }
         if (at >= parts.length || !parts[at].equals("holding")) return null;
-        List<String> strings = new ArrayList<>(Arrays.asList(parts).subList(at + 1, parts.length));
+        // Quoted notes keep Compose's source-file suffix in one exact string.
+        String remaining = String.join(" ", Arrays.asList(parts).subList(at + 1, parts.length));
+        var tokens = java.util.regex.Pattern.compile("\"([^\"]+)\"|(\\S+)").matcher(remaining);
+        List<String> strings = new ArrayList<>();
+        int end = 0;
+        while (tokens.find()) {
+            if ((end > 0 && tokens.start() == end) || !remaining.substring(end, tokens.start()).isBlank()) return null;
+            String value = tokens.group(1) == null ? tokens.group(2) : tokens.group(1);
+            if (value.indexOf('"') >= 0) return null;
+            strings.add(value);
+            end = tokens.end();
+        }
+        if (end != remaining.length()) return null;
         if (strings.isEmpty() || new TreeSet<>(strings).size() != strings.size()) return null;
         return new Contract(kind, parts[1], String.join(" ", strings), after, replaced, strings, isStatic, shape);
     }
@@ -1988,6 +2000,7 @@ public class DexDiff {
     private static final String PURE_COLOR = PURE_BLACK + "color(J)J";
     /** Compose's note in Threads' theme, the lambda that builds its colors for dark or light mode. It names the source file, so it survives Redex. */
     private static final String BDS_THEME_NOTE = "com.instagram.barcelona.bds.theme.BdsTheme.<anonymous> (BdsTheme.kt:";
+    private static final String IG_PALETTE_NOTE = "com.instagram.compose.core.theme.IgTheme.<get-colors> (IgTheme.kt:";
     /** Threads' dark mode background, #101010, and white, as the ARGB literals its theme and color schemes load. */
     private static final long THREADS_DARK = 0xff101010L, THREADS_WHITE = 0xffffffffL;
     /** A color scheme's constructor takes at least this many colors and nothing else. Threads' takes 39. */
@@ -3159,9 +3172,15 @@ public class DexDiff {
                 getters.add(m.getName());
             }
         }
-        Method fetch = featureTarget(clean, m -> m.getDefiningClass().equals(PERMALINK_REPOSITORY)
-                && m.getReturnType().equals("Ljava/lang/Object;") && m.getParameterTypes().size() == 4
-                && m.getParameterTypes().get(1).toString().equals(MEDIA) && holds(m, "itas-android"), "post link fetch");
+        // The network-only fetch also names itas-android on 451. Its caller owns the resume state.
+        // Old synthetic fixtures have one labelled fetch and no coroutine prologue.
+        List<Method> labelledFetches = clean.values().stream().flatMap(List::stream).filter(m ->
+                m.getDefiningClass().equals(PERMALINK_REPOSITORY) && m.getReturnType().equals("Ljava/lang/Object;")
+                && m.getParameterTypes().size() == 4 && m.getParameterTypes().get(1).toString().equals(MEDIA)
+                && holds(m, "itas-android")).toList();
+        List<Method> resumedFetches = labelledFetches.stream()
+                .filter(m -> holds(m, "call to 'resume' before 'invoke' with coroutine")).toList();
+        Method fetch = featureOne(resumedFetches.isEmpty() ? labelledFetches : resumedFetches, "post link fetch");
         List<Instruction> body = instructions(fetch);
         List<Integer> reads = linkReads(body, owners, getters);
         requireFeature(!reads.isEmpty(), "post link fetch never reads the permalink");
@@ -3219,6 +3238,7 @@ public class DexDiff {
             List<Integer> fetches = new ArrayList<>();
             for (int k = 0; k < stock.size(); k++) if (plainFetch(stock.get(k), fetch)) fetches.add(k);
             int self = m.getImplementation().getRegisterCount() - 2;
+            FeatureFlow resumedFlow = new FeatureFlow(m);
             Map<Integer, FeatureBlock> resumed = new HashMap<>();
             final int key;
             if (!fetches.isEmpty()) {
@@ -3233,19 +3253,27 @@ public class DexDiff {
             } else if (m.getName().equals("invokeSuspend") && !AccessFlags.STATIC.isSet(m.getAccessFlags())
                     && m.getParameterTypes().size() == 1 && m.getParameterTypes().get(0).toString().equals("Ljava/lang/Object;")
                     && m.getReturnType().equals("Ljava/lang/Object;")) {
-                key = self;
+                Set<Integer> postCasts = new TreeSet<>();
                 for (int read : stockReads) {
-                    int cast = read - 1;
-                    while (cast > 0 && !ownPostCast(stock, cast, self, type)) cast--;
-                    requireFeature(cast > 0, featureSig(m) + " reads the permalink with no cast of its own post field before it");
-                    int kept = registerA(stock.get(cast));
-                    resumed.put(cast + 1, (now, at) -> featureRemember(now, at, self, kept));
+                    List<Integer> casts = java.util.stream.IntStream.range(1, read).boxed()
+                            .filter(cast -> ownPostCast(resumedFlow, cast, self, type)
+                                    && !resumedFlow.reachableWithoutEdge(read, cast, cast + 1)).toList();
+                    postCasts.add(featureOne(casts, featureSig(m) + " own post cast completed on every path to link read " + read));
                 }
+                key = featureOne(postCasts.stream().map(cast -> ((TwoRegisterInstruction) stock.get(cast - 1)).getRegisterB())
+                        .distinct().toList(), featureSig(m) + " coroutine field receiver");
+                for (int cast : postCasts) {
+                    requireFeature(resumedFlow.parameterOnEveryPath(cast + 1, key, self),
+                            featureSig(m) + " loses its coroutine alias before remembering the post");
+                    int kept = registerA(stock.get(cast));
+                    resumed.put(cast + 1, (now, at) -> featureRemember(now, at, key, kept));
+                }
+                for (int read : stockReads) requireFeature(resumedFlow.parameterOnEveryPath(read + 2, key, self),
+                        featureSig(m) + " loses its coroutine alias before recalling the post");
             } else {
                 continue;
             }
             remembers.put(featureSig(m), resumed.size());
-            FeatureFlow resumedFlow = new FeatureFlow(m);
             for (int read : stockReads) {
                 int value = registerA(stock.get(read + 1));
                 resumed.put(read + 2, (now, at) -> featureResumeLink(clean, now, at, value, key, resumedFlow, read + 2));
@@ -3270,13 +3298,19 @@ public class DexDiff {
                 && !featureSig(call).equals(featureSig(own));
     }
 
-    /** Whether [body] at [k] casts to a post what the instruction before read out of [owner]'s own field through this in [self]. */
-    private static boolean ownPostCast(List<Instruction> body, int k, int self, String owner) {
+    /** A post field read through the coroutine's entry this, including proven low-register copies. */
+    private static boolean ownPostCast(FeatureFlow flow, int k, int self, String owner) {
+        List<Instruction> body = flow.layout.instructions;
         if (body.get(k).getOpcode() != Opcode.CHECK_CAST || !reference(body.get(k)).equals(MEDIA)
                 || body.get(k - 1).getOpcode() != Opcode.IGET_OBJECT) return false;
         TwoRegisterInstruction load = (TwoRegisterInstruction) body.get(k - 1);
-        return load.getRegisterB() == self && load.getRegisterA() == registerA(body.get(k))
-                && ((FieldReference) ((ReferenceInstruction) load).getReference()).getDefiningClass().equals(owner);
+        if (load.getRegisterA() != registerA(body.get(k))
+                || !((FieldReference) ((ReferenceInstruction) load).getReference()).getDefiningClass().equals(owner)
+                || !flow.parameterOnEveryPath(k - 1, load.getRegisterB(), self)) return false;
+        for (int from = 0; from < body.size(); from++) {
+            if (from != k - 1 && flow.normal.get(from).contains(k) || flow.guarded.get(from).contains(k)) return false;
+        }
+        return true;
     }
 
     /** The post going to the extension against the coroutine in [key], just before the share waits. */
@@ -3704,7 +3738,13 @@ public class DexDiff {
      * post, Instagram post, trend preview and ad card method's calls to PostVideo with their play
      * flag's register, and the viewer's methods that call PostVideo.
      */
-    private record VideoSites(Method postVideo, Method effect, PlayFlag flag, Map<Method, Map<Integer, Integer>> calls, List<Method> viewers) {}
+    private record VideoSites(Method postVideo, Method effect, PlayFlag flag, List<Method> forwarders, Map<Method, Map<Integer, VideoCall>> calls, List<Method> viewers) {}
+
+    /** A direct or forwarded call's actual play and mask registers, with PostVideo's default. */
+    private record VideoCall(int play, int mask, PlayDefault fallback) {}
+
+    /** PostVideo or a checked shortened overload and the parameters it passes through. */
+    private record VideoTarget(Method method, int play, PlayDefault fallback) {}
 
     /** PostVideo's play flag: the [parameter] it plays by, and the [test] of the register holding it. */
     private record PlayFlag(int parameter, int test) {}
@@ -3725,22 +3765,21 @@ public class DexDiff {
     private static void featureVideoAutoplay(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
         VideoSites sites = featureVideoSites(clean);
         List<Method> stock = new ArrayList<>(List.of(sites.postVideo(), sites.effect()));
+        stock.addAll(sites.forwarders());
         stock.addAll(sites.viewers());
         for (Method m : stock) featureBody(m, featureMethod(patched, featureSig(m)), 0, Map.of(), HOLD_VIDEO);
-        PlayDefault fallback = featurePlayDefault(sites.postVideo(), sites.flag());
-        int maskOffset = 0;
-        if (fallback != null) for (int p = 0; p < fallback.mask(); p++) maskOffset += slots(sites.postVideo().getParameterTypes().get(p));
         Map<String, Integer> calls = new TreeMap<>();
-        for (Map.Entry<Method, Map<Integer, Integer>> e : sites.calls().entrySet()) {
+        for (Map.Entry<Method, Map<Integer, VideoCall>> e : sites.calls().entrySet()) {
             Method caller = e.getKey();
             List<Instruction> body = instructions(caller);
             FeatureFlow flow = new FeatureFlow(caller);
             Map<Integer, Integer> asked = new TreeMap<>();
             Map<Integer, FeatureBlock> defaulted = new HashMap<>();
-            for (Map.Entry<Integer, Integer> call : e.getValue().entrySet()) {
-                int k = call.getKey(), play = call.getValue();
+            for (Map.Entry<Integer, VideoCall> call : e.getValue().entrySet()) {
+                int k = call.getKey(), play = call.getValue().play();
+                PlayDefault fallback = call.getValue().fallback();
                 if (fallback == null) { asked.put(k, play); continue; }
-                int mask = invokeRegisters(body.get(k))[maskOffset];
+                int mask = call.getValue().mask();
                 int[] origin = flow.origin(k, mask);
                 requireFeature(origin != null && origin[0] >= 0 && featureConstant(body.get(origin[0])),
                         featureSig(caller) + " hands PostVideo a default mask in v" + mask + " at instruction " + k + " that isn't one constant");
@@ -3791,10 +3830,8 @@ public class DexDiff {
         requireFeature(AccessFlags.STATIC.isSet(postVideo.getAccessFlags()) && AccessFlags.STATIC.isSet(effect.getAccessFlags()),
                 "PostVideo or its playback effect isn't static");
         PlayFlag flag = featurePlayFlag(postVideo, effect);
-        int offset = 0;
-        for (int p = 0; p < flag.parameter(); p++) offset += slots(postVideo.getParameterTypes().get(p));
-        String target = featureSig(postVideo);
-        Map<Method, Map<Integer, Integer>> calls = new LinkedHashMap<>();
+        Map<String, VideoTarget> targets = featureVideoTargets(clean, postVideo, flag);
+        Map<Method, Map<Integer, VideoCall>> calls = new LinkedHashMap<>();
         List<String> notes = new ArrayList<>(FEED_POST_NOTES);
         notes.addAll(EMBED_NOTES);
         for (String note : notes) {
@@ -3803,8 +3840,13 @@ public class DexDiff {
                 if (!holdsNote(m, note)) continue;
                 List<Instruction> body = instructions(m);
                 for (int k = 0; k < body.size(); k++) {
-                    if (!isStaticInvoke(body.get(k).getOpcode()) || !reference(body.get(k)).equals(target)) continue;
-                    calls.computeIfAbsent(m, unused -> new TreeMap<>()).put(k, invokeRegisters(body.get(k))[offset]);
+                    if (!isStaticInvoke(body.get(k).getOpcode())) continue;
+                    VideoTarget target = targets.get(reference(body.get(k)));
+                    if (target == null) continue;
+                    int[] arguments = invokeRegisters(body.get(k));
+                    int play = arguments[featureVideoOffset(target.method(), target.play())];
+                    int mask = target.fallback() == null ? -1 : arguments[featureVideoOffset(target.method(), target.fallback().mask())];
+                    calls.computeIfAbsent(m, unused -> new TreeMap<>()).put(k, new VideoCall(play, mask, target.fallback()));
                     found++;
                 }
             }
@@ -3812,10 +3854,55 @@ public class DexDiff {
         }
         List<Method> viewers = new ArrayList<>();
         for (List<Method> definitions : clean.values()) for (Method m : definitions) {
-            if (holdsNote(m, MEDIA_VIEWER_NOTE) && !callSites(instructions(m), target).isEmpty()) viewers.add(m);
+            if (holdsNote(m, MEDIA_VIEWER_NOTE) && instructions(m).stream().anyMatch(i -> isStaticInvoke(i.getOpcode()) && targets.containsKey(reference(i)))) viewers.add(m);
         }
         requireFeature(!viewers.isEmpty(), "no call to PostVideo holds \"" + MEDIA_VIEWER_NOTE + "\"");
-        return new VideoSites(postVideo, effect, flag, calls, viewers);
+        List<Method> forwarders = targets.values().stream().map(VideoTarget::method).filter(m -> m != postVideo).toList();
+        return new VideoSites(postVideo, effect, flag, forwarders, calls, viewers);
+    }
+
+    /** 451's embeds call a shortened overload that only fills omitted arguments and forwards. */
+    private static Map<String, VideoTarget> featureVideoTargets(Map<String, List<Method>> clean, Method postVideo, PlayFlag flag) {
+        String post = featureSig(postVideo);
+        PlayDefault fallback = featurePlayDefault(postVideo, flag);
+        Map<String, VideoTarget> targets = new LinkedHashMap<>();
+        targets.put(post, new VideoTarget(postVideo, flag.parameter(), fallback));
+        Set<Opcode> copies = Set.of(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16,
+                Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16);
+        for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+            if (!m.getDefiningClass().equals(postVideo.getDefiningClass()) || featureSig(m).equals(post)) continue;
+            List<Instruction> body = instructions(m);
+            List<Integer> into = callSites(body, post);
+            if (into.isEmpty()) continue;
+            requireFeature(into.size() == 1 && AccessFlags.STATIC.isSet(m.getAccessFlags()) && m.getReturnType().equals(postVideo.getReturnType()),
+                    featureSig(m) + " isn't a straight PostVideo forwarder");
+            int call = into.get(0);
+            requireFeature(call == body.size() - 2 && body.get(body.size() - 1).getOpcode() == Opcode.RETURN_VOID &&
+                    body.subList(0, call).stream().allMatch(i -> copies.contains(i.getOpcode()) || featureConstant(i)),
+                    featureSig(m) + " isn't a straight PostVideo forwarder");
+            int play = featureVideoForwarded(m, call, postVideo, flag.parameter(), "Z");
+            PlayDefault passed = fallback == null ? null : new PlayDefault(featureVideoForwarded(m, call, postVideo, fallback.mask(), "I"), fallback.bit(), fallback.value());
+            requireFeature(targets.put(featureSig(m), new VideoTarget(m, play, passed)) == null, "duplicate PostVideo forwarder " + featureSig(m));
+        }
+        return targets;
+    }
+
+    /** The unmodified incoming parameter a forwarder hands PostVideo for this argument. */
+    private static int featureVideoForwarded(Method forwarder, int call, Method postVideo, int parameter, String type) {
+        int register = invokeRegisters(instructions(forwarder).get(call))[featureVideoOffset(postVideo, parameter)];
+        int[] origin = new FeatureFlow(forwarder).origin(call, register);
+        int first = forwarder.getImplementation().getRegisterCount();
+        for (CharSequence p : forwarder.getParameterTypes()) first -= slots(p);
+        for (int p = 0, at = first; p < forwarder.getParameterTypes().size(); at += slots(forwarder.getParameterTypes().get(p++))) {
+            if (origin != null && origin[0] < 0 && origin[1] == at && forwarder.getParameterTypes().get(p).toString().equals(type)) return p;
+        }
+        throw new IllegalArgumentException(featureSig(forwarder) + " doesn't forward PostVideo's " + type + " parameter unchanged");
+    }
+
+    private static int featureVideoOffset(Method method, int parameter) {
+        int offset = 0;
+        for (int p = 0; p < parameter; p++) offset += slots(method.getParameterTypes().get(p));
+        return offset;
     }
 
     /**
@@ -3972,8 +4059,6 @@ public class DexDiff {
             Method m = featureMethod(clean, featureSig(helper));
             if (!builders.containsKey(m)) builders.put(m, featureDarkLoads(m));
         }
-        requireFeature(builders.values().stream().anyMatch(loads -> !loads.isEmpty()), "Threads' theme no longer loads #101010");
-
         Set<String> schemes = new HashSet<>();
         for (List<Method> definitions : clean.values()) for (Method m : definitions) {
             if (m.getName().equals("<init>") && m.getParameterTypes().size() >= SCHEME_COLORS
@@ -3995,13 +4080,19 @@ public class DexDiff {
         requireFeature(builds.size() == 2, holder + " builds " + builds.size() + " of the color schemes Threads' theme reads, not a dark and a light one");
         boolean firstDark = Double.compare(builds.get(0).lightness(), builds.get(1).lightness()) <= 0;
         SchemeBuild dark = builds.get(firstDark ? 0 : 1), light = builds.get(firstDark ? 1 : 0);
-        List<Integer> backgrounds = new ArrayList<>();
+        List<Integer> backgrounds = new ArrayList<>(), backgroundParameters = new ArrayList<>();
         for (int p = 0; p < dark.colors().size(); p++) {
             if (Long.valueOf(THREADS_DARK << 32).equals(dark.colors().get(p)) && Long.valueOf(THREADS_WHITE << 32).equals(light.colors().get(p))) {
                 backgrounds.add(dark.registers().get(p));
+                backgroundParameters.add(p);
             }
         }
         requireFeature(!backgrounds.isEmpty(), "Threads' dark color scheme has no #101010 where its light one has white");
+        if (builders.values().stream().allMatch(List::isEmpty)) {
+            Method constructor = featureSchemeOnlyTheme(clean, theme, builders.keySet(), type, schemes, backgroundParameters);
+            // This constructor supplies the field-copy proof and must remain unchanged too.
+            builders.put(constructor, List.of());
+        }
         FeatureFlow flow = new FeatureFlow(initializer);
         for (int register : backgrounds) {
             List<Integer> later = new ArrayList<>(flow.readsAfter(dark.call(), register));
@@ -4009,6 +4100,81 @@ public class DexDiff {
             requireFeature(later.isEmpty(), holder + " reads v" + register + " again after building its dark scheme, at " + later);
         }
         return new PureBlackSites(builders, initializer, dark.call(), backgrounds);
+    }
+
+    /**
+     * 451 copies the Bds background into an inherited Instagram palette. Prove the constructor's
+     * parameter-to-field mapping, then follow both halves of the copied color through the CFG.
+     * This follows each wide half through the verifier's independent control-flow analysis.
+     */
+    private static Method featureSchemeOnlyTheme(Map<String, List<Method>> clean, Method theme, Set<Method> builders,
+            String type, Set<String> schemes, List<Integer> backgroundParameters) {
+        List<Method> getters = builders.stream().filter(m -> m != theme).toList();
+        requireFeature(getters.size() == 1 && holdsNote(getters.get(0), IG_PALETTE_NOTE),
+                "Threads' theme no longer loads #101010 or reads its inherited Instagram palette");
+        Method constructor = featureTarget(clean, m -> m.getDefiningClass().equals(type) && m.getName().equals("<init>")
+                && m.getParameterTypes().size() >= SCHEME_COLORS && m.getParameterTypes().stream().allMatch(p -> p.toString().equals("J")),
+                "the Bds color scheme constructor");
+        FeatureFlow stored = new FeatureFlow(constructor);
+        int self = constructor.getImplementation().getRegisterCount() - 1 - 2 * constructor.getParameterTypes().size();
+        Map<String, Integer> fields = new LinkedHashMap<>();
+        Set<String> written = new HashSet<>();
+        for (int n = 0; n < stored.layout.instructions.size(); n++) {
+            Instruction i = stored.layout.instructions.get(n);
+            if (i.getOpcode() != Opcode.IPUT_WIDE) continue;
+            FieldReference field = (FieldReference) ((ReferenceInstruction) i).getReference();
+            TwoRegisterInstruction store = (TwoRegisterInstruction) i;
+            if (!field.getDefiningClass().equals(type) || !field.getType().equals("J") || store.getRegisterB() != self) continue;
+            requireFeature(written.add(field.toString()), "the Bds constructor writes " + field + " more than once");
+            int[] origin = featureWideOrigin(stored, n, store.getRegisterA());
+            if (origin != null && origin[0] == -1 && origin[1] > self && (origin[1] - self - 1) % 2 == 0) {
+                fields.put(field.toString(), (origin[1] - self - 1) / 2);
+            }
+        }
+        Set<String> backgrounds = new HashSet<>();
+        for (int parameter : backgroundParameters) backgrounds.add(featureOne(fields.entrySet().stream()
+                .filter(e -> e.getValue() == parameter).map(Map.Entry::getKey).toList(), "the field storing dark background argument " + parameter));
+        requireFeature(backgrounds.size() == backgroundParameters.size(), "dark backgrounds share a Bds field");
+        FeatureFlow copied = new FeatureFlow(theme);
+        Set<String> built = new HashSet<>();
+        for (Instruction i : copied.layout.instructions) if (i.getOpcode() == Opcode.NEW_INSTANCE) built.add(reference(i));
+        boolean complete = false;
+        for (int n = 0; n < copied.layout.instructions.size(); n++) {
+            Instruction i = copied.layout.instructions.get(n);
+            if (i.getOpcode() != Opcode.INVOKE_DIRECT_RANGE) continue;
+            MethodReference call = (MethodReference) ((ReferenceInstruction) i).getReference();
+            if (!call.getName().equals("<init>") || !built.contains(call.getDefiningClass()) || !schemes.contains(call.getDefiningClass())
+                    || !call.getParameterTypes().stream().allMatch(p -> p.toString().equals("J"))) continue;
+            Set<String> forwarded = new HashSet<>();
+            for (int p = 0; p < call.getParameterTypes().size(); p++) {
+                int[] origin = featureWideOrigin(copied, n, ((RegisterRangeInstruction) i).getStartRegister() + 1 + 2 * p);
+                if (origin == null || origin[0] < 0) continue;
+                Instruction load = copied.layout.instructions.get(origin[0]);
+                if (load.getOpcode() == Opcode.IGET_WIDE && backgrounds.contains(reference(load))) forwarded.add(reference(load));
+            }
+            if (forwarded.containsAll(backgrounds)) complete = true;
+        }
+        requireFeature(complete, "Threads' theme no longer copies every known dark background into the same inherited palette");
+        return constructor;
+    }
+
+    /** The wide definition on every path, following wide copies and refusing a clobbered half. */
+    private static int[] featureWideOrigin(FeatureFlow flow, int use, int register) {
+        Set<List<Integer>> visited = new HashSet<>();
+        while (visited.add(List.of(use, register))) {
+            Set<Integer> low = flow.reaching(use, register), high = flow.reaching(use, register + 1);
+            if (low.size() != 1 || !low.equals(high)) return null;
+            int write = low.iterator().next();
+            if (write == -1) return new int[]{-1, register};
+            Instruction i = flow.layout.instructions.get(write);
+            if (!i.getOpcode().setsWideRegister() || registerA(i) != register) return null;
+            if (i.getOpcode() != Opcode.MOVE_WIDE && i.getOpcode() != Opcode.MOVE_WIDE_FROM16 && i.getOpcode() != Opcode.MOVE_WIDE_16) {
+                return new int[]{write, register};
+            }
+            use = write;
+            register = ((TwoRegisterInstruction) i).getRegisterB();
+        }
+        return null;
     }
 
     /** Every place [m] loads #101010 as a wide literal. */
@@ -4398,6 +4564,7 @@ public class DexDiff {
         featureHostCalls(patched, HOLD_VIDEO, Map.of());
         VideoSites sites = featureVideoSites(clean);
         Set<String> hooked = new HashSet<>(List.of(featureSig(sites.postVideo()), featureSig(sites.effect())));
+        for (Method forwarder : sites.forwarders()) hooked.add(featureSig(forwarder));
         for (Method caller : sites.calls().keySet()) hooked.add(featureSig(caller));
         for (Method viewer : sites.viewers()) hooked.add(featureSig(viewer));
         featurePreserveTargets(clean, patched, m -> hooked.contains(featureSig(m)));

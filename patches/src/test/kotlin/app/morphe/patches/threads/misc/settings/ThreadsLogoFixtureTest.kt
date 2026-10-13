@@ -120,7 +120,7 @@ class ThreadsLogoFixtureTest {
                 patched.filterIndexed { index, _ -> index != fixture.call && index != fixture.call + 2 }.code().map { it.opcode })
             assertEquals("$where: no clickable left for the logo", 0, patched.count { it.method()?.toString() == fixture.clickable })
 
-            // The stand-in: Threads' arguments cast back, no long press label, the extension's long
+            // The stand-in: Threads' arguments cast back, its translated label, the extension's long
             // press, no double tap, Threads' tap and its enabled flag, into the combined clickable.
             val stubMethod = context.mutableClassDefBy(THREADS_LOGO).methods.single { it.name == "clickable" }
             val stub = stubMethod.body()
@@ -141,9 +141,11 @@ class ThreadsLogoFixtureTest {
                 assertEquals("$where: argument $argument comes from Threads", parameter(argument), copiedFrom(argument))
             }
             assertEquals("$where: Threads' label", parameter(4), copiedFrom(4))
-            for (argument in listOf(5, 7)) {
-                assertEquals("$where: argument $argument", 0, (writer(argument) as NarrowLiteralInstruction).narrowLiteral)
-            }
+            val label = writer(5)
+            assertEquals("$where: the accessibility label", Opcode.MOVE_RESULT_OBJECT, label.opcode)
+            assertEquals("$THREADS_LOGO->longClickLabel()Ljava/lang/String;",
+                stub[stub.indexOf(label) - 1].method().toString())
+            assertEquals("$where: no double tap", 0, (writer(7) as NarrowLiteralInstruction).narrowLiteral)
             assertEquals("$where: the long press", LOGO_LONG_PRESS_FIELD,
                 writer(6).takeIf { it.opcode == Opcode.SGET_OBJECT }?.getReference<FieldReference>().toString())
             assertEquals("$where: Threads' tap", FUNCTION0,

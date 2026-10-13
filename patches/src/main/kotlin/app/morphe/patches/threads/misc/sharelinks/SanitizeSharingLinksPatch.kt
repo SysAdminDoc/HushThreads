@@ -16,6 +16,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.threads.ads.MEDIA
+import app.morphe.patches.threads.feed.reaching
 import app.morphe.patches.threads.misc.extension.enableStatus
 import app.morphe.patches.threads.misc.extension.freeLocalsAt
 import app.morphe.patches.threads.misc.extension.localRegisterCount
@@ -68,14 +69,20 @@ internal const val USER = "Lcom/instagram/user/model/User;"
 
 /**
  * The share sheet's fetch of a post's link: a suspend function taking the post, which reads the
- * link out of the server's answer and hands it on with the post. The only one in its class that
- * names "itas-android", the label it asks the post for to put the post's text before the link.
+ * link out of the server's answer and hands it on with the post. It names "itas-android", the
+ * label it asks the post for to put the post's text before the link, and stores the post in its
+ * result. Since 451 the plain network fetch names the same label, but never stores the post.
  */
 internal object PostLinkFetchFingerprint : Fingerprint(
     definingClass = PERMALINK_REPOSITORY,
     returnType = "Ljava/lang/Object;",
     parameters = listOf("L", MEDIA, "L", "L"),
     filters = listOf(string("itas-android")),
+    custom = { method, _ ->
+        method.implementation?.instructions?.any {
+            it.opcode == Opcode.IPUT_OBJECT && it.getReference<FieldReference>()?.type == MEDIA
+        } == true
+    },
 )
 
 /** A post's code, the last part of its own link. Pando reads a field by its name's hash. */
@@ -241,7 +248,8 @@ val sanitizeSharingLinksPatch = bytecodePatch(
  * and once for the link it keeps, and stores the post with both.
  */
 private fun BytecodePatchContext.replaceShortLinks(link: FieldReference) {
-    val method = PostLinkFetchFingerprint.method
+    val method = PostLinkFetchFingerprint.matchAllOrNull().orEmpty()
+        .singleOrPatchException("$PATCH: the fetch that stores the post with its links").method
     val where = "${method.definingClass}->${method.name}"
     val body = method.implementation!!.instructions.toList()
 
@@ -408,7 +416,7 @@ private fun BytecodePatchContext.rememberAtFetch(
         requireThisIntact(PATCH, calls + reads.map { it + 2 })
     } else {
         val continuation = body[calls.first()].getReference<MethodReference>()!!.parameterTypes[3].toString()
-        requireOwnContinuation(where, coroutine, continuation, reads)
+        requireOwnContinuation(where, coroutine, continuation, calls + reads.map { it + 2 })
     }
     if (coroutine > 15 || arguments.any { it[2] > 15 }) {
         throw PatchException("$PATCH: $where keeps the continuation or the post above v15")
@@ -428,20 +436,27 @@ private fun BytecodePatchContext.rememberAtCast(method: MutableMethod, types: Se
     val where = "$definingClass->$name"
     val body = implementation!!.instructions.toList()
     val reads = body.linkReads(types, getters)
-    val self = localRegisterCount()
+    val owner = localRegisterCount()
+    requireThisIntact(PATCH, reads.map { it + 2 })
     val flow = ControlFlow.of(this)
     val casts = body.indices.filter { cast ->
         val load = body.getOrNull(cast - 1) as? TwoRegisterInstruction ?: return@filter false
         body[cast].opcode == Opcode.CHECK_CAST && body[cast].getReference<TypeReference>()!!.type == MEDIA &&
             load.opcode == Opcode.IGET_OBJECT && load.getReference<FieldReference>()!!.definingClass == definingClass &&
-            load.registerB == self && load.registerA == (body[cast] as OneRegisterInstruction).registerA &&
+            isParameterAliasBefore(cast - 1, load.registerB, owner) && load.registerA == (body[cast] as OneRegisterInstruction).registerA &&
             flow.normal.indices.none { from -> (from != cast - 1 && cast in flow.normal[from]) || cast in flow.exceptional[from] }
     }
     val posts = reads.map { read ->
         casts.singleOrNull { flow.dominates(it, read) }
             ?: throw PatchException("$PATCH: $where reads the link at $read without one cast of its own post field on every path there")
     }.distinct()
-    requireThisIntact(PATCH, posts.flatMap { listOf(it - 1, it + 1) } + reads.map { it + 2 })
+    val self = posts.map { (body[it - 1] as TwoRegisterInstruction).registerB }.distinct().singleOrNull()
+        ?: throw PatchException("$PATCH: $where loads its post through more than one coroutine alias")
+    for (at in posts.map { it + 1 } + reads.map { it + 2 }) {
+        if (!isParameterAliasBefore(at, self, owner)) {
+            throw PatchException("$PATCH: $where writes over its coroutine alias in v$self before instruction $at")
+        }
+    }
     val registers = posts.map { (body[it] as OneRegisterInstruction).registerA }
     if (self > 15 || registers.any { it > 15 }) throw PatchException("$PATCH: $where keeps this or the post above v15")
     val edits: Edits = mutableListOf()
@@ -506,7 +521,7 @@ private fun Method.requireOwnContinuation(where: String, register: Int, continua
         val instruction = body[index]
         when (instruction.opcode) {
             Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16 ->
-                if ((instruction as TwoRegisterInstruction).registerB == parameter) null
+                if (isParameterAliasBefore(index, (instruction as TwoRegisterInstruction).registerB, parameter)) null
                 else throw PatchException("$PATCH: $where copies something other than its continuation into v$register at $index")
             Opcode.CHECK_CAST, Opcode.NEW_INSTANCE -> instruction.getReference<TypeReference>()!!.type
             // 448 makes the new continuation in a static factory.
@@ -528,6 +543,42 @@ private fun Method.requireOwnContinuation(where: String, register: Int, continua
     }
     val unset = reads.filter { reached[it] }
     if (unset.isNotEmpty()) throw PatchException("$PATCH: $where can reach its link read at ${unset.joinToString()} before v$register holds its continuation")
+}
+
+/**
+ * Whether every reaching value in [register] is still the object in [parameter] at entry.
+ * Follow object moves and casts backwards, including both arms of joins and exception paths.
+ * A wide write into either half, a different entry register or a non-object definition refuses
+ * the alias. Revisited nodes terminate loops, but a cycle without an entry origin proves nothing.
+ */
+private fun Method.isParameterAliasBefore(index: Int, register: Int, parameter: Int): Boolean {
+    val body = implementation!!.instructions.toList()
+    val pending = ArrayDeque<Pair<Int, Int>>()
+    val seen = mutableSetOf<Pair<Int, Int>>()
+    var ownsEntry = false
+    pending += index to register
+    while (pending.isNotEmpty()) {
+        val point = pending.removeFirst()
+        if (!seen.add(point)) continue
+        val (at, value) = point
+        val reaching = reaching(at, setOf(value))
+        if (reaching.fromEntry) {
+            if (value != parameter) return false
+            ownsEntry = true
+        }
+        if (reaching.writes.isEmpty() && !reaching.fromEntry) return false
+        for (write in reaching.writes) {
+            val instruction = body[write]
+            if (instruction.opcode.setsWideRegister()) return false
+            when (instruction.opcode) {
+                Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16 ->
+                    pending += write to (instruction as TwoRegisterInstruction).registerB
+                Opcode.CHECK_CAST -> pending += write to value
+                else -> return false
+            }
+        }
+    }
+    return ownsEntry
 }
 
 /** Whether every path from the method's start to [to] runs [through] first. */

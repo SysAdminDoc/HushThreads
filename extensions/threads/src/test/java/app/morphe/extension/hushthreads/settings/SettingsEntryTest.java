@@ -273,6 +273,13 @@ public class SettingsEntryTest {
         assertNotNull("the long press didn't open the screen", dialogOver(activity.get()));
     }
 
+    @Test public void theLogoLongPressHasATranslatedAccessibilityLabel() {
+        org.junit.Assert.assertEquals("Open HushThreads settings", ThreadsLogo.longClickLabel());
+        RuntimeEnvironment.setQualifiers("+de");
+        org.junit.Assert.assertEquals(app.morphe.extension.shared.L10nTablesForTests.of("de")
+                .get("Open HushThreads settings"), ThreadsLogo.longClickLabel());
+    }
+
     /** The screen is where HushThreads is resumed, so the logo opens it while HushThreads is paused. */
     @Test public void aLongPressOnTheThreadsLogoOpensTheScreenWhilePaused() {
         PauseForTests.pause(HushThreadsPause.Reason.SWITCH);

@@ -284,3 +284,13 @@ Photos load at the largest size Threads has, not one picked for your screen. The
 Support HushThreads	HushThreads'i destekle
 # context: that row's summary; Ko-fi is a tipping site's name and stays as it is
 Buy me a coffee on Ko-fi	Ko-fi'de bana bir kahve ısmarla
+# context: reports use the app's own Downloads folder on Android 9, where the shared Downloads collection isn't available
+Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.	Kısa raporu kopyala veya tam raporu Threads'in kendi İndirilenler klasörüne kaydet. Bağlantılar, kimlikler, çerezler ve oturum belirteçleri çıkarılır. Paylaşmadan önce başka özel bilgi olup olmadığına bak.
+Save the full report in Threads' own Downloads folder.	Tam raporu Threads'in kendi İndirilenler klasörüne kaydeder.
+# context: diagnostic clear row's title when its next tap restores what was cleared
+Restore diagnostic data	Tanılama verilerini geri yükle
+# context: disabled backup row. The placeholder names the file action that is running on the other row
+%1$s. This action will be available when it finishes.	%1$s. Bittiğinde bu işlem yeniden kullanılabilir.
+
+# context: TalkBack action for a long press on the Threads logo in the feed header
+Open HushThreads settings	HushThreads ayarlarını aç

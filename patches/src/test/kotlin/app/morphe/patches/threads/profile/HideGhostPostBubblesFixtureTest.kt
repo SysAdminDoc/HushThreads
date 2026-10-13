@@ -11,6 +11,7 @@ import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -75,7 +76,7 @@ class HideGhostPostBubblesFixtureTest {
 
             // The feed's row: one function, drawn by one main feed method, whose class one main feed
             // AnimatedVisibility builds. There the flag is a boolean field of the lambda itself.
-            val tray = methods.single { it.holdsNote(FEED_TRAY_NOTE) }
+            val tray = methods.single { method -> FEED_TRAY_NOTES.any { method.holdsNote(it) } }
             val feed = methods.filter { it.holdsNote(MAIN_FEED_NOTE) }
             val drawer = feed.single { method -> method.body().any { it.calls(tray) } }
             val wrapper = feed.single { method ->
@@ -180,6 +181,32 @@ class HideGhostPostBubblesFixtureTest {
         }
     }
 
+    @Test
+    fun `a missing or second feed tray note is refused before either hook changes`() {
+        for (build in Fixtures.declaredBuilds()) {
+            for (duplicate in listOf(false, true)) {
+                val context = context(build)
+                val profile = context.profileBubble()
+                val tray = classes(build).flatMap { it.methods }.single { method -> FEED_TRAY_NOTES.any { method.holdsNote(it) } }
+                val method = context.mutable(tray)
+                val note = method.body().indexOfFirst { instruction ->
+                    instruction.getReference<StringReference>()?.string?.let { text -> FEED_TRAY_NOTES.any { text.startsWith(it) } } == true
+                }
+                val register = (method.body()[note] as OneRegisterInstruction).registerA
+                if (duplicate) {
+                    method.addInstructions(note + 1, "const-string v$register, \"${FEED_TRAY_NOTE}112)\"")
+                } else {
+                    method.replaceInstruction(note, "const-string v$register, \"another tray\"")
+                }
+                val error = assertThrows(build.name, PatchException::class.java) { hideGhostPostBubblesPatch.execute(context) }
+                assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("expected exactly one match, found ${if (duplicate) 2 else 0}"))
+                assertEquals(build.name, 0, status(context))
+                assertFalse(build.name, context.mutable(profile.method).body().any { it.calls(SHOW_ON_PROFILE) })
+                assertFalse(build.name, method.body().any { it.calls(SHOW_TRAY) })
+            }
+        }
+    }
+
     private fun Method.body(): List<Instruction> = implementation!!.instructions.toList()
 
     private fun Method.signature() = "$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
@@ -213,7 +240,7 @@ class HideGhostPostBubblesFixtureTest {
         .single { it.name == "hideGhostPostBubbles" }.implementation!!.instructions.first() as NarrowLiteralInstruction).narrowLiteral
 
     private companion object {
-        val NOTES = listOf(PROFILE_BUBBLE_NOTE, FEED_TRAY_NOTE, MAIN_FEED_NOTE, ANIMATED_VISIBILITY_NOTE)
+        val NOTES = listOf(PROFILE_BUBBLE_NOTE, MAIN_FEED_NOTE, ANIMATED_VISIBILITY_NOTE) + FEED_TRAY_NOTES
 
         /** One read of each build serves every test; each test patches its own copy. */
         val fixtures = mutableMapOf<File, List<ClassDef>>()

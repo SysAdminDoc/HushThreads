@@ -29,8 +29,9 @@ import app.morphe.extension.shared.L10n;
 import app.morphe.extension.shared.Logger;
 
 /**
- * Which of Threads' web addresses (threads.com and threads.net, with and without www.) Android
- * sends to this app, read for this app alone.
+ * Which declared Threads post addresses Android sends to this app, read for this app alone.
+ * Only hosts Android reports as declared are considered. Chat and account callback domains stay
+ * in the diagnostic report, but don't decide whether post links open here.
  *
  * <p>Android verifies an app's web links against the signing key the site names, so a re-signed
  * Threads loses Meta's verification and threads.com links can stop opening in it (Morphe Manager
@@ -41,6 +42,9 @@ import app.morphe.extension.shared.Logger;
  */
 final class SupportedLinks {
     enum State { VERIFIED, SELECTED, SOME, NONE, DISABLED, UNKNOWN, NOT_REPORTED }
+
+    private static final List<String> POST_HOSTS = Arrays.asList(
+            "threads.com", "www.threads.com", "threads.net", "www.threads.net");
 
     // Domain diagnostics ported from Hushfacebook 4d1fec1e and c7059151.
     static final LogBufferManager.ReportSection REPORT = new LogBufferManager.ReportSection() {
@@ -117,14 +121,18 @@ final class SupportedLinks {
         return Arrays.asList("availability: unknown", "link_handling_allowed: unknown", "domains: unknown");
     }
 
-    /** The whole app's answer from each address's; a state this code doesn't know is UNKNOWN. */
+    /** Declared post hosts only; an unreadable post state is UNKNOWN. Other domains remain in reports. */
     @RequiresApi(Build.VERSION_CODES.S)
     private static State state(boolean allowed, Map<String, Integer> hosts) {
         if (!allowed) return State.DISABLED;
         if (hosts == null || hosts.isEmpty()) return State.UNKNOWN;
         int verified = 0;
         int open = 0;
-        for (Integer state : hosts.values()) {
+        int declared = 0;
+        for (Map.Entry<String, Integer> host : hosts.entrySet()) {
+            if (!POST_HOSTS.contains(host.getKey())) continue;
+            declared++;
+            Integer state = host.getValue();
             if (state == null) return State.UNKNOWN;
             switch (state) {
                 case DomainVerificationUserState.DOMAIN_STATE_VERIFIED:
@@ -140,8 +148,9 @@ final class SupportedLinks {
                     return State.UNKNOWN;
             }
         }
-        if (verified == hosts.size()) return State.VERIFIED;
-        if (open == hosts.size()) return State.SELECTED;
+        if (declared == 0) return State.UNKNOWN;
+        if (verified == declared) return State.VERIFIED;
+        if (open == declared) return State.SELECTED;
         return open == 0 ? State.NONE : State.SOME;
     }
 

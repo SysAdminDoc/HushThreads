@@ -2,7 +2,7 @@
  * Copyright 2026 HushThreads contributors
  * https://github.com/SysAdminDoc/HushThreads
  *
- * Found by reading 449 and 448 (2026-10-05), and 450 (2026-10-06).
+ * Found by reading 449 and 448 (2026-10-05), 450 (2026-10-06), and 451 (2026-10-12).
  */
 package app.morphe.patches.threads.misc.theme
 
@@ -13,6 +13,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
+import app.morphe.patches.threads.feed.reaching
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.threads.misc.extension.enableStatus
 import app.morphe.patches.threads.misc.extension.requireStatusMethod
@@ -45,6 +46,7 @@ internal const val PURE_BLACK = "$EXTENSION_PACKAGE/theme/PureBlack;"
  * names the source file, so it survives Redex.
  */
 internal const val BDS_THEME = "com.instagram.barcelona.bds.theme.BdsTheme.<anonymous> (BdsTheme.kt:"
+internal const val IG_PALETTE_GETTER = "com.instagram.compose.core.theme.IgTheme.<get-colors> (IgTheme.kt:"
 
 /** Threads' dark mode background, #101010, as the ARGB literal its theme loads. */
 internal const val THREADS_DARK = 0xff101010L
@@ -84,8 +86,11 @@ val pureBlackPatch = bytecodePatch(
         requireStatusMethod("pureBlack")
         val theme = theme()
         val scheme = darkScheme(theme)
-        val builders = (listOf(theme) + themeHelpers(theme)).map { it to it.darkLoads() }.filter { it.second.isNotEmpty() }
-            .ifEmpty { throw PatchException("$PATCH: Threads' theme no longer loads #101010") }
+        val helpers = themeHelpers(theme)
+        val builders = (listOf(theme) + helpers).map { it to it.darkLoads() }.filter { it.second.isNotEmpty() }
+        if (builders.isEmpty() && !schemeOnlyTheme(theme, helpers, scheme)) {
+            throw PatchException("$PATCH: Threads' theme no longer loads #101010 or copies a known dark background")
+        }
         for ((builder, loads) in builders) {
             // From the last, so the earlier indices still point where they did.
             for (index in loads.sortedDescending()) {
@@ -113,7 +118,14 @@ val pureBlackPatch = bytecodePatch(
 }
 
 /** Where the dark color scheme is built: the call to its constructor and the registers of its #101010 backgrounds. */
-internal data class DarkScheme(val holder: String, val initializer: Method, val call: Int, val registers: List<Int>)
+internal data class DarkScheme(
+    val holder: String,
+    val type: String,
+    val initializer: Method,
+    val call: Int,
+    val registers: List<Int>,
+    val backgroundParameters: List<Int>,
+)
 
 /** One construction of a color scheme: its call, the colors it passes, and the register of each. */
 internal data class SchemeBuild(val call: Int, val field: String, val colors: List<Long?>, val registers: List<Int>) {
@@ -153,6 +165,88 @@ internal fun Method.themeHelpers(): List<MethodReference> {
 
 private fun BytecodePatchContext.themeHelpers(theme: Method): List<MutableMethod> = theme.themeHelpers().mapNotNull { reference ->
     classDefByOrNull(reference.definingClass)?.let { mutableClassDefBy(reference.definingClass).findMutableMethodOf(reference) }
+}
+
+/**
+ * 451 reads Instagram's inherited palette and copies Bds scheme fields into it, rather than
+ * loading dark literals in a helper. Permit that layout only when every identified background
+ * reaches a color constructor unchanged. Hooks on the dark scheme then cover the copied colors too.
+ */
+private fun BytecodePatchContext.schemeOnlyTheme(theme: Method, helpers: List<Method>, scheme: DarkScheme): Boolean {
+    if (helpers.singleOrNull()?.holdsNote(IG_PALETTE_GETTER) != true) return false
+    val constructor = mutableClassDefBy(scheme.type).methods.singleOrNull { method ->
+        method.name == "<init>" && method.parameterTypes.size >= SCHEME_COLORS && method.parameterTypes.all { it.toString() == "J" }
+    } ?: return false
+    val constructorBody = constructor.implementation?.instructions?.toList() ?: return false
+    if (constructorBody.any { it is OffsetInstruction }) return false
+    val self = constructor.implementation!!.registerCount - 1 - 2 * constructor.parameterTypes.size
+    val parameters = constructor.parameterTypes.indices.associateBy { self + 1 + 2 * it }.toMutableMap()
+    val fields = mutableMapOf<Int, MutableSet<String>>()
+    val stored = mutableSetOf<String>()
+    for (instruction in constructorBody) {
+        when (instruction.opcode) {
+            Opcode.MOVE_WIDE, Opcode.MOVE_WIDE_FROM16, Opcode.MOVE_WIDE_16 -> {
+                val move = instruction as TwoRegisterInstruction
+                val parameter = parameters[move.registerB]
+                parameters.forgetWide(move.registerA, true)
+                if (parameter != null) parameters[move.registerA] = parameter
+            }
+            Opcode.IPUT_WIDE -> {
+                val store = instruction as TwoRegisterInstruction
+                val field = instruction.getReference<FieldReference>()!!
+                val parameter = parameters[store.registerA]
+                if (store.registerB == self && field.definingClass == scheme.type && field.type == "J") {
+                    if (!stored.add(field.toString())) return false
+                    if (parameter != null) fields.getOrPut(parameter) { mutableSetOf() } += field.toString()
+                }
+            }
+            else -> if (instruction.opcode.setsRegister()) {
+                parameters.forgetWide((instruction as OneRegisterInstruction).registerA, instruction.opcode.setsWideRegister())
+            }
+        }
+    }
+    val backgrounds = scheme.backgroundParameters.map { fields[it]?.singleOrNull() ?: return false }.toSet()
+    if (backgrounds.size != scheme.backgroundParameters.size) return false
+
+    val body = theme.implementation!!.instructions.toList()
+    val colorTypes = body.filter { it.opcode == Opcode.NEW_INSTANCE }.mapNotNull { it.getReference<TypeReference>()?.type }
+        .filter { isScheme(it) }.toSet()
+    for ((index, instruction) in body.withIndex()) {
+        if (instruction.opcode != Opcode.INVOKE_DIRECT_RANGE) continue
+        val method = instruction.getReference<MethodReference>()!!
+        val call = instruction as RegisterRangeInstruction
+        if (method.definingClass !in colorTypes || method.name != "<init>" || method.parameterTypes.any { it.toString() != "J" }) continue
+        val forwarded = method.parameterTypes.indices.mapNotNull { theme.wideFieldOrigin(index, call.startRegister + 1 + 2 * it) }.toSet()
+        if (forwarded.containsAll(backgrounds)) return true
+    }
+    return false
+}
+
+/** The field supplying an intact wide value on every path, following wide copies across joins. */
+private fun Method.wideFieldOrigin(index: Int, register: Int): String? {
+    val body = implementation!!.instructions.toList()
+    var use = index
+    var held = register
+    val visited = mutableSetOf<Pair<Int, Int>>()
+    while (visited.add(use to held)) {
+        val arrived = reaching(use, setOf(held, held + 1))
+        if (arrived.fromEntry) return null
+        val write = arrived.writes.singleOrNull() ?: return null
+        val instruction = body[write]
+        if (!instruction.opcode.setsWideRegister() || (instruction as OneRegisterInstruction).registerA != held) return null
+        if (instruction.opcode == Opcode.IGET_WIDE) return instruction.getReference<FieldReference>()?.toString()
+        if (instruction.opcode !in setOf(Opcode.MOVE_WIDE, Opcode.MOVE_WIDE_FROM16, Opcode.MOVE_WIDE_16)) return null
+        use = write
+        held = (instruction as TwoRegisterInstruction).registerB
+    }
+    return null
+}
+
+/** A write to either half invalidates the wide value whose origin was known there. */
+private fun <T> MutableMap<Int, T>.forgetWide(register: Int, wide: Boolean) {
+    remove(register - 1)
+    remove(register)
+    if (wide) remove(register + 1)
 }
 
 private fun BytecodePatchContext.theme(): MutableMethod {
@@ -202,7 +296,7 @@ internal fun BytecodePatchContext.darkScheme(theme: Method): DarkScheme {
         if (later.isNotEmpty()) throw PatchException("$PATCH: $holder reads v$register again after building its dark scheme, at $later")
         if (register > 255) throw PatchException("$PATCH: $holder passes a dark background in v$register, past move-result-wide's reach")
     }
-    return DarkScheme(holder, initializer, dark.call, registers)
+    return DarkScheme(holder, type, initializer, dark.call, registers, backgrounds)
 }
 
 /**

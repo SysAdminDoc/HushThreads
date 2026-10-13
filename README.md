@@ -1,7 +1,7 @@
 ![HushThreads. Keep the thread. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.13-000000" alt="Version 0.0.13"></a>
+  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.14-000000" alt="Version 0.0.14"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Threads-450.0.0.51.78-000000" alt="Threads 450.0.0.51.78">
@@ -25,6 +25,8 @@ HushThreads is a Morphe patch bundle for Android that takes the ads out of Threa
 Sponsored posts and suggested-account cards leave your feed before Threads shows them. Shared links lose their tracking tags, and a short `/share/` link becomes the post's own link. Web links open in your browser instead of Threads' own, with its click tracker skipped. You can also save photos and videos, keep your place in the feed, stop autoplay and make dark mode pure black.
 
 The latest release is [v0.0.13](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.13), with 19 patches. What changed in each version is in the [changelog](CHANGELOG.md).
+
+The source build is v0.0.14 for Threads 451.0.0.51.80. Its settings changes and compatibility are being checked before release. Manager still downloads v0.0.13 for Threads 450.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -168,7 +170,6 @@ Where things live:
 - `patches/src/main/kotlin/app/morphe/patches/threads/` holds the patches. `AppCompatibilities.kt` under `patches/.../shared/compat/` names the supported Threads build, and only the newest stable one is declared.
 - `extensions/threads/` is the Java code that runs inside Threads, settings screen included. `extensions/shared/` holds the shared library and its translations.
 - `patches-list.json` is the generated patch catalog. `patches-bundle.json` is the Morphe source index and only changes at release time.
-- [docs/patch-authoring.md](docs/patch-authoring.md) covers writing a patch and moving to a new Threads build. The [app reference](docs/threads-app-reference.md) and [runtime audit](docs/threads-runtime-audit.md) hold what's known about Threads itself.
 
 ## Where the patches come from
 

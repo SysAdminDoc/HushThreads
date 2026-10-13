@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.SwitchPreference;
@@ -890,10 +891,11 @@ public class SettingsBackupTest {
     }
 
     /**
-     * While a file is read, both rows are out of reach and the one acting says what it's doing,
-     * which is also what a screen reader hears as its state. A second picker can't be opened.
+     * While a file is read, both rows explain why they are out of reach. A second picker can't
+     * be opened, and the original descriptions return when the read finishes.
      */
     @Test
+    @Config(sdk = {28, 36})
     public void theRowsAreOutOfReachWhileAFileIsRead() throws Exception {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             Activity activity = controller.get();
@@ -912,7 +914,13 @@ public class SettingsBackupTest {
                 assertFalse(export.isEnabled());
                 assertFalse(importRow.isEnabled());
                 assertEquals("Reading the settings file", String.valueOf(importRow.getSummary()));
-                assertEquals("a row that isn't acting changed its summary", exportSummary, String.valueOf(export.getSummary()));
+                String waiting = "Reading the settings file. This action will be available when it finishes.";
+                assertEquals(waiting, String.valueOf(export.getSummary()));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    android.widget.ListView list = new android.widget.ListView(activity);
+                    assertEquals("Reading the settings file", importRow.getView(null, list).getStateDescription());
+                    assertEquals(waiting, export.getView(null, list).getStateDescription());
+                }
 
                 click(export);
                 assertNull("a tap during a read opened a picker", shadowOf(activity).getNextStartedActivityForResult());
@@ -922,6 +930,7 @@ public class SettingsBackupTest {
             settle();
             assertTrue(export.isEnabled());
             assertTrue(importRow.isEnabled());
+            assertEquals(exportSummary, String.valueOf(export.getSummary()));
             assertEquals(importSummary, String.valueOf(importRow.getSummary()));
             shownPreview().cancel();
             settle();
@@ -1148,6 +1157,8 @@ public class SettingsBackupTest {
                     new Intent().setData(uri));
             ShadowLooper.idleMainLooper();
             awaitHeldOpen();
+            assertEquals("Saving the settings file. This action will be available when it finishes.",
+                    String.valueOf(page.findPreference(IMPORT_ROW).getSummary()));
             waitOut();
             assertEquals(EXPORT_TIMEOUT, ShadowToast.getTextOfLatestToast());
             assertEquals(1, SettingsFileProvider.cancels.get());

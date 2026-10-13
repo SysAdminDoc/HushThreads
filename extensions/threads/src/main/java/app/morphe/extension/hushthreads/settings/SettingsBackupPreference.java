@@ -134,7 +134,7 @@ public class SettingsBackupPreference extends Preference {
 
     private final int rowAction;
     private final CharSequence restingSummary;
-    /** The line this row shows while it's the one running, else null. */
+    /** The operation or waiting explanation this row shows while a file action runs. */
     @Nullable
     private String busyLine;
 
@@ -514,8 +514,8 @@ public class SettingsBackupPreference extends Preference {
     }
 
     /**
-     * Takes both rows out of reach while one of them runs and puts the running line on the one
-     * acting. With a zero action and no line, they come back with their own summaries.
+     * Takes both rows out of reach while one runs. The acting row names the operation, and the
+     * other explains the wait. With a zero action and no line, both regain their own summaries.
      */
     static void setRowsBusy(int action, @Nullable String line) {
         for (WeakReference<SettingsBackupPreference> held : ROWS) {
@@ -530,9 +530,10 @@ public class SettingsBackupPreference extends Preference {
     }
 
     private void showBusy(int action, @Nullable String line) {
-        busyLine = rowAction == action ? line : null;
+        busyLine = rowAction == action ? line
+                : L10n.f("%1$s. This action will be available when it finishes.", line);
         setEnabled(false);
-        if (busyLine != null) setSummary(busyLine);
+        setSummary(busyLine);
     }
 
     private void showResting() {

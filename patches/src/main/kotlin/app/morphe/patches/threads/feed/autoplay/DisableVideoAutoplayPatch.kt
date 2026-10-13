@@ -4,7 +4,8 @@
  *
  * Found by reading 449 and 448 and by a method trace of 449 on an emulator (2026-10-02), and
  * carried to 450 by reading its reshaped PostVideo and playback effect (2026-10-06). The Instagram
- * post, trend preview and ad card calls and PostVideo's default mask were read from 450 (2026-10-10).
+ * post, trend preview and ad card calls and PostVideo's default mask were read from 450 (2026-10-10),
+ * and their shortened PostVideo forwarder from 451 (2026-10-13).
  */
 package app.morphe.patches.threads.feed.autoplay
 
@@ -99,8 +100,9 @@ val disableVideoAutoplayPatch = bytecodePatch(
         val postVideo = composable(POST_VIDEO, "PostVideo")
         val shape = postVideo.playTest(effect)
         val default = postVideo.playDefault(shape)
+        val targets = playTargets(postVideo, shape.parameter, default)
         val sites = VIDEO_CALLERS.flatMap { note ->
-            playSites(postVideo, note, shape.parameter, default).ifEmpty { throw PatchException("$PATCH: no call to PostVideo holds \"$note\"") }
+            playSites(targets, note).ifEmpty { throw PatchException("$PATCH: no call to PostVideo holds \"$note\"") }
         }
         sites.forEach { site ->
             // A caller that leaves the flag to PostVideo's default gets the bit cleared and the default's value to ask about.
@@ -133,6 +135,42 @@ internal data class DefaultedFlag(val register: Int, val mask: Int, val value: I
 
 /** PostVideo's default for its play flag: when a caller sets [bit] in its [mask] parameter, PostVideo plays by [value] instead of the flag it's handed. */
 internal data class PlayDefault(val mask: Int, val bit: Int, val value: Int)
+
+/** PostVideo or a checked forwarder, with the parameters carrying PostVideo's play flag and mask. */
+private data class PlayTarget(val method: Method, val parameter: Int, val default: PlayDefault?)
+
+/**
+ * 451's embeds call a shortened overload beside PostVideo. It only fills omitted arguments and
+ * copies the others before its one call to PostVideo, then returns. Follow the play flag and mask
+ * back to their unchanged parameters, so the hook stays at each embed rather than in shared code.
+ */
+private fun BytecodePatchContext.playTargets(postVideo: Method, play: Int, default: PlayDefault?): List<PlayTarget> {
+    val forwards = mutableClassDefBy(postVideo.definingClass).methods.filter { method ->
+        (method.name != postVideo.name || method.parameterTypes != postVideo.parameterTypes) &&
+            method.implementation?.instructions?.any { it.calls(postVideo) } == true
+    }.map { method ->
+        val body = method.implementation!!.instructions.toList()
+        val call = body.indices.filter { body[it].calls(postVideo) }
+            .singleOrPatchException("$PATCH: ${method.definingClass}->${method.name}'s forwarded PostVideo call")
+        val copies = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16,
+            Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16)
+        if (!AccessFlags.STATIC.isSet(method.accessFlags) || method.returnType != postVideo.returnType ||
+            call != body.lastIndex - 1 || body.last().opcode != Opcode.RETURN_VOID ||
+            body.take(call).any { it.opcode !in copies && it.opcode !in CONSTANTS }
+        ) throw PatchException("$PATCH: ${method.definingClass}->${method.name} isn't a straight PostVideo forwarder")
+        val first = method.implementation!!.registerCount - method.parameterRegisters()
+        fun forwarded(parameter: Int, type: String): Int {
+            val register = body[call].argumentRegister(postVideo.registerOffset(parameter))!!
+            val (write, source) = method.origin(call, register)
+                ?: throw PatchException("$PATCH: ${method.definingClass}->${method.name} changes PostVideo's $type argument")
+            return method.parameterTypes.indices.singleOrNull { index ->
+                write < 0 && method.parameterTypes[index].toString() == type && first + method.registerOffset(index) == source
+            } ?: throw PatchException("$PATCH: ${method.definingClass}->${method.name} doesn't forward PostVideo's $type parameter unchanged")
+        }
+        PlayTarget(method, forwarded(play, "Z"), default?.let { it.copy(mask = forwarded(it.mask, "I")) })
+    }
+    return listOf(PlayTarget(postVideo, play, default)) + forwards
+}
 
 internal fun Method.holdsNote(note: String): Boolean = implementation?.instructions?.any {
     it.getReference<StringReference>()?.string?.startsWith(note) == true
@@ -265,21 +303,21 @@ private fun Method.origin(at: Int, register: Int): Pair<Int, Int>? {
 }
 
 /**
- * Every call to PostVideo from a method holding [note], with the register of its [play] argument.
- * A call whose default mask, which has to be one constant, leaves the flag to PostVideo's
- * [default] comes with that mask's register too. The call must be the last thing to read those
- * registers, since the hook leaves its own values there.
+ * Every call to one of [targets] from a method holding [note], with its play argument's register.
+ * A call whose constant mask leaves that flag to PostVideo's default also supplies the mask's
+ * register. The call must be the last thing to read those registers, since the hook writes them.
  */
-private fun BytecodePatchContext.playSites(postVideo: Method, note: String, play: Int, default: PlayDefault?): List<PlaySite> =
+private fun BytecodePatchContext.playSites(targets: List<PlayTarget>, note: String): List<PlaySite> =
     classDefByStrings(note, StringComparisonType.STARTS_WITH).flatMap { it.methods }
         .filter { it.holdsNote(note) }
         .distinctBy { "${it.definingClass}->${it.name}${it.parameterTypes.joinToString("")}${it.returnType}" }
         .flatMap { method ->
             val body = method.implementation!!.instructions.toList()
-            body.indices.filter { body[it].calls(postVideo) }.map { call ->
-                val register = body[call].argumentRegister(postVideo.registerOffset(play))!!
-                val defaulted = default?.let { flag ->
-                    val maskRegister = body[call].argumentRegister(postVideo.registerOffset(flag.mask))!!
+            body.indices.mapNotNull { call ->
+                val target = targets.singleOrNull { body[call].calls(it.method) } ?: return@mapNotNull null
+                val register = body[call].argumentRegister(target.method.registerOffset(target.parameter))!!
+                val defaulted = target.default?.let { flag ->
+                    val maskRegister = body[call].argumentRegister(target.method.registerOffset(flag.mask))!!
                     val mask = method.origin(call, maskRegister)?.first?.let { body.getOrNull(it) }
                         ?.takeIf { it.opcode in CONSTANTS }?.let { (it as NarrowLiteralInstruction).narrowLiteral }
                         ?: throw PatchException("$PATCH: ${method.definingClass}->${method.name} hands PostVideo a default mask in v$maskRegister that isn't one constant")

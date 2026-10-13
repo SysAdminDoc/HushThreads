@@ -102,6 +102,13 @@ public class BadDexFixture {
     private static final String SHORTCUT_LIST = "Ljava/util/List;";
     private static final String SHORTCUTS = "Lfixture/Shortcuts;";
     private static final String SETTINGS_ENTRY = "Lapp/morphe/extension/hushthreads/settings/SettingsEntry;";
+    private static final String LOGO_HEADER = "Lfixture/LogoHeader;";
+    private static final String LOGO = "Lapp/morphe/extension/hushthreads/settings/ThreadsLogo;";
+    private static final String LOGO_NOTE = "com.instagram.barcelona.feed.ui.MainFeedScreen.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous> (MainFeedScreen.kt:2624)";
+    private static final ImmutableMethodReference LOGO_CLICKABLE = method("LX/02eC;", "A01", "LX/09hc;",
+            "LX/09xw;", "LX/00lS;", "LX/09hc;", "LX/01bY;", "Ljava/lang/String;", "Lkotlin/jvm/functions/Function0;", "Z");
+    private static final ImmutableMethodReference LOGO_STAND_IN = method(LOGO, "clickable", OBJECT,
+            OBJECT, OBJECT, OBJECT, OBJECT, "Ljava/lang/String;", OBJECT, "Z");
 
     /**
      * One of the ShortcutManager calls the settings patch sends to SettingsEntry: its name, what it
@@ -619,12 +626,51 @@ public class BadDexFixture {
 
     /** A patched build: [host] and the bundle's own classes, every shortcut call sent to its stand-in. */
     private static List<ClassDef> bundle(ClassDef host) {
-        return Arrays.asList(host, filter(), shortcuts(Collections.<String>emptySet()), settingsEntry());
+        return Arrays.asList(host, filter(), shortcuts(Collections.<String>emptySet()), settingsEntry(),
+                logoHeader(true, ""), logoStandIn());
     }
 
     /** The clean build, the app's classes as they ship: [host] and every shortcut call made as the app makes it. */
     private static List<ClassDef> clean(ClassDef host) {
-        return Arrays.asList(host, shortcuts(allShortcutCalls()));
+        return Arrays.asList(host, shortcuts(allShortcutCalls()), logoHeader(false, ""));
+    }
+
+    /** Both argument banks are valid, so the wrong-bank fault fails the contract alone. */
+    private static ClassDef logoHeader(boolean hooked, String fault) {
+        List<Instruction> code = new ArrayList<>();
+        code.add(string(14, LOGO_NOTE));
+        for (int first : new int[]{0, 7}) {
+            for (int register = first; register < first + 6; register++) {
+                code.add(new ImmutableInstruction11n(Opcode.CONST_4, register, 0));
+            }
+            code.add(new ImmutableInstruction11n(Opcode.CONST_4, first + 6, 1));
+        }
+        boolean useHook = hooked && !fault.equals("logo-missing");
+        int first = fault.equals("logo-register") ? 7 : 0;
+        code.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, first, 7, useHook ? LOGO_STAND_IN : LOGO_CLICKABLE));
+        code.add(op(Opcode.MOVE_RESULT_OBJECT, 14));
+        if (useHook) code.add(type(Opcode.CHECK_CAST, 14, "LX/09hc;"));
+        if (fault.equals("logo-duplicate") || fault.equals("logo-stock-left")) {
+            code.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 0, 7,
+                    fault.equals("logo-stock-left") ? LOGO_CLICKABLE : LOGO_STAND_IN));
+            code.add(op(Opcode.MOVE_RESULT_OBJECT, 14));
+        }
+        code.add(op(Opcode.RETURN_OBJECT, 14));
+        return new ImmutableClassDef(LOGO_HEADER, AccessFlags.PUBLIC.getValue(), OBJECT, null, null, null, null,
+                List.of(define(LOGO_HEADER, "invoke", OBJECT, false, body(18, code.toArray(new Instruction[0])), OBJECT, OBJECT)));
+    }
+
+    private static ClassDef logoStandIn() {
+        return new ImmutableClassDef(LOGO, AccessFlags.PUBLIC.getValue(), OBJECT, null, null, null, null,
+                List.of(define(LOGO, "clickable", OBJECT, true, body(7, op(Opcode.RETURN_OBJECT, 2)),
+                        OBJECT, OBJECT, OBJECT, OBJECT, "Ljava/lang/String;", OBJECT, "Z")));
+    }
+
+    private static List<ClassDef> logoFault(String fault) {
+        List<ClassDef> classes = new ArrayList<>(good());
+        classes.removeIf(c -> c.getType().equals(LOGO_HEADER));
+        classes.add(logoHeader(true, fault));
+        return classes;
     }
 
     private static List<ClassDef> good() {
@@ -1601,6 +1647,62 @@ public class BadDexFixture {
         return classes;
     }
 
+    /** A separate shortened overload shape. Its play and mask positions differ from PostVideo. */
+    private static final ImmutableMethodReference FORWARD_VIDEO = method(FEATURE_VIDEO, "forward", "V", OBJECT, "I", "Z", "Z", "I", "Z");
+
+    private static List<ClassDef> videoAutoplayForwardBuild(boolean patched, Set<String> selected, String fault) {
+        List<ClassDef> classes = new ArrayList<>(featureBuild(patched, selected, 0, ""));
+        classes.removeIf(c -> c.getType().equals(FEATURE_VIDEO) || c.getType().equals(FEATURE_POSTS));
+        boolean hooked = patched && selected.contains("disableVideoAutoplay");
+        List<ClassDef> direct = videoAutoplayClasses(hooked, "");
+        List<Method> video = new ArrayList<>();
+        direct.get(0).getMethods().forEach(video::add);
+        List<Instruction> forward = new ArrayList<>(List.of(
+                new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 0, 8), new ImmutableInstruction12x(Opcode.MOVE, 1, 9),
+                new ImmutableInstruction12x(Opcode.MOVE, 2, 12), new ImmutableInstruction12x(Opcode.MOVE, 3, 10),
+                new ImmutableInstruction11n(Opcode.CONST_4, 4, 0), new ImmutableInstruction11n(Opcode.CONST_4, 5, 0),
+                new ImmutableInstruction12x(Opcode.MOVE, 6, 11), new ImmutableInstruction12x(Opcode.MOVE, 7, 13)));
+        if (fault.equals("forward-flag-clobber")) forward.set(6, new ImmutableInstruction11n(Opcode.CONST_4, 6, 1));
+        if (fault.equals("forward-mask-clobber")) forward.set(2, new ImmutableInstruction11n(Opcode.CONST_4, 2, 0));
+        if (fault.equals("forward-side-effect")) forward.add(invoke(PLAYBACK_EFFECT, 0, 1, 4, 7));
+        if (fault.equals("forward-repeat")) forward.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 0, 8, POST_VIDEO));
+        if (patched && fault.equals("forward-body")) forward.set(7, new ImmutableInstruction11n(Opcode.CONST_4, 7, 1));
+        forward.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 0, 8, POST_VIDEO));
+        forward.add(op(Opcode.RETURN_VOID));
+        video.add(define(FEATURE_VIDEO, "forward", "V", true, body(14, forward.toArray(new Instruction[0])), OBJECT, "I", "Z", "Z", "I", "Z"));
+        classes.add(featureClass(FEATURE_VIDEO, OBJECT, List.of(), video.toArray(new Method[0])));
+        List<Method> callers = new ArrayList<>();
+        direct.get(1).getMethods().forEach(m -> { if (m.getName().equals("single") || m.getName().equals("carousel")) callers.add(m); });
+        callers.add(forwardVideoCaller("inline", "com.instagram.barcelona.igmedia.InlineIgVideo (InlineIgVideo.kt:41)", 0x20,
+                hooked && !fault.equals("forward-missing") ? asked(fault.equals("forward-register") ? 3 : 4) : List.of()));
+        callers.add(forwardVideoCaller("trend", "com.instagram.barcelona.common.ui.mediahighlights.AutoplayingMediaHighlightVideo (TrendMediaHighlightsPreview.kt:235)", PLAY_DEFAULT | 0x20,
+                hooked ? forwardedDefaultAsked(0x20) : List.of()));
+        callers.add(forwardVideoCaller("ad", "com.instagram.barcelona.sponsored.ui.AdCard (AdCard.kt:145)", PLAY_DEFAULT | 0x40,
+                !hooked ? List.of() : fault.equals("forward-default") ? asked(4) : forwardedDefaultAsked(0x40)));
+        callers.add(forwardVideoCaller("viewer", "com.instagram.barcelona.feed.mediaviewer.ui.MediaViewerVideo (MediaViewerVideo.kt:90)", PLAY_DEFAULT | 0x80,
+                hooked && fault.equals("forward-viewer") ? asked(4) : List.of()));
+        classes.add(featureClass(FEATURE_POSTS, OBJECT, List.of(), callers.toArray(new Method[0])));
+        return classes;
+    }
+
+    /** Shortened call arguments occupy v1..v6, with play in v4 and the mask in v5. */
+    private static Method forwardVideoCaller(String name, String note, int defaults, List<Instruction> question) {
+        List<Instruction> body = new ArrayList<>(List.of(string(0, note), new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 1, 7),
+                new ImmutableInstruction11n(Opcode.CONST_4, 2, 0), new ImmutableInstruction11n(Opcode.CONST_4, 3, 1),
+                (defaults & PLAY_DEFAULT) == 0 ? new ImmutableInstruction12x(Opcode.MOVE, 4, 8) : new ImmutableInstruction11n(Opcode.CONST_4, 4, 0),
+                new ImmutableInstruction21s(Opcode.CONST_16, 5, defaults), new ImmutableInstruction11n(Opcode.CONST_4, 6, 0)));
+        body.addAll(question);
+        body.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 1, 6, FORWARD_VIDEO));
+        body.add(op(Opcode.RETURN_VOID));
+        return define(FEATURE_POSTS, name, "V", true, body(9, body.toArray(new Instruction[0])), OBJECT, "Z");
+    }
+
+    private static List<Instruction> forwardedDefaultAsked(int mask) {
+        List<Instruction> block = new ArrayList<>(List.of(new ImmutableInstruction31i(Opcode.CONST, 5, mask), new ImmutableInstruction21s(Opcode.CONST_16, 4, 1)));
+        block.addAll(asked(4));
+        return block;
+    }
+
     /** The extension asked about v[register], its answer back in it. */
     private static List<Instruction> asked(int register) {
         return List.of(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, register, 1, HOLD_VIDEO), op(Opcode.MOVE_RESULT, register));
@@ -1695,6 +1797,56 @@ public class BadDexFixture {
         classes.add(featureClass(FEATURE_SCHEME, OBJECT, List.of(), define(FEATURE_SCHEME, "<init>", "V", false,
                 body(1 + 2 * SCHEME_COLORS, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)),
                 Collections.nCopies(SCHEME_COLORS, "J").toArray(new String[0]))));
+        return classes;
+    }
+
+    /** 451's literal-free theme copies a background field into an inherited color palette. */
+    private static List<ClassDef> pureBlackFieldClasses(boolean hooked, String fault) {
+        String schemeFault = fault.endsWith("background-missing") ? "pure-black-background-missing"
+                : fault.endsWith("light") ? "pure-black-light" : "";
+        List<ClassDef> classes = pureBlackClasses(hooked, schemeFault);
+        classes.removeIf(c -> Set.of(FEATURE_THEME, FEATURE_THEME_COLORS, FEATURE_SCHEME).contains(c.getType()));
+        List<Instruction> stores = List.of(direct(method(OBJECT, "<init>", "V"), 0),
+                objectField(Opcode.IPUT_WIDE, 1, 0, FEATURE_SCHEME, "background", "J"),
+                objectField(Opcode.IPUT_WIDE, 3, 0, FEATURE_SCHEME,
+                        fault.endsWith("store-duplicate") ? "background" : "canvas", "J"), op(Opcode.RETURN_VOID));
+        classes.add(featureClass(FEATURE_SCHEME, OBJECT,
+                List.of(featureField(FEATURE_SCHEME, "background", "J"), featureField(FEATURE_SCHEME, "canvas", "J")),
+                define(FEATURE_SCHEME, "<init>", "V", false, body(1 + 2 * SCHEME_COLORS, stores.toArray(new Instruction[0])),
+                        Collections.nCopies(SCHEME_COLORS, "J").toArray(new String[0]))));
+
+        ImmutableMethodReference paletteInit = method(FEATURE_THEME_COLORS, "<init>", "V",
+                Collections.nCopies(SCHEME_COLORS, "J").toArray(new String[0]));
+        classes.add(featureClass(FEATURE_THEME_COLORS, OBJECT, List.of(featureField(FEATURE_THEME_COLORS, "background", "J")),
+                define(FEATURE_THEME_COLORS, "dark", FEATURE_THEME_COLORS, true, body(2,
+                        string(0, fault.endsWith("getter-note") ? "unrelated palette" :
+                                "com.instagram.compose.core.theme.IgTheme.<get-colors> (IgTheme.kt:22)"),
+                        new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0)), OBJECT),
+                define(FEATURE_THEME_COLORS, "<init>", "V", false, body(1 + 2 * SCHEME_COLORS,
+                        direct(method(OBJECT, "<init>", "V"), 0),
+                        objectField(Opcode.IPUT_WIDE, 1, 0, FEATURE_THEME_COLORS, "background", "J"), op(Opcode.RETURN_VOID)),
+                        paletteInit.getParameterTypes().toArray(new String[0]))));
+
+        List<Instruction> theme = new ArrayList<>(List.of(
+                string(0, "com.instagram.barcelona.bds.theme.BdsTheme.<anonymous> (BdsTheme.kt:38)"),
+                staticField(Opcode.SGET_OBJECT, 1, FEATURE_SCHEMES, "light", FEATURE_SCHEME),
+                staticField(Opcode.SGET_OBJECT, 1, FEATURE_SCHEMES, "dark", FEATURE_SCHEME),
+                new ImmutableInstruction11n(Opcode.CONST_4, 2, 0), invoke(THEME_HELPER, 2), op(Opcode.MOVE_RESULT_OBJECT, 2),
+                type(Opcode.NEW_INSTANCE, 10, FEATURE_THEME_COLORS), constWide(8, 0)));
+        if (fault.endsWith("branch-bypass")) {
+            theme.add(constWide(6, 0));
+            theme.add(ifEqz(2, 4)); // The false path keeps a valid wide value but never reads the background.
+        }
+        theme.add(fault.endsWith("copy-missing") ? constWide(6, 0) :
+                objectField(Opcode.IGET_WIDE, 6, 1, FEATURE_SCHEME, "background", "J"));
+        theme.add(objectField(Opcode.IGET_WIDE, 4, 1, FEATURE_SCHEME, "canvas", "J"));
+        for (int p = 0; p < SCHEME_COLORS; p++) {
+            theme.add(new ImmutableInstruction22x(Opcode.MOVE_WIDE_FROM16, 11 + 2 * p, p == 0 ? 6 : p == 1 ? 4 : 8));
+        }
+        theme.add(new ImmutableInstruction3rc(Opcode.INVOKE_DIRECT_RANGE, 10, 1 + 2 * SCHEME_COLORS, paletteInit));
+        theme.add(op(Opcode.RETURN_OBJECT, 10));
+        classes.add(featureClass(FEATURE_THEME, OBJECT, List.of(),
+                define(FEATURE_THEME, "invoke", OBJECT, false, body(54, theme.toArray(new Instruction[0])), OBJECT, OBJECT)));
         return classes;
     }
 
@@ -2055,7 +2207,8 @@ public class BadDexFixture {
                 body(4, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), SHORTCUT_LIST, "Z", "Z")));
         classes.addAll(returnRefreshClasses(patched && selected.contains("returnRefresh"), fault));
         classes.addAll(videoAutoplayClasses(patched && selected.contains("disableVideoAutoplay"), fault));
-        classes.addAll(pureBlackClasses(patched && selected.contains("pureBlack"), fault));
+        classes.addAll(fault.startsWith("pure-black-fields") ? pureBlackFieldClasses(patched && selected.contains("pureBlack"), fault)
+                : pureBlackClasses(patched && selected.contains("pureBlack"), fault));
         classes.addAll(settingsRowClasses(patched && selected.contains("settingsRow"), fault));
         if (fault.startsWith("ambiguous-suggestion-") || fault.startsWith("proven-suggestion-")) corruptSuggestionStock(classes, fault);
         if (!patched) return classes;
@@ -2164,6 +2317,72 @@ public class BadDexFixture {
         }
     }
 
+    /** 451's duplicate fetch label and high-register coroutine receiver, with matched stock mutations. */
+    private static List<ClassDef> featureSharingAliasBuild(boolean patched, String fault) {
+        List<ClassDef> classes = featureBuild(patched, patched ? Set.of("sanitizeSharingLinks") : Set.of(), 0, "");
+        String resumed = "call to 'resume' before 'invoke' with coroutine";
+        for (int c = 0; c < classes.size(); c++) {
+            ClassDef original = classes.get(c);
+            if (!original.getType().equals(FEATURE_REPOSITORY)) continue;
+            List<Method> methods = new ArrayList<>();
+            for (Method m : original.getMethods()) {
+                List<Instruction> code = new ArrayList<>();
+                m.getImplementation().getInstructions().forEach(code::add);
+                if (m.getName().equals("fetch") && !fault.equals("fetch-no-resume")) code.add(0, string(0, resumed));
+                if (m.getName().equals("plain")) {
+                    code.add(0, string(0, "itas-android"));
+                    if (fault.equals("fetch-two-resumes")) code.add(0, string(0, resumed));
+                }
+                methods.add(new ImmutableMethod(m.getDefiningClass(), m.getName(), m.getParameters(), m.getReturnType(), m.getAccessFlags(),
+                        m.getAnnotations(), m.getHiddenApiRestrictions(), body(m.getImplementation().getRegisterCount(), code.toArray(new Instruction[0]))));
+            }
+            classes.set(c, featureClass(FEATURE_REPOSITORY, OBJECT, List.of(), methods.toArray(new Method[0])));
+        }
+        int self = 13, post = 6;
+        List<Instruction> quick = new ArrayList<>();
+        quick.add(new ImmutableInstruction11n(Opcode.CONST_4, post, 0));
+        if (fault.equals("foreign-alias")) quick.add(new ImmutableInstruction11n(Opcode.CONST_4, self, 0));
+        int mixed = quick.size();
+        // Keep the eventual branch's two-code-unit width before featureBranch computes its offset.
+        quick.add(fault.equals("mixed-alias") ? ifEqz(3, 1) : op(Opcode.NOP));
+        if (fault.equals("mixed-alias")) quick.add(new ImmutableInstruction11n(Opcode.CONST_4, self, 0));
+        int bypass = quick.size();
+        quick.add(fault.equals("load-bypass") || fault.equals("cast-bypass") ? ifEqz(3, 1) : op(Opcode.NOP));
+        int load = quick.size();
+        quick.add(objectField(Opcode.IGET_OBJECT, post, self, FEATURE_QUICK, "post", OBJECT));
+        int cast = quick.size();
+        quick.add(type(Opcode.CHECK_CAST, post, FEATURE_MEDIA));
+        if (fault.equals("cast-duplicate")) {
+            quick.add(objectField(Opcode.IGET_OBJECT, post, self, FEATURE_QUICK, "post", OBJECT));
+            quick.add(type(Opcode.CHECK_CAST, post, FEATURE_MEDIA));
+        }
+        if (patched) quick.add(invoke(POST_KEEPER, fault.equals("remember-key") ? 3 : self, post));
+        quick.add(new ImmutableInstruction11n(Opcode.CONST_4, 5, 0));
+        quick.add(objectField(Opcode.IPUT_OBJECT, 5, self, FEATURE_QUICK, "post", OBJECT));
+        if (fault.equals("recall-clobber")) quick.add(new ImmutableInstruction11n(Opcode.CONST_4, self, 0));
+        if (fault.equals("wide-recall-clobber")) quick.add(new ImmutableInstruction21s(Opcode.CONST_WIDE_16, self - 1, 0));
+        int read = quick.size();
+        quick.add(virtual(LINK_GETTER, 3));
+        quick.add(op(Opcode.MOVE_RESULT_OBJECT, 2));
+        if (patched) {
+            List<Instruction> recall = new ArrayList<>(recallHook(self, 2, "", "quick-"));
+            if (fault.equals("recall-key")) recall.set(0, invoke(POST_RECALL, 3));
+            quick.addAll(recall);
+        }
+        quick.add(op(Opcode.RETURN_OBJECT, 2));
+        if (fault.equals("mixed-alias")) featureBranch(quick, mixed, load, Opcode.IF_EQZ, 3, 0);
+        if (fault.equals("load-bypass")) featureBranch(quick, bypass, cast, Opcode.IF_EQZ, 3, 0);
+        if (fault.equals("cast-bypass")) featureBranch(quick, bypass, read, Opcode.IF_EQZ, 3, 0);
+        List<Instruction> code = new ArrayList<>(List.of(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, self, 26),
+                new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 3, 27), type(Opcode.CHECK_CAST, 3, FEATURE_RESPONSE)));
+        code.addAll(Arrays.asList(switched(quick)));
+        for (int c = 0; c < classes.size(); c++) if (classes.get(c).getType().equals(FEATURE_QUICK)) {
+            classes.set(c, featureClass(FEATURE_QUICK, OBJECT, List.of(featureField(FEATURE_QUICK, "post", OBJECT)),
+                    define(FEATURE_QUICK, "invokeSuspend", OBJECT, false, body(28, code.toArray(new Instruction[0])), OBJECT)));
+        }
+        return classes;
+    }
+
     /** A real return wrapper must preserve the stock protected span and ordered catch targets. */
     private static List<ClassDef> featureExceptionBuild(boolean patched, String fault) {
         boolean split = fault.startsWith("split");
@@ -2245,15 +2464,42 @@ public class BadDexFixture {
                 "autoplay-inline-missing", "autoplay-default-ignored", "autoplay-ad-literal", "autoplay-viewer", "autoplay-ad-live")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("disableVideoAutoplay"), 0, fault));
         }
+        dexes.put("features-autoplay-forward-clean", videoAutoplayForwardBuild(false, Set.of(), ""));
+        dexes.put("features-autoplay-forward-good", videoAutoplayForwardBuild(true, Set.of("disableVideoAutoplay"), ""));
+        dexes.put("features-autoplay-forward-omitted", videoAutoplayForwardBuild(true, Set.of(), ""));
+        for (String fault : List.of("forward-missing", "forward-register", "forward-default", "forward-viewer", "forward-body")) {
+            dexes.put("features-bad-" + fault, videoAutoplayForwardBuild(true, Set.of("disableVideoAutoplay"), fault));
+        }
+        dexes.put("features-bad-forward-omitted-body", videoAutoplayForwardBuild(true, Set.of(), "forward-body"));
+        for (String fault : List.of("forward-flag-clobber", "forward-mask-clobber", "forward-side-effect", "forward-repeat")) {
+            dexes.put("features-autoplay-" + fault + "-clean", videoAutoplayForwardBuild(false, Set.of(), fault));
+            dexes.put("features-bad-" + fault, videoAutoplayForwardBuild(true, Set.of("disableVideoAutoplay"), fault));
+        }
         dexes.put("features-autoplay-live-clean", featureBuild(false, Set.of(), 0, "autoplay-ad-live"));
         // And Pure black dark mode.
         for (String fault : List.of("pure-black-load-missing", "pure-black-load-register", "pure-black-background-missing",
                 "pure-black-background-register", "pure-black-light")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("pureBlack"), 0, fault));
         }
+        dexes.put("features-pure-black-fields-clean", featureBuild(false, Set.of(), 0, "pure-black-fields"));
+        dexes.put("features-pure-black-fields-good", featureBuild(true, Set.of("pureBlack"), 0, "pure-black-fields"));
+        dexes.put("features-pure-black-fields-omitted", featureBuild(true, Set.of(), 0, "pure-black-fields"));
+        for (String fault : List.of("copy-missing", "branch-bypass", "store-duplicate", "getter-note", "background-missing", "light")) {
+            String name = "pure-black-fields-" + fault;
+            dexes.put("features-" + name + "-clean", featureBuild(false, Set.of(), 0, name));
+            dexes.put("features-bad-" + name, featureBuild(true, Set.of("pureBlack"), 0, name));
+        }
         // And the HushThreads settings row.
         for (String fault : List.of("settings-row-missing", "settings-row-outside", "settings-row-register", "settings-row-stub", "settings-row-click")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("settingsRow"), 0, fault));
+        }
+        // Keep the old direct-this sharing fixtures and add 451's low alias of high-register this.
+        dexes.put("features-sharing-alias-clean", featureSharingAliasBuild(false, ""));
+        dexes.put("features-sharing-alias-good", featureSharingAliasBuild(true, ""));
+        for (String fault : List.of("fetch-no-resume", "fetch-two-resumes", "foreign-alias", "mixed-alias",
+                "recall-clobber", "wide-recall-clobber", "load-bypass", "cast-bypass", "cast-duplicate", "remember-key", "recall-key")) {
+            dexes.put("features-sharing-alias-" + fault + "-clean", featureSharingAliasBuild(false, fault));
+            dexes.put("features-sharing-alias-bad-" + fault, featureSharingAliasBuild(true, fault));
         }
         // And share-link hooks that write a register the method still reads after them, sanitize sharing links alone.
         for (String fault : List.of("post-link-live", "holder-link-live", "resume-recall-live")) {
@@ -2360,6 +2606,9 @@ public class BadDexFixture {
         // merged bundle defined some methods in more than one entry (its browser's standalone dex).
         dexes.put("host-copy", Collections.singletonList(cleanHost()));
         dexes.put("good", good());
+        for (String fault : List.of("logo-missing", "logo-register", "logo-duplicate", "logo-stock-left")) {
+            dexes.put("bad-" + fault, logoFault(fault));
+        }
         List<ClassDef> goodWithSecondary = new ArrayList<>(good());
         goodWithSecondary.add(secondary());
         dexes.put("good-with-secondary", goodWithSecondary);

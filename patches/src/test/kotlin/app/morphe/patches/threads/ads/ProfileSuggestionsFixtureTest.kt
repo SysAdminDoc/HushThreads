@@ -99,28 +99,28 @@ class ProfileSuggestionsFixtureTest {
             assertTrue(where, targets.calls.any { it.note.orEmpty().endsWith("(DiscoveryContent.kt:354)") })
             assertTrue(where, targets.calls.any { it.note.orEmpty().endsWith("(ActivityFeedContent.kt:888)") })
 
-            // Read off 450 apart from the patch: the profile screen reads the profile's carousel
-            // list at 538, the only read of that field outside its own class, checks it at 539,
-            // and builds the carousel from 1009 on.
+            // Read off 451 apart from the patch: the profile screen reads the profile's carousel
+            // list at 546, the only read of that field outside its own class, checks it at 547,
+            // and builds the carousel from 1017 on.
             val carousel = targets.carousel
             val screenStock = classes.original(carousel.method)
-            assertEquals(where, 538, carousel.read)
-            assertEquals(where, 539, carousel.guard)
+            assertEquals(where, 546, carousel.read)
+            assertEquals(where, 547, carousel.guard)
             assertEquals(where, Opcode.IGET_OBJECT, screenStock[carousel.read].opcode)
             assertEquals(where, carousel.register, (screenStock[carousel.read] as OneRegisterInstruction).registerA)
             assertEquals(where, Opcode.IF_NEZ, screenStock[carousel.guard].opcode)
             assertEquals(where, carousel.register, (screenStock[carousel.guard] as OneRegisterInstruction).registerA)
             val landing = screenStock.jumpTarget(carousel.guard)
-            assertEquals(where, 1009, landing)
+            assertEquals(where, 1017, landing)
             assertTrue(where, screenStock[landing + 2].isNewInstanceOf(targets.screen.method.definingClass))
 
-            // The view model checks for Threads' suggestions at 311, makes the row from 312 on, and
-            // goes to 325 without them. What the check compared, and the hook's register, are dead there.
+            // The view model checks for Threads' suggestions at 314, makes the row from 315 on, and
+            // goes to 328 without them. What the check compared, and the hook's register, are dead there.
             val row = targets.headerRow
             val rowStock = classes.original(row.method)
-            assertEquals(where, 311, row.guard)
-            assertEquals(where, 312, row.start)
-            assertEquals(where, 325, row.away)
+            assertEquals(where, 314, row.guard)
+            assertEquals(where, 315, row.start)
+            assertEquals(where, 328, row.away)
             assertEquals(where, Opcode.IF_NE, rowStock[row.guard].opcode)
             assertEquals(where, row.away, rowStock.jumpTarget(row.guard))
             val live = RegisterLiveness.of(row.method)

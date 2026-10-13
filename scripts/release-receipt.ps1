@@ -875,6 +875,48 @@ function Test-ChangelogManagerEntry {
     return [pscustomobject]@{ Valid = $true; Reason = 'ok'; Date = $heading.Groups[3].Value; Bullets = $bullets }
 }
 
+function Test-ChangelogUnreleased {
+    <# A pending source build needs one leading Unreleased section with scoped, nonempty bullets. #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Current,
+        [string]$App = 'Threads'
+    )
+
+    function Fail { param([string]$Reason) return [pscustomobject]@{ Valid = $false; Reason = $Reason; Bullets = 0 } }
+
+    $headings = [regex]::Matches($Current, '(?m)^## Unreleased[ \t]*\r?$')
+    if ($headings.Count -ne 1) { return Fail 'The CHANGELOG needs exactly one "## Unreleased" heading.' }
+    $heading = $headings[0]
+    $first = [regex]::Match($Current, '(?m)^##\s')
+    if ($first.Index -ne $heading.Index) { return Fail 'The Unreleased section must precede the released versions.' }
+
+    $bullets = 0
+    $previousWasBullet = $false
+    foreach ($line in ($Current.Substring($heading.Index + $heading.Length) -split '\r?\n')) {
+        if ($line -match '^#{1,2}(?!#)\s') { break }
+        if ($line -match '^(?:<<<<<<<|\|\|\|\|\|\|\||=======|>>>>>>>)') {
+            return Fail 'The Unreleased section contains an unresolved merge conflict.'
+        }
+        if ($line -match '^\s*[*+-]\s') {
+            $scope = [regex]::Match($line, '^\* \*\*(.+?):\*\*[ \t]+(\S.*)$')
+            if (-not $scope.Success -or -not ($scope.Groups[1].Value -ceq $App -or
+                    $scope.Groups[1].Value.StartsWith("$App - ", [System.StringComparison]::Ordinal) -or
+                    $scope.Groups[1].Value -cin @('Tooling', 'Docs'))) {
+                return Fail 'An Unreleased bullet must name Threads, Tooling or Docs and contain change text.'
+            }
+            $bullets++
+            $previousWasBullet = $true
+            continue
+        }
+        if ($previousWasBullet -and -not [string]::IsNullOrWhiteSpace($line) -and $line -notmatch '^#') {
+            return Fail 'An Unreleased bullet continues on another line. Keep each change on one line.'
+        }
+        $previousWasBullet = $false
+    }
+    if ($bullets -eq 0) { return Fail 'The Unreleased section has no scoped change bullets.' }
+    return [pscustomobject]@{ Valid = $true; Reason = 'ok'; Bullets = $bullets }
+}
+
 function Invoke-RepoGit {
     <#
     .SYNOPSIS

@@ -2,7 +2,7 @@
  * Copyright 2026 HushThreads contributors
  * https://github.com/SysAdminDoc/HushThreads
  *
- * Found by reading 450, 449 and 448 (2026-10-06).
+ * Found by reading 451, 450, 449 and 448 (2026-10-12).
  */
 package app.morphe.patches.threads.download
 
@@ -144,6 +144,8 @@ internal fun BytecodePatchContext.writeSaveRowStubs(site: SaveRowSite) {
     // The icon call takes the composer, the icon's id and Copy link's other literals, in v3 up.
     val iconEnd = 3 + 1 + site.iconArguments.size
     val iconLiterals = site.iconArguments.withIndex().joinToString("\n") { (index, value) -> "const v${5 + index}, $value" }
+    val clickEnd = site.clickModifier.parameterTypes.size
+    val clickLabel = if (clickEnd == 5) "const/4 v4, 0x0" else ""
     writeStub(SAVE_MEDIA_ROW, "showRow", maxOf(6, iconEnd + 1) + 4, """
         move-object/from16 v0, p0
         check-cast v0, ${site.composerType}
@@ -152,9 +154,9 @@ internal fun BytecodePatchContext.writeSaveRowStubs(site: SaveRowSite) {
         invoke-static/range { v2 .. v2 }, ${site.role.signature()}
         move-result-object v2
         move-object/from16 v3, p1
-        const/4 v4, 0x0
-        const v5, ${site.enabled}
-        invoke-static/range { v1 .. v5 }, ${site.clickModifier.signature()}
+        $clickLabel
+        const v$clickEnd, ${site.enabled}
+        invoke-static/range { v1 .. v$clickEnd }, ${site.clickModifier.signature()}
         move-result-object v1
         invoke-static/range { v0 .. v0 }, ${site.style.signature()}
         move-result-object v2
@@ -187,11 +189,11 @@ internal fun BytecodePatchContext.writeSaveRowStubs(site: SaveRowSite) {
 }
 
 /**
- * Reads [SaveRowSite] and refuses a build where any of it differs from what was read on 450, 449
- * and 448: one menu lambda that checks for Copy link once, with one row call in that case, taking
+ * Reads [SaveRowSite] and refuses a build where any of it differs from what was read on 451, 450,
+ * 449 and 448: one menu lambda that checks for Copy link once, with one row call in that case, taking
  * (composer, modifier, style, icon, String), which Copy link's own path falls into from a case
  * nothing else branches into; a composer that is the lambda's second parameter, cast; a modifier built by a click call taking (modifier, role,
- * Object, String, boolean) on a static base modifier, a literal role, a new click, no click label
+ * Object, boolean), or its older form with a null String label, on a static base modifier, a literal role, a new click
  * and a literal; a style built from the composer alone; an icon built from the composer, a literal
  * drawable and other literals; a click whose case for Copy link casts its Object field to the
  * controller and ends on one no-argument call to it; and one field each for the post, the activity
@@ -306,8 +308,10 @@ internal fun BytecodePatchContext.saveRowSite(): SaveRowSite {
         throw PatchException("$PATCH: Copy link's role isn't built from an int: ${role.signature()}")
     }
     val roleArgument = menu.literalAt(roleAt, body[roleAt].arguments()[0], "role")
-    if (menu.literalAt(clickAt, clickArgs[3], "click label") != 0) throw PatchException("$PATCH: Copy link's click has a label")
-    val enabled = menu.literalAt(clickAt, clickArgs[4], "enabled flag")
+    if (clickArgs.size == 5 && menu.literalAt(clickAt, clickArgs[3], "click label") != 0) {
+        throw PatchException("$PATCH: Copy link's click has a label")
+    }
+    val enabled = menu.literalAt(clickAt, clickArgs.last(), "enabled flag")
 
     val (styleAt, style) = menu.producer(onCopyLinkPath(rowArgs[2]), "Copy link's style")
     if (style.parameterTypes.map { it.toString() } != listOf(composerType) || style.returnType != rowParams[2]) {
@@ -337,7 +341,10 @@ internal fun BytecodePatchContext.saveRowSite(): SaveRowSite {
     val clickClass = classDefByOrNull(click) ?: throw PatchException("$PATCH: Threads carries no $click")
     val intFields = clickClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == "I" }
     val objectFields = clickClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == OBJECT }
-    if (constructorParams.count { it == "I" } != 1 || intFields.size != 1 || objectFields.size != 1 || constructorParams.firstOrNull() != OBJECT) {
+    // 451 captures the two strings passed to Copy link before the case id and controller. The
+    // controller remains its only Object field, whose cast and closing call are checked below.
+    val controllerCapture = constructorParams.firstOrNull() == OBJECT || constructorParams == listOf(STRING, STRING, "I", OBJECT)
+    if (constructorParams.count { it == "I" } != 1 || intFields.size != 1 || objectFields.size != 1 || !controllerCapture) {
         throw PatchException("$PATCH: Copy link's click isn't a merged lambda over one object: ${constructor.signature()}")
     }
     val which = menu.literalAt(constructAt, body[constructAt].arguments()[1 + constructorParams.indexOf("I")], "click case")
@@ -454,7 +461,8 @@ private fun BytecodePatchContext.requirePublic(field: FieldReference) {
 
 private fun MethodReference.isClickModifier(modifier: String): Boolean =
     returnType == modifier && parameterTypes.map { it.toString() }.let {
-        it.size == 5 && it[0] == modifier && it[2] == OBJECT && it[3] == STRING && it[4] == "Z"
+        it.size in 4..5 && it[0] == modifier && it[2] == OBJECT && it.last() == "Z" &&
+            (it.size == 4 || it[3] == STRING)
     }
 
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)

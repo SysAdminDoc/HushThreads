@@ -220,9 +220,10 @@ class ShortcutCallsTest {
     @Test
     fun eachDeclaredBuildSendsEveryCallThatRanksItsShortcuts() {
         val versions = AppCompatibilities.threads().single().targets.mapNotNull { it.version }.toSet()
+        val builds = Fixtures.declaredBuilds()
         val checked = mutableSetOf<String>()
         for (version in versions) {
-            for (bundle in Fixtures.files { it.name.startsWith("threads-") && it.extension == "xapk" && it.name.contains("-$version-") }) {
+            for (bundle in builds.filter { it.name.startsWith("threads-$version-") }) {
                 val callers = mutableListOf<ClassDef>()
                 FixtureDex.forEach(bundle) { dex ->
                     if (dex.methodSection.none { it.definingClass == SHORTCUT_MANAGER && it.name in SHORTCUT_CALLS }) {

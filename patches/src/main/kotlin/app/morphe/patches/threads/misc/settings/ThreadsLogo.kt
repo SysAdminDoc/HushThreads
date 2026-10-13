@@ -2,7 +2,7 @@
  * Copyright 2026 HushThreads contributors
  * https://github.com/SysAdminDoc/HushThreads
  *
- * Found by reading 450 (2026-10-12).
+ * Found by reading 450 and checked against 451 (2026-10-12).
  */
 package app.morphe.patches.threads.misc.settings
 
@@ -90,7 +90,7 @@ internal fun BytecodePatchContext.addLogoLongPress() {
 
     implementFunction0(THREADS_LOGO_LONG_PRESS)
     val types = site.combined.parameterTypes.map { it.toString() }
-    // Threads' arguments in Compose's order, no long press label, the extension's long press, no
+    // Threads' arguments in Compose's order, the translated long press label, its handler, no
     // double tap, and Threads' tap last, the way the combined clickable takes them.
     writeStub(THREADS_LOGO, "clickable", 17, """
         move-object/from16 v0, p0
@@ -102,7 +102,8 @@ internal fun BytecodePatchContext.addLogoLongPress() {
         move-object/from16 v3, p3
         check-cast v3, ${types[3]}
         move-object/from16 v4, p4
-        const/4 v5, 0x0
+        invoke-static {}, $THREADS_LOGO->longClickLabel()Ljava/lang/String;
+        move-result-object v5
         sget-object v6, $LOGO_LONG_PRESS_FIELD
         const/4 v7, 0x0
         move-object/from16 v8, p5
@@ -119,7 +120,7 @@ internal fun BytecodePatchContext.addLogoLongPress() {
 
 /**
  * Reads where the long press goes and refuses a build where any of it differs from what was read
- * on 450: one refresh reason named [LOGO_TAP], one call in the main feed's lambdas to a
+ * on 450 and 451: one refresh reason named [LOGO_TAP], one call in the main feed's lambdas to a
  * clickable(source, indication, modifier, role, String, Function0, boolean) that answers its
  * modifier's type and is handed, through copies and casts, a new lambda whose invoke() sends that
  * reason, its answer taken right after it, and one combined clickable beside it taking (source,

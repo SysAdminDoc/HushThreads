@@ -21,13 +21,18 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.SwitchPreference;
+import android.view.View;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import app.morphe.extension.shared.L10n;
 import app.morphe.extension.shared.SettingsContextRule;
+import app.morphe.extension.shared.diagnostics.DiagnosticCategory;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.shared.settings.HushThreadsPause;
 import app.morphe.extension.shared.settings.PauseForTests;
+import app.morphe.extension.shared.settings.preference.LogBufferManager;
 
 import org.junit.After;
 import org.junit.Before;
@@ -348,8 +353,8 @@ public class HushThreadsPreferenceFragmentTest {
     }
 
     /**
-     * The page's own dialogs are drawn over its activity's window: the list of sections and
-     * Licenses. Open when the page went, on a rotation, Back or Threads closing, they outlived that
+     * The page's own dialogs are drawn over its activity's window. Open when the page went,
+     * on a rotation, Back or Threads closing, they outlived that
      * window, which Android reports as a leaked window.
      */
     @Test
@@ -359,6 +364,9 @@ public class HushThreadsPreferenceFragmentTest {
             List<AlertDialog> open = new ArrayList<>();
             Preference jump = rows.get(indexOfKey(rows, "action_jump_to_section"));
             jump.getOnPreferenceClickListener().onPreferenceClick(jump);
+            open.add(ShadowAlertDialog.getLatestAlertDialog());
+            Preference export = rows.get(indexOfKey(rows, "action_export_diagnostic_report"));
+            export.getOnPreferenceClickListener().onPreferenceClick(export);
             open.add(ShadowAlertDialog.getLatestAlertDialog());
             Preference licenses = null;
             for (Preference row : rows) if ("Licenses".contentEquals(row.getTitle())) licenses = row;
@@ -371,7 +379,7 @@ public class HushThreadsPreferenceFragmentTest {
                 assertTrue(dialog.isShowing());
                 titles.add(String.valueOf(Shadows.shadowOf(dialog).getTitle()));
             }
-            assertEquals(Arrays.asList("Jump to a section", "Licenses"), titles);
+            assertEquals(Arrays.asList("Jump to a section", "Export diagnostic report", "Licenses"), titles);
 
             controller.recreate();
             ShadowLooper.idleMainLooper();
@@ -379,6 +387,35 @@ public class HushThreadsPreferenceFragmentTest {
             for (AlertDialog dialog : open) {
                 assertFalse(Shadows.shadowOf(dialog).getTitle() + " outlived the page", dialog.isShowing());
             }
+        }
+    }
+
+    @Test
+    public void theDiagnosticActionNamesClearOrRestoreAndSurvivesRecreation() {
+        LogBufferManager.clearLogBuffer();
+        LogBufferManager.clearLogBuffer();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            LogBufferManager.appendEvent(DiagnosticCategory.OTHER, "RestoreTitle", "INFO", "kept diagnostic event");
+            HushThreadsPreferenceFragment page = pageOf(controller);
+            Preference clear = page.findPreference("action_clear_diagnostic_data");
+            assertEquals("Clear diagnostic data", clear.getTitle());
+            clear.getOnPreferenceClickListener().onPreferenceClick(clear);
+            assertEquals("Restore diagnostic data", clear.getTitle());
+            View row = clear.getView(null, new ListView(controller.get()));
+            assertEquals("Restore diagnostic data", ((TextView) row.findViewById(android.R.id.title)).getText());
+
+            controller.recreate();
+            ShadowLooper.idleMainLooper();
+            page = (HushThreadsPreferenceFragment) controller.get().getFragmentManager()
+                    .findFragmentById(android.R.id.content);
+            Preference restore = page.findPreference("action_clear_diagnostic_data");
+            assertEquals("Restore diagnostic data", restore.getTitle());
+            restore.getOnPreferenceClickListener().onPreferenceClick(restore);
+            assertEquals("Clear diagnostic data", restore.getTitle());
+            assertTrue(LogBufferManager.buildExportText().contains("kept diagnostic event"));
+        } finally {
+            LogBufferManager.clearLogBuffer();
+            LogBufferManager.clearLogBuffer();
         }
     }
 

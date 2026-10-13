@@ -213,6 +213,77 @@ public class SupportedLinksTest {
     }
 
     @Test
+    public void selectedPostHostsDoNotRequireChatOrAccountCallbacks() throws Exception {
+        Map<String, Integer> hosts = hosts(SELECTED, SELECTED);
+        hosts.put("threads.com", SELECTED);
+        hosts.put("chat.threads.com", NONE);
+        hosts.put("www.chat.threads.com", NONE);
+        hosts.put("chat.threads.net", NONE);
+        hosts.put("familycenter.threads.com", NONE);
+        hosts.put("instagram.com", NONE);
+        Map<String, Integer> before = new LinkedHashMap<>(hosts);
+
+        assertEquals("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
+                summaryFor(state(true, hosts)));
+        List<String> report = SupportedLinks.reportLines(controller.get());
+        assertTrue(report.contains("chat.threads.com -> none"));
+        assertTrue(report.contains("www.chat.threads.com -> none"));
+        assertTrue(report.contains("chat.threads.net -> none"));
+        assertTrue(report.contains("familycenter.threads.com -> none"));
+        assertTrue(report.contains("instagram.com -> none"));
+        // Stock 450 doesn't declare bare threads.net. Don't require or invent its selection.
+        assertFalse(report.stream().anyMatch(line -> line.startsWith("threads.net -> ")));
+        assertEquals(before, hosts);
+    }
+
+    @Test
+    public void selectedChatAndAccountCallbacksDoNotMakePostLinksSelected() throws Exception {
+        Map<String, Integer> hosts = hosts(NONE, NONE);
+        hosts.put("threads.com", NONE);
+        hosts.put("chat.threads.com", SELECTED);
+        hosts.put("familycenter.threads.com", VERIFIED);
+        hosts.put("instagram.com", VERIFIED);
+
+        assertEquals("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to "
+                + "select them in Android's settings.", summaryFor(state(true, hosts)));
+    }
+
+    @Test
+    public void unreadableUnrelatedDomainsDoNotHideVerifiedPostHosts() throws Exception {
+        Map<String, Integer> hosts = hosts(VERIFIED, VERIFIED);
+        hosts.put("threads.com", VERIFIED);
+        hosts.put("chat.threads.com", null);
+        hosts.put("instagram.com", 99);
+
+        assertEquals("Android verified this app for Threads' web addresses, so their links open here.",
+                summaryFor(state(true, hosts)));
+        List<String> report = SupportedLinks.reportLines(controller.get());
+        assertTrue(report.contains("chat.threads.com -> unknown"));
+        assertTrue(report.contains("instagram.com -> unknown"));
+    }
+
+    @Test
+    public void aMapWithoutPostHostsDoesNotClaimThatPostLinksOpenHere() throws Exception {
+        Map<String, Integer> hosts = new LinkedHashMap<>();
+        hosts.put("chat.threads.com", SELECTED);
+        hosts.put("instagram.com", VERIFIED);
+
+        assertEquals("Android didn't say which links open here. Tap to check in Android's settings.",
+                summaryFor(state(true, hosts)));
+    }
+
+    @Test
+    public void bareThreadsNetCountsIfAndroidReportsItAsDeclared() throws Exception {
+        Map<String, Integer> hosts = hosts(SELECTED, SELECTED);
+        hosts.put("threads.com", SELECTED);
+        hosts.put("threads.net", NONE);
+
+        assertEquals("Only some of Threads' web addresses are selected for this app, and links to the rest open "
+                + "elsewhere. Tap to select them in Android's settings.", summaryFor(state(true, hosts)));
+        assertTrue(SupportedLinks.reportLines(controller.get()).contains("threads.net -> none"));
+    }
+
+    @Test
     public void someAddressesSelected() throws Exception {
         assertEquals("Only some of Threads' web addresses are selected for this app, and links to the rest open "
                 + "elsewhere. Tap to select them in Android's settings.", summaryFor(state(true, hosts(SELECTED, NONE))));

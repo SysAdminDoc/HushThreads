@@ -118,6 +118,15 @@ class SaveMediaFixtureTest {
             assertEquals("$where: role, click, style, icon and row", 5, calls.size)
             assertEquals("$where: Copy link's row", stock[rowAt].method().toString(), calls.last())
             assertTrue("$where: $calls in $caseCalls", caseCalls.containsAll(calls))
+            val click = stub.single { it.method()?.toString() == calls[1] }
+            val clickAt = stub.indexOf(click)
+            val clickParameters = click.method()!!.parameterTypes.map { it.toString() }
+            assertEquals("$where: the stub passes every click argument", clickParameters.size, click.registers().size)
+            assertEquals("$where: Copy link's enabled flag", 1, (stub[clickAt - 1] as NarrowLiteralInstruction).narrowLiteral)
+            assertEquals("$where: the enabled flag occupies the last click argument",
+                click.registers().last(), (stub[clickAt - 1] as com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction).registerA)
+            assertEquals("$where: a null click label only on the older API", clickParameters.size == 5,
+                stub[clickAt - 2].opcode == Opcode.CONST_4)
             assertEquals(Opcode.RETURN_VOID, stub.last().opcode)
 
             assertEquals("$where: the post", expected.media, context.stub("media").single { it.opcode == Opcode.IGET_OBJECT }.getReference<FieldReference>().toString())
@@ -170,6 +179,26 @@ class SaveMediaFixtureTest {
                     val invoke = context.mutableClassDefBy(fixture.click).methods.single { it.name == "invoke" && it.parameterTypes.isEmpty() }
                     invoke.body().indices.filter { invoke.body()[it].method()?.toString() == site.dismiss.toString() }
                         .forEach { invoke.replaceInstruction(it, "nop") }
+                },
+                "modifier isn't built by a click call" to { context ->
+                    val menu = context.menu(fixture)
+                    val check = stock.indexOfFirst { it.isCopyLinkCheck(fixture.copyLink) }
+                    val at = (check until rowAt).single { stock[it].method()?.toString() == site.clickModifier.toString() }
+                    val call = stock[at]
+                    val parameters = site.clickModifier.parameterTypes.map { it.toString() }.toMutableList()
+                    parameters[0] = "Ljava/lang/Object;"
+                    val registers = call.registers()
+                    val invoke = if (call is RegisterRangeInstruction) {
+                        "invoke-static/range { v${registers.first()} .. v${registers.last()} }"
+                    } else {
+                        "invoke-static { ${registers.joinToString { "v$it" }} }"
+                    }
+                    menu.replaceInstruction(at, "$invoke, Lfixture/UnsupportedClick;->create(${parameters.joinToString("")})${site.clickModifier.returnType}")
+                },
+                "merged lambda over one object" to { context ->
+                    context.mutableClassDefBy(fixture.click).fields.add(MutableField(ImmutableField(
+                        fixture.click, "secondCapture", "Ljava/lang/Object;", AccessFlags.PUBLIC.value, null, null, null,
+                    )))
                 },
                 "the post menu's post" to { context ->
                     context.mutableClassDefBy(fixture.menu.definingClass).fields.add(MutableField(ImmutableField(
@@ -286,6 +315,7 @@ class SaveMediaFixtureTest {
         /** Read off each build by hand: the menu lambda, its post and controller, and how Copy link's click closes the menu. */
         val EXPECTED = mapOf(
             "450.0.0.51.78" to Expected("LX/Slj;", "LX/Slj;->A0G:$MEDIA", "LX/Slj;->A0D:LX/At4;", "LX/At4;->A0u()V"),
+            "451.0.0.51.80" to Expected("LX/0Wif;", "LX/0Wif;->A0G:$MEDIA", "LX/0Wif;->A0D:LX/0BUR;", "LX/0BUR;->A0x()V"),
         )
     }
 }

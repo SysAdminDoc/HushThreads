@@ -132,7 +132,10 @@ public class RowChevronTest {
         assertTrue(item(card).isSelectable());
         assertNotNull(item(card).getOnPreferenceClickListener());
         assertNull("the paused card wears a chevron", chevronOf(card));
-        assertNull("Clear diagnostic data wears a chevron", chevronOf(rowTitled(rows, "Clear diagnostic data")));
+        View clear = null;
+        for (View row : rows) if ("action_clear_diagnostic_data".equals(item(row).getKey())) clear = row;
+        assertNotNull("the diagnostic action is missing", clear);
+        assertNull("the diagnostic action wears a chevron", chevronOf(clear));
         View checkNow = rowTitled(rows, "Check now");
         assertNotNull(item(checkNow).getOnPreferenceClickListener());
         assertNull("Check now wears a chevron", chevronOf(checkNow));

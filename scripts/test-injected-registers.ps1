@@ -450,7 +450,7 @@ try {
 
 # The verifier run end to end, with stand-ins for the tools it starts: a java that answers the
 # version probe and plays DexDiff with the given exit code, an aapt2 that describes Threads
-# 450.0.0.51.78, and an apksigner that reports a Threads signer from patches-list.json. With
+# 451.0.0.51.80, and an apksigner that reports a Threads signer from patches-list.json. With
 # -JavaGone the apksigner also deletes that java, which leaves it unable to start by the time
 # DexDiff runs, as a JDK replaced mid-run would. A Continue preference around the DexDiff call
 # once turned exactly that into '[registers] success.'.
@@ -471,7 +471,7 @@ function Write-StandIn {
 
 function Invoke-VerifierWithStandIns {
     param([string]$Name, [int]$DexDiffExit, [switch]$JavaGone, [string[]]$SelectedPatches,
-        [string]$PatchedVersionCode = '512008342')
+        [string]$PatchedVersionCode = '512108444')
     $case = Join-Path $standIns $Name
     New-Item -ItemType Directory -Path $case -Force | Out-Null
     $javaStandIn = Join-Path $case 'java.cmd'
@@ -505,11 +505,11 @@ exit /b $DexDiffExit
     # The patched APK can report a version code of its own, as Change version code makes it.
     Write-StandIn (Join-Path $case 'aapt2.cmd') @"
 @echo off
-set "standInCode=512008342"
+set "standInCode=512108444"
 echo %* | findstr /c:"patched.apk" >nul && set "standInCode=$PatchedVersionCode"
 echo   E: manifest (line=2)
 echo     A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=%standInCode%
-echo     A: http://schemas.android.com/apk/res/android:versionName(0x0101021c)="450.0.0.51.78" (Raw: "450.0.0.51.78")
+echo     A: http://schemas.android.com/apk/res/android:versionName(0x0101021c)="451.0.0.51.80" (Raw: "451.0.0.51.80")
 echo     A: package="$standInPackage" (Raw: "$standInPackage")
 exit /b 0
 "@
@@ -665,9 +665,23 @@ try {
             ("The good build's $($shortcut.Call), sent to the stand-in whose own call is inside the extension, " +
             "was not reported clean.`n$($good.Output -join "`n")")
     }
+    $logoRules = @(Get-Content -LiteralPath $contracts | Where-Object { $_ -match '^sole-call\s' })
+    Assert-True ($logoRules.Count -eq 1 -and $logoRules[0] -like 'sole-call Lapp/morphe/extension/hushthreads/settings/ThreadsLogo;->clickable*') `
+        'The logo fixtures must cover exactly the declared logo stand-in rule.'
+    foreach ($fault in @('logo-missing', 'logo-register', 'logo-duplicate', 'logo-stock-left')) {
+        $case = "bad-$fault"
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $checked = Invoke-DexDiff -Clean $cleanApk -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts
+        $findings = Get-Findings $checked
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -eq 1 -and
+            @($findings.Categories | Where-Object { $_ -cne 'contract' }).Count -eq 0) `
+            "$fault was not rejected solely by the logo call contract."
+        $structural = Invoke-DexDiff -Clean $cleanApk -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
     # Every rule must have bad builds of its own. The feature fixtures below cover ten families.
     $otherRules = @(Get-Content -LiteralPath $contracts | ForEach-Object { $_.Trim() } |
-        Where-Object { $_ -and -not $_.StartsWith('#') -and $_ -notmatch '^no-call\s' })
+        Where-Object { $_ -and -not $_.StartsWith('#') -and $_ -notmatch '^(no-call|sole-call)\s' })
     Assert-True ((($otherRules | Sort-Object) -join ',') -ceq 'threads-feature disableAnalytics,threads-feature disableVideoAutoplay,threads-feature hideAds,threads-feature hideSuggestedUsers,threads-feature openLinksExternally,threads-feature pureBlack,threads-feature restoreTrust,threads-feature returnRefresh,threads-feature sanitizeSharingLinks,threads-feature settingsRow') `
         ("The contract file holds rules this suite builds no bad fixtures for:`n$($otherRules -join "`n")")
 
@@ -731,6 +745,53 @@ try {
         $structural = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
+    # 451's network-only fetch shares the label, and its quick coroutine copies high-register
+    # this into v13. Keep the direct-this fixtures above and verify both forms independently.
+    $sharingAliasClean = New-DexApk -Name 'features-sharing-alias-clean' -Entries ([ordered]@{
+        'classes.dex' = (Get-Dex 'features-sharing-alias-clean') })
+    $sharingAliasGood = New-DexApk -Name 'features-sharing-alias-good' -Entries ([ordered]@{
+        'classes.dex' = (Get-Dex 'features-sharing-alias-good') })
+    $checked = Invoke-DexDiff -Clean $sharingAliasClean -Patched $sharingAliasGood -Allowlist $emptyAllowlist `
+        -Name 'features-sharing-alias-good' -Contracts $contracts -Features 'sanitizeSharingLinks'
+    Assert-True ($checked.ExitCode -eq 0 -and (Get-Findings $checked).Fails.Count -eq 0) `
+        ("A proven coroutine alias and a second labelled fetch were rejected. " + ($checked.Output -join [Environment]::NewLine))
+    $sharingAliasFaults = [ordered]@{
+        'fetch-no-resume' = 'post link fetch'
+        'fetch-two-resumes' = 'post link fetch'
+        'foreign-alias' = 'own post cast completed on every path'
+        'mixed-alias' = 'own post cast completed on every path'
+        'recall-clobber' = 'loses its coroutine alias before recalling the post'
+        'wide-recall-clobber' = 'loses its coroutine alias before recalling the post'
+        'load-bypass' = 'own post cast completed on every path'
+        'cast-bypass' = 'own post cast completed on every path'
+        'cast-duplicate' = 'own post cast completed on every path'
+        'remember-key' = 'missing or miswired'
+        'recall-key' = 'missing or miswired'
+    }
+    foreach ($fault in $sharingAliasFaults.GetEnumerator()) {
+        $name = "features-sharing-alias-bad-$($fault.Key)"
+        $stockName = "features-sharing-alias-$($fault.Key)-clean"
+        $stock = New-DexApk -Name $stockName -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $stockName) })
+        $apk = New-DexApk -Name $name -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $name) })
+        $checked = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name $name `
+            -Contracts $contracts -Features 'sanitizeSharingLinks'
+        $findings = Get-Findings $checked
+        $allowed = if ($fault.Key -ceq 'wide-recall-clobber') { @('contract', 'width') } else { @('contract') }
+        Assert-True ($checked.ExitCode -ne 0 -and
+            @($findings.Fails | Where-Object { $_ -like '`[diff`] FAIL: contract: sanitizeSharingLinks: *' -and $_.Contains($fault.Value) }).Count -gt 0 -and
+            @($findings.Categories | Where-Object { $_ -cnotin $allowed }).Count -eq 0) `
+            ("Sharing alias fault $($fault.Key) wasn't refused for its own reason. " + ($checked.Output -join [Environment]::NewLine))
+        $structural = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name "$name-structural"
+        $structuralFindings = Get-Findings $structural
+        if ($fault.Key -ceq 'wide-recall-clobber') {
+            Assert-True ($structural.ExitCode -ne 0 -and $structuralFindings.Fails.Count -gt 0 -and
+                @($structuralFindings.Categories | Where-Object { $_ -cne 'width' }).Count -eq 0) `
+                'The upper half of a clobbered wide value reached the object recall without a width failure.'
+        } else {
+            Assert-True ($structural.ExitCode -eq 0 -and $structuralFindings.Fails.Count -eq 0) `
+                ("Sharing alias fault $($fault.Key) was structurally invalid. " + ($structural.Output -join [Environment]::NewLine))
+        }
+    }
     # One build per broken background-return call, selected alone: the hot-start hook gone or its
     # branch inverted, the reset's hook on the parameter its answer was copied from, the warm-start
     # hook past the store, and the swap's if-gez landing past its hook. Every FAIL has to be that rule's.
@@ -766,6 +827,35 @@ try {
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
+    # Keep the original direct callers above. A separate stock shape has shortened forwarding
+    # calls with different play and mask offsets, including the untouched full-screen viewer.
+    $forwardClean = New-DexApk -Name 'features-autoplay-forward-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-autoplay-forward-clean') })
+    foreach ($case in @('features-autoplay-forward-good', 'features-autoplay-forward-omitted')) {
+        $selected = if ($case.EndsWith('-good')) { 'disableVideoAutoplay' } else { 'none' }
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $checked = Invoke-DexDiff -Clean $forwardClean -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $selected
+        Assert-True ($checked.ExitCode -eq 0 -and (Get-Findings $checked).Fails.Count -eq 0) ("Forwarded video selection $case failed. " + ($checked.Output -join [Environment]::NewLine))
+    }
+    $forwardFaults = @('forward-missing', 'forward-register', 'forward-default', 'forward-viewer', 'forward-body',
+        'forward-flag-clobber', 'forward-mask-clobber', 'forward-side-effect', 'forward-repeat', 'forward-omitted-body')
+    foreach ($fault in $forwardFaults) {
+        $case = "features-bad-$fault"
+        $stockName = if ($fault -in @('forward-flag-clobber', 'forward-mask-clobber', 'forward-side-effect', 'forward-repeat')) {
+            "features-autoplay-$fault-clean"
+        } else { 'features-autoplay-forward-clean' }
+        $stock = if ($stockName -eq 'features-autoplay-forward-clean') { $forwardClean } else {
+            New-DexApk -Name $stockName -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $stockName) })
+        }
+        $selected = if ($fault -eq 'forward-omitted-body') { 'none' } else { 'disableVideoAutoplay' }
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $checked = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $selected
+        $findings = Get-Findings $checked
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+            @($findings.Fails | Where-Object { $_ -notlike '`[diff`] FAIL: contract: disableVideoAutoplay: *' }).Count -eq 0) `
+            ("$fault was not rejected solely by the forwarded video contract. " + ($checked.Output -join [Environment]::NewLine))
+        $structural = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
     # An ad card whose stock code reads its default mask again after PostVideo, hooked as a good
     # build hooks it, so the mask without the play bit leaks past the call. Stock and patched agree
     # on everything else, so only the check of what the hook writes can refuse it, and the FAIL has
@@ -795,6 +885,33 @@ try {
             ("$fault was not rejected solely by the Pure black contract. " + ($checked.Output -join [Environment]::NewLine))
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
+    # 451 uses a field copy into its inherited palette. The original literal-layout controls
+    # above stay independent, while these prove both selected and omitted field layouts.
+    $fieldPaletteClean = New-DexApk -Name 'features-pure-black-fields-clean' -Entries ([ordered]@{
+        'classes.dex' = (Get-Dex 'features-pure-black-fields-clean') })
+    foreach ($case in @(
+            @{ Name = 'features-pure-black-fields-good'; Features = 'pureBlack' },
+            @{ Name = 'features-pure-black-fields-omitted'; Features = 'none' })) {
+        $apk = New-DexApk -Name $case.Name -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case.Name) })
+        $checked = Invoke-DexDiff -Clean $fieldPaletteClean -Patched $apk -Allowlist $emptyAllowlist -Name $case.Name `
+            -Contracts $contracts -Features $case.Features
+        Assert-True ($checked.ExitCode -eq 0 -and (Get-Findings $checked).Fails.Count -eq 0) `
+            ("Field palette $($case.Name) failed. " + ($checked.Output -join [Environment]::NewLine))
+    }
+    # Source-proof faults occur on both sides, so unchanged malformed stock can't pass merely
+    # because the constructor hooks look right. Hook faults still exercise the final dark boundary.
+    foreach ($fault in @('copy-missing', 'branch-bypass', 'store-duplicate', 'getter-note', 'background-missing', 'light')) {
+        $name = "pure-black-fields-$fault"
+        $stock = New-DexApk -Name "features-$name-clean" -Entries ([ordered]@{ 'classes.dex' = (Get-Dex "features-$name-clean") })
+        $apk = New-DexApk -Name "features-bad-$name" -Entries ([ordered]@{ 'classes.dex' = (Get-Dex "features-bad-$name") })
+        $checked = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name $name -Contracts $contracts -Features 'pureBlack'
+        $findings = Get-Findings $checked
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+            @($findings.Fails | Where-Object { $_ -notlike '`[diff`] FAIL: contract: pureBlack: *' }).Count -eq 0) `
+            ("$name was not rejected solely by the Pure black contract. " + ($checked.Output -join [Environment]::NewLine))
+        $structural = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name "$name-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$name was not structurally valid."
     }
     # One build per broken settings row, selected alone: the hook missing, the hook in the PRIVACY
     # case instead of the MORE one, the hook on the entry instead of the composer, showRow left the
@@ -1243,6 +1360,10 @@ try {
             'start-call ask holding alpha',
             "start-call $hookRef holding",
             "start-call $hookRef holding alpha alpha",
+            ("start-call $hookRef holding " + '"alpha beta'),
+            ("start-call $hookRef holding " + '""'),
+            ("start-call $hookRef holding " + '"alpha"tail'),
+            ("start-call $hookRef holding " + '"alpha beta" "alpha beta"'),
             "start-call $hookRef in static holding alpha",
             "start-call $hookRef in (I)Z",
             "start-call $hookRef in static (I)Z holding",

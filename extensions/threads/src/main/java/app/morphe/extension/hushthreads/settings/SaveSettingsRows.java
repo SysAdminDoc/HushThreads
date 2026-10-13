@@ -10,7 +10,6 @@ package app.morphe.extension.hushthreads.settings;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.EditTextPreference;
@@ -402,8 +401,8 @@ final class SaveSettingsRows {
             cancel.setContentDescription(cancelDescription);
             cancel.setAllCaps(false);
             cancel.setTextSize(14);
-            cancel.setTextColor(ScreenColors.DEFAULT.heading);
-            cancel.setBackgroundColor(Color.TRANSPARENT);
+            cancel.setTextColor(ScreenColors.dimmedWhenDisabled(ScreenColors.DEFAULT.heading));
+            ScreenColors.DEFAULT.paintInlineAction(cancel);
             int touch = Math.round(48 * view.getResources().getDisplayMetrics().density);
             cancel.setMinWidth(touch);
             cancel.setMinimumWidth(touch);

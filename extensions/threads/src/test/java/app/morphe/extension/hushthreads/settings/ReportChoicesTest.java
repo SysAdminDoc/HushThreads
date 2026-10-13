@@ -107,6 +107,43 @@ public class ReportChoicesTest {
         assertEquals("Diagnostic report copied to the clipboard.", ShadowToast.getTextOfLatestToast());
     }
 
+    @Test
+    public void closingSettingsDismissesTheReportChooser() {
+        AlertDialog chooser = openChoices();
+        SettingsDialog settings = (SettingsDialog) activity().getFragmentManager()
+                .findFragmentByTag("hushthreads_settings");
+        settings.dismiss();
+        ShadowLooper.idleMainLooper();
+        assertFalse("the chooser outlived its settings window", chooser.isShowing());
+    }
+
+    @Test
+    @Config(sdk = 28)
+    public void android9NamesTheAppsOwnReportFolder() {
+        AlertDialog chooser = openChoices();
+        assertTrue(chooser.getListView().getAdapter().getItem(1).toString().contains("Threads' own Downloads folder"));
+        assertFalse(chooser.getListView().getAdapter().getItem(1).toString().contains("Download/Morphe"));
+        SettingsDialog settings = (SettingsDialog) activity().getFragmentManager()
+                .findFragmentByTag("hushthreads_settings");
+        String summary = String.valueOf(SettingsL10nTest.pageOf(settings)
+                .findPreference("action_export_diagnostic_report").getSummary());
+        assertTrue(summary, summary.contains("Threads' own Downloads folder"));
+        assertFalse(summary, summary.contains("Download/Morphe"));
+    }
+
+    @Test
+    @Config(sdk = 36)
+    public void currentAndroidNamesTheSharedReportFolder() {
+        AlertDialog chooser = openChoices();
+        assertTrue(chooser.getListView().getAdapter().getItem(1).toString().contains("Download/Morphe"));
+        SettingsDialog settings = (SettingsDialog) activity().getFragmentManager()
+                .findFragmentByTag("hushthreads_settings");
+        String summary = String.valueOf(SettingsL10nTest.pageOf(settings)
+                .findPreference("action_export_diagnostic_report").getSummary());
+        assertTrue(summary, summary.contains("Download/Morphe"));
+        assertFalse(summary, summary.contains("Threads' own Downloads folder"));
+    }
+
     /**
      * The control. Android's own two rows, styled after show() the way it was tried on 2026-09-26: the
      * list measures new rows it builds itself, without the styling, and shows the styled ones in that
@@ -159,7 +196,7 @@ public class ReportChoicesTest {
             Rect insets = new Rect();
             inset.getPadding(insets);
             assertEquals(new Rect(dp(16), dp(4), dp(16), dp(4)), insets);
-            assertTrue(inset.getDrawable() instanceof GradientDrawable);
+            assertTrue(inset.getDrawable().getCurrent() instanceof GradientDrawable);
             assertTrue("less than 48 dp to tap", card.getHeight() - 2 * dp(4) >= dp(48));
             // The text sits inside the card's surface, clear of its edge.
             Rect surface = new Rect(dp(16), dp(4), card.getWidth() - dp(16), card.getHeight() - dp(4));

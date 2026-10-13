@@ -15,10 +15,17 @@ import static org.junit.Assert.fail;
 import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.InsetDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -32,6 +39,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.shadows.ShadowLooper;
 
 import java.util.ArrayList;
@@ -97,6 +105,7 @@ public class ScreenColorsTest {
         // is read against that.
         text.put("dialog choice's name on its card", new int[]{c.title, c.card});
         text.put("dialog choice's detail on its card", new int[]{c.summary, c.card});
+        text.put("selected choice's text", new int[]{c.title, c.selection});
         text.put("primary action text on its fill", new int[]{c.onAccent, c.accent});
         text.put("secondary action on the dialog", new int[]{c.secondaryActionText(), c.dialog});
         text.put("secondary recovery action on its card", new int[]{c.secondaryActionText(), c.card});
@@ -107,6 +116,8 @@ public class ScreenColorsTest {
         Map<String, int[]> parts = new LinkedHashMap<>();
         parts.put("switch on, against its card", new int[]{c.accent, c.card});
         parts.put("icon against its tile", new int[]{c.heading, c.iconTile});
+        parts.put("focus outline against dialog", new int[]{c.heading, c.dialog});
+        parts.put("focus outline against selected choice", new int[]{c.heading, c.selection});
         parts.put("switch off, against its card", new int[]{c.switchOff, c.card});
         // The thumb shows where the switch is, so it needs 3:1 against the track it sits on.
         parts.put("switch off's thumb, against its track", new int[]{c.offThumb(), c.switchOff});
@@ -307,5 +318,122 @@ public class ScreenColorsTest {
         android.widget.EditText field = new android.widget.EditText(org.robolectric.RuntimeEnvironment.getApplication());
         ScreenColors.DEFAULT.paintField(field);
         assertEquals(ScreenColors.DEFAULT.title, field.getCurrentTextColor());
+    }
+
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    public void focusAndKeyboardSelectionHaveVisibleOutlinesThatRestore() {
+        View view = new View(RuntimeEnvironment.getApplication());
+        ScreenColors colors = ScreenColors.DEFAULT;
+        Drawable background = colors.controlSurface(view, colors.card, 8, colors.outline);
+        int normal = edgeColor(background, android.R.attr.state_enabled);
+        for (int state : new int[]{android.R.attr.state_focused, android.R.attr.state_selected,
+                android.R.attr.state_hovered}) {
+            int focused = edgeColor(background, android.R.attr.state_enabled, state);
+            assertEquals(colors.heading, focused);
+            assertTrue(contrast(focused, colors.card) >= NON_TEXT);
+        }
+        assertEquals(normal, edgeColor(background, android.R.attr.state_enabled));
+        assertEquals("a disabled selection must not look actionable", normal,
+                edgeColor(background, android.R.attr.state_selected));
+    }
+
+    private static int edgeColor(Drawable background, int... state) {
+        background.setState(state);
+        background.setBounds(0, 0, 120, 80);
+        Bitmap image = Bitmap.createBitmap(120, 80, Bitmap.Config.ARGB_8888);
+        try {
+            background.draw(new Canvas(image));
+            return image.getPixel(0, 40);
+        } finally {
+            image.recycle();
+        }
+    }
+
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    public void paintedDialogInputsAndPrimaryFocusKeepVisibleBoundaries() {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            EditText field = new EditText(controller.get());
+            field.setId(android.R.id.edit);
+            android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(controller.get())
+                    .setTitle("Save folder").setView(field)
+                    .setPositiveButton("Save", null).setNegativeButton("Cancel", null).create();
+            dialog.show();
+            ScreenColors.dialog(dialog);
+            Button save = dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE);
+            save.setFocusableInTouchMode(true);
+            assertTrue(save.requestFocus());
+            assertTrue("focused primary border must contrast with its fill", visibleBorderContrast(save, 4) >= NON_TEXT);
+            assertTrue("idle field must remain distinguishable from the dialog", visibleBorderContrast(field, 0) >= NON_TEXT);
+            assertTrue(field.requestFocus());
+            assertTrue("focused field must retain its boundary", visibleBorderContrast(field, 0) >= NON_TEXT);
+            dialog.dismiss();
+        }
+    }
+
+    private static double visibleBorderContrast(View view, int insetDp) {
+        float density = view.getResources().getDisplayMetrics().density;
+        int width = Math.round(160 * density);
+        int height = Math.round(64 * density);
+        view.layout(0, 0, width, height);
+        view.jumpDrawablesToCurrentState();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        try {
+            Canvas canvas = new Canvas(bitmap);
+            canvas.drawColor(ScreenColors.DEFAULT.dialog);
+            view.draw(canvas);
+            int edge = Math.round(insetDp * density);
+            int border = bitmap.getPixel(edge, height / 2);
+            int fill = bitmap.getPixel(edge + Math.round(6 * density), height / 2);
+            double ratio = contrast(border, fill);
+            assertTrue("border " + Integer.toHexString(border) + " against " + Integer.toHexString(fill)
+                    + " in " + view.getClass().getName() + " gives " + ratio, ratio >= NON_TEXT);
+            return ratio;
+        } finally {
+            bitmap.recycle();
+        }
+    }
+
+    @Test
+    public void settingsBackdropsUseTheRadiusScaleIncludingSwitchesAndActions() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            SettingsDialog dialog = show(controller.get());
+            assertRadiusScale(dialog.getView());
+            for (View row : rows(dialog)) assertRadiusScale(row);
+            dialog.dismiss();
+        }
+    }
+
+    private static void assertRadiusScale(View view) {
+        if (view.getVisibility() != View.VISIBLE) return;
+        assertRadiusScale(view, view.getBackground());
+        if (view instanceof Switch) {
+            assertRadiusScale(view, ((Switch) view).getThumbDrawable());
+            assertRadiusScale(view, ((Switch) view).getTrackDrawable());
+        }
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) assertRadiusScale(group.getChildAt(i));
+        }
+    }
+
+    private static void assertRadiusScale(View view, Drawable drawable) {
+        if (drawable == null) return;
+        if (drawable instanceof GradientDrawable) {
+            GradientDrawable shape = (GradientDrawable) drawable;
+            assertEquals("oval backdrop in " + view.getClass().getSimpleName(), GradientDrawable.RECTANGLE, shape.getShape());
+            float dp = shape.getCornerRadius() / view.getResources().getDisplayMetrics().density;
+            assertTrue("radius " + dp + " in " + view.getClass().getName()
+                    + (view instanceof TextView ? " (" + ((TextView) view).getText() + ")" : ""),
+                    dp == 0 || dp == 4 || dp == 6 || dp == 8 || dp == 10 || dp == 12);
+        } else if (drawable instanceof InsetDrawable) {
+            assertRadiusScale(view, ((InsetDrawable) drawable).getDrawable());
+        } else if (drawable instanceof LayerDrawable) {
+            LayerDrawable layers = (LayerDrawable) drawable;
+            for (int i = 0; i < layers.getNumberOfLayers(); i++) assertRadiusScale(view, layers.getDrawable(i));
+        } else {
+            Drawable current = drawable.getCurrent();
+            if (current != drawable) assertRadiusScale(view, current);
+        }
     }
 }

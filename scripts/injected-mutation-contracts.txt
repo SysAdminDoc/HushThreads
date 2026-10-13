@@ -12,6 +12,7 @@
 # and its shape, and exactly one of Threads' methods may answer that; name as much as the patch
 # itself finds the method by. scripts/test-injected-registers.ps1 builds bad fixtures for every
 # rule here, and fails on a rule it has none for.
+# Strings containing spaces are quoted and matched as one exact string.
 # The settings patch sends each of these ShortcutManager calls to SettingsEntry, which makes the
 # real call and puts the HushThreads shortcut back in front after it. One left in Threads' own code
 # could rank Threads' shortcuts ahead again and push the HushThreads one out of the long-press
@@ -23,6 +24,10 @@ no-call Landroid/content/pm/ShortcutManager;->addDynamicShortcuts(Ljava/util/Lis
 no-call Landroid/content/pm/ShortcutManager;->setDynamicShortcuts(Ljava/util/List;)Z outside Lapp/morphe/extension/
 no-call Landroid/content/pm/ShortcutManager;->updateShortcuts(Ljava/util/List;)Z outside Lapp/morphe/extension/
 no-call Landroid/content/pm/ShortcutManager;->removeAllDynamicShortcuts()V outside Lapp/morphe/extension/
+
+# The main-feed logo keeps all seven original clickable arguments in their original order.
+# A second hook, a leftover stock call or a hook on another argument bank is refused.
+sole-call Lapp/morphe/extension/hushthreads/settings/ThreadsLogo;->clickable(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;Z)Ljava/lang/Object; replacing LX/02eC;->A01(LX/09xw;LX/00lS;LX/09hc;LX/01bY;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Z)LX/09hc; in instance (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; holding "com.instagram.barcelona.feed.ui.MainFeedScreen.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous> (MainFeedScreen.kt:2624)"
 
 # These compare the final host operations and branch graph against the stock fixture. A selected
 # feature's status must agree with the CLI selection when supplied. Omitted families must retain

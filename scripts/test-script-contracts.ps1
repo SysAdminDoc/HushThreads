@@ -2297,10 +2297,10 @@ try {
     function Sync-FixtureBugForm {
         $fixtureVersion = ((Get-Content -LiteralPath (Join-Path $factsRoot 'gradle.properties')) `
             -match '^version\s*=' | Select-Object -First 1) -replace '^version\s*=\s*', ''
-        $publishedHere = Get-ReleaseIndexVersion
-        if ($publishedHere -eq $fixtureVersion) { return }
+        $fixtureCatalog = Get-Content -LiteralPath (Join-Path $factsRoot 'patches-list.json') -Raw | ConvertFrom-Json
+        $fixtureBuild = (Get-PatchTarget -PatchList $fixtureCatalog).PackageVersion
         Set-FactsFile $bugFormRelative {
-            param($text) $text -replace ('Version ' + [regex]::Escape($publishedHere) + ' for Threads'), "Version $fixtureVersion for Threads"
+            param($text) $text -replace '(placeholder:\s*Version )\S+( for Threads )\S+', "`${1}$fixtureVersion`${2}$fixtureBuild"
         }
     }
 
@@ -2321,17 +2321,32 @@ try {
         Set-FactsFile 'README.md' { param($unused) $synced }
     }
 
+    # Strict release fixtures prepare the pending source entry as a release would. The actual
+    # working tree keeps Unreleased until publication is requested.
+    function Sync-FixtureChangelog {
+        $fixtureVersion = ((Get-Content -LiteralPath (Join-Path $factsRoot 'gradle.properties')) `
+            -match '^version\s*=' | Select-Object -First 1) -replace '^version\s*=\s*', ''
+        $text = Get-Content -LiteralPath (Join-Path $factsRoot 'CHANGELOG.md') -Raw
+        if (@(Get-ChangelogVersions -Text $text) -contains $fixtureVersion) { return }
+        if ([version]$fixtureVersion -le [version](Get-ReleaseIndexVersion)) { return }
+        Set-FactsFile 'CHANGELOG.md' {
+            param($text) ([regex]'(?m)^## Unreleased[ \t]*\r?$').Replace($text, "## $fixtureVersion (2026-09-29)", 1)
+        }
+    }
+
     function Reset-FactsFile {
         param([string]$Name)
         Copy-ReleaseFile $Name (Join-Path $factsRoot $Name)
         if ($Name -eq 'patches-bundle.json') { Sync-FixtureIndex }
         if ($Name -eq $bugFormRelative) { Sync-FixtureBugForm }
         if ($Name -eq 'README.md') { Sync-FixtureReadme }
+        if ($Name -eq 'CHANGELOG.md') { Sync-FixtureChangelog }
     }
 
     Sync-FixtureIndex
     Sync-FixtureBugForm
     Sync-FixtureReadme
+    Sync-FixtureChangelog
 
     # The control. Everything below is this same tree with one fact moved, so a failure there is
     # the moved fact talking and not the fixture being wrong.
@@ -2372,8 +2387,8 @@ try {
         }
         Set-FactsFile 'patches-list.json' { param($text) $text.Replace($newestBuild, $movedBuild) }
         Set-FactsFile 'README.md' { param($text) $text.Replace($newestBuild, $movedBuild) }
-        # What the maintainer's tree holds: the published index and form as they were, the form's
-        # build moved with the catalog.
+        # What the maintainer's tree holds: the published index and form as they were. Reporters
+        # still install that release while the source's target is being prepared.
         Copy-ReleaseFile 'patches-bundle.json' (Join-Path $factsRoot 'patches-bundle.json')
         Copy-Item -LiteralPath (Join-Path $Root $bugFormRelative) -Destination (Join-Path $factsRoot $bugFormRelative) -Force
         # And its README sentence naming that published release, which the sync above moved to the
@@ -2383,12 +2398,16 @@ try {
             param($text) $text -replace '(latest (?:published )?release is (?:still )?\[?v)\d+(?:\.\d+)+', "`${1}$publishedHere" `
                 -replace '(latest release is \[v[^\]]*\]\([^)\s]*/tag/v)\d+(?:\.\d+)+', "`${1}$publishedHere"
         }
-        Set-FactsFile $bugFormRelative {
-            param($text) $text -replace ('(placeholder:\s*Version \S+ for Threads )' + [regex]::Escape($newestBuild)), "`${1}$movedBuild"
-        }
         $global:LASTEXITCODE = 0
         & $factsScript -Root $factsRoot -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipUrlCheck 6> $null
         Assert-True ($LASTEXITCODE -eq 0) "The gate refused the $window tree this case is built on, so it proves nothing."
+        $publishedForm = Get-Content -LiteralPath (Join-Path $factsRoot $bugFormRelative) -Raw
+        Set-FactsFile $bugFormRelative {
+            param($text) $text -replace '(placeholder:\s*Version \S+ for Threads )\S+', "`${1}$movedBuild"
+        }
+        Assert-Throws { & $factsScript -Root $factsRoot -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipUrlCheck 6> $null } `
+            '*bug report form version placeholder*' "The $window form advertised the source target before publication."
+        Set-FactsFile $bugFormRelative { param($unused) $publishedForm }
         # Lagging, the README may name the source's version or the published one, and no other.
         $windowReadme = Get-Content -LiteralPath (Join-Path $factsRoot 'README.md') -Raw
         foreach ($stale in @(
@@ -2418,6 +2437,62 @@ try {
             Reset-FactsFile $name
         }
     }
+
+    # A source-only bump keeps the index and its dated history intact, with changes in Unreleased.
+    Set-FactsFile 'gradle.properties' {
+        param($text) $text -replace '(?m)^(\s*version\s*=\s*)\S+', "`${1}$nextVersion"
+    }
+    Set-FactsFile 'patches-list.json' {
+        param($text) $text.Replace('"v' + $catalogVersion + '"', '"v' + $nextVersion + '"')
+    }
+    Set-FactsFile 'README.md' {
+        param($text) $text -replace 'badge/version-\d+(?:\.\d+)+-', "badge/version-$nextVersion-" `
+            -replace 'alt="Version \d+(?:\.\d+)+"', "alt=`"Version $nextVersion`""
+    }
+    Set-FactsFile 'CHANGELOG.md' {
+        param($text) "# Changelog`n`n## Unreleased`n`n* **Threads:** A pending source change.`n`n" +
+            ($text -replace '(?ms)^## Unreleased[ \t]*\r?\n.*?(?=^##\s|\z)', '' -replace '(?m)^# Changelog\r?\n', '')
+    }
+    $pendingChangelog = Get-Content -LiteralPath (Join-Path $factsRoot 'CHANGELOG.md') -Raw
+    & $factsScript -Root $factsRoot -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipUrlCheck 6> $null
+    Assert-True ($LASTEXITCODE -eq 0) 'The gate refused a newer source with Unreleased and intact published history.'
+    Assert-Throws { Invoke-Facts } '*patches-bundle.json version does not match*' `
+        'Strict release validation accepted a pending source without a dated release entry.'
+    Assert-Throws {
+        & $factsScript -Root $factsRoot -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipUrlCheck -VerifyPublishedAsset 6> $null
+    } '*source artifact cannot be checked against the previous published index*' `
+        'Published-asset validation accepted a pending source against the old index.'
+    $publishedSection = [regex]::Match($pendingChangelog,
+        ('(?ms)^## ' + [regex]::Escape($catalogVersion) + '[^\r\n]*\r?\n.*?(?=^##\s|\z)')).Value
+    foreach ($case in @(
+            @{ Name = 'missing Unreleased'; Text = $pendingChangelog -replace '(?ms)^## Unreleased.*?(?=^##\s|\z)', '';
+                Pattern = '*exactly one*Unreleased*' },
+            @{ Name = 'empty Unreleased'; Text = $pendingChangelog.Replace('* **Threads:** A pending source change.', '');
+                Pattern = '*no scoped change bullets*' },
+            @{ Name = 'an undated published entry'; Text = $pendingChangelog -replace
+                    ('(?m)^## ' + [regex]::Escape($catalogVersion) + '[^\r\n]*$'), "## $catalogVersion";
+                Pattern = '*no date*' },
+            @{ Name = 'unscoped published changes'; Text = $pendingChangelog.Replace($publishedSection,
+                    $publishedSection.Replace('* **Threads:', '* **Other:'));
+                Pattern = '*does not scope to Threads*' },
+            @{ Name = 'missing published history'; Text = $pendingChangelog -replace
+                    ('(?ms)^## ' + [regex]::Escape($catalogVersion) + '[^\r\n]*\r?\n.*?(?=^##\s|\z)'), '';
+                Pattern = '*no heading for*' },
+            @{ Name = 'a malformed source release heading'; Text = $pendingChangelog.Replace('## Unreleased', "## $nextVersion`n`n## Unreleased");
+                Pattern = '*no date*' })) {
+        Set-FactsFile 'CHANGELOG.md' { param($unused) $case.Text }
+        Assert-Throws { & $factsScript -Root $factsRoot -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipUrlCheck 6> $null } `
+            $case.Pattern "Pending source validation accepted $($case.Name)."
+    }
+    foreach ($name in @('gradle.properties', 'patches-list.json', 'README.md', 'CHANGELOG.md')) {
+        Reset-FactsFile $name
+    }
+    Set-FactsFile 'CHANGELOG.md' {
+        param($text) $text -replace ('(?m)^## ' + [regex]::Escape($catalogVersion) + '[^\r\n]*$'), '## Unreleased'
+    }
+    Assert-Throws { & $factsScript -Root $factsRoot -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipUrlCheck 6> $null } `
+        '*no heading for*' 'AllowPublishedIndexLag accepted Unreleased in place of the same source/index version.'
+    Reset-FactsFile 'CHANGELOG.md'
 
     # The sync's version edit is bounded on both sides, because a version can sit in the build
     # number the index describes. Inside one, as 0.10.1 is in 583.0.0.10.10, either bound stops the
@@ -4037,12 +4112,16 @@ Assert-True (Test-ChangelogVersions -Current $goodChangelog -ExpectedVersion '0.
 # release adds (Get-ReleaseFileText, above the release facts).
 $realVersion = Get-BundleVersion -Root $Root
 $realChangelog = Get-ReleaseFileText 'CHANGELOG.md'
+$realPublishedVersion = Get-ReleaseIndexVersion
+$realPending = [version]$realVersion -gt [version]$realPublishedVersion -and
+    @(Get-ChangelogVersions -Text $realChangelog) -notcontains $realVersion
+$realChangelogVersion = if ($realPending) { $realPublishedVersion } else { $realVersion }
 $realTag = "$(& git -C $Root describe --tags --abbrev=0 HEAD 2>$null | Select-Object -First 1)".Trim()
 $realPrevious = if ($realTag) { (& git -C $Root show "${realTag}:CHANGELOG.md" 2>$null) -join "`n" } else { '' }
 $realCheck = if ([string]::IsNullOrWhiteSpace($realPrevious)) {
-    Test-ChangelogVersions -Current $realChangelog -ExpectedVersion $realVersion
+    Test-ChangelogVersions -Current $realChangelog -ExpectedVersion $realChangelogVersion
 } else {
-    Test-ChangelogVersions -Current $realChangelog -ExpectedVersion $realVersion -Previous $realPrevious
+    Test-ChangelogVersions -Current $realChangelog -ExpectedVersion $realChangelogVersion -Previous $realPrevious
 }
 Assert-True $realCheck.Valid "This repository's own CHANGELOG was refused: $($realCheck.Reason)"
 
@@ -4138,10 +4217,40 @@ Assert-True (-not (Test-ChangelogManagerEntry -Current $readable -ExpectedVersio
     'An entry for a version the CHANGELOG does not name was accepted.'
 
 # The control. The real file, held to the real version, must pass.
-$realEntry = Test-ChangelogManagerEntry -Current $realChangelog -ExpectedVersion $realVersion
-Assert-True $realEntry.Valid "Morphe Manager could not read this repository's own $realVersion entry: $($realEntry.Reason)"
+$realEntry = Test-ChangelogManagerEntry -Current $realChangelog -ExpectedVersion $realChangelogVersion
+Assert-True $realEntry.Valid "Morphe Manager could not read this repository's own $realChangelogVersion entry: $($realEntry.Reason)"
 
 Write-Host '[scripts] changelog Manager contracts passed'
+
+# --- Test-ChangelogUnreleased ---------------------------------------------------------------
+
+$pendingEntry = "# Changelog`n`n## Unreleased`n`n* **Threads:** A pending change.`n* **Tooling:** A build change.`n" +
+    "* **Docs:** A documentation change.`n`n## 0.42.0 (2026-09-20)`n`n* **Threads:** Shipped.`n"
+$pendingCheck = Test-ChangelogUnreleased -Current $pendingEntry
+Assert-True ($pendingCheck.Valid -and $pendingCheck.Bullets -eq 3) `
+    "A scoped Unreleased section was refused or miscounted: $($pendingCheck.Reason)"
+Assert-True (Test-ChangelogUnreleased -Current ($pendingEntry -replace "`r?`n", "`r`n")).Valid `
+    'CRLF line endings changed the Unreleased reading.'
+Assert-True (Test-ChangelogUnreleased -Current "## Unreleased`n`n* **Tooling:** A build-only change.`n").Valid `
+    'A pending build change required a Threads release announcement.'
+foreach ($case in @(
+        @{ Name = 'a malformed heading'; Text = $pendingEntry.Replace('## Unreleased', '##Unreleased') },
+        @{ Name = 'duplicate sections'; Text = $pendingEntry.Replace('## Unreleased', "## Unreleased`n`n## Unreleased") },
+        @{ Name = 'no change bullets'; Text = "## Unreleased`n`n### Pending`n`n## 0.42.0 (2026-09-20)`n* **Threads:** Shipped." },
+        @{ Name = 'an empty bullet'; Text = $pendingEntry.Replace('* **Threads:** A pending change.', '* **Threads:** ') },
+        @{ Name = 'an unscoped bullet'; Text = $pendingEntry.Replace('* **Threads:** A pending change.', '* A pending change.') },
+        @{ Name = 'a foreign app scope'; Text = $pendingEntry.Replace('**Threads:** A pending', '**Instagram:** A pending') },
+        @{ Name = 'a wrapped bullet'; Text = $pendingEntry.Replace('A pending change.', "A pending`n  change.") },
+        @{ Name = 'an unresolved conflict'; Text = $pendingEntry.Replace('A pending change.', "A pending change.`n<<<<<<< HEAD") },
+        @{ Name = 'Unreleased after a release'; Text = "## 0.42.0 (2026-09-20)`n* **Threads:** Shipped.`n`n## Unreleased`n* **Threads:** Pending." })) {
+    $check = Test-ChangelogUnreleased -Current $case.Text
+    Assert-True (-not $check.Valid) "Unreleased validation accepted $($case.Name)."
+}
+if ($realPending) {
+    $realPendingEntry = Test-ChangelogUnreleased -Current $realChangelog
+    Assert-True $realPendingEntry.Valid "This repository's pending source changes were refused: $($realPendingEntry.Reason)"
+}
+Write-Host '[scripts] pending changelog contracts passed'
 
 # --- Resolve-D8 ------------------------------------------------------------------------------
 #
@@ -4690,6 +4799,12 @@ try {
         $destination = Join-Path $releaseRepo $relative
         New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
         Copy-ReleaseFile $relative $destination
+    }
+    if ($realPending) {
+        $fixtureChangelog = Join-Path $releaseRepo 'CHANGELOG.md'
+        $prepared = ([regex]'(?m)^## Unreleased[ \t]*\r?$').Replace(
+            [System.IO.File]::ReadAllText($fixtureChangelog), "## $realVersion (2026-09-29)", 1)
+        [System.IO.File]::WriteAllText($fixtureChangelog, $prepared, (New-Object System.Text.UTF8Encoding($false)))
     }
     # The cases below need a declared build older than the newest, one a receipt can leave out.
     # The checkout's catalog declares only the newest stable build, so the fixture's copy declares

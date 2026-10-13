@@ -18,6 +18,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -114,7 +115,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     @Nullable
     AlertDialog importPreview;
 
-    /** The page's other dialogs that may still be on screen: the sections and Licenses. */
+    /** The page's other dialogs that may still be on screen, including the report chooser. */
     private final List<Dialog> shownDialogs = new ArrayList<>();
 
     /**
@@ -431,10 +432,9 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 L10n.t("Record patch activity and show errors for a bug report. Leave off during normal use.")), SettingsIcons.BUG));
         // Both rows come without a title of their own: Hushfeed's gave them one from string
         // resources that Threads' APK doesn't have, and untitled they showed as blank rows.
-        ExportDiagnosticReportPreference export = new ExportRow(context);
+        ExportDiagnosticReportPreference export = new ExportRow(this, context);
         export.setTitle(L10n.t("Export diagnostic report"));
-        export.setSummary(L10n.t("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies "
-                + "and sign-in tokens are left out. Check it for other private text before you share it."));
+        export.setSummary(reportSummary(context));
         hushthreads.addPreference(mark(export, SettingsIcons.LICENSE));
         ClearLogBufferPreference clear = new ClearRow(context);
         clear.setTitle(L10n.t("Clear diagnostic data"));
@@ -541,8 +541,28 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         if (getView() == null || activity == null || activity.isFinishing() || activity.isDestroyed()) return;
         AlertDialog dialog = builder.show();
         ScreenColors.dialog(dialog);
+        trackDialog(dialog);
+    }
+
+    /** A manually created dialog must leave with the view that owns it. */
+    private void trackDialog(Dialog dialog) {
         shownDialogs.add(dialog);
         dialog.setOnDismissListener(shownDialogs::remove);
+    }
+
+    /** Android 9 saves reports in the app's own folder rather than the shared Downloads folder. */
+    private static String reportSummary(Context context) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+                ? L10n.t(context, "Copy a quick report or save the full one in Threads' own Downloads folder. "
+                        + "Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.")
+                : L10n.t(context, "Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies "
+                        + "and sign-in tokens are left out. Check it for other private text before you share it.");
+    }
+
+    private static String reportFileSummary(Context context) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+                ? L10n.t(context, "Save the full report in Threads' own Downloads folder.")
+                : L10n.t(context, "Save the full report in Download/Morphe.");
     }
 
     /** The section headings on the page, in order. */
@@ -964,8 +984,11 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     }
 
     static final class ExportRow extends ExportDiagnosticReportPreference {
-        ExportRow(Context context) {
+        private final HushThreadsPreferenceFragment page;
+
+        ExportRow(HushThreadsPreferenceFragment page, Context context) {
             super(context);
+            this.page = page;
         }
 
         /** The two choices as cards, each saying what it does under its name. */
@@ -976,7 +999,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                     new CharSequence[]{L10n.t(getContext(), "Copy quick report"),
                             L10n.t(getContext(), "Save full report")},
                     new CharSequence[]{L10n.t(getContext(), "Copy a short report to the clipboard."),
-                            L10n.t(getContext(), "Save the full report in Download/Morphe.")});
+                            reportFileSummary(getContext())});
         }
 
         /**
@@ -992,6 +1015,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 list.setSelector(new ColorDrawable(Color.TRANSPARENT));
             }
             ScreenColors.dialog(dialog);
+            page.trackDialog(dialog);
         }
 
         @Override
@@ -1006,6 +1030,12 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     static final class ClearRow extends ClearLogBufferPreference {
         ClearRow(Context context) {
             super(context);
+        }
+
+        @Override
+        public CharSequence getTitle() {
+            return LogBufferManager.canUndoClear()
+                    ? L10n.t(getContext(), "Restore diagnostic data") : super.getTitle();
         }
 
         @Override

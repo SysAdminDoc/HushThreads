@@ -738,6 +738,8 @@ public class SettingsNavigationTest {
         findSearch(dialog.getView()).setText("links");
         ShadowLooper.idleMainLooper(1, java.util.concurrent.TimeUnit.SECONDS);
         capture("search-results");
+        findSearch(dialog.getView()).requestFocus();
+        capture("search-focused");
         findSearch(dialog.getView()).setText("noSuchSetting987654");
         ShadowLooper.idleMainLooper(1, java.util.concurrent.TimeUnit.SECONDS);
         capture("search-empty");
@@ -748,6 +750,17 @@ public class SettingsNavigationTest {
         AlertDialog report = (AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
         captureDialog("dialog-report", report);
         report.dismiss();
+        page.navigation.navigate("Downloads");
+        for (String[] action : new String[][]{
+                {app.morphe.extension.hushthreads.download.SaveSettings.DOWNLOAD_QUALITY.key, "dialog-quality"},
+                {app.morphe.extension.hushthreads.download.SaveSettings.SAVE_FOLDER.key, "dialog-folder"},
+                {app.morphe.extension.hushthreads.download.SaveSettings.FILENAME_TEMPLATE.key, "dialog-filename"}}) {
+            tap(action[0]);
+            AlertDialog choice = (AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
+            captureDialog(action[1], choice);
+            choice.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
+        }
+        page.navigation.navigate("Pause, backup and diagnostics");
         page.pendingImport = SettingsBackup.parse("{\"format\":\"hushthreads-settings\",\"schema\":1,\"settings\":{\"hushthreads_hide_ads\":false}}").toBundle();
         SettingsBackupPreference.onPageResumed(page);
         captureDialog("dialog-import", page.importPreview);

@@ -143,20 +143,6 @@ if ($ArtifactIsHosted -and $ArtifactPath) {
     throw 'Pass -ArtifactPath for a bundle built here, or -ArtifactIsHosted to check the published asset on its own, not both.'
 }
 
-# The Threads source census (sources/threads-sources.json). A release is when HushThreads
-# tells people where its code came from, so it goes out only on a ledger that keeps every rule
-# threads-sources.ps1 holds it to (a dated listing record for every index among them) and a census
-# from the last 14 days; an index that doesn't list HushThreads yet is named, not refused. Checked first, since it needs no network and no build. Only the
-# published asset run, which is the release: the lenient pushes between releases change files the
-# census doesn't describe, and a README fix shouldn't wait on an audit.
-if ($VerifyPublishedAsset) {
-    $sourceGate = Test-SourceReleaseGate -Root $rootPath
-    if (-not $sourceGate.Valid) {
-        throw "The release can't go out on this source census: $($sourceGate.Reason)"
-    }
-    Write-Host "[release] $($sourceGate.Summary)"
-}
-
 $patchListPath = Join-Path $rootPath 'patches-list.json'
 $bundlePath = Join-Path $rootPath 'patches-bundle.json'
 $propertiesPath = Join-Path $rootPath 'gradle.properties'
@@ -228,6 +214,17 @@ if ($indexLagsSource) {
 }
 $publishedVersion = if ($indexLagsSource) { $bundleVersion } else { $releaseVersion }
 Require-Match -Text ([string]$bundle.download_url) -Pattern "/v$([regex]::Escape($publishedVersion))/patches-$([regex]::Escape($publishedVersion))\.mpp$" -Description 'patches-bundle.json download URL'
+
+# The source and index must describe the same release before its census or hosted asset can be
+# checked. A valid release still requires the complete source ledger and a census from the last
+# 14 days, before any network or build work. Ordinary source pushes don't require that audit.
+if ($VerifyPublishedAsset) {
+    $sourceGate = Test-SourceReleaseGate -Root $rootPath
+    if (-not $sourceGate.Valid) {
+        throw "The release can't go out on this source census: $($sourceGate.Reason)"
+    }
+    Write-Host "[release] $($sourceGate.Summary)"
+}
 
 # Matching the pattern only proves the index spells the version right. Reaching the address is
 # what catches an index pointed at a tag nobody published, which is how the bundle went missing
@@ -841,7 +838,7 @@ if (-not (Test-Path -LiteralPath $bugFormPath -PathType Leaf)) {
     throw "The bug report form is missing: $bugFormPath"
 }
 $bugForm = Get-Content -LiteralPath $bugFormPath -Raw
-$bugFormVersions = "Version $publishedVersion for Threads $targetVersion"
+$bugFormVersions = "Version $publishedVersion for Threads $descriptionTargetVersion"
 Require-Match -Text $bugForm -Pattern "(?m)^\s*placeholder:\s*$([regex]::Escape($bugFormVersions))\s*$" `
     -Description 'bug report form version placeholder'
 Require-Match -Text $bugForm -Pattern "(?m)^\s*placeholder:\s*Morphe Manager $([regex]::Escape($managerFloor))\s*$" `
@@ -875,6 +872,8 @@ function Test-ChangelogHere {
         Held against the file as it stood at the most recent tag reachable from HEAD, which is
         read with git. A checkout with no tag, or one where that tag carried no CHANGELOG, is
         still held to naming the version it builds; there is simply nothing older to compare.
+        A strictly newer source may use Unreleased while the unchanged published index lags,
+        only with AllowPublishedIndexLag. The published entry remains held to Manager's parser.
     #>
     $path = Join-Path $rootPath 'CHANGELOG.md'
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
@@ -896,7 +895,11 @@ function Test-ChangelogHere {
         }
     }
 
-    $arguments = @{ Current = $current; ExpectedVersion = $releaseVersion }
+    $described = @(Get-ChangelogVersions -Text $current)
+    $pendingSource = $AllowPublishedIndexLag -and [version]$releaseVersion -gt [version]$publishedVersion -and
+        $described -notcontains $releaseVersion
+    $changelogVersion = if ($pendingSource) { $publishedVersion } else { $releaseVersion }
+    $arguments = @{ Current = $current; ExpectedVersion = $changelogVersion }
     if ($null -ne $previous) {
         $arguments['Previous'] = $previous
         $arguments['PreviousLabel'] = $label
@@ -904,12 +907,18 @@ function Test-ChangelogHere {
     $check = Test-ChangelogVersions @arguments
     if (-not $check.Valid) { throw "The CHANGELOG does not describe this release: $($check.Reason)" }
 
-    $manager = Test-ChangelogManagerEntry -Current $current -ExpectedVersion $releaseVersion
+    $manager = Test-ChangelogManagerEntry -Current $current -ExpectedVersion $changelogVersion
     if (-not $manager.Valid) { throw "Morphe Manager cannot show this release: $($manager.Reason)" }
-    Write-Host ("[release] Morphe Manager can read the $releaseVersion entry: dated " +
+    Write-Host ("[release] Morphe Manager can read the $changelogVersion entry: dated " +
         "$($manager.Date), $($manager.Bullets) bullets scoped Threads")
 
-    $described = @(Get-ChangelogVersions -Text $current)
+    if ($pendingSource) {
+        $pending = Test-ChangelogUnreleased -Current $current
+        if (-not $pending.Valid) { throw "The CHANGELOG does not describe pending source ${releaseVersion}: $($pending.Reason)" }
+        Write-Host ("[release] pending source $releaseVersion has $($pending.Bullets) Unreleased change bullets; " +
+            "published $publishedVersion keeps its dated entry and released history")
+        return
+    }
     if ($null -eq $previous) {
         Write-Host ("[release] the CHANGELOG describes $releaseVersion and " +
             "$($described.Count) versions in all; there is no earlier tag to compare with")

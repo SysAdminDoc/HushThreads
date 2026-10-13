@@ -19,7 +19,6 @@ import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Icon;
@@ -447,12 +446,12 @@ public final class SettingsEntry {
         final int size = 432; // Adaptive icon canvas: 108dp at xxxhdpi.
         Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
-        canvas.drawColor(Color.BLACK);
+        canvas.drawColor(ScreenColors.DEFAULT.background);
         Paint disc = new Paint(Paint.ANTI_ALIAS_FLAG);
-        disc.setColor(0xFF236BE7);
+        disc.setColor(ScreenColors.DEFAULT.accent);
         canvas.drawCircle(size / 2f, size / 2f, size * 0.30f, disc);
         Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
-        text.setColor(Color.WHITE);
+        text.setColor(ScreenColors.DEFAULT.onAccent);
         text.setTextAlign(Paint.Align.CENTER);
         text.setTypeface(Typeface.DEFAULT_BOLD);
         text.setTextSize(size * 0.24f);
