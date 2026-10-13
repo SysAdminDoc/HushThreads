@@ -427,7 +427,7 @@ public class SettingsNavigationTest {
         tap(SettingsNavigation.RESTART);
 
         assertEquals("the tap didn't restart, or asked first", 1, restarted.size());
-        assertNull("the restart waited on a dialog", org.robolectric.shadows.ShadowAlertDialog.getLatestDialog());
+        assertNull("the restart waited on a dialog", org.robolectric.shadows.ShadowAlertDialog.getLatestAlertDialog());
         assertEquals(before, savedValues());
         assertEquals("Appearance", ReopenSettingsAfterRestart.takeFresh(Setting.preferences.preferences,
                 android.os.SystemClock.elapsedRealtime()));
