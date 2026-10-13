@@ -9,6 +9,7 @@ Changes in the source build, then released versions.
 * **Threads:** Downloads has a Saves section that says when nothing is in progress. Active saves still show progress and Cancel.
 * **Threads:** Long-press the Threads logo at the top of your home feed to open HushThreads settings right over the feed. It works while HushThreads is paused, and a plain tap on the logo does what it always did.
 * **Tooling:** Updated the signed-app check for the redesigned settings. About and reports still have to carry the exact bundle identity.
+* **Docs:** The README is much shorter now and keeps to what you need to install and use HushThreads. The long version, with every build and test note, is still in the repository history.
 
 ## 0.0.13 (2026-10-10)
 
