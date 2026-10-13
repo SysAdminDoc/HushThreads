@@ -51,6 +51,9 @@ public final class SettingsDialog extends DialogFragment {
      * carries an id.
      */
     static final int CONTAINER_ID = 0x48464301;
+    /** The argument naming the page the screen opens on: a route of {@link SettingsNavigation}. */
+    static final String START_PAGE = "hushthreads_start_page";
+    static final String RESTART_STATUS = "hushthreads_restart_status";
 
     private TextView pageTitle;
     private LinearLayout searchBox;
@@ -63,6 +66,25 @@ public final class SettingsDialog extends DialogFragment {
         if (!count.contentEquals(results.getText())) results.setText(count);
     };
     private boolean settingSearch;
+    /** How many changes wait for a restart, in the restart row's words. See {@link #liveStatus}. */
+    private TextView restartStatus;
+
+    /** The screen, set to open on [page], or on the first page for null or "". */
+    static SettingsDialog onPage(@Nullable String page) {
+        SettingsDialog dialog = new SettingsDialog();
+        if (page != null && !page.isEmpty()) {
+            Bundle arguments = new Bundle();
+            arguments.putString(START_PAGE, page);
+            dialog.setArguments(arguments);
+        }
+        return dialog;
+    }
+
+    /** The page this screen was asked to open on, or "" for the first page. */
+    String startPage() {
+        Bundle arguments = getArguments();
+        return arguments == null ? "" : arguments.getString(START_PAGE, "");
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -171,6 +193,7 @@ public final class SettingsDialog extends DialogFragment {
         root.addView(bar);
 
         buildSearch(root);
+        restartStatus = liveStatus(root, RESTART_STATUS);
 
         FrameLayout container = new FrameLayout(getContext());
         container.setId(CONTAINER_ID);
@@ -261,6 +284,33 @@ public final class SettingsDialog extends DialogFragment {
         root.setFocusableInTouchMode(true);
         root.requestFocus();
         searchBox.setVisibility(View.GONE);
+    }
+
+    /**
+     * A line a screen reader reads whenever its words change, and nobody sees. It's a polite live
+     * region, so the words wait for whatever is being read and focus stays where it is. The row
+     * that shows the same words is built again on every change, and a new view's text is no change
+     * to read, so the words are kept here, in a view that stays for as long as the screen does. The
+     * line is one clear pixel laid over the top edge of the page, and takes no room.
+     */
+    private TextView liveStatus(LinearLayout root, String tag) {
+        TextView status = new TextView(getContext());
+        status.setTag(tag);
+        status.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
+        status.setTextColor(android.graphics.Color.TRANSPARENT);
+        LinearLayout.LayoutParams place = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        place.bottomMargin = -1;
+        root.addView(status, place);
+        return status;
+    }
+
+    /**
+     * The restart row's title while a change waits for a restart, and null once none does. Words
+     * the line already holds are left alone: a screen reader reads a change, and reads it once.
+     */
+    void showRestartStatus(@Nullable CharSequence title) {
+        String text = title == null ? "" : title.toString();
+        if (!text.contentEquals(restartStatus.getText())) restartStatus.setText(text);
     }
 
     void showPage(CharSequence title, boolean home, String query) {

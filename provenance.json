@@ -377,7 +377,7 @@
         "https://github.com/SapitoSucio/FroggoMorphePatches"
       ],
       "license": "GPL-3.0-only",
-      "changes": "Ported Hushfacebook 814acd23's overview disclosure for omitted default patches into the existing Threads settings pages. No Facebook pages, editable rows or feature families were copied. Added packaged bundle identity from Hushfacebook a788c516 while retaining these earlier Threads adaptations."
+      "changes": "Ported Hushfacebook 814acd23's overview disclosure for omitted default patches into the existing Threads settings pages. No Facebook pages, editable rows or feature families were copied. Added packaged bundle identity from Hushfacebook a788c516 while retaining these earlier Threads adaptations. The restart row, its count and the way the list keeps its place around it follow HushPinterest 44fb9338, with Threads' names."
     },
     {
       "paths": [
@@ -491,6 +491,19 @@
       "via": [],
       "license": "GPL-3.0-only",
       "changes": "HushGram's Change version code, moved from app.morphe.patches.instagram and app.hushgram.extension.instagram to app.morphe.patches.threads and app.morphe.extension.hushthreads with Threads' names. The class walk is a local helper over classDefForEach in place of HushGram's ClassIndex, the family is switched on from the patch file, and the extension leaves out HushGram's report line and the unraised helper its override files read."
+    },
+    {
+      "paths": [
+        "extensions/shared/library/src/main/java/app/morphe/extension/shared/settings/preference/ReopenSettingsAfterRestart.java"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/HushPinterest",
+      "commit": "44fb93384a319d8e5d324f51b416efdc3d3147e6",
+      "via": [
+        "https://github.com/SysAdminDoc/hushfeed"
+      ],
+      "license": "GPL-3.0-only",
+      "changes": "HushPinterest's restart marker and its count of the changes a restart applies, moved from app.hushpinterest.extension.shared to app.morphe.extension.shared with HushThreads' pause class. The restart row that uses it is drawn by SettingsNavigation, and SettingsEntry reads the marker when Threads starts."
     }
   ]
 }

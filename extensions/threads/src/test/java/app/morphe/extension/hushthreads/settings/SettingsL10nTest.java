@@ -390,6 +390,17 @@ public class SettingsL10nTest {
             collect(page.getPreferenceScreen(), rows, shown);
             shown.add(String.valueOf(backOf(dialog).getContentDescription()));
 
+            // The restart row, which only the screen's list holds, with one change waiting and two.
+            Set<String> waiting = app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending;
+            waiting.add(Settings.PURE_BLACK.key);
+            page.navigation.restartChanged();
+            addRestartRow(dialog, shown);
+            waiting.add(Settings.HIDE_INSTAGRAM_BUTTON.key);
+            page.navigation.restartChanged();
+            addRestartRow(dialog, shown);
+            waiting.clear();
+            page.navigation.restartChanged();
+
             // The export row's dialog.
             Preference export = find(rows, "action_export_diagnostic_report");
             export.getOnPreferenceClickListener().onPreferenceClick(export);
@@ -459,7 +470,8 @@ public class SettingsL10nTest {
             failed.dismissAllowingStateLoss();
             drainMainTasks();
 
-            // What saving a restart-gated switch says.
+            // What saving a restart-gated switch says with no settings screen open to show the row.
+            app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment.setRestartFeedbackPresenter(null);
             app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment.showRestartDialog(activity);
             addToast(shown);
         }
@@ -592,6 +604,19 @@ public class SettingsL10nTest {
         assertNotNull("no toast was shown", toast);
         shown.add(toast);
         ShadowToast.reset();
+    }
+
+    /** The restart row's title and summary, as the list shows them while a change waits for a restart. */
+    private static void addRestartRow(SettingsDialog dialog, Set<String> shown) {
+        android.widget.ListView list = dialog.getView().findViewById(android.R.id.list);
+        for (int i = 0; i < list.getCount(); i++) {
+            Preference row = (Preference) list.getItemAtPosition(i);
+            if (!SettingsNavigation.RESTART.equals(row.getKey())) continue;
+            shown.add(String.valueOf(row.getTitle()));
+            shown.add(String.valueOf(row.getSummary()));
+            return;
+        }
+        throw new AssertionError("no restart row with a change waiting");
     }
 
     private static Preference find(List<Preference> rows, String key) {

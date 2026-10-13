@@ -88,7 +88,7 @@ HushThreads v0.0.13 has 19 patches. Morphe Manager's default selection has all b
 | `Save photos and videos` | Adds Save to a post's menu, below Copy link. It saves the photo or video to your gallery, every page of a carousel too. Good for keeping posts you like. On by default. Turn it off in HushThreads settings > Downloads. |
 | `Trust user-added certificates` | Lets Threads accept security certificates you installed yourself, such as for a work network or a debugging proxy. Meta's own checks stay, so a proxy can't read most traffic. It isn't selected by default. Works as soon as you patch it in, with no switch. |
 
-The switches on the Appearance page take effect after you restart Threads.
+The switches on the Appearance page take effect after you restart Threads. Builds from main show a Restart row at the top of HushThreads settings when you flip one. Tap it and Threads reopens on the page you were on.
 
 ## Settings
 

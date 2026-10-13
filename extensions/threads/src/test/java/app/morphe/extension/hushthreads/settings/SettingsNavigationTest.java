@@ -37,6 +37,8 @@ import app.morphe.extension.shared.settings.FailingStore;
 import app.morphe.extension.shared.settings.HushThreadsPause;
 import app.morphe.extension.shared.settings.PauseForTests;
 import app.morphe.extension.shared.settings.Setting;
+import app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment;
+import app.morphe.extension.shared.settings.preference.ReopenSettingsAfterRestart;
 
 import org.junit.After;
 import org.junit.Before;
@@ -76,9 +78,11 @@ public class SettingsNavigationTest {
         Settings.SANITIZE_SHARING_LINKS.resetToDefault();
         Settings.BLOCK_RETURN_REFRESH.resetToDefault();
         Settings.RETURN_REFRESH_NO_LIMIT.resetToDefault();
+        Settings.PURE_BLACK.resetToDefault();
+        Settings.HIDE_INSTAGRAM_BUTTON.resetToDefault();
+        Settings.HIDE_GHOST_POST_BUBBLES.resetToDefault();
         BaseSettings.PAUSED.resetToDefault();
-        app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.remove(
-                Settings.HIDE_ADS.key);
+        AbstractPreferenceFragment.restartPending.clear();
         PauseForTests.resume();
     }
 
@@ -315,34 +319,163 @@ public class SettingsNavigationTest {
     }
 
     /**
-     * Pause switched on from its own page is owed a restart: the page says so and Undo takes it
-     * back, after which the line goes. A restart owed for a setting a page shows is said there too.
+     * Pause switched on from its own page is owed a restart: the page says so, the restart row
+     * comes up under that line, and Undo takes both away. A restart owed for a switch puts the row
+     * on every page, first or under the status card, with the number of changes, and it goes when
+     * nothing is owed any more.
      */
-    @Test public void aPauseOrAChangeWaitingOnARestartIsSaidOnItsPage() {
+    @Test public void aPauseOrAChangeWaitingOnARestartBringsUpTheRestartRow() {
+        assertFalse("a restart row with nothing waiting", contains(SettingsNavigation.RESTART));
         page.navigation.navigate("Pause, backup and diagnostics");
+        ShadowToast.reset();
         tap(BaseSettings.PAUSED.key);
         layout(dialog.getView());
         Preference line = (Preference) list().getItemAtPosition(0);
         assertEquals("HushThreads is on", String.valueOf(line.getTitle()));
         assertEquals("HushThreads pauses when Threads restarts.", String.valueOf(line.getSummary()));
+        Preference restart = (Preference) list().getItemAtPosition(1);
+        assertEquals(SettingsNavigation.RESTART, restart.getKey());
+        assertEquals("Restart Threads to apply this change", String.valueOf(restart.getTitle()));
+        assertEquals("Threads closes and reopens on this page.", String.valueOf(restart.getSummary()));
+        assertTrue("the restart row doesn't take a tap", list().getAdapter().isEnabled(1));
+        assertNull("the row and a toast both said it", ShadowToast.getLatestToast());
         pageAction().performClick();
         ShadowLooper.idleMainLooper();
         layout(dialog.getView());
         assertFalse(BaseSettings.PAUSED.savedValue());
         assertEquals(BaseSettings.PAUSED.key, ((Preference) list().getItemAtPosition(0)).getKey());
+        assertFalse("Undo left the restart row", contains(SettingsNavigation.RESTART));
 
-        page.navigation.back();
-        app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.add(
-                Settings.HIDE_ADS.key);
+        while (page.navigation.back()) { }
+        AbstractPreferenceFragment.restartPending.add(Settings.PURE_BLACK.key);
         page.navigation.navigate("Feed");
-        layout(dialog.getView());
-        line = (Preference) list().getItemAtPosition(0);
-        assertEquals("A change here applies after Threads restarts.", String.valueOf(line.getTitle()));
-        android.view.ViewGroup frame = list().getChildAt(0).findViewById(android.R.id.widget_frame);
-        assertTrue("a restart line offered an action", frame == null || frame.getChildCount() == 0);
-        page.navigation.back();
+        assertEquals(0, position(SettingsNavigation.RESTART));
+        assertEquals(categoryCount("Feed") + 1, list().getCount());
         page.navigation.navigate("Privacy");
-        assertEquals("a restart owed elsewhere was said here", categoryCount("Privacy"), list().getCount());
+        assertEquals(0, position(SettingsNavigation.RESTART));
+        assertEquals(categoryCount("Privacy") + 1, list().getCount());
+        page.navigation.navigate("more");
+        assertEquals(0, position(SettingsNavigation.RESTART));
+        // The six pages under More settings, and the row.
+        assertEquals(7, list().getCount());
+        while (page.navigation.back()) { }
+        assertEquals("the row isn't under the status card", 1, position(SettingsNavigation.RESTART));
+        assertEquals(8, list().getCount());
+        findSearch(dialog.getView()).setText("Hide ads");
+        ShadowLooper.idleMainLooper();
+        assertEquals(0, position(SettingsNavigation.RESTART));
+        assertTrue(contains(Settings.HIDE_ADS.key));
+        while (page.navigation.back()) { }
+
+        AbstractPreferenceFragment.restartPending.add(Settings.HIDE_INSTAGRAM_BUTTON.key);
+        page.navigation.restartChanged();
+        restart = (Preference) list().getItemAtPosition(1);
+        assertEquals(SettingsNavigation.RESTART, restart.getKey());
+        assertEquals("Restart Threads to apply 2 changes", String.valueOf(restart.getTitle()));
+        AbstractPreferenceFragment.restartPending.clear();
+        page.navigation.restartChanged();
+        assertFalse("the row stayed with nothing waiting", contains(SettingsNavigation.RESTART));
+        assertEquals(7, list().getCount());
+    }
+
+    /**
+     * A switch that waits for a restart used to leave a toast and nothing to tap. Each one brings
+     * the row up as it flips, counted, with no toast, and flipping them back takes it away.
+     */
+    @Test public void flippingARestartGatedSwitchShowsTheRowAtOnce() {
+        page.navigation.navigate("Appearance");
+        assertFalse(contains(SettingsNavigation.RESTART));
+        ShadowToast.reset();
+        String[] gated = {Settings.PURE_BLACK.key, Settings.HIDE_INSTAGRAM_BUTTON.key, Settings.HIDE_GHOST_POST_BUBBLES.key};
+        String[] titles = {"Restart Threads to apply this change", "Restart Threads to apply 2 changes",
+                "Restart Threads to apply 3 changes"};
+        for (int i = 0; i < gated.length; i++) {
+            tap(gated[i]);
+            assertEquals(gated[i], Boolean.TRUE, Setting.getSettingFromPath(gated[i]).savedValue());
+            assertEquals(gated[i], 0, position(SettingsNavigation.RESTART));
+            assertEquals(titles[i], String.valueOf(((Preference) list().getItemAtPosition(0)).getTitle()));
+            assertEquals(categoryCount("Appearance") + 1, list().getCount());
+            assertNull(gated[i] + " left a toast as well", ShadowToast.getLatestToast());
+        }
+        layout(dialog.getView());
+        TextView status = dialog.getView().findViewWithTag(SettingsDialog.RESTART_STATUS);
+        assertEquals("a screen reader isn't told the count", titles[2], status.getText().toString());
+        assertEquals(View.ACCESSIBILITY_LIVE_REGION_POLITE, status.getAccessibilityLiveRegion());
+        TextView title = list().getChildAt(0).findViewById(android.R.id.title);
+        assertEquals("the row isn't first on the page", titles[2], title.getText().toString());
+
+        for (int i = gated.length - 1; i >= 0; i--) {
+            tap(gated[i]);
+            assertEquals(gated[i], Boolean.FALSE, Setting.getSettingFromPath(gated[i]).savedValue());
+            assertEquals(gated[i], i > 0, contains(SettingsNavigation.RESTART));
+        }
+        assertEquals(categoryCount("Appearance"), list().getCount());
+        assertEquals("", status.getText().toString());
+    }
+
+    /**
+     * A tap on the row restarts at once, with no question first, and leaves the page it was tapped
+     * on for the next start. It changes no saved switch.
+     */
+    @Test public void theRestartRowRestartsIntoThePageItWasTappedOn() {
+        List<android.content.Context> restarted = new ArrayList<>();
+        ReopenSettingsAfterRestart.setRestarterForTests(restarted::add);
+        AbstractPreferenceFragment.restartPending.add(Settings.PURE_BLACK.key);
+        page.navigation.navigate("Appearance");
+        Map<String, Object> before = savedValues();
+
+        tap(SettingsNavigation.RESTART);
+
+        assertEquals("the tap didn't restart, or asked first", 1, restarted.size());
+        assertNull("the restart waited on a dialog", org.robolectric.shadows.ShadowAlertDialog.getLatestDialog());
+        assertEquals(before, savedValues());
+        assertEquals("Appearance", ReopenSettingsAfterRestart.takeFresh(Setting.preferences.preferences,
+                android.os.SystemClock.elapsedRealtime()));
+
+        // A screen reader finds the row as a button, and its double tap does what a tap does.
+        layout(dialog.getView());
+        View row = list().getChildAt(0);
+        TextView title = row.findViewById(android.R.id.title);
+        assertEquals("Restart Threads to apply this change", title.getText().toString());
+        assertEquals(android.widget.Button.class.getName(), row.createAccessibilityNodeInfo().getClassName());
+        assertTrue(row.performAccessibilityAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK, null));
+        assertEquals(2, restarted.size());
+        assertEquals("Appearance", ReopenSettingsAfterRestart.takeFresh(Setting.preferences.preferences,
+                android.os.SystemClock.elapsedRealtime()));
+    }
+
+    /**
+     * After that restart the screen is opened on the page the marker named, with Back leading up
+     * through More settings as if the page had been reached by hand. A page this build doesn't
+     * have opens the first page.
+     */
+    @Test public void aScreenAskedToStartOnAPageOpensThere() {
+        showOn("Appearance");
+        assertTrue("the screen didn't open on Appearance", contains(Settings.PURE_BLACK.key));
+        assertEquals(categoryCount("Appearance"), list().getCount());
+        assertTrue(page.navigation.back());
+        assertTrue("Back didn't lead to More settings", contains("section_Appearance"));
+        assertTrue(page.navigation.back());
+        assertEquals(7, list().getCount());
+
+        showOn("more");
+        assertTrue("the screen didn't open on More settings", contains("section_Appearance"));
+
+        showOn("A page from another build");
+        assertEquals(7, list().getCount());
+        assertFalse(page.navigation.back());
+    }
+
+    /** Closes the screen and shows it again the way a restart from the restart row does, on [startPage]. */
+    private void showOn(String startPage) {
+        dialog.dismiss();
+        controller.get().getFragmentManager().executePendingTransactions();
+        dialog = SettingsDialog.onPage(startPage);
+        dialog.show(controller.get().getFragmentManager(), "hushthreads_settings");
+        controller.get().getFragmentManager().executePendingTransactions();
+        ShadowLooper.idleMainLooper();
+        page = page(dialog);
+        assertNotNull(page.navigation);
     }
 
     /** The paused line on real pages, dark and light, for a look before the phone does. */

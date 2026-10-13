@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(548);
+        Map<String, String> table = new HashMap<>(552);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -91,8 +91,6 @@ public final class L10nTranslations {
                 "%1$s. Diese wurden beim Patchen festgelegt, deshalb kann die Pause sie nicht ausschalten. Um eines davon auszuschlie\u00dfen, patche erneut und lass den Patch weg, der in Klammern dahinter steht.");
         table.put("%1$s. This action will be available when it finishes.",
                 "%1$s. Diese Aktion ist danach wieder verf\u00fcgbar.");
-        table.put("A change here applies after Threads restarts.",
-                "Eine \u00c4nderung hier gilt erst nach einem Neustart von Threads.");
         table.put("A diagnostic report is already being saved.",
                 "Ein Diagnosebericht wird bereits gespeichert.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
@@ -177,11 +175,11 @@ public final class L10nTranslations {
                 "Wird in die Galerie kopiert");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "Die Einstellungen lie\u00dfen sich nicht importieren, und deine vorherigen lie\u00dfen sich nicht wiederherstellen. Pr\u00fcfe die Schalter auf diesem Bildschirm.");
+        table.put("Couldn't import the settings. Nothing was changed.",
+                "Die Einstellungen lie\u00dfen sich nicht importieren. Es wurde nichts ge\u00e4ndert.");
     }
 
     private static void fillDe1(Map<String, String> table) {
-        table.put("Couldn't import the settings. Nothing was changed.",
-                "Die Einstellungen lie\u00dfen sich nicht importieren. Es wurde nichts ge\u00e4ndert.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "Diese Datei lie\u00df sich nicht \u00f6ffnen. Es wurde nichts ge\u00e4ndert.");
         table.put("Couldn't open the file picker. Try again.",
@@ -300,11 +298,11 @@ public final class L10nTranslations {
                 "Zu einem Abschnitt springen");
         table.put("Keep feed position on return",
                 "Feedposition beim Zur\u00fcckkehren beibehalten");
+        table.put("Last carousel save",
+                "Letzter gespeicherter Karussellbeitrag");
     }
 
     private static void fillDe2(Map<String, String> table) {
-        table.put("Last carousel save",
-                "Letzter gespeicherter Karussellbeitrag");
         table.put("Licenses",
                 "Lizenzen");
         table.put("Link expired. Reopen the post and try again",
@@ -377,6 +375,10 @@ public final class L10nTranslations {
                 "Entfernt die Karten, die Konten zum Folgen vorschlagen, in deinem Feed und in Profilen. Normale Beitr\u00e4ge und Reposts bleiben.");
         table.put("Reopen the post and save again.",
                 "\u00d6ffne den Beitrag erneut und speichere noch einmal.");
+        table.put("Restart Threads to apply %1$d changes",
+                "Starte Threads neu, um %1$d \u00c4nderungen zu \u00fcbernehmen");
+        table.put("Restart Threads to apply this change",
+                "Starte Threads neu, um diese \u00c4nderung zu \u00fcbernehmen");
         table.put("Restore diagnostic data",
                 "Diagnosedaten wiederherstellen");
         table.put("Resume",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "In der Galerie gespeichert, in geringerer Qualit\u00e4t als auf Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Gespeichert. Starte Threads neu, um diese \u00c4nderung zu \u00fcbernehmen.");
-        table.put("Saves",
-                "Gespeicherte Medien");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Saves",
+                "Gespeicherte Medien");
         table.put("Saving a carousel",
                 "Karussell wird gespeichert");
         table.put("Saving a photo",
@@ -544,11 +546,13 @@ public final class L10nTranslations {
                 "Dieses Handy hat keine Dateiauswahl, hier l\u00e4sst sich also keine Datei w\u00e4hlen.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "Threads akzeptiert Sicherheitszertifikate, die du auf deinem Handy hinzugef\u00fcgt hast. Die eigenen Pr\u00fcfungen der Meta-Zertifikate bleiben unver\u00e4ndert, deshalb kann ein Proxy den Gro\u00dfteil des Datenverkehrs weiterhin nicht lesen.");
-        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
-                "Threads kann die Werbe-ID deines Telefons nicht lesen. Die Berechtigung daf\u00fcr fehlt in diesem Build.");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
+                "Threads kann die Werbe-ID deines Telefons nicht lesen. Die Berechtigung daf\u00fcr fehlt in diesem Build.");
+        table.put("Threads closes and reopens on this page.",
+                "Threads schlie\u00dft sich und \u00f6ffnet sich wieder auf dieser Seite.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
                 "Threads ist dreimal hintereinander innerhalb einer Minute nach dem Start abgest\u00fcrzt oder h\u00e4ngen geblieben, deshalb hat sich HushThreads selbst pausiert.");
         table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
@@ -620,7 +624,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(548);
+        Map<String, String> table = new HashMap<>(552);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -664,8 +668,6 @@ public final class L10nTranslations {
                 "%1$s. Estos cambios se aplicaron al parchear, as\u00ed que Pausar no puede desactivarlos. Para descartar uno, vuelve a parchear sin el parche que aparece entre par\u00e9ntesis despu\u00e9s de \u00e9l.");
         table.put("%1$s. This action will be available when it finishes.",
                 "%1$s. Esta acci\u00f3n estar\u00e1 disponible cuando termine.");
-        table.put("A change here applies after Threads restarts.",
-                "Un cambio de aqu\u00ed se aplica cuando Threads se reinicie.");
         table.put("A diagnostic report is already being saved.",
                 "Ya se est\u00e1 guardando un informe de diagn\u00f3stico.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
@@ -750,11 +752,11 @@ public final class L10nTranslations {
                 "Copiando a la galer\u00eda");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "No se pudo importar la configuraci\u00f3n ni restaurar la que ten\u00edas. Revisa los interruptores de esta pantalla.");
+        table.put("Couldn't import the settings. Nothing was changed.",
+                "No se pudo importar la configuraci\u00f3n. No se cambi\u00f3 nada.");
     }
 
     private static void fillEs1(Map<String, String> table) {
-        table.put("Couldn't import the settings. Nothing was changed.",
-                "No se pudo importar la configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "No se pudo abrir ese archivo. No se cambi\u00f3 nada.");
         table.put("Couldn't open the file picker. Try again.",
@@ -873,11 +875,11 @@ public final class L10nTranslations {
                 "Ir a una secci\u00f3n");
         table.put("Keep feed position on return",
                 "Mantener la posici\u00f3n del feed al volver");
+        table.put("Last carousel save",
+                "\u00daltimo carrusel guardado");
     }
 
     private static void fillEs2(Map<String, String> table) {
-        table.put("Last carousel save",
-                "\u00daltimo carrusel guardado");
         table.put("Licenses",
                 "Licencias");
         table.put("Link expired. Reopen the post and try again",
@@ -950,6 +952,10 @@ public final class L10nTranslations {
                 "Quita las tarjetas que sugieren cuentas para seguir, en tu feed y en los perfiles. Las publicaciones normales y los reposts se quedan.");
         table.put("Reopen the post and save again.",
                 "Vuelve a abrir la publicaci\u00f3n y gu\u00e1rdala otra vez.");
+        table.put("Restart Threads to apply %1$d changes",
+                "Reinicia Threads para aplicar %1$d cambios");
+        table.put("Restart Threads to apply this change",
+                "Reinicia Threads para aplicar este cambio");
         table.put("Restore diagnostic data",
                 "Restaurar datos de diagn\u00f3stico");
         table.put("Resume",
@@ -994,11 +1000,11 @@ public final class L10nTranslations {
                 "Se guard\u00f3 en la galer\u00eda con menos calidad que en Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Guardado. Reinicia Threads para aplicar este cambio.");
-        table.put("Saves",
-                "Guardados");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Saves",
+                "Guardados");
         table.put("Saving a carousel",
                 "Guardando un carrusel");
         table.put("Saving a photo",
@@ -1117,11 +1123,13 @@ public final class L10nTranslations {
                 "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que aqu\u00ed no hay forma de elegir un archivo.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "Threads acepta los certificados de seguridad que a\u00f1adiste a tu tel\u00e9fono. Sus propias comprobaciones de los certificados de Meta no cambian, as\u00ed que un proxy sigue sin poder leer la mayor parte de su tr\u00e1fico.");
-        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
-                "Threads no puede leer el ID de publicidad de tu tel\u00e9fono. El permiso para ello ya no est\u00e1 en esta versi\u00f3n.");
     }
 
     private static void fillEs4(Map<String, String> table) {
+        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
+                "Threads no puede leer el ID de publicidad de tu tel\u00e9fono. El permiso para ello ya no est\u00e1 en esta versi\u00f3n.");
+        table.put("Threads closes and reopens on this page.",
+                "Threads se cierra y se vuelve a abrir en esta p\u00e1gina.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
                 "Tres veces seguidas, Threads fall\u00f3 o se congel\u00f3 durante el primer minuto tras iniciarse, as\u00ed que HushThreads se paus\u00f3 solo.");
         table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
@@ -1193,7 +1201,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(548);
+        Map<String, String> table = new HashMap<>(552);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1237,8 +1245,6 @@ public final class L10nTranslations {
                 "%1$s. Ini diatur saat Anda menambal, jadi Jeda tidak dapat mematikannya. Untuk memastikan bukan ini penyebabnya, tambal ulang tanpa tambalan yang tertera dalam kurung setelahnya.");
         table.put("%1$s. This action will be available when it finishes.",
                 "%1$s. Tindakan ini tersedia lagi setelah selesai.");
-        table.put("A change here applies after Threads restarts.",
-                "Perubahan di sini berlaku setelah Threads dimulai ulang.");
         table.put("A diagnostic report is already being saved.",
                 "Sudah ada laporan diagnostik yang sedang disimpan.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
@@ -1323,11 +1329,11 @@ public final class L10nTranslations {
                 "Menyalin ke galeri");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "Pengaturan tidak dapat diimpor, dan pengaturan sebelumnya tidak dapat dikembalikan. Periksa sakelar di layar ini.");
+        table.put("Couldn't import the settings. Nothing was changed.",
+                "Pengaturan tidak dapat diimpor. Tidak ada yang diubah.");
     }
 
     private static void fillIn1(Map<String, String> table) {
-        table.put("Couldn't import the settings. Nothing was changed.",
-                "Pengaturan tidak dapat diimpor. Tidak ada yang diubah.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "File itu tidak dapat dibuka. Tidak ada yang diubah.");
         table.put("Couldn't open the file picker. Try again.",
@@ -1446,11 +1452,11 @@ public final class L10nTranslations {
                 "Lompat ke bagian");
         table.put("Keep feed position on return",
                 "Pertahankan posisi feed saat kembali");
+        table.put("Last carousel save",
+                "Penyimpanan carousel terakhir");
     }
 
     private static void fillIn2(Map<String, String> table) {
-        table.put("Last carousel save",
-                "Penyimpanan carousel terakhir");
         table.put("Licenses",
                 "Lisensi");
         table.put("Link expired. Reopen the post and try again",
@@ -1523,6 +1529,10 @@ public final class L10nTranslations {
                 "Menghapus kartu yang menyarankan akun untuk diikuti, di feed Anda dan di profil. Postingan biasa dan repost tetap ada.");
         table.put("Reopen the post and save again.",
                 "Buka kembali postingan dan simpan lagi.");
+        table.put("Restart Threads to apply %1$d changes",
+                "Mulai ulang Threads untuk menerapkan %1$d perubahan");
+        table.put("Restart Threads to apply this change",
+                "Mulai ulang Threads untuk menerapkan perubahan ini");
         table.put("Restore diagnostic data",
                 "Pulihkan data diagnostik");
         table.put("Resume",
@@ -1567,11 +1577,11 @@ public final class L10nTranslations {
                 "Disimpan ke galeri dengan kualitas lebih rendah daripada di Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Tersimpan. Mulai ulang Threads untuk menerapkan perubahan ini.");
-        table.put("Saves",
-                "Penyimpanan");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Saves",
+                "Penyimpanan");
         table.put("Saving a carousel",
                 "Menyimpan carousel");
         table.put("Saving a photo",
@@ -1690,11 +1700,13 @@ public final class L10nTranslations {
                 "Ponsel ini tidak memiliki pemilih file, jadi file tidak dapat dipilih di sini.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "Threads menerima sertifikat keamanan yang Anda tambahkan ke ponsel. Pemeriksaan sendiri atas sertifikat Meta tidak berubah, jadi proxy tetap tidak bisa membaca sebagian besar lalu lintasnya.");
-        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
-                "Threads tidak dapat membaca ID iklan ponsel Anda. Izin untuk itu sudah dihapus dari build ini.");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
+                "Threads tidak dapat membaca ID iklan ponsel Anda. Izin untuk itu sudah dihapus dari build ini.");
+        table.put("Threads closes and reopens on this page.",
+                "Threads ditutup lalu dibuka lagi di halaman ini.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
                 "Threads berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushThreads menjeda dirinya sendiri.");
         table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
@@ -1766,7 +1778,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(548);
+        Map<String, String> table = new HashMap<>(552);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1810,8 +1822,6 @@ public final class L10nTranslations {
                 "%1$s. Esses itens foram definidos quando voc\u00ea aplicou os patches, ent\u00e3o a pausa n\u00e3o pode desativ\u00e1-los. Para descartar um deles, aplique os patches novamente sem o patch entre par\u00eanteses depois dele.");
         table.put("%1$s. This action will be available when it finishes.",
                 "%1$s. Esta a\u00e7\u00e3o ficar\u00e1 dispon\u00edvel quando terminar.");
-        table.put("A change here applies after Threads restarts.",
-                "Uma altera\u00e7\u00e3o daqui vale depois que o Threads reiniciar.");
         table.put("A diagnostic report is already being saved.",
                 "Um relat\u00f3rio de diagn\u00f3stico j\u00e1 est\u00e1 sendo salvo.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
@@ -1896,11 +1906,11 @@ public final class L10nTranslations {
                 "Copiando para a galeria");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "N\u00e3o foi poss\u00edvel importar as configura\u00e7\u00f5es nem restaurar as que voc\u00ea tinha. Confira as op\u00e7\u00f5es nesta tela.");
+        table.put("Couldn't import the settings. Nothing was changed.",
+                "N\u00e3o foi poss\u00edvel importar as configura\u00e7\u00f5es. Nada foi alterado.");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
-        table.put("Couldn't import the settings. Nothing was changed.",
-                "N\u00e3o foi poss\u00edvel importar as configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "N\u00e3o foi poss\u00edvel abrir esse arquivo. Nada foi alterado.");
         table.put("Couldn't open the file picker. Try again.",
@@ -2019,11 +2029,11 @@ public final class L10nTranslations {
                 "Ir para uma se\u00e7\u00e3o");
         table.put("Keep feed position on return",
                 "Manter a posi\u00e7\u00e3o no feed ao voltar");
+        table.put("Last carousel save",
+                "\u00daltimo carrossel salvo");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
-        table.put("Last carousel save",
-                "\u00daltimo carrossel salvo");
         table.put("Licenses",
                 "Licen\u00e7as");
         table.put("Link expired. Reopen the post and try again",
@@ -2096,6 +2106,10 @@ public final class L10nTranslations {
                 "Remove os cart\u00f5es que sugerem contas para seguir, no seu feed e nos perfis. Publica\u00e7\u00f5es comuns e reposts continuam.");
         table.put("Reopen the post and save again.",
                 "Abra a publica\u00e7\u00e3o novamente e salve outra vez.");
+        table.put("Restart Threads to apply %1$d changes",
+                "Reinicie o Threads para aplicar %1$d altera\u00e7\u00f5es");
+        table.put("Restart Threads to apply this change",
+                "Reinicie o Threads para aplicar esta altera\u00e7\u00e3o");
         table.put("Restore diagnostic data",
                 "Restaurar dados de diagn\u00f3stico");
         table.put("Resume",
@@ -2140,11 +2154,11 @@ public final class L10nTranslations {
                 "Salvo na galeria com qualidade menor que no Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Salvo. Reinicie o Threads para aplicar esta altera\u00e7\u00e3o.");
-        table.put("Saves",
-                "Salvamentos");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Saves",
+                "Salvamentos");
         table.put("Saving a carousel",
                 "Salvando um carrossel");
         table.put("Saving a photo",
@@ -2263,11 +2277,13 @@ public final class L10nTranslations {
                 "Este dispositivo n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel escolher um arquivo aqui.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "O Threads aceita certificados de seguran\u00e7a que voc\u00ea adicionou ao celular. As verifica\u00e7\u00f5es pr\u00f3prias dos certificados da Meta n\u00e3o mudam, ent\u00e3o um proxy ainda n\u00e3o consegue ler a maior parte do tr\u00e1fego.");
-        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
-                "O Threads n\u00e3o consegue ler o ID de publicidade do seu celular. A permiss\u00e3o para isso foi removida desta vers\u00e3o.");
     }
 
     private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
+                "O Threads n\u00e3o consegue ler o ID de publicidade do seu celular. A permiss\u00e3o para isso foi removida desta vers\u00e3o.");
+        table.put("Threads closes and reopens on this page.",
+                "O Threads fecha e abre de novo nesta p\u00e1gina.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
                 "O Threads fechou com erro ou travou no primeiro minuto ap\u00f3s iniciar, tr\u00eas vezes seguidas, ent\u00e3o o HushThreads foi pausado automaticamente.");
         table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
@@ -2339,7 +2355,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(548);
+        Map<String, String> table = new HashMap<>(552);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2383,8 +2399,6 @@ public final class L10nTranslations {
                 "%1$s. Yamalad\u0131\u011f\u0131nda ayarland\u0131klar\u0131 i\u00e7in Duraklatma bunlar\u0131 kapatamaz. Birini elemek i\u00e7in yeniden yamala ve onun ard\u0131ndan parantez i\u00e7inde yazan yamay\u0131 d\u0131\u015far\u0131da b\u0131rak.");
         table.put("%1$s. This action will be available when it finishes.",
                 "%1$s. Bitti\u011finde bu i\u015flem yeniden kullan\u0131labilir.");
-        table.put("A change here applies after Threads restarts.",
-                "Buradaki bir de\u011fi\u015fiklik Threads yeniden ba\u015flad\u0131ktan sonra ge\u00e7erli olur.");
         table.put("A diagnostic report is already being saved.",
                 "Bir tan\u0131lama raporu zaten kaydediliyor.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
@@ -2469,11 +2483,11 @@ public final class L10nTranslations {
                 "Galeriye kopyalan\u0131yor");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "Ayarlar i\u00e7e aktar\u0131lamad\u0131 ve \u00f6nceki ayarlar\u0131n geri y\u00fcklenemedi. Bu ekrandaki anahtarlar\u0131 kontrol et.");
+        table.put("Couldn't import the settings. Nothing was changed.",
+                "Ayarlar i\u00e7e aktar\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
     }
 
     private static void fillTr1(Map<String, String> table) {
-        table.put("Couldn't import the settings. Nothing was changed.",
-                "Ayarlar i\u00e7e aktar\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "Bu dosya a\u00e7\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("Couldn't open the file picker. Try again.",
@@ -2592,11 +2606,11 @@ public final class L10nTranslations {
                 "Bir b\u00f6l\u00fcme git");
         table.put("Keep feed position on return",
                 "Geri d\u00f6n\u00fcnce ak\u0131\u015f konumunu koru");
+        table.put("Last carousel save",
+                "Son \u00e7oklu g\u00f6nderi kayd\u0131");
     }
 
     private static void fillTr2(Map<String, String> table) {
-        table.put("Last carousel save",
-                "Son \u00e7oklu g\u00f6nderi kayd\u0131");
         table.put("Licenses",
                 "Lisanslar");
         table.put("Link expired. Reopen the post and try again",
@@ -2669,6 +2683,10 @@ public final class L10nTranslations {
                 "Takip edilecek hesaplar \u00f6neren kartlar\u0131 ak\u0131\u015f\u0131n\u0131zdan ve profillerden kald\u0131r\u0131r. Normal g\u00f6nderiler ve yeniden payla\u015f\u0131mlar kal\u0131r.");
         table.put("Reopen the post and save again.",
                 "G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
+        table.put("Restart Threads to apply %1$d changes",
+                "%1$d de\u011fi\u015fikli\u011fi uygulamak i\u00e7in Threads'i yeniden ba\u015flat");
+        table.put("Restart Threads to apply this change",
+                "Bu de\u011fi\u015fikli\u011fi uygulamak i\u00e7in Threads'i yeniden ba\u015flat");
         table.put("Restore diagnostic data",
                 "Tan\u0131lama verilerini geri y\u00fckle");
         table.put("Resume",
@@ -2713,11 +2731,11 @@ public final class L10nTranslations {
                 "Galeriye Threads'tekinden d\u00fc\u015f\u00fck kalitede kaydedildi");
         table.put("Saved. Restart Threads to apply this change.",
                 "Kaydedildi. Bu de\u011fi\u015fikli\u011fi uygulamak i\u00e7in Threads'i yeniden ba\u015flat.");
-        table.put("Saves",
-                "Kaydetmeler");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Saves",
+                "Kaydetmeler");
         table.put("Saving a carousel",
                 "\u00c7oklu g\u00f6nderi kaydediliyor");
         table.put("Saving a photo",
@@ -2836,11 +2854,13 @@ public final class L10nTranslations {
                 "Bu telefonda dosya se\u00e7ici yok, bu y\u00fczden burada dosya se\u00e7menin bir yolu yok.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "Threads, telefonuna ekledi\u011fin g\u00fcvenlik sertifikalar\u0131n\u0131 kabul eder. Meta sertifikalar\u0131na yapt\u0131\u011f\u0131 kendi kontroller de\u011fi\u015fmez, bu y\u00fczden bir proxy trafi\u011finin \u00e7o\u011funu yine okuyamaz.");
-        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
-                "Threads telefonunuzun reklam kimli\u011fini okuyamaz. Bunun i\u00e7in gereken izin bu s\u00fcr\u00fcmden kald\u0131r\u0131ld\u0131.");
     }
 
     private static void fillTr4(Map<String, String> table) {
+        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
+                "Threads telefonunuzun reklam kimli\u011fini okuyamaz. Bunun i\u00e7in gereken izin bu s\u00fcr\u00fcmden kald\u0131r\u0131ld\u0131.");
+        table.put("Threads closes and reopens on this page.",
+                "Threads kapan\u0131r ve bu sayfada yeniden a\u00e7\u0131l\u0131r.");
         table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
                 "Threads a\u00e7\u0131ld\u0131ktan sonraki bir dakika i\u00e7inde \u00fcst \u00fcste \u00fc\u00e7 kez \u00e7\u00f6kt\u00fc veya dondu, bu y\u00fczden HushThreads kendini duraklatt\u0131.");
         table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import app.morphe.extension.shared.SettingsContextRule;
 import app.morphe.extension.shared.settings.HushThreadsPause;
 import app.morphe.extension.shared.settings.PauseForTests;
+import app.morphe.extension.shared.settings.preference.ReopenSettingsAfterRestart;
 
 import org.junit.After;
 import org.junit.Before;
@@ -400,6 +401,55 @@ public class SettingsEntryTest {
         ActivityController<Activity> loggedOut = replace(login);
 
         assertNull("the screen came back after the person closed it with the arrow", dialogOver(loggedOut.get()));
+    }
+
+    /**
+     * The restart row restarts Threads with a marker naming its page. The next start takes the
+     * marker, the same way onApplicationCreate does, and the screen opens over the first Threads
+     * screen to resume, on that page. Closing it drops the page, so a later open starts at the top.
+     */
+    @Test public void aStartAfterTheRestartRowOpensTheScreenOnItsPage() {
+        android.content.SharedPreferences store = app.morphe.extension.shared.settings.Setting.preferences.preferences;
+        PatchFamily.inBuildForTests = java.util.EnumSet.allOf(PatchFamily.class);
+        try {
+            org.junit.Assert.assertFalse("a start without a marker asked for the screen",
+                    ReopenSettingsAfterRestart.reopenIfPending(SettingsEntry::reopenOn));
+            ReopenSettingsAfterRestart.remember(store, "Appearance", android.os.SystemClock.elapsedRealtime());
+            assertTrue(ReopenSettingsAfterRestart.reopenIfPending(SettingsEntry::reopenOn));
+            org.junit.Assert.assertFalse("the marker outlived the start that read it",
+                    store.contains("hush_reopen_settings_page"));
+
+            ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup();
+            ShadowLooper.idleMainLooper();
+            SettingsDialog dialog = (SettingsDialog) dialogOver(activity.get());
+            assertNotNull("the restart didn't open the screen again", dialog);
+            org.junit.Assert.assertEquals("Appearance", dialog.startPage());
+            android.widget.ListView list = pageOver(activity.get()).getView().findViewById(android.R.id.list);
+            boolean onAppearance = false;
+            for (int i = 0; i < list.getCount(); i++) {
+                Object row = list.getItemAtPosition(i);
+                if (row instanceof android.preference.Preference
+                        && Settings.PURE_BLACK.key.equals(((android.preference.Preference) row).getKey())) onAppearance = true;
+            }
+            assertTrue("the screen didn't open on Appearance", onAppearance);
+
+            // Appearance, More settings, the first page, and out.
+            SettingsL10nTest.backOf(dialog).performClick();
+            SettingsL10nTest.backOf(dialog).performClick();
+            SettingsL10nTest.backOf(dialog).performClick();
+            ShadowLooper.idleMainLooper();
+            assertNull("the screen stayed open", dialogOver(activity.get()));
+            assertNull("closing the screen kept its page for the next open", SettingsEntry.requestedPage());
+
+            // An ordinary start later on finds no marker and opens nothing.
+            org.junit.Assert.assertFalse(ReopenSettingsAfterRestart.reopenIfPending(SettingsEntry::reopenOn));
+            ActivityController<Activity> later = Robolectric.buildActivity(Activity.class).setup();
+            ShadowLooper.idleMainLooper();
+            assertNull("a later start opened the screen", dialogOver(later.get()));
+        } finally {
+            SettingsEntry.onClosedByUser();
+            PatchFamily.inBuildForTests = null;
+        }
     }
 
     @SuppressWarnings("deprecation")

@@ -73,6 +73,12 @@ public final class SettingsContextRule extends ExternalResource {
         } catch (ReflectiveOperationException exception) {
             throw new IllegalStateException("Could not clear the running values", exception);
         }
+        // A settings screen a test left open keeps the restart toast off every screen after it.
+        app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment
+                .setRestartFeedbackPresenter(null);
+        // The restart row's real restart ends the process, which here is the whole test run.
+        app.morphe.extension.shared.settings.preference.ReopenSettingsAfterRestart
+                .setRestarterForTests(ignored -> { });
     }
 
     /**

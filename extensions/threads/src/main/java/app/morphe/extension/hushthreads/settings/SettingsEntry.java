@@ -38,6 +38,7 @@ import app.morphe.extension.hushthreads.feed.ReturnRefresh;
 import app.morphe.extension.shared.L10n;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.settings.preference.ReopenSettingsAfterRestart;
 
 /**
  * How the HushThreads screen is reached.
@@ -74,6 +75,12 @@ public final class SettingsEntry {
     /** The activity the screen was last shown over, while the person hasn't closed it. */
     private static WeakReference<Activity> host;
     private static volatile boolean closedByUser;
+    /**
+     * The page the next open lands on, or null for the first page. Set by a restart from the
+     * restart row, kept while the screen is opened again over a later activity, and dropped once
+     * the person closes it or asks for it another way.
+     */
+    private static volatile String requestedPage;
     /** The long label last pushed, or found already on the shortcut, in this process. */
     private static volatile String publishedLabel;
     /** A check of the shortcut's place is waiting for the background thread. */
@@ -86,7 +93,8 @@ public final class SettingsEntry {
      * Injected before each return of the application's {@code onCreate}, after Threads' own
      * startup. Watches every Threads activity, so a pending open lands on whichever one resumes
      * next: signed out, the launcher hands straight over to the login screen. Also where the
-     * release check, when it's on, asks at most once a day, on a worker.
+     * release check, when it's on, asks at most once a day, on a worker, and where a restart from
+     * the restart row asks for the screen again, on the page it was tapped on.
      */
     public static void onApplicationCreate(Context context) {
         try {
@@ -95,6 +103,8 @@ public final class SettingsEntry {
                 ((Application) context).registerActivityLifecycleCallbacks(new OpenWhenResumed());
                 callbacksRegistered = true;
             }
+            // The marker is in the settings store, which can't be read before the settings are ready.
+            if (Utils.settingsReady()) ReopenSettingsAfterRestart.reopenIfPending(SettingsEntry::reopenOn);
             // SettingsStatus rather than PatchFamily: a plain answer, with no settings read this early.
             if (SettingsStatus.returnRefresh()) ReturnRefresh.register(context);
         } catch (Exception ex) {
@@ -378,7 +388,7 @@ public final class SettingsEntry {
                 return false;
             }
             closedByUser = false;
-            new SettingsDialog().show(fragments, DIALOG_TAG);
+            SettingsDialog.onPage(requestedPage).show(fragments, DIALOG_TAG);
             host = new WeakReference<>(activity);
             Logger.printInfo(() -> "Settings opened over " + name);
             return true;
@@ -392,6 +402,7 @@ public final class SettingsEntry {
     static void onClosedByUser() {
         closedByUser = true;
         host = null;
+        requestedPage = null;
     }
 
     /**
@@ -435,7 +446,22 @@ public final class SettingsEntry {
     private static void request(String from) {
         requestedAt = SystemClock.elapsedRealtime();
         openPending = true;
+        requestedPage = null;
         Logger.printInfo(() -> "Settings requested by " + from);
+    }
+
+    /**
+     * Threads just restarted from the restart row: asks for the screen on [page], the one the row
+     * was tapped on. The first Threads screen to resume shows it, like any other request.
+     */
+    static void reopenOn(String page) {
+        request("a restart from the settings screen");
+        requestedPage = page;
+    }
+
+    /** The page the next open lands on, or null for the first page. */
+    static String requestedPage() {
+        return requestedPage;
     }
 
     /**

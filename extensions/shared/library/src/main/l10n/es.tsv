@@ -7,7 +7,6 @@ Build %1$s	Compilación %1$s
 %1$d switches will change.	Cambiarán %1$d interruptores.
 %1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.	%1$s. Este cambio se aplicó al parchear, así que Pausar no puede desactivarlo. Para descartarlo, vuelve a parchear sin ese parche.
 %1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.	%1$s. Estos cambios se aplicaron al parchear, así que Pausar no puede desactivarlos. Para descartar uno, vuelve a parchear sin el parche que aparece entre paréntesis después de él.
-A change here applies after Threads restarts.	Un cambio de aquí se aplica cuando Threads se reinicie.
 A diagnostic report is already being saved.	Ya se está guardando un informe de diagnóstico.
 A file named %1$s in %2$s paused HushThreads.	Un archivo llamado %1$s en %2$s pausó HushThreads.
 About	Acerca de
@@ -294,3 +293,10 @@ Restore diagnostic data	Restaurar datos de diagnóstico
 
 # context: TalkBack action for a long press on the Threads logo in the feed header
 Open HushThreads settings	Abrir los ajustes de HushThreads
+
+# context: the restart row's title while one change waits for a restart; a tap restarts Threads
+Restart Threads to apply this change	Reinicia Threads para aplicar este cambio
+# context: the same row with several changes waiting; %1$d is how many
+Restart Threads to apply %1$d changes	Reinicia Threads para aplicar %1$d cambios
+# context: the restart row's summary; the settings screen comes back on the page it was on
+Threads closes and reopens on this page.	Threads se cierra y se vuelve a abrir en esta página.

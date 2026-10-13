@@ -148,7 +148,11 @@ public class BuildIdentityDisplayTest {
                             View.MeasureSpec.makeMeasureSpec(1688, View.MeasureSpec.EXACTLY));
                     root.layout(0, 0, 780, 1688);
                     ShadowLooper.idleMainLooper();
-                    TextView about = list.getChildAt(0).findViewById(android.R.id.summary);
+                    // While this start and the next differ, the restart row leads the page.
+                    boolean restartOwed = HushThreadsPause.isPaused() != HushThreadsPause.pausesNextStart(activity.get());
+                    assertEquals(reason + "/" + savedPause, restartOwed,
+                            SettingsNavigation.RESTART.equals(((Preference) list.getItemAtPosition(0)).getKey()));
+                    TextView about = list.getChildAt(restartOwed ? 1 : 0).findViewById(android.R.id.summary);
                     assertTrue("About keeps the complete source record in every pause state",
                             about.getText().toString().contains(L10n.isolate(IdentityUtils.value)));
                     android.text.Layout aboutLayout = about.getLayout();

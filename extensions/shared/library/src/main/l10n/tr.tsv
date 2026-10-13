@@ -7,7 +7,6 @@ Build %1$s	Derleme %1$s
 %1$d switches will change.	%1$d anahtar değişecek.
 %1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.	%1$s. Yamaladığında ayarlandığı için Duraklatma bunu kapatamaz. Bunu elemek için yeniden yamala ve o yamayı dışarıda bırak.
 %1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.	%1$s. Yamaladığında ayarlandıkları için Duraklatma bunları kapatamaz. Birini elemek için yeniden yamala ve onun ardından parantez içinde yazan yamayı dışarıda bırak.
-A change here applies after Threads restarts.	Buradaki bir değişiklik Threads yeniden başladıktan sonra geçerli olur.
 A diagnostic report is already being saved.	Bir tanılama raporu zaten kaydediliyor.
 A file named %1$s in %2$s paused HushThreads.	%2$s içindeki %1$s adlı bir dosya HushThreads'u duraklattı.
 About	Hakkında
@@ -294,3 +293,10 @@ Restore diagnostic data	Tanılama verilerini geri yükle
 
 # context: TalkBack action for a long press on the Threads logo in the feed header
 Open HushThreads settings	HushThreads ayarlarını aç
+
+# context: the restart row's title while one change waits for a restart; a tap restarts Threads
+Restart Threads to apply this change	Bu değişikliği uygulamak için Threads'i yeniden başlat
+# context: the same row with several changes waiting; %1$d is how many
+Restart Threads to apply %1$d changes	%1$d değişikliği uygulamak için Threads'i yeniden başlat
+# context: the restart row's summary; the settings screen comes back on the page it was on
+Threads closes and reopens on this page.	Threads kapanır ve bu sayfada yeniden açılır.

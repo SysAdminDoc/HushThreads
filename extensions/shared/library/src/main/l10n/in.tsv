@@ -7,7 +7,6 @@ Build %1$s	Versi build %1$s
 %1$d switches will change.	%1$d sakelar akan berubah.
 %1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.	%1$s. Ini diatur saat Anda menambal, jadi Jeda tidak dapat mematikannya. Untuk memastikan bukan ini penyebabnya, tambal ulang tanpa tambalan yang tertera dalam kurung setelahnya.
 %1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.	%1$s. Ini diatur saat Anda menambal, jadi Jeda tidak dapat mematikannya. Untuk memastikan bukan ini penyebabnya, tambal ulang tanpa tambalan yang tertera dalam kurung setelahnya.
-A change here applies after Threads restarts.	Perubahan di sini berlaku setelah Threads dimulai ulang.
 A diagnostic report is already being saved.	Sudah ada laporan diagnostik yang sedang disimpan.
 A file named %1$s in %2$s paused HushThreads.	File bernama %1$s di %2$s menjeda HushThreads.
 About	Tentang
@@ -294,3 +293,10 @@ Restore diagnostic data	Pulihkan data diagnostik
 
 # context: TalkBack action for a long press on the Threads logo in the feed header
 Open HushThreads settings	Buka pengaturan HushThreads
+
+# context: the restart row's title while one change waits for a restart; a tap restarts Threads
+Restart Threads to apply this change	Mulai ulang Threads untuk menerapkan perubahan ini
+# context: the same row with several changes waiting; %1$d is how many
+Restart Threads to apply %1$d changes	Mulai ulang Threads untuk menerapkan %1$d perubahan
+# context: the restart row's summary; the settings screen comes back on the page it was on
+Threads closes and reopens on this page.	Threads ditutup lalu dibuka lagi di halaman ini.
