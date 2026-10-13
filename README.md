@@ -4,7 +4,7 @@
   <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.14-000000" alt="Version 0.0.14"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
-  <img src="https://img.shields.io/badge/Threads-450.0.0.51.78-000000" alt="Threads 450.0.0.51.78">
+  <img src="https://img.shields.io/badge/Threads-451.0.0.51.80-000000" alt="Threads 451.0.0.51.80">
   <img src="https://img.shields.io/badge/for-Morphe%20Manager%201.34.0%2B-8A2BE2" alt="For Morphe Manager 1.34.0 or newer">
 </p>
 
@@ -24,9 +24,7 @@ HushThreads is a Morphe patch bundle for Android that takes the ads out of Threa
 
 Sponsored posts and suggested-account cards leave your feed before Threads shows them. Shared links lose their tracking tags, and a short `/share/` link becomes the post's own link. Web links open in your browser instead of Threads' own, with its click tracker skipped. You can also save photos and videos, keep your place in the feed, stop autoplay and make dark mode pure black.
 
-The latest release is [v0.0.13](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.13), with 19 patches. What changed in each version is in the [changelog](CHANGELOG.md).
-
-The source build is v0.0.14 for Threads 451.0.0.51.80. Its settings changes and compatibility are being checked before release. Manager still downloads v0.0.13 for Threads 450.
+The latest release is [v0.0.14](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.14), with 19 patches. What changed in each version is in the [changelog](CHANGELOG.md).
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -34,24 +32,24 @@ The source build is v0.0.14 for Threads 451.0.0.51.80. Its settings changes and 
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.34.0 or newer.
 2. Add HushThreads as a patch source: https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads
-3. Get Threads 450.0.0.51.78 (`com.instagram.barcelona`) for arm64-v8a, version code 512008342 (240-480dpi, Android 9+). If you're on an older Threads, update it to 450 before you patch.
+3. Get Threads 451.0.0.51.80 (`com.instagram.barcelona`) for arm64-v8a, version code 512108444 (480dpi, Android 9+). If you're on an older Threads, update it to 451 before you patch.
 4. Uninstall the stock Threads. A patched Threads can't install over Meta's signed copy.
 5. In Morphe Manager, pick that file and patch. The default selection has every patch except the three the [Patches](#patches) section names, so you don't need Expert mode.
 
 To add one of those three, turn on **Settings → Advanced → Expert mode** in Manager before you pick the file. If you saved your own selection in Expert mode before, Manager may keep using it, so look over the list once.
 
-HushThreads v0.0.13 patches Threads 450 only. Each release moves to the newest stable Threads and drops the one before, so v0.0.12 is the last release for 449.0.0.54.82 and 448.0.0.54.85. If a patch can't find what it needs in your build, patching stops with a message naming it instead of handing you an app that quietly does nothing.
+HushThreads v0.0.14 patches Threads 451 only. Each release moves to the newest stable Threads and drops the one before, so v0.0.13 is the last release for 450.0.0.51.78. If a patch can't find what it needs in your build, patching stops with a message naming it instead of handing you an app that quietly does nothing.
 
 ### Supported Threads build
 
 | Threads version | Version code | Android floor |
 |---|---|---|
-| 450.0.0.51.78 | 512008342 (240-480dpi) | Android 9 |
+| 451.0.0.51.80 | 512108444 (480dpi) | Android 9 |
 
-The release checks for v0.0.13 ran on this stock bundle:
+The release checks for v0.0.14 ran on this stock bundle:
 
 ```text
-19bfeb54d003374b85664fffc75403f7bc1b273b4431b59f11aad8e7c5f67e04  threads-450.0.0.51.78-512008342.xapk
+93bdef4590000711d03f16e4f91f6a7687f665facd8aa3ec773222a1aac043e2  threads-451.0.0.51.80-512108444.apkm
 ```
 
 A copy from another site may be packed differently and have another hash. The version code is what has to match.
@@ -64,7 +62,7 @@ On a new phone, import the key before you patch anything. Reinstalling Manager o
 
 ## Patches
 
-HushThreads v0.0.13 has 19 patches. Morphe Manager's default selection has all but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Those three change Threads when you patch and have no switch to undo them. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
+HushThreads v0.0.14 has 19 patches. Morphe Manager's default selection has all but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Those three change Threads when you patch and have no switch to undo them. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
 
 | Patch | What it does |
 |---|---|
@@ -88,11 +86,11 @@ HushThreads v0.0.13 has 19 patches. Morphe Manager's default selection has all b
 | `Save photos and videos` | Adds Save to a post's menu, below Copy link. It saves the photo or video to your gallery, every page of a carousel too. Good for keeping posts you like. On by default. Turn it off in HushThreads settings > Downloads. |
 | `Trust user-added certificates` | Lets Threads accept security certificates you installed yourself, such as for a work network or a debugging proxy. Meta's own checks stay, so a proxy can't read most traffic. It isn't selected by default. Works as soon as you patch it in, with no switch. |
 
-The switches on the Appearance page take effect after you restart Threads. Builds from main show a Restart row at the top of HushThreads settings when you flip one. Tap it and Threads reopens on the page you were on.
+The switches on the Appearance page take effect after you restart Threads. A Restart row shows at the top of HushThreads settings when you flip one. Tap it and Threads reopens on the page you were on.
 
 ## Settings
 
-In Threads, open your profile, tap the settings button at the top and tap HushThreads, just above More settings. You can also long-press the Threads icon on your home screen and tap HushThreads, or open Threads' App info page and tap Additional settings in the app (Samsung phones call it Configure in Threads). Builds from main also open it when you long-press the Threads logo at the top of your feed, even while HushThreads is paused.
+In Threads, open your profile, tap the settings button at the top and tap HushThreads, just above More settings. You can also long-press the Threads icon on your home screen and tap HushThreads, or open Threads' App info page and tap Additional settings in the app (Samsung phones call it Configure in Threads). A long press on the Threads logo at the top of your feed opens it too, even while HushThreads is paused.
 
 **Pause** at the top of the home page turns every feature off at once and keeps your choices. Settings can be saved to a file and restored, and a diagnostic report can be exported for bug reports. Reports keep counts, not your posts or links, and they leave out file paths. Look one over before you share it anyway.
 

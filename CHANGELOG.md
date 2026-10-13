@@ -2,9 +2,9 @@
 
 Changes in the source build, then released versions.
 
-## Unreleased
+## 0.0.14 (2026-10-13)
 
-* **Threads:** Moves the source build to Threads 451.0.0.51.80. Sharing, saved media, autoplay and dark backgrounds follow the new build's layout. The published download stays on Threads 450 until release.
+* **Threads:** This release patches Threads 451.0.0.51.80 only, the newest stable version. 450.0.0.51.78 isn't offered any more, so update Threads to 451 before you patch. Sharing, saved media, autoplay and dark backgrounds follow the new build's layout.
 * **Threads:** Search, buttons and choices show a visible focus outline. Switches and actions use the same corner scale as the settings cards.
 * **Threads:** Download and report choosers close when their page is removed. Diagnostic exports describe the right folder on Android 9, and clearing logs offers Restore diagnostic data while recovery is available.
 * **Threads:** Both backup actions explain why they're unavailable during an import or export.
