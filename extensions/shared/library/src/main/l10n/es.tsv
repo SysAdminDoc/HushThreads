@@ -281,8 +281,6 @@ Full size photos	Fotos a tamaño completo
 Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	Las fotos se cargan en el tamaño más grande que tiene Threads, no en uno elegido para tu pantalla. Se ven más nítidas y usan más datos.
 # context: title of the last row on the settings home page; a tap opens the maintainer's Ko-fi page in a browser
 Support HushThreads	Apoya HushThreads
-# context: that row's summary; Ko-fi is a tipping site's name and stays as it is
-Buy me a coffee on Ko-fi	Invítame a un café en Ko-fi
 # context: reports use the app's own Downloads folder on Android 9, where the shared Downloads collection isn't available
 Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.	Copia un informe rápido o guarda el completo en la propia carpeta de descargas de Threads. Se omiten enlaces, ID, cookies y tokens de inicio de sesión. Revisa si queda otro texto privado antes de compartirlo.
 Save the full report in Threads' own Downloads folder.	Guarda el informe completo en la propia carpeta de descargas de Threads.

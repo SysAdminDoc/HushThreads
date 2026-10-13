@@ -281,8 +281,6 @@ Full size photos	Foto ukuran penuh
 Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	Foto dimuat dalam ukuran terbesar yang dimiliki Threads, bukan ukuran yang dipilih untuk layarmu. Foto terlihat lebih tajam dan memakai lebih banyak data.
 # context: title of the last row on the settings home page; a tap opens the maintainer's Ko-fi page in a browser
 Support HushThreads	Dukung HushThreads
-# context: that row's summary; Ko-fi is a tipping site's name and stays as it is
-Buy me a coffee on Ko-fi	Traktir aku secangkir kopi di Ko-fi
 # context: reports use the app's own Downloads folder on Android 9, where the shared Downloads collection isn't available
 Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.	Salin laporan singkat atau simpan laporan lengkap di folder unduhan milik Threads. Tautan, ID, cookie, dan token masuk dihilangkan. Periksa teks pribadi lainnya sebelum membagikannya.
 Save the full report in Threads' own Downloads folder.	Simpan laporan lengkap di folder unduhan milik Threads.

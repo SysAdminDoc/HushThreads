@@ -104,8 +104,9 @@ public class SettingsNavigationTest {
     }
 
     /**
-     * The home page ends with Support HushThreads, under More settings. A tap opens the Ko-fi page
-     * in a browser of its own, and with no browser a tip names the address and Threads keeps running.
+     * The home page ends with Support HushThreads, under More settings, as a name with no line
+     * under it. A tap opens the Ko-fi page in a browser of its own, and with no browser a tip names
+     * the address and Threads keeps running.
      */
     @Test public void theHomePageEndsWithSupportWhichOpensKoFi() {
         Map<String, Object> before = savedValues();
@@ -113,7 +114,7 @@ public class SettingsNavigationTest {
         Preference row = (Preference) list().getItemAtPosition(last);
         assertEquals(HushThreadsPreferenceFragment.SUPPORT, row.getKey());
         assertEquals("Support HushThreads", String.valueOf(row.getTitle()));
-        assertEquals("Buy me a coffee on Ko-fi", String.valueOf(row.getSummary()));
+        assertNull("the Support row carries a line under its name", row.getSummary());
         assertEquals("More settings", String.valueOf(((Preference) list().getItemAtPosition(last - 1)).getTitle()));
         assertTrue(list().getAdapter().isEnabled(last));
 

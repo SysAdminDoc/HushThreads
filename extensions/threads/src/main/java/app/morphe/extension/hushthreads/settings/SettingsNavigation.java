@@ -119,7 +119,7 @@ final class SettingsNavigation extends BaseAdapter {
         browse.setTitle(L10n.t("Browse settings"));
         more = link(context, L10n.t("More settings"), L10n.t("Links, updates, backup and more"), SettingsIcons.SETTINGS);
         more.setOnPreferenceClickListener(ignored -> { navigate(MORE); return true; });
-        support = link(context, L10n.t("Support HushThreads"), L10n.t("Buy me a coffee on Ko-fi"), SettingsIcons.HEART);
+        support = link(context, L10n.t("Support HushThreads"), null, SettingsIcons.HEART);
         support.setKey(HushThreadsPreferenceFragment.SUPPORT);
         support.setOnPreferenceClickListener(row -> { HushThreadsPreferenceFragment.openSupport(row.getContext()); return true; });
         empty = new HushThreadsPreferenceFragment.Row(context);
