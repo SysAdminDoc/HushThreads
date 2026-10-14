@@ -508,6 +508,47 @@ public class SettingsEntryTest {
     }
 
     /**
+     * Android 9 resumes only the focused side of a split screen. A font size or theme change made
+     * in the other side recreates Threads there without resuming it, and the screen used to be
+     * dropped once its request was 30 seconds old. It waits for that activity however long it
+     * takes, while another Threads screen that resumes late doesn't get it.
+     */
+    @Test @Config(sdk = 28) public void onAndroid9ARecreatedSideThatResumesLateStillGetsTheScreen() {
+        PatchFamily.inBuildForTests = java.util.EnumSet.allOf(PatchFamily.class);
+        try {
+            Intent shortcut = new Intent().putExtra(SettingsEntry.EXTRA_OPEN_SETTINGS, true);
+            ActivityController<ThreadsLikeActivity> side = Robolectric.buildActivity(ThreadsLikeActivity.class, shortcut).create();
+            SettingsEntry.onActivityCreate(side.get());
+            side.start().resume();
+            ShadowLooper.idleMainLooper();
+            tapRow(side.get(), "section_Feed");
+            ShadowLooper.idleMainLooper(5, java.util.concurrent.TimeUnit.MINUTES);
+
+            // The other side takes focus, and its change recreates Threads, which stays paused.
+            // Built by hand: Robolectric's recreate() passes through a resume.
+            side.pause();
+            android.os.Bundle saved = new android.os.Bundle();
+            side.saveInstanceState(saved);
+            side.stop().destroy();
+            ActivityController<ThreadsLikeActivity> rebuilt = Robolectric.buildActivity(ThreadsLikeActivity.class, side.getIntent())
+                    .create(saved).start().postCreate(saved);
+            ShadowLooper.idleMainLooper(2, java.util.concurrent.TimeUnit.MINUTES);
+            ActivityController<ThreadsLikeActivity> other = Robolectric.buildActivity(ThreadsLikeActivity.class).setup();
+            ShadowLooper.idleMainLooper();
+            assertNull("a Threads screen that resumed late took the screen", dialogOver(other.get()));
+            other.pause().stop().destroy();
+
+            rebuilt.resume();
+            ShadowLooper.idleMainLooper();
+            assertNotNull("the screen was dropped while its side waited for focus", dialogOver(rebuilt.get()));
+            org.junit.Assert.assertEquals("Feed", pageOver(rebuilt.get()).navigation.route());
+        } finally {
+            SettingsEntry.onClosedByUser();
+            PatchFamily.inBuildForTests = null;
+        }
+    }
+
+    /**
      * The screen open over two Threads activities: closing the copy over the second leaves the
      * first's copy to come back when Threads recreates the first. One closed flag for every copy
      * used to make the first activity skip saving its own.

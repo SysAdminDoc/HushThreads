@@ -79,6 +79,12 @@ public final class SettingsEntry {
     /** The screen as a recreated activity saved it, for the next open to put back. */
     @SuppressWarnings("deprecation")
     private static volatile android.app.Fragment.SavedState recreatedScreen;
+    /**
+     * The recreated activity that screen belongs to. It gets it whenever it resumes, past the
+     * request's lifetime: Android 9 resumes only the focused side of a split screen, so a Threads
+     * recreated in the other side can wait any time for a tap.
+     */
+    private static WeakReference<Activity> recreatedHost;
 
     private static volatile boolean openPending;
     private static volatile long requestedAt;
@@ -349,7 +355,7 @@ public final class SettingsEntry {
         public void onActivityCreated(Activity activity, Bundle state) {
             try {
                 android.app.Fragment.SavedState screen = state == null ? null : state.getParcelable(RECREATED_SCREEN);
-                if (screen != null) reopenRecreated(screen);
+                if (screen != null) reopenRecreated(activity, screen);
             } catch (Exception ex) {
                 Logger.printException(() -> "Settings entry: could not read the screen back from a recreated activity", ex);
             }
@@ -404,9 +410,13 @@ public final class SettingsEntry {
             Utils.runOnMainThread(() -> {
                 if (!openPending) return;
                 if (SystemClock.elapsedRealtime() - requestedAt > REQUEST_LIFETIME_MS) {
-                    openPending = false;
-                    Logger.printInfo(() -> "Settings request expired before a Threads screen could show it");
-                    return;
+                    Activity waiting = recreatedHost == null ? null : recreatedHost.get();
+                    if (waiting != null && waiting != activity && !waiting.isFinishing() && !waiting.isDestroyed()) return;
+                    if (waiting != activity) {
+                        openPending = false;
+                        Logger.printInfo(() -> "Settings request expired before a Threads screen could show it");
+                        return;
+                    }
                 }
                 if (open(activity)) openPending = false;
             });
@@ -430,6 +440,7 @@ public final class SettingsEntry {
             if (fragments.findFragmentByTag(DIALOG_TAG) != null) {
                 // A host that keeps fragment state put the screen back itself.
                 recreatedScreen = null;
+                recreatedHost = null;
                 return true;
             }
             if (fragments.isStateSaved()) {
@@ -440,6 +451,7 @@ public final class SettingsEntry {
             SettingsDialog dialog = SettingsDialog.onPage(requestedPage);
             android.app.Fragment.SavedState screen = recreatedScreen;
             recreatedScreen = null;
+            recreatedHost = null;
             if (screen != null) dialog.setInitialSavedState(screen);
             dialog.show(fragments, DIALOG_TAG);
             host = new WeakReference<>(activity);
@@ -457,6 +469,7 @@ public final class SettingsEntry {
         host = null;
         requestedPage = null;
         recreatedScreen = null;
+        recreatedHost = null;
     }
 
     /**
@@ -502,18 +515,21 @@ public final class SettingsEntry {
         openPending = true;
         requestedPage = null;
         recreatedScreen = null;
+        recreatedHost = null;
         Logger.printInfo(() -> "Settings requested by " + from);
     }
 
     /**
      * A Threads activity that had the screen open was recreated: asks for the screen again, put
      * back as it was saved (page, search and place in the list), over the first Threads screen to
-     * resume, which is the recreated one.
+     * resume, which is usually the recreated one. That one still gets it after the request's
+     * lifetime, however long it waits to resume.
      */
     @SuppressWarnings("deprecation")
-    static void reopenRecreated(android.app.Fragment.SavedState screen) {
+    static void reopenRecreated(Activity activity, android.app.Fragment.SavedState screen) {
         request("a Threads screen recreated with it open");
         recreatedScreen = screen;
+        recreatedHost = new WeakReference<>(activity);
     }
 
     /**
