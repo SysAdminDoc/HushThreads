@@ -21,6 +21,7 @@ Changes in the source build, then released versions.
 * **Threads:** When a save finds no picture or video it can keep, the diagnostics report now lists the kind and size of every address it looked at, so a bug report shows why. It never includes the addresses themselves.
 * **Threads:** Save photo and Save all work on phones with smaller screens again. On a 720 px wide screen Threads only keeps a photo at up to 750 px, and HushThreads took every one of those for a thumbnail and saved nothing. It now saves the largest copy there is, still prefers a full size one when Threads has it, and still never saves an avatar-sized copy.
 * **Threads:** Search's Follow suggestions row is gone too. It has its own switch, `Hide follow suggestions in Search`, right under Hide suggested users on the Feed page, and it starts on. Nothing takes the row's place, and search results and topics stay as they are. Turn the switch off, or pause HushThreads, and Search looks the way Threads draws it.
+* **Threads:** TalkBack no longer stops on the HushThreads settings list as a whole to offer a long press that does nothing there. Quick setups, the one row with a long press, still offers it.
 
 ## 0.0.14 (2026-10-13)
 

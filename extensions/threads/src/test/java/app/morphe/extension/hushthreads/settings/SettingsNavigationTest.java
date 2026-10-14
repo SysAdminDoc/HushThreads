@@ -208,6 +208,20 @@ public class SettingsNavigationTest {
         assertFalse(contains(SettingsNavigation.QUICK_SETUPS));
     }
 
+    /**
+     * The long-press listener makes the list itself long-clickable, and TalkBack stopped on the
+     * whole list to say "List, double-tap and hold to long press". The list keeps the touch long
+     * press its rows need and offers a screen reader none of its own.
+     */
+    @Test public void theListItselfOffersAScreenReaderNoLongPress() {
+        layout(dialog.getView());
+        android.view.accessibility.AccessibilityNodeInfo info = list().createAccessibilityNodeInfo();
+        assertFalse("the list offers a long press", info.isLongClickable());
+        assertFalse(info.getActionList().contains(
+                android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_LONG_CLICK));
+        assertTrue("a touch long press on a row needs the list long-clickable", list().isLongClickable());
+    }
+
     /** Each Quick setups choice changes its switches through their rows and says how many changed. */
     @Test public void quickSetupsChangeTheirSwitchesAndSayHowMany() {
         assertEquals("Quick setups isn't under the status card", 1, position(SettingsNavigation.QUICK_SETUPS));

@@ -199,6 +199,17 @@ final class SettingsNavigation extends BaseAdapter {
             longPress.run();
             return true;
         });
+        // That listener makes the list itself long-clickable, and a screen reader then stops on the
+        // whole list to offer a long press. The list keeps it for touch, and RowSemantics offers it
+        // on the one row that has one.
+        list.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setLongClickable(false);
+                info.removeAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_LONG_CLICK);
+            }
+        });
         rebuild();
         host.showPage(title(), route.isEmpty(), query);
         if (state != null) showAt(state.getInt("position"), state.getInt("offset"));
