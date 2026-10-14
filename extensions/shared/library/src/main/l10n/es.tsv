@@ -47,7 +47,6 @@ HushThreads %1$s targets Threads %2$s.	HushThreads %1$s está pensado para Threa
 HushThreads pauses when Threads restarts.	HushThreads se pausa cuando Threads se reinicie.
 HushThreads turns back on when Threads restarts.	HushThreads vuelve a activarse cuando Threads se reinicie.
 It targets Threads %1$s.	Está pensado para Threads %1$s.
-Links, updates, backup and more	Enlaces, actualizaciones, copia de seguridad y más
 None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Ninguna dirección web de Threads está seleccionada para esta app, así que sus enlaces se abren en otro sitio. Toca para seleccionarlas en los ajustes de Android.
 Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Solo algunas direcciones web de Threads están seleccionadas para esta app, y los enlaces a las demás se abren en otro sitio. Toca para seleccionarlas en los ajustes de Android.
 Privacy	Privacidad
@@ -305,7 +304,6 @@ Copy text on long press	Copiar texto al mantener pulsado
 Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Al mantener pulsado el texto de una publicación se abre Copiar texto, también en una publicación abierta, así copias la publicación entera con sus enlaces en vez de elegir palabras.
 # Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
 Quick setups	Configuración rápida
-Turn on a set of switches in one tap, or put every switch back the way it started.	Activa varios interruptores con un toque o devuelve todos los interruptores a como estaban al principio.
 Quiet	Tranquilo
 Hides ads and the cards that suggest accounts to follow.	Oculta los anuncios y las tarjetas que sugieren cuentas para seguir.
 Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.	Detiene la mayoría de los informes de uso y quita el seguimiento de los enlaces que compartes. Threads tampoco se entera de tus capturas de pantalla.
@@ -319,3 +317,8 @@ Opens a GitHub report with your versions and settings filled in. Add what happen
 # The Links page's line beside a Meta-signed Instagram (#8): Instagram's own launcher won't hand a post or profile to a patched Threads, and the error is Instagram's.
 Instagram won't open posts here	Instagram no abre publicaciones aquí
 Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.	Tu Instagram está firmado por Meta y solo abre publicaciones y perfiles de Threads en un Threads firmado por Meta. Si tocas uno en Instagram, muestra un error que dice que no pudo cargar el sitio web. Las publicaciones que abres en el propio Threads funcionan como siempre.
+Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.	Activa varios interruptores con un toque o devuelve todos los interruptores a como estaban al principio. Mantén pulsada esta fila para ocultarla.
+Quick setups on the home page	Configuración rápida en la página de inicio
+Hidden. Tap to show it again.	Oculta. Toca para volver a mostrarla.
+Shown. Tap to hide it.	Visible. Toca para ocultarla.
+Quick setups hidden. Bring it back from Pause, backup and diagnostics.	Configuración rápida oculta. Puedes recuperarla en Pausa, copia de seguridad y diagnóstico.

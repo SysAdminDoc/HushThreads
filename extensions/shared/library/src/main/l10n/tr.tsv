@@ -47,7 +47,6 @@ HushThreads %1$s targets Threads %2$s.	HushThreads %1$s, Threads %2$s için haz�
 HushThreads pauses when Threads restarts.	HushThreads, Threads yeniden başladığında duraklatılır.
 HushThreads turns back on when Threads restarts.	HushThreads, Threads yeniden başladığında tekrar açılır.
 It targets Threads %1$s.	Threads %1$s için hazırlandı.
-Links, updates, backup and more	Bağlantılar, güncellemeler, yedekleme ve daha fazlası
 None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Threads'in web adreslerinden hiçbiri bu uygulama için seçili değil, bu yüzden bağlantıları başka yerde açılır. Android ayarlarında seçmek için dokunun.
 Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Threads'in web adreslerinden yalnızca bazıları bu uygulama için seçili ve diğerlerinin bağlantıları başka yerde açılır. Android ayarlarında seçmek için dokunun.
 Privacy	Gizlilik
@@ -305,7 +304,6 @@ Copy text on long press	Uzun basınca metni kopyala
 Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Bir gönderinin metnine basılı tutunca, açtığın bir gönderide de Metni kopyala açılır. Böylece kelime seçmek yerine gönderinin tamamını bağlantılarıyla birlikte alırsın.
 # Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
 Quick setups	Hızlı kurulumlar
-Turn on a set of switches in one tap, or put every switch back the way it started.	Bir grup anahtarı tek dokunuşla aç veya tüm anahtarları başlangıçtaki hâline döndür.
 Quiet	Sessiz
 Hides ads and the cards that suggest accounts to follow.	Reklamları ve takip edilecek hesap öneren kartları gizler.
 Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.	Kullanım raporlarının çoğunu durdurur ve paylaştığın bağlantılardan izlemeyi kaldırır. Threads'e ekran görüntülerin de bildirilmez.
@@ -319,3 +317,8 @@ Opens a GitHub report with your versions and settings filled in. Add what happen
 # The Links page's line beside a Meta-signed Instagram (#8): Instagram's own launcher won't hand a post or profile to a patched Threads, and the error is Instagram's.
 Instagram won't open posts here	Instagram burada gönderi açmaz
 Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.	Instagram'ın Meta tarafından imzalı ve Threads gönderilerini ve profillerini yalnızca Meta tarafından imzalanmış bir Threads'te açar. Instagram'da birine dokunmak, web sitesinin yüklenemediğini söyleyen bir hata gösterir. Threads'in kendisinde açtığın gönderiler her zamanki gibi çalışır.
+Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.	Bir grup anahtarı tek dokunuşla aç veya tüm anahtarları başlangıçtaki hâline döndür. Gizlemek için bu satıra basılı tut.
+Quick setups on the home page	Ana sayfada hızlı kurulumlar
+Hidden. Tap to show it again.	Gizli. Yeniden göstermek için dokun.
+Shown. Tap to hide it.	Gösteriliyor. Gizlemek için dokun.
+Quick setups hidden. Bring it back from Pause, backup and diagnostics.	Hızlı kurulumlar gizlendi. Duraklatma, yedekleme ve tanılama sayfasından geri getirebilirsin.

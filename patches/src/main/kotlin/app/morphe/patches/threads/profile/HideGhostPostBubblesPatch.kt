@@ -77,7 +77,7 @@ val hideGhostPostBubblesPatch = bytecodePatch(
     name = PATCH,
     description = "Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your " +
         "feed. The pictures and the ghost posts themselves stay. Good for a calmer look. Starts off. Turn it on in " +
-        "HushThreads settings > More settings > Appearance.",
+        "HushThreads settings > Appearance.",
 ) {
     category("Interface")
     dependsOn(settingsPatch)

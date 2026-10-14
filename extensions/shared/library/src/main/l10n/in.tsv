@@ -47,7 +47,6 @@ HushThreads %1$s targets Threads %2$s.	HushThreads %1$s ditujukan untuk Threads 
 HushThreads pauses when Threads restarts.	HushThreads dijeda saat Threads dimulai ulang.
 HushThreads turns back on when Threads restarts.	HushThreads aktif lagi saat Threads dimulai ulang.
 It targets Threads %1$s.	Rilis ini ditujukan untuk Threads %1$s.
-Links, updates, backup and more	Tautan, pembaruan, cadangan, dan lainnya
 None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Tidak ada alamat web Threads yang dipilih untuk aplikasi ini, jadi tautannya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.
 Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Hanya sebagian alamat web Threads yang dipilih untuk aplikasi ini, dan tautan ke alamat lainnya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.
 Privacy	Privasi
@@ -305,7 +304,6 @@ Copy text on long press	Salin teks dengan tekan lama
 Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Menekan lama teks postingan membuka Salin teks, juga di postingan yang sedang dibuka, jadi Anda mendapat seluruh postingan beserta tautannya, bukan memilih kata satu per satu.
 # Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
 Quick setups	Penyiapan cepat
-Turn on a set of switches in one tap, or put every switch back the way it started.	Nyalakan sekumpulan sakelar dengan sekali ketuk, atau kembalikan semua sakelar seperti semula.
 Quiet	Tenang
 Hides ads and the cards that suggest accounts to follow.	Menyembunyikan iklan dan kartu yang menyarankan akun untuk diikuti.
 Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.	Menghentikan sebagian besar laporan penggunaan dan menghapus pelacakan dari tautan yang Anda bagikan. Threads juga tidak diberi tahu tentang tangkapan layar Anda.
@@ -319,3 +317,8 @@ Opens a GitHub report with your versions and settings filled in. Add what happen
 # The Links page's line beside a Meta-signed Instagram (#8): Instagram's own launcher won't hand a post or profile to a patched Threads, and the error is Instagram's.
 Instagram won't open posts here	Instagram tidak membuka postingan di sini
 Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.	Instagram Anda ditandatangani oleh Meta, dan hanya membuka postingan dan profil Threads di Threads yang ditandatangani oleh Meta. Mengetuknya di Instagram menampilkan galat bahwa situs web tidak dapat dimuat. Postingan yang Anda buka di Threads sendiri berfungsi seperti biasa.
+Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.	Nyalakan sekumpulan sakelar dengan sekali ketuk, atau kembalikan semua sakelar seperti semula. Tekan lama baris ini untuk menyembunyikannya.
+Quick setups on the home page	Penyiapan cepat di halaman utama
+Hidden. Tap to show it again.	Disembunyikan. Ketuk untuk menampilkannya lagi.
+Shown. Tap to hide it.	Ditampilkan. Ketuk untuk menyembunyikannya.
+Quick setups hidden. Bring it back from Pause, backup and diagnostics.	Penyiapan cepat disembunyikan. Tampilkan lagi dari Jeda, cadangan, dan diagnostik.

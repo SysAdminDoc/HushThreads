@@ -433,8 +433,7 @@ public class SettingsEntryTest {
             }
             assertTrue("the screen didn't open on Appearance", onAppearance);
 
-            // Appearance, More settings, the first page, and out.
-            SettingsL10nTest.backOf(dialog).performClick();
+            // Appearance, the first page, and out: every page opens from the first one.
             SettingsL10nTest.backOf(dialog).performClick();
             SettingsL10nTest.backOf(dialog).performClick();
             ShadowLooper.idleMainLooper();

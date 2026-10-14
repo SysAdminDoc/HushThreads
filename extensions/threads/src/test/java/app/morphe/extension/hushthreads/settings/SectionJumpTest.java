@@ -63,19 +63,31 @@ public class SectionJumpTest {
         HushThreadsPreferenceFragment page = page(dialog);
         ListView list = laidOut(dialog);
 
-        assertEquals("Browse settings", ((Preference) list.getItemAtPosition(1)).getTitle());
-        List<String> titles = new ArrayList<>();
-        // The sections run from under the heading to More settings. Support HushThreads comes last.
-        for (int i = 2; i < list.getCount() - 2; i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());
-        Preference more = (Preference) list.getItemAtPosition(list.getCount() - 2);
-        assertEquals("More settings", more.getTitle());
+        // Quick setups sits between the status card and the Browse settings heading.
+        assertEquals(SettingsNavigation.QUICK_SETUPS, ((Preference) list.getItemAtPosition(1)).getKey());
+        assertEquals("Browse settings", ((Preference) list.getItemAtPosition(2)).getTitle());
+        // Every page is a row on home, under one of the two headings. Report a problem and Support
+        // HushThreads come last.
+        assertEquals(SettingsNavigation.REPORT, ((Preference) list.getItemAtPosition(list.getCount() - 2)).getKey());
         assertEquals(HushThreadsPreferenceFragment.SUPPORT, ((Preference) list.getItemAtPosition(list.getCount() - 1)).getKey());
-        assertTrue(more.getOnPreferenceClickListener().onPreferenceClick(more));
-        for (int i = 0; i < list.getCount(); i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());
+        List<String> titles = new ArrayList<>();
+        int more = -1;
+        for (int i = 3; i < list.getCount() - 2; i++) {
+            Preference row = (Preference) list.getItemAtPosition(i);
+            if ("More settings".contentEquals(row.getTitle())) {
+                assertEquals("two More settings headings", -1, more);
+                assertTrue("More settings opens a page of its own", row.getOnPreferenceClickListener() == null);
+                more = i;
+                continue;
+            }
+            titles.add(row.getTitle().toString());
+        }
+        assertTrue("no More settings heading", more > 3);
         List<String> expected = new ArrayList<>();
         for (Preference section : page.sections()) expected.add(section.getTitle().toString());
         assertEquals(new java.util.HashSet<>(expected), new java.util.HashSet<>(titles));
         assertEquals(expected.size(), titles.size());
+        assertEquals("Appearance", titles.get(more - 3));
         assertTrue(titles.contains("Updates"));
         assertTrue(titles.contains("Links"));
     }

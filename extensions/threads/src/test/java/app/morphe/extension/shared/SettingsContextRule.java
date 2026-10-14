@@ -58,6 +58,9 @@ public final class SettingsContextRule extends ExternalResource {
         } catch (ReflectiveOperationException exception) {
             throw new IllegalStateException("Could not re-point Setting's store", exception);
         }
+        // Whether Quick setups is off the home page is process-wide as well, and every home row
+        // count reads it.
+        app.morphe.extension.shared.settings.BaseSettings.HIDE_QUICK_SETUPS.resetToDefault();
         // The restart debt is process-wide by design, and the test JVM is one process: a
         // restart-gated toggle in one class would pin the row on every page captured after it.
         app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment

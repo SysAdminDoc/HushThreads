@@ -72,8 +72,7 @@ internal class ButtonRow(val method: Method, val parameter: Int, val guard: Int,
 val hideInstagramButtonPatch = bytecodePatch(
     name = PATCH,
     description = "Takes the Instagram button off the top of profiles, yours and other people's. The other " +
-        "buttons stay. Good for a tidier profile. Starts off. Turn it on in HushThreads settings > More " +
-        "settings > Appearance.",
+        "buttons stay. Good for a tidier profile. Starts off. Turn it on in HushThreads settings > Appearance.",
 ) {
     category("Interface")
     dependsOn(settingsPatch)

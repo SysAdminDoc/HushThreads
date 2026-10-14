@@ -63,11 +63,19 @@ public class BaseSettings {
     /** Set by {@link HushThreadsPause} after three starts in a row crashed within a minute. */
     public static final BooleanSetting SAFE_MODE = new BooleanSetting("hushthreads_safe_mode", FALSE, true, false, null, null);
 
+    /**
+     * Whether the Quick setups row is off the settings home page. A long press on that row hides
+     * it, and a row on the Pause, backup and diagnostics page brings it back. It's the screen's own
+     * state: no restart, and it stays out of settings files and Quick setups.
+     */
+    public static final BooleanSetting HIDE_QUICK_SETUPS =
+            new BooleanSetting("hushthreads_hide_quick_setups", FALSE, false, false, null, null);
+
     static {
         // HushThreads's own state and its diagnostics, which keep working while it is paused.
         Setting.keepWhenPaused(DEBUG, DEBUG_LOG_FILTERS, CAPTURE_JAVA_CRASHES, DEBUG_STACKTRACE,
                 DEBUG_TOAST_ON_ERROR, CHECK_ENVIRONMENT_WARNINGS_ISSUED, MORPHE_LANGUAGE, SHOW_MENU_ICONS,
-                FIRST_TIME_APP_LAUNCHED, EXPERIMENTAL_APP_CONFIRMED, PAUSED, SAFE_MODE);
+                FIRST_TIME_APP_LAUNCHED, EXPERIMENTAL_APP_CONFIRMED, PAUSED, SAFE_MODE, HIDE_QUICK_SETUPS);
 
         final long now = System.currentTimeMillis();
 

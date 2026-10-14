@@ -17,7 +17,7 @@ body:
     id: versions
     attributes:
       label: HushThreads and Threads versions
-      description: Long-press the Threads icon and tap HushThreads, or open Threads' App info page and tap Additional settings in the app. Copy the version line under the HushThreads title. If the screen opens on category pages, open More settings, then About, and copy the Version line.
+      description: Long-press the Threads icon and tap HushThreads, or open Threads' App info page and tap Additional settings in the app. Copy the version line under the HushThreads title. If the screen opens on category pages, open About and copy the Version line.
       placeholder: Version 0.0.14 for Threads 451.0.0.51.80
     validations:
       required: true
@@ -133,7 +133,7 @@ body:
     attributes:
       label: Diagnostic report
       description: |
-        This answers most of our questions, so please add it if you can. It works with Debug logging off and still names your HushThreads bundle, current certificate hashes, available installer details and the patches' counts. Installer names don't prove the installation method, so keep the Manager version and installation-method fields above. For the most detail, long-press the Threads icon, tap HushThreads, turn on Debug logging, do the thing that goes wrong, then come back, tap Export diagnostic report and pick Save full report. If the screen opens on category pages, these controls are under More settings, then Pause, backup and diagnostics. On Android 10 and newer, that saves a text file in Download/Morphe. Android 9 uses the app's own Downloads folder. The saved message shows its location. Drag the file into this box. If you can't get it off your phone, pick Copy quick report instead and paste the shorter report here.
+        This answers most of our questions, so please add it if you can. It works with Debug logging off and still names your HushThreads bundle, current certificate hashes, available installer details and the patches' counts. Installer names don't prove the installation method, so keep the Manager version and installation-method fields above. For the most detail, long-press the Threads icon, tap HushThreads, turn on Debug logging, do the thing that goes wrong, then come back, tap Export diagnostic report and pick Save full report. If the screen opens on category pages, these controls are on the Pause, backup and diagnostics page. On Android 10 and newer, that saves a text file in Download/Morphe. Android 9 uses the app's own Downloads folder. The saved message shows its location. Drag the file into this box. If you can't get it off your phone, pick Copy quick report instead and paste the shorter report here.
         The report leaves out links, Threads and Instagram addresses, long ID numbers, cookies, sign-in tokens and Authorization headers, JSON included. It can't spot a name or message written anywhere else, so read it and remove anything private before you post it.
   - type: textarea
     id: additional_context
