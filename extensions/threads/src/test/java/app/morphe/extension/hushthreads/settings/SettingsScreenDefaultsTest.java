@@ -41,7 +41,8 @@ import java.util.Set;
 /**
  * Opening the settings screen stores nothing. Each row stored the value it was shown when its key
  * was missing, so one look stored every default, and a later release that changed a default never
- * reached anyone who had opened the screen.
+ * reached anyone who had opened the screen. Whether a changed default reaches a switch nobody
+ * touched is {@link SettingsUpgrade}'s decision alone, made from the receipt of the build before.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
@@ -79,8 +80,8 @@ public class SettingsScreenDefaultsTest {
             Set<String> added = new HashSet<>(store().getAll().keySet());
             added.removeAll(before);
             assertEquals("opening the screen stored " + added, Collections.emptySet(), added);
-            // The release check starts off, and a later default change has to reach everyone who
-            // only looked.
+            // The release check starts off, and looking at it doesn't store that, so a later
+            // default change is left to the upgrade receipt, not to whoever opened the screen.
             assertNotNull("no row for the release check",
                     find(fragment.getPreferenceScreen(), Settings.CHECK_FOR_RELEASES.key));
             assertFalse(added.contains(Settings.CHECK_FOR_RELEASES.key));
