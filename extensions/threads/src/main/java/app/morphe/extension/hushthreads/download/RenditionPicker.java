@@ -135,22 +135,41 @@ final class RenditionPicker {
 
         String lower = url.toLowerCase(Locale.US);
 
-        // Facebook asks for a thumbnail by putting the size into the address. A saved thumbnail
-        // looks like a success and is worthless, so these lose outright rather than rank low.
-        if (lower.contains("stp=dst-jpg_s") || lower.matches(".*[/_]([sp])\\d{2,3}x\\d{2,3}.*")) {
-            return TIER_NONE;
-        }
+        // Meta asks for a smaller copy by putting its size into the address. One of avatar size
+        // looks like a success and is worthless, so it loses outright rather than ranks low. A
+        // copy under full size ranks below any full one, and is kept when it's the largest there
+        // is: on a 720 px screen Threads 451 holds a photo only as s648x648 and s750x750.
+        int marked = markedSize(lower);
+        if (marked > 0 && marked <= THUMBNAIL_MAX) return TIER_NONE;
+        if (marked == 0 && lower.contains("stp=dst-jpg_s")) return TIER_NONE;
+        boolean reduced = marked > 0 && marked < FULL_SIZE;
 
-        if (hasImageSuffix(pathOf(lower))) return TIER_PROGRESSIVE;
+        if (hasImageSuffix(pathOf(lower))) return reduced ? TIER_PLAUSIBLE : TIER_PROGRESSIVE;
 
         return isMetaHost(lower) ? TIER_PLAUSIBLE : TIER_NONE;
     }
 
+    /** The largest side a size marker may name and still be a thumbnail: avatars are 150 and 320. */
+    static final int THUMBNAIL_MAX = 320;
+
+    /** The side from which a marked copy counts as full size. */
+    static final int FULL_SIZE = 1080;
+
     /** A size Meta writes into a picture's address: {@code s640x640} or {@code p1080x1080}. */
-    private static final Pattern SIZE_MARKER = Pattern.compile("[/_]([sp]\\d{2,4}x\\d{2,4})");
+    private static final Pattern SIZE_MARKER = Pattern.compile("[/_]([sp](\\d{2,4})x(\\d{2,4}))");
+
+    /** The longest side any size marker in [lower] names, or 0 when it names none. */
+    private static int markedSize(String lower) {
+        int largest = 0;
+        Matcher size = SIZE_MARKER.matcher(lower);
+        while (size.find()) {
+            largest = Math.max(largest, Math.max(Integer.parseInt(size.group(2)), Integer.parseInt(size.group(3))));
+        }
+        return largest;
+    }
 
     /**
-     * The sizes an address names and whether the thumbnail rule or the manifest rule refuses it,
+     * The sizes an address names and whether the size rule or the manifest rule applies to it,
      * for the log of a save that found nothing to keep. Never its host, name or query, so a
      * thumbnail rule can be told from a missing picture without a copy of the address.
      */

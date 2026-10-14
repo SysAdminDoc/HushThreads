@@ -46,7 +46,7 @@ public class DownloadQualityTest {
                 + "?stp=dst-jpg_s640x640_tt6&_nc_ht=scontent&oh=00_SECRET&oe=6720ABCD";
         String marked = RenditionPicker.markersOf(thumb);
         assertEquals("s640x640 stp-s", marked);
-        assertEquals(RenditionPicker.TIER_NONE, RenditionPicker.imageTier(thumb));
+        assertEquals(RenditionPicker.TIER_PLAUSIBLE, RenditionPicker.imageTier(thumb));
         assertEquals("p720x720", RenditionPicker.markersOf(
                 "https://scontent.cdninstagram.com/v/t51.2885-15/9_n.jpg?stp=dst-jpegr_e35_p720x720_tt6&oh=00_X"));
         assertEquals("no size", RenditionPicker.markersOf("https://scontent.cdninstagram.com/v/t51.2885-15/9_n.jpg?oh=1"));
@@ -403,6 +403,20 @@ public class DownloadQualityTest {
         assertNull(RenditionPicker.pickImage(null));
         assertNull("a picture was taken for a video", RenditionPicker.pickVideo(Arrays.asList(full, medium),
                 DownloadQuality.BEST));
+
+        // Avatar sizes never pass, whatever they say about themselves.
+        MediaSave.Rendition avatar = new MediaSave.Rendition(base + "a_n.jpg?stp=dst-jpg_e35_s320x320_tt6&oh=1", 0, 0, 0);
+        assertNull("an avatar size was saved as the photo", RenditionPicker.pickImage(Collections.singletonList(avatar)));
+
+        // Threads 451 on a 720 px screen holds a photo only as these two copies (emulator-5580,
+        // 2026-10-14): the larger one is saved, and any full size copy still outranks both.
+        MediaSave.Rendition s648 = new MediaSave.Rendition(base + "p_n.jpg?stp=dst-jpg_e35_s648x648_tt6&oh=1", 648, 648, 0);
+        MediaSave.Rendition s750 = new MediaSave.Rendition(base + "p_n.jpg?stp=dst-jpg_e35_s750x750_tt6&oh=2", 750, 750, 0);
+        assertSame(s750, RenditionPicker.pickImage(Arrays.asList(s648, s750, avatar)));
+        assertSame(full, RenditionPicker.pickImage(Arrays.asList(s750, full, s648)));
+        MediaSave.Rendition s1080 = new MediaSave.Rendition(base + "q_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6&oh=3", 0, 0, 0);
+        assertEquals(RenditionPicker.TIER_PROGRESSIVE, RenditionPicker.imageTier(s1080.url));
+        assertSame(s1080, RenditionPicker.pickImage(Arrays.asList(s750, s1080)));
 
         // The same address listed twice counts once, as it came first.
         MediaSave.Rendition again = new MediaSave.Rendition(full.url, 100, 100, 0);
