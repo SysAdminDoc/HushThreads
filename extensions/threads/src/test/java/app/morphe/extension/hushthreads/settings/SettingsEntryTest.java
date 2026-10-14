@@ -458,6 +458,18 @@ public class SettingsEntryTest {
      * the person closed stays closed.
      */
     @Test public void theScreenComesBackOnItsPageWhenThreadsRecreatesItsHost() {
+        recreatedHostWithEveryPatch();
+    }
+
+    /**
+     * Android 9 is the oldest Threads runs on, and no emulator image for it here can run Threads'
+     * arm64 code, so its framework fragments get the same recreation here.
+     */
+    @Test @Config(sdk = 28) public void onAndroid9TheScreenComesBackWhenThreadsRecreatesItsHost() {
+        recreatedHostWithEveryPatch();
+    }
+
+    private void recreatedHostWithEveryPatch() {
         PatchFamily.inBuildForTests = java.util.EnumSet.allOf(PatchFamily.class);
         try {
             recreatedHostBringsTheScreenBack();
