@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import app.morphe.extension.hushthreads.coexist.FamilySignatureTrust;
 import app.morphe.extension.shared.L10n;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -372,6 +373,13 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         links.addPreference(info(context, L10n.t("Selecting links by hand"),
                 L10n.t("Android only sends Threads links to an app signed by Meta. Selecting the addresses sends "
                     + "their links here instead. Your other link settings stay as they are.")));
+        // Only beside a Meta-signed Instagram, which won't hand this build a post or a profile (#8).
+        if (FamilySignatureTrust.metaInstagramRefusesThisBuild(context)) {
+            links.addPreference(info(context, L10n.t("Instagram won't open posts here"),
+                    L10n.t("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads "
+                        + "signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. "
+                        + "Posts you open in Threads itself work as usual.")));
+        }
 
         // In every build: the release check is the settings entry's own, not a patch's. Its switch
         // is one Pause turns off, so it sits above the Pause row with the rest.

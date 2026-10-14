@@ -429,4 +429,66 @@ public class SupportedLinksTest {
         assertTrue(summary, summary.contains("Selecting the addresses sends their links here instead"));
         assertTrue(summary, summary.contains("Your other link settings stay as they are"));
     }
+
+    /**
+     * Beside a Meta-signed Instagram, the Links page ends with a line saying Instagram won't open
+     * posts here (#8). With no Instagram, or one carrying this build's key, the page is as before.
+     */
+    @Test
+    public void aMetaSignedInstagramGetsALineOnTheLinksPage() throws Exception {
+        String title = "Instagram won't open posts here";
+        answer = state(true, hosts(NONE, NONE));
+        signWith(RuntimeEnvironment.getApplication().getPackageName(), new android.content.pm.Signature("308201a0b1c2d3"));
+        assertFalse("the line showed with no Instagram", hasTitle(show(true).findPreference(KEY).getParent(), title));
+        controller.close();
+
+        signWith("com.instagram.android", new android.content.pm.Signature("308201a0b1c2d3"));
+        assertFalse("the line showed beside a same-key Instagram", hasTitle(show(true).findPreference(KEY).getParent(), title));
+        controller.close();
+
+        java.lang.reflect.Field encoded = app.morphe.extension.hushthreads.misc.ThreadsSignature.class
+                .getDeclaredField("INSTAGRAM_CERTIFICATE");
+        encoded.setAccessible(true);
+        signWith("com.instagram.android", new android.content.pm.Signature(
+                android.util.Base64.decode((String) encoded.get(null), android.util.Base64.DEFAULT)));
+        PreferenceGroup links = show(true).findPreference(KEY).getParent();
+        Preference line = links.getPreference(links.getPreferenceCount() - 1);
+        assertEquals(title, String.valueOf(line.getTitle()));
+        assertFalse(line.isSelectable());
+        String summary = String.valueOf(line.getSummary());
+        assertTrue(summary, summary.contains("only opens Threads posts and profiles in a Threads signed by Meta"));
+    }
+
+    private static boolean hasTitle(PreferenceGroup group, String title) {
+        for (int i = 0; i < group.getPreferenceCount(); i++) {
+            if (title.equals(String.valueOf(group.getPreference(i).getTitle()))) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Installs [packageName], or for this app its own installed info, with [certificate] as its
+     * current signer, the way PackageManager fills it in for GET_SIGNING_CERTIFICATES.
+     */
+    private static void signWith(String packageName, android.content.pm.Signature certificate) throws Exception {
+        android.content.pm.PackageManager packages = RuntimeEnvironment.getApplication().getPackageManager();
+        android.content.pm.PackageInfo info;
+        try {
+            // Its components too, so replacing the info leaves the app's activities and providers declared.
+            info = packages.getPackageInfo(packageName, android.content.pm.PackageManager.GET_ACTIVITIES
+                    | android.content.pm.PackageManager.GET_SERVICES | android.content.pm.PackageManager.GET_PROVIDERS
+                    | android.content.pm.PackageManager.GET_RECEIVERS | android.content.pm.PackageManager.GET_META_DATA);
+        } catch (android.content.pm.PackageManager.NameNotFoundException missing) {
+            info = new android.content.pm.PackageInfo();
+            info.packageName = packageName;
+            info.applicationInfo = new android.content.pm.ApplicationInfo();
+            info.applicationInfo.packageName = packageName;
+            info.applicationInfo.uid = 12345;
+        }
+        android.content.pm.SigningInfo signing = new android.content.pm.SigningInfo();
+        ((org.robolectric.shadows.ShadowSigningInfo) Shadow.extract(signing))
+                .setSignatures(new android.content.pm.Signature[]{certificate});
+        info.signingInfo = signing;
+        shadowOf(packages).installPackage(info);
+    }
 }

@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(580);
+        Map<String, String> table = new HashMap<>(584);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -305,6 +305,8 @@ public final class L10nTranslations {
     private static void fillDe2(Map<String, String> table) {
         table.put("Importing settings",
                 "Einstellungen werden importiert");
+        table.put("Instagram won't open posts here",
+                "Instagram \u00f6ffnet hier keine Beitr\u00e4ge");
         table.put("It targets Threads %1$s.",
                 "Es ist f\u00fcr Threads %1$s gedacht.");
         table.put("Joining the picture and sound",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Speicherordner");
         table.put("Save full report",
                 "Vollst\u00e4ndigen Bericht speichern");
-        table.put("Save photo",
-                "Foto speichern");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Save photo",
+                "Foto speichern");
         table.put("Save photos and videos",
                 "Fotos und Videos speichern");
         table.put("Save the full report in Download/Morphe.",
@@ -544,11 +546,11 @@ public final class L10nTranslations {
                 "Die App mit der letzten Einstellungsdatei hat noch immer nicht geantwortet. Versuche es sp\u00e4ter noch einmal.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Die App, in der die Einstellungsdatei liegt, braucht zu lange, deshalb wartet HushThreads nicht mehr. Sie kann das Speichern noch abschlie\u00dfen, also pr\u00fcfe die Datei, bevor du dich darauf verl\u00e4sst.");
-        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
-                "Der Diagnosebericht lie\u00df sich noch nicht speichern. Versuche es gleich noch einmal.");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
+                "Der Diagnosebericht lie\u00df sich noch nicht speichern. Versuche es gleich noch einmal.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Der Diagnosebericht lie\u00df sich nicht speichern. Versuche es noch einmal.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
@@ -631,6 +633,8 @@ public final class L10nTranslations {
                 "Du hast die neueste Version von HushThreads.");
         table.put("You paused HushThreads.",
                 "Du hast HushThreads pausiert.");
+        table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.",
+                "Dein Instagram ist von Meta signiert und \u00f6ffnet Threads-Beitr\u00e4ge und -Profile nur in einem von Meta signierten Threads. Tippst du in Instagram auf einen, zeigt es einen Fehler, dass die Website nicht geladen werden konnte. Beitr\u00e4ge, die du in Threads selbst \u00f6ffnest, funktionieren wie gewohnt.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Deine Auswahl bleibt gespeichert. Tippe auf Fortsetzen und starte Threads dann neu.");
         table.put("Your controls are active.",
@@ -652,7 +656,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(580);
+        Map<String, String> table = new HashMap<>(584);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -910,6 +914,8 @@ public final class L10nTranslations {
     private static void fillEs2(Map<String, String> table) {
         table.put("Importing settings",
                 "Importando la configuraci\u00f3n");
+        table.put("Instagram won't open posts here",
+                "Instagram no abre publicaciones aqu\u00ed");
         table.put("It targets Threads %1$s.",
                 "Est\u00e1 pensado para Threads %1$s.");
         table.put("Joining the picture and sound",
@@ -1026,11 +1032,11 @@ public final class L10nTranslations {
                 "Carpeta de guardado");
         table.put("Save full report",
                 "Guardar informe completo");
-        table.put("Save photo",
-                "Guardar foto");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Save photo",
+                "Guardar foto");
         table.put("Save photos and videos",
                 "Guardar fotos y videos");
         table.put("Save the full report in Download/Morphe.",
@@ -1149,11 +1155,11 @@ public final class L10nTranslations {
                 "La app del \u00faltimo archivo de configuraci\u00f3n a\u00fan no ha respondido. Int\u00e9ntalo m\u00e1s tarde.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "La app que guarda el archivo de configuraci\u00f3n tarda demasiado, as\u00ed que HushThreads dej\u00f3 de esperar. Esa app a\u00fan puede terminar de guardarlo, as\u00ed que revisa el archivo antes de confiar en \u00e9l.");
-        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
-                "Todav\u00eda no se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo en un momento.");
     }
 
     private static void fillEs4(Map<String, String> table) {
+        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
+                "Todav\u00eda no se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo en un momento.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "No se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
@@ -1236,6 +1242,8 @@ public final class L10nTranslations {
                 "Tienes la versi\u00f3n m\u00e1s reciente de HushThreads.");
         table.put("You paused HushThreads.",
                 "Pausaste HushThreads.");
+        table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.",
+                "Tu Instagram est\u00e1 firmado por Meta y solo abre publicaciones y perfiles de Threads en un Threads firmado por Meta. Si tocas uno en Instagram, muestra un error que dice que no pudo cargar el sitio web. Las publicaciones que abres en el propio Threads funcionan como siempre.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Tus preferencias est\u00e1n guardadas. Toca Reanudar y luego reinicia Threads.");
         table.put("Your controls are active.",
@@ -1257,7 +1265,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(580);
+        Map<String, String> table = new HashMap<>(584);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1515,6 +1523,8 @@ public final class L10nTranslations {
     private static void fillIn2(Map<String, String> table) {
         table.put("Importing settings",
                 "Mengimpor pengaturan");
+        table.put("Instagram won't open posts here",
+                "Instagram tidak membuka postingan di sini");
         table.put("It targets Threads %1$s.",
                 "Rilis ini ditujukan untuk Threads %1$s.");
         table.put("Joining the picture and sound",
@@ -1631,11 +1641,11 @@ public final class L10nTranslations {
                 "Folder simpan");
         table.put("Save full report",
                 "Simpan laporan lengkap");
-        table.put("Save photo",
-                "Simpan foto");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Save photo",
+                "Simpan foto");
         table.put("Save photos and videos",
                 "Simpan foto dan video");
         table.put("Save the full report in Download/Morphe.",
@@ -1754,11 +1764,11 @@ public final class L10nTranslations {
                 "Aplikasi yang menyimpan file pengaturan terakhir masih belum merespons. Coba lagi nanti.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushThreads berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.");
-        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
-                "Laporan diagnostik belum dapat disimpan. Coba lagi dalam beberapa saat.");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
+                "Laporan diagnostik belum dapat disimpan. Coba lagi dalam beberapa saat.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Laporan diagnostik tidak dapat disimpan. Coba lagi.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
@@ -1841,6 +1851,8 @@ public final class L10nTranslations {
                 "Anda sudah memakai rilis HushThreads terbaru.");
         table.put("You paused HushThreads.",
                 "Anda menjeda HushThreads.");
+        table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.",
+                "Instagram Anda ditandatangani oleh Meta, dan hanya membuka postingan dan profil Threads di Threads yang ditandatangani oleh Meta. Mengetuknya di Instagram menampilkan galat bahwa situs web tidak dapat dimuat. Postingan yang Anda buka di Threads sendiri berfungsi seperti biasa.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Threads.");
         table.put("Your controls are active.",
@@ -1862,7 +1874,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(580);
+        Map<String, String> table = new HashMap<>(584);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2120,6 +2132,8 @@ public final class L10nTranslations {
     private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Importing settings",
                 "Importando as configura\u00e7\u00f5es");
+        table.put("Instagram won't open posts here",
+                "O Instagram n\u00e3o abre publica\u00e7\u00f5es aqui");
         table.put("It targets Threads %1$s.",
                 "Compat\u00edvel com o Threads %1$s.");
         table.put("Joining the picture and sound",
@@ -2236,11 +2250,11 @@ public final class L10nTranslations {
                 "Pasta de destino");
         table.put("Save full report",
                 "Salvar relat\u00f3rio completo");
-        table.put("Save photo",
-                "Salvar foto");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Save photo",
+                "Salvar foto");
         table.put("Save photos and videos",
                 "Salvar fotos e v\u00eddeos");
         table.put("Save the full report in Download/Morphe.",
@@ -2359,11 +2373,11 @@ public final class L10nTranslations {
                 "O app do \u00faltimo arquivo de configura\u00e7\u00f5es ainda n\u00e3o respondeu. Tente de novo mais tarde.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "O app que guarda o arquivo de configura\u00e7\u00f5es est\u00e1 demorando demais, ent\u00e3o o HushThreads parou de esperar. Esse app ainda pode terminar de salv\u00e1-lo, ent\u00e3o confira o arquivo antes de confiar nele.");
-        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
-                "O relat\u00f3rio de diagn\u00f3stico ainda n\u00e3o p\u00f4de ser salvo. Tente de novo em instantes.");
     }
 
     private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
+                "O relat\u00f3rio de diagn\u00f3stico ainda n\u00e3o p\u00f4de ser salvo. Tente de novo em instantes.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "N\u00e3o foi poss\u00edvel salvar o relat\u00f3rio de diagn\u00f3stico. Tente de novo.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
@@ -2446,6 +2460,8 @@ public final class L10nTranslations {
                 "Voc\u00ea j\u00e1 est\u00e1 usando a vers\u00e3o mais nova do HushThreads.");
         table.put("You paused HushThreads.",
                 "Voc\u00ea pausou o HushThreads.");
+        table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.",
+                "Seu Instagram \u00e9 assinado pela Meta e s\u00f3 abre publica\u00e7\u00f5es e perfis do Threads em um Threads assinado pela Meta. Tocar em um deles no Instagram mostra um erro dizendo que n\u00e3o foi poss\u00edvel carregar o site. As publica\u00e7\u00f5es que voc\u00ea abre no pr\u00f3prio Threads funcionam normalmente.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Suas escolhas est\u00e3o salvas. Toque em Retomar e depois reinicie o Threads.");
         table.put("Your controls are active.",
@@ -2467,7 +2483,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(580);
+        Map<String, String> table = new HashMap<>(584);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2725,6 +2741,8 @@ public final class L10nTranslations {
     private static void fillTr2(Map<String, String> table) {
         table.put("Importing settings",
                 "Ayarlar i\u00e7e aktar\u0131l\u0131yor");
+        table.put("Instagram won't open posts here",
+                "Instagram burada g\u00f6nderi a\u00e7maz");
         table.put("It targets Threads %1$s.",
                 "Threads %1$s i\u00e7in haz\u0131rland\u0131.");
         table.put("Joining the picture and sound",
@@ -2841,11 +2859,11 @@ public final class L10nTranslations {
                 "Kay\u0131t klas\u00f6r\u00fc");
         table.put("Save full report",
                 "Tam raporu kaydet");
-        table.put("Save photo",
-                "Foto\u011fraf\u0131 kaydet");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Save photo",
+                "Foto\u011fraf\u0131 kaydet");
         table.put("Save photos and videos",
                 "Foto\u011fraflar\u0131 ve videolar\u0131 kaydet");
         table.put("Save the full report in Download/Morphe.",
@@ -2964,11 +2982,11 @@ public final class L10nTranslations {
                 "Son ayar dosyas\u0131n\u0131 tutan uygulama h\u00e2l\u00e2 yan\u0131t vermedi. Daha sonra tekrar dene.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Ayar dosyas\u0131n\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushThreads beklemeyi b\u0131rakt\u0131. O uygulama kaydetmeyi yine de bitirebilir, bu y\u00fczden dosyaya g\u00fcvenmeden \u00f6nce onu kontrol et.");
-        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
-                "Tan\u0131lama raporu hen\u00fcz kaydedilemedi. Birazdan tekrar dene.");
     }
 
     private static void fillTr4(Map<String, String> table) {
+        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
+                "Tan\u0131lama raporu hen\u00fcz kaydedilemedi. Birazdan tekrar dene.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Tan\u0131lama raporu kaydedilemedi. Tekrar dene.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
@@ -3051,6 +3069,8 @@ public final class L10nTranslations {
                 "En yeni HushThreads s\u00fcr\u00fcm\u00fcn\u00fc kullan\u0131yorsun.");
         table.put("You paused HushThreads.",
                 "HushThreads'u duraklatt\u0131n.");
+        table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.",
+                "Instagram'\u0131n Meta taraf\u0131ndan imzal\u0131 ve Threads g\u00f6nderilerini ve profillerini yaln\u0131zca Meta taraf\u0131ndan imzalanm\u0131\u015f bir Threads'te a\u00e7ar. Instagram'da birine dokunmak, web sitesinin y\u00fcklenemedi\u011fini s\u00f6yleyen bir hata g\u00f6sterir. Threads'in kendisinde a\u00e7t\u0131\u011f\u0131n g\u00f6nderiler her zamanki gibi \u00e7al\u0131\u015f\u0131r.");
         table.put("Your choices are saved. Tap Resume, then restart Threads.",
                 "Tercihleriniz kay\u0131tl\u0131. Devam et'e dokunun, sonra Threads'i yeniden ba\u015flat\u0131n.");
         table.put("Your controls are active.",

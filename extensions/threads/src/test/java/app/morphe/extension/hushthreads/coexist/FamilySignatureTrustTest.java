@@ -614,4 +614,45 @@ public class FamilySignatureTrustTest {
             assertNull(ThreadsSignature.originalSigners(other));
         }
     }
+
+    /**
+     * The Links page's line about Instagram (#8) shows only beside a Meta-signed Instagram, and only
+     * on a re-signed build: Instagram's own launcher refuses this build then, whatever HushThreads does.
+     */
+    @Test
+    public void metaInstagramRefusesOnlyAReSignedBuild() throws Exception {
+        assertEquals(INSTAGRAM, FamilySignatureTrust.INSTAGRAM);
+        assertTrue(FamilySignatureTrust.META_INSTAGRAM_DIGESTS.contains(INSTAGRAM_SHA256));
+        Signature metaInstagram = certificate("INSTAGRAM_CERTIFICATE");
+        assertEquals(INSTAGRAM_SHA256, sha256(metaInstagram));
+
+        // No Instagram at all, then one the user patched with this build's key: nothing refuses.
+        assertFalse(FamilySignatureTrust.metaInstagramRefusesThisBuild(context));
+        install(INSTAGRAM, CALLER_UID, OUR_KEY);
+        assertFalse(FamilySignatureTrust.metaInstagramRefusesThisBuild(context));
+        install(INSTAGRAM, CALLER_UID, OTHER_KEY);
+        assertFalse(FamilySignatureTrust.metaInstagramRefusesThisBuild(context));
+
+        install(INSTAGRAM, CALLER_UID, metaInstagram);
+        assertTrue(FamilySignatureTrust.metaInstagramRefusesThisBuild(context));
+        // A build that still carries Meta's key, as a Root Mount install does, is one Instagram opens.
+        install(context.getPackageName(), Process.myUid(), certificate("CERTIFICATE"));
+        assertFalse(FamilySignatureTrust.metaInstagramRefusesThisBuild(context));
+        assertNull("the check filled the caller hook's cache", FamilySignatureTrust.ownSigners);
+
+        assertFalse(FamilySignatureTrust.metaInstagramRefusesThisBuild(null));
+        assertFalse(FamilySignatureTrust.metaInstagramRefusesThisBuild(new ContextWrapper(context) {
+            @Override
+            public PackageManager getPackageManager() {
+                throw new SecurityException("package manager unavailable");
+            }
+        }));
+    }
+
+    /** One of ThreadsSignature's Meta certificates, by its field name. */
+    private static Signature certificate(String field) throws Exception {
+        java.lang.reflect.Field encoded = ThreadsSignature.class.getDeclaredField(field);
+        encoded.setAccessible(true);
+        return new Signature(android.util.Base64.decode((String) encoded.get(null), android.util.Base64.DEFAULT));
+    }
 }

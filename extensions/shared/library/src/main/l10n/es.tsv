@@ -316,3 +316,6 @@ Changed %1$d settings	Se cambiaron %1$d ajustes
 # Report a problem: the main page row and its summary. A tap opens a new GitHub bug report in the browser.
 Report a problem	Informar de un problema
 Opens a GitHub report with your versions and settings filled in. Add what happened.	Abre un informe en GitHub con tus versiones y ajustes ya puestos. Añade qué pasó.
+# The Links page's line beside a Meta-signed Instagram (#8): Instagram's own launcher won't hand a post or profile to a patched Threads, and the error is Instagram's.
+Instagram won't open posts here	Instagram no abre publicaciones aquí
+Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.	Tu Instagram está firmado por Meta y solo abre publicaciones y perfiles de Threads en un Threads firmado por Meta. Si tocas uno en Instagram, muestra un error que dice que no pudo cargar el sitio web. Las publicaciones que abres en el propio Threads funcionan como siempre.

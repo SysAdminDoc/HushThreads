@@ -87,6 +87,18 @@ public final class FamilySignatureTrust {
             "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
     )));
 
+    /** Instagram's package name, the one {@link #metaInstagramRefusesThisBuild} reads. */
+    static final String INSTAGRAM = "com.instagram.android";
+
+    /**
+     * The SHA-256 of every certificate Meta signs Instagram with: the original Instagram Inc. one,
+     * which Android reads up to 12L, and the newer Meta Platforms one of its v3.1 lineage, read from 13.
+     */
+    static final Set<String> META_INSTAGRAM_DIGESTS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "5f3e50f435583c9ae626302a71f7340044087a7e2c60adacfc254205a993e305",
+            "3a10c50c18ba937506c2875e9047be74f8fd8b86fae2ff9feaa50a81fcb4c014"
+    )));
+
     /**
      * This build's own current signers, read on the first family caller or provider check that finds any. Android
      * can't change a running app's certificate without starting a new process, so every later check
@@ -196,6 +208,30 @@ public final class FamilySignatureTrust {
             return true;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.RESTORE_TRUST, "shared sign-in provider", failure);
+            return false;
+        }
+    }
+
+    /**
+     * Whether a Meta-signed Instagram sits beside this re-signed build, so Instagram won't hand it
+     * posts or profiles (#8). Instagram starts Threads through Meta's family launcher, which keeps a
+     * target only when its installed certificate is Meta's, and reads that from PackageManager, so
+     * nothing in this build can answer it. False when Instagram isn't installed, when this build still
+     * carries Meta's key (a Root Mount install), when Instagram carries any other key, and on any error.
+     */
+    public static boolean metaInstagramRefusesThisBuild(@Nullable Context context) {
+        if (context == null) return false;
+        try {
+            PackageManager packages = context.getPackageManager();
+            if (packages == null) return false;
+            Set<String> ours = currentSigners(packages, context.getPackageName());
+            if (ours.isEmpty() || !Collections.disjoint(ours, META_SIGNER_DIGESTS)) return false;
+            return !Collections.disjoint(currentSigners(packages, INSTAGRAM), META_INSTAGRAM_DIGESTS);
+        } catch (PackageManager.NameNotFoundException missing) {
+            return false;
+        } catch (Exception failure) {
+            // Only a settings line depends on this, so an unreadable signer leaves it out.
+            Logger.printInfo(() -> "Could not read Instagram's signer", failure);
             return false;
         }
     }
