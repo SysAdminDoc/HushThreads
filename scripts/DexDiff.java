@@ -3559,7 +3559,179 @@ public class DexDiff {
         requireFeature(layout.addresses.get(4) + ((OffsetInstruction) body.get(4)).getCodeOffset() == layout.addresses.get(6),
                 "a link that stays doesn't fall through to the launcher");
         featureBody(stock, actual, 6, Map.of(), OPEN_LINK);
-        featureHostCalls(patched, OPEN_LINK, Map.of(featureSig(stock), 1));
+        Map<String, Integer> expected = new HashMap<>(Map.of(featureSig(stock), 1));
+        BrowserSites direct = featureBrowserSites(clean, stock);
+        for (BrowserSite site : direct.hooks()) {
+            Method changed = featureMethod(patched, featureSig(site.stock()));
+            List<Instruction> now = instructions(changed);
+            featureBrowserGuard(site, changed, now);
+            if (site.entry()) featureBody(site.stock(), changed, 6, Map.of(), OPEN_LINK);
+            else featureBody(site.stock(), changed, 0, Map.of(), OPEN_LINK, null, Map.of(site.at(), (b, n) -> 6));
+            expected.put(featureSig(site.stock()), 1);
+        }
+        for (Method kept : direct.kept()) featureBody(kept, featureMethod(patched, featureSig(kept)), 0, Map.of(), "");
+        featureHostCalls(patched, OPEN_LINK, expected);
+    }
+
+    private record BrowserSite(Method stock, int at, int done, int context, int url, boolean entry) {}
+    private record BrowserSites(List<BrowserSite> hooks, List<Method> kept) {}
+    private static final String BROWSER_FACTORY_NOTE = "BrowserLiteIntent.OPEN_WITH_URL";
+    private static final String BROWSER_AD_NOTE = "AdClickHandler.openWebLink missing webUri for AD_DESTINATION_WEB";
+    private static final String BROWSER_IMMERSIVE_NOTE = "com.instagram.barcelona.inappbrowser.compose.ImmersiveBrowserScreen (";
+    private static final String BROWSER_STATE = "Landroidx/compose/runtime/MutableState;";
+
+    /** Independently identify the current direct callers and their success exits from the clean APK. */
+    private static BrowserSites featureBrowserSites(Map<String, List<Method>> clean, Method launcher) {
+        Method factory = featureTarget(clean, m -> AccessFlags.STATIC.isSet(m.getAccessFlags()) && m.getReturnType().equals("Landroid/content/Intent;")
+                && m.getParameterTypes().size() == 9 && holds(m, "TrackingInfo.ARG_MODULE_NAME", BROWSER_FACTORY_NOTE), "browser Intent factory");
+        String target = featureSig(factory);
+        FeatureFlow factoryFlow = new FeatureFlow(factory);
+        List<Instruction> made = instructions(factory);
+        int parser = featureOne(java.util.stream.IntStream.range(0, made.size()).boxed().filter(n -> {
+            if (!isStaticInvoke(made.get(n).getOpcode()) || !(((ReferenceInstruction) made.get(n)).getReference() instanceof MethodReference p)) return false;
+            return p.getReturnType().equals("Landroid/net/Uri;") && p.getParameterTypes().equals(List.of("Ljava/lang/String;"));
+        }).toList(), "browser factory URI parser");
+        requireFeature(factoryFlow.parameterOnEveryPath(parser, invokeRegisters(made.get(parser))[0], browserParameter(factory, 5)), "browser factory parses the wrong URL parameter");
+        List<Method> callers = clean.values().stream().flatMap(List::stream).filter(m -> !callSites(instructions(m), target).isEmpty()).toList();
+        requireFeature(callers.size() == 5 && callers.stream().mapToInt(m -> callSites(instructions(m), target).size()).sum() == 6,
+                "browser factory caller census changed");
+        requireFeature(callSites(instructions(launcher), target).size() == 2, "launcher no longer owns both browser modes");
+        Method lead = featureOne(callers.stream().filter(m -> AccessFlags.STATIC.isSet(m.getAccessFlags()) && m.getParameterTypes().size() == 4
+                && m.getReturnType().equals("V") && holds(m, "android.intent.action.VIEW")).toList(), "lead/policy browser");
+        Method ad = featureOne(callers.stream().filter(m -> !AccessFlags.STATIC.isSet(m.getAccessFlags()) && m.getReturnType().equals("V")
+                && m.getParameterTypes().size() == 8).toList(), "ad browser");
+        Method media = featureOne(callers.stream().filter(m -> m.getName().equals("invokeSuspend") && m.getReturnType().equals("Ljava/lang/Object;")
+                && holds(m, "AD_DESTINATION_WEB")).toList(), "media ad browser");
+        Method immersive = featureOne(callers.stream().filter(m -> holdsNote(m, BROWSER_IMMERSIVE_NOTE)).toList(), "immersive browser");
+        requireFeature(new HashSet<>(callers).equals(Set.of(launcher, lead, ad, media, immersive)), "unexpected direct browser caller");
+        Method request = featureTarget(clean, m -> holds(m, BROWSER_AD_NOTE), "ad web request");
+        List<Instruction> requested = instructions(request);
+        int requestAt = featureOne(callSites(requested, featureSig(launcher)), "ad web launcher request");
+        int requestUrl = invokeRegisters(requested.get(requestAt))[featureLauncherLink(launcher, browserParameter(launcher, 0)) - browserParameter(launcher, 0)];
+        int webRead = browserOrigin(new FeatureFlow(request), requestAt, requestUrl);
+        requireFeature(webRead >= 0 && requested.get(webRead).getOpcode() == Opcode.IGET_OBJECT, "ad web request no longer reads a CTA field");
+        String webField = reference(requested.get(webRead));
+        List<BrowserSite> hooks = new ArrayList<>();
+        int leadAt = featureOne(callSites(instructions(lead), target), "lead/policy factory call");
+        int[] leadArgs = invokeRegisters(instructions(lead).get(leadAt));
+        FeatureFlow leadFlow = new FeatureFlow(lead);
+        requireFeature(leadFlow.parameterOnEveryPath(leadAt, leadArgs[0], browserParameter(lead, 0))
+                && leadFlow.parameterOnEveryPath(leadAt, leadArgs[5], browserParameter(lead, 3))
+                && !callSites(instructions(lead), "Landroid/content/Context;->startActivity(Landroid/content/Intent;)V").isEmpty(), "lead/policy URL or fallback changed");
+        hooks.add(new BrowserSite(lead, 0, featureOne(java.util.stream.IntStream.range(0, instructions(lead).size()).boxed()
+                .filter(n -> instructions(lead).get(n).getOpcode() == Opcode.RETURN_VOID).toList(), "lead/policy return"), browserParameter(lead, 0), browserParameter(lead, 3), true));
+        for (Method m : List.of(ad, media)) {
+            List<Instruction> body = instructions(m);
+            FeatureFlow flow = new FeatureFlow(m);
+            int at = featureOne(callSites(body, target), "CTA factory call");
+            int[] args = invokeRegisters(body.get(at));
+            int url = browserOrigin(flow, at, args[5]);
+            requireFeature(url >= 0 && body.get(url).getOpcode() == Opcode.IGET_OBJECT && reference(body.get(url)).equals(webField), "browser CTA uses the wrong web field");
+            FieldReference field = (FieldReference) ((ReferenceInstruction) body.get(url)).getReference();
+            requireFeature(field.getType().equals("Ljava/lang/String;"), "browser CTA URL is not a string");
+            // The destination check reads the same call to action the link comes from.
+            int cta = browserOrigin(flow, url, ((TwoRegisterInstruction) body.get(url)).getRegisterB());
+            int guard = featureOne(java.util.stream.IntStream.range(3, at).boxed().filter(n -> body.get(n).getOpcode() == Opcode.IF_NE
+                    && body.get(n - 1).getOpcode() == Opcode.SGET_OBJECT && body.get(n - 2).getOpcode() == Opcode.MOVE_RESULT_OBJECT
+                    && body.get(n - 3) instanceof ReferenceInstruction r && r.getReference() instanceof MethodReference getter
+                    && getter.getDefiningClass().equals(field.getDefiningClass()) && getter.getParameterTypes().isEmpty()
+                    && ((FieldReference) ((ReferenceInstruction) body.get(n - 1)).getReference()).getType().equals(getter.getReturnType())
+                    && browserOrigin(flow, n - 3, invokeRegisters(body.get(n - 3))[0]) == cta).toList(), "browser web CTA guard");
+            requireFeature(browserDominates(flow, guard, at), "browser skips the web CTA guard");
+            int failed = browserDestination(flow.layout, guard), done;
+            requireFeature(m.getImplementation().getTryBlocks().isEmpty(), "CTA hook has an unproved handler");
+            if (m == ad) {
+                requireFeature(flow.parameterOnEveryPath(at, args[0], browserParameter(m, 0)), "ad browser uses the wrong Context");
+                // A link that went out ends the way an ad with no web link does, at that branch's return.
+                done = failed;
+                requireFeature(body.get(done).getOpcode() == Opcode.RETURN_VOID, "ad browser's no-web completion is not a plain return");
+            } else {
+                int self = browserParameter(m, 0) - 1;
+                int context = browserOrigin(flow, at, args[0]);
+                requireFeature(context >= 0 && body.get(context).getOpcode() == Opcode.IGET_OBJECT
+                        && ((FieldReference) ((ReferenceInstruction) body.get(context)).getReference()).getType().equals("Landroid/content/Context;")
+                        && flow.parameterOnEveryPath(context, ((TwoRegisterInstruction) body.get(context)).getRegisterB(), self), "media browser uses the wrong Context");
+                done = featureOne(java.util.stream.IntStream.range(0, body.size() - 4).boxed().filter(n -> body.get(n).getOpcode() == Opcode.CONST_4
+                        && ((WideLiteralInstruction) body.get(n)).getWideLiteral() == 1 && body.get(n + 1).getOpcode() == Opcode.MOVE_OBJECT_FROM16
+                        && body.get(n + 2) instanceof ReferenceInstruction r && r.getReference() instanceof MethodReference setter
+                        && setter.getParameterTypes().equals(List.of(BROWSER_STATE, "Z")) && body.get(n + 4).getOpcode() == Opcode.RETURN_OBJECT).toList(), "media opened=true completion");
+                int saved = ((TwoRegisterInstruction) body.get(done + 1)).getRegisterB();
+                int state = browserOrigin(flow, at, saved);
+                requireFeature(state >= 0 && state == browserOrigin(flow, done + 1, saved)
+                        && body.get(state).getOpcode() == Opcode.IGET_OBJECT
+                        && ((FieldReference) ((ReferenceInstruction) body.get(state)).getReference()).getType().equals(BROWSER_STATE)
+                        && flow.parameterOnEveryPath(state, ((TwoRegisterInstruction) body.get(state)).getRegisterB(), self), "media completion state is not initialized before the handoff");
+                requireFeature(body.get(failed).getOpcode() == Opcode.CONST_4 && ((WideLiteralInstruction) body.get(failed)).getWideLiteral() == 0
+                        && registerA(body.get(failed)) == registerA(body.get(done)) && browserDestination(flow.layout, failed + 1) == done + 1, "media no-open tail changed");
+            }
+            hooks.add(new BrowserSite(m, at, done, args[0], args[5], false));
+        }
+        return new BrowserSites(hooks, List.of(factory, immersive, request));
+    }
+
+    private static void featureBrowserGuard(BrowserSite site, Method changed, List<Instruction> body) {
+        int at = site.at();
+        requireFeature(body.size() > at + 6 && body.subList(at, at + 6).stream().map(Instruction::getOpcode).toList().equals(List.of(
+                Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_FROM16, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT,
+                Opcode.IF_EQZ, site.entry() ? Opcode.RETURN_VOID : Opcode.GOTO_16)), "direct browser hook is missing");
+        TwoRegisterInstruction context = (TwoRegisterInstruction) body.get(at), url = (TwoRegisterInstruction) body.get(at + 1);
+        int result = registerA(body.get(at + 3));
+        requireFeature(context.getRegisterB() == site.context() && url.getRegisterB() == site.url()
+                && context.getRegisterA() != url.getRegisterA() && result == context.getRegisterA()
+                && registerA(body.get(at + 4)) == result && reference(body.get(at + 2)).equals(OPEN_LINK)
+                && Arrays.equals(invokeRegisters(body.get(at + 2)), new int[]{context.getRegisterA(), url.getRegisterA()}), "direct browser arguments or answer are wrong");
+        FeatureFlow old = new FeatureFlow(site.stock());
+        int locals = browserParameter(site.stock(), 0) - (AccessFlags.STATIC.isSet(site.stock().getAccessFlags()) ? 0 : 1);
+        for (int scratch : new int[]{context.getRegisterA(), url.getRegisterA()}) requireFeature(scratch < locals && old.readsFrom(at, scratch).isEmpty()
+                && old.readsFrom(site.done(), scratch).isEmpty(), "direct browser hook clobbers a live local");
+        Layout layout = new Layout(changed.getImplementation());
+        requireFeature(browserDestination(layout, at + 4) == at + 6, "declined browser handoff bypasses stock code");
+        if (!site.entry()) requireFeature(browserDestination(layout, at + 5) == site.done() + 6, "successful browser handoff opens twice or uses the wrong completion");
+    }
+
+    private static int browserParameter(Method method, int parameter) {
+        int first = method.getImplementation().getRegisterCount() - method.getParameterTypes().stream().mapToInt(DexDiff::slots).sum();
+        return first + method.getParameterTypes().subList(0, parameter).stream().mapToInt(DexDiff::slots).sum();
+    }
+
+    private static int browserDestination(Layout layout, int at) {
+        Instruction instruction = layout.instructions.get(at);
+        requireFeature(instruction instanceof OffsetInstruction, "browser completion is not a branch");
+        int target = layout.addresses.indexOf(layout.addresses.get(at) + ((OffsetInstruction) instruction).getCodeOffset());
+        requireFeature(target >= 0, "browser branch misses an instruction");
+        return target;
+    }
+
+    private static int browserOrigin(FeatureFlow flow, int at, int register) {
+        Set<Integer> sources = browserOrigins(flow, at, register, new HashSet<>());
+        requireFeature(sources.size() == 1, "browser value has disagreeing origins");
+        return sources.iterator().next();
+    }
+
+    private static Set<Integer> browserOrigins(FeatureFlow flow, int at, int register, Set<List<Integer>> seen) {
+        requireFeature(seen.add(List.of(at, register)), "cyclic browser value");
+        Set<Integer> result = new HashSet<>();
+        for (int n : flow.reaching(at, register)) {
+            if (n < 0) { result.add(-1); continue; }
+            Instruction i = flow.layout.instructions.get(n);
+            requireFeature(registerA(i) == register, "browser value has a wide-half clobber");
+            if (i.getOpcode() == Opcode.CHECK_CAST || i.getOpcode() == Opcode.MOVE_OBJECT || i.getOpcode() == Opcode.MOVE_OBJECT_FROM16 || i.getOpcode() == Opcode.MOVE_OBJECT_16)
+                result.addAll(browserOrigins(flow, n, i instanceof TwoRegisterInstruction move ? move.getRegisterB() : register, new HashSet<>(seen)));
+            else result.add(n);
+        }
+        return result;
+    }
+
+    private static boolean browserDominates(FeatureFlow flow, int guard, int target) {
+        Set<Integer> seen = new HashSet<>();
+        Deque<Integer> work = new ArrayDeque<>(List.of(0));
+        while (!work.isEmpty()) {
+            int at = work.removeFirst();
+            if (at == guard || !seen.add(at)) continue;
+            if (at == target) return false;
+            work.addAll(flow.normal.get(at)); work.addAll(flow.exceptional.get(at));
+        }
+        return true;
     }
 
     /** The parameter register of the string the launcher parses with java.net.URI, through the moves in front of it. */
@@ -4613,7 +4785,12 @@ public class DexDiff {
                 break;
             case "openLinksExternally":
                 featureHostCalls(patched, OPEN_LINK, Map.of());
-                featurePreserveTargets(clean, patched, m -> holds(m, LAUNCHER_MESSAGE));
+                Method browserLauncher = featureTarget(clean, m -> holds(m, LAUNCHER_MESSAGE), "omitted browser launcher");
+                BrowserSites browsers = featureBrowserSites(clean, browserLauncher);
+                Set<String> browserMethods = new HashSet<>(List.of(featureSig(browserLauncher)));
+                for (BrowserSite site : browsers.hooks()) browserMethods.add(featureSig(site.stock()));
+                for (Method kept : browsers.kept()) browserMethods.add(featureSig(kept));
+                featurePreserveTargets(clean, patched, m -> browserMethods.contains(featureSig(m)));
                 break;
             case "disableAnalytics":
                 featureHostCalls(patched, ENDPOINT, Map.of());

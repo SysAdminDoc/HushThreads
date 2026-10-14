@@ -745,6 +745,21 @@ try {
         $structural = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
+    # Direct ad, media and lead/policy handoffs share the cleaner, while the factory and immersive
+    # browser retain their stock code. Every corruption below remains structurally valid.
+    $browserDirectFaults = @('lead-missing', 'lead-url', 'lead-double-open', 'ad-missing', 'ad-url', 'ad-context', 'ad-double-open', 'ad-return', 'ad-bypass',
+        'media-missing', 'media-url', 'media-context', 'media-double-open', 'media-false', 'media-uninitialized', 'media-live', 'media-bypass', 'factory-hook', 'immersive-hook', 'omitted-body')
+    foreach ($fault in $browserDirectFaults) {
+        $case = "features-bad-browser-direct-$fault"
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $selection = if ($fault -ceq 'omitted-body') { 'none' } else { 'openLinksExternally' }
+        $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $selection
+        $findings = Get-Findings $checked
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+            @($findings.Categories | Where-Object { $_ -cne 'contract' }).Count -eq 0) "$fault was not rejected solely by a browser contract."
+        $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
     # 451's network-only fetch shares the label, and its quick coroutine copies high-register
     # this into v13. Keep the direct-this fixtures above and verify both forms independently.
     $sharingAliasClean = New-DexApk -Name 'features-sharing-alias-clean' -Entries ([ordered]@{
@@ -1184,7 +1199,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'
