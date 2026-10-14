@@ -96,7 +96,7 @@ In Threads, open your profile, tap the settings button at the top and tap HushTh
 
 If Threads crashes within a minute of starting three times in a row, HushThreads pauses itself and says why at the top of its settings. Your switches stay saved. Tap Resume and restart Threads to turn it back on. Threads has a crash guard of its own. Five quick crashes inside four hours make it delete its data, which signs you out and clears HushThreads' settings. Safe mode usually gets there first, but it can't help when the crash comes from one of the patches without a switch. If Threads keeps crashing, patch again without them.
 
-<p><img src="assets/settings-overview.png" width="320" alt="HushThreads settings with search, Pause, Feed, Privacy, Downloads and More settings"><img src="assets/settings-privacy.png" width="320" alt="Privacy with link tracking, browser, analytics and screenshot controls"></p>
+<p><img src="assets/settings-overview.png" width="320" alt="HushThreads settings with search, Pause, Quick setups and the Feed, Privacy, Downloads and Posts pages"><img src="assets/settings-privacy.png" width="320" alt="Privacy with link tracking, browser, analytics and screenshot controls"></p>
 
 These screenshots show the redesigned settings from the source build. The redesign isn't in a release yet.
 
