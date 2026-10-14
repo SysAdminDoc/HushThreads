@@ -362,7 +362,10 @@ public final class SettingsEntry {
         @SuppressWarnings("deprecation")
         public void onActivitySaveInstanceState(Activity activity, Bundle state) {
             try {
-                if (closedByUser) return;
+                // This activity's own copy, if it has one. A copy the person closed is gone by now,
+                // since the activity runs pending fragment changes before this. The closed flag
+                // is one for every copy, so closing a copy over another activity used to stop this
+                // one being saved.
                 FragmentManager fragments = activity.getFragmentManager();
                 android.app.Fragment shown = fragments.findFragmentByTag(DIALOG_TAG);
                 if (shown == null || shown.isRemoving()) return;

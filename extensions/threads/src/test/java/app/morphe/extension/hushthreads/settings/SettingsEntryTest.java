@@ -508,6 +508,46 @@ public class SettingsEntryTest {
     }
 
     /**
+     * The screen open over two Threads activities: closing the copy over the second leaves the
+     * first's copy to come back when Threads recreates the first. One closed flag for every copy
+     * used to make the first activity skip saving its own.
+     */
+    @Test public void closingOneCopyKeepsTheOtherAcrossARecreation() {
+        PatchFamily.inBuildForTests = java.util.EnumSet.allOf(PatchFamily.class);
+        try {
+            Intent shortcut = new Intent().putExtra(SettingsEntry.EXTRA_OPEN_SETTINGS, true);
+            ActivityController<ThreadsLikeActivity> first = Robolectric.buildActivity(ThreadsLikeActivity.class, shortcut).create();
+            SettingsEntry.onActivityCreate(first.get());
+            first.start().resume();
+            ShadowLooper.idleMainLooper();
+            assertNotNull("the shortcut opened nothing", dialogOver(first.get()));
+
+            first.pause();
+            ActivityController<ThreadsLikeActivity> second = Robolectric.buildActivity(ThreadsLikeActivity.class).setup();
+            first.stop();
+            assertTrue(SettingsEntry.open(second.get()));
+            ShadowLooper.idleMainLooper();
+            SettingsL10nTest.backOf((SettingsDialog) dialogOver(second.get())).performClick();
+            ShadowLooper.idleMainLooper();
+            assertNull("the second copy stayed open", dialogOver(second.get()));
+            second.pause();
+            first.start().resume();
+            second.stop().destroy();
+            ShadowLooper.idleMainLooper();
+            assertNotNull("the first copy closed with the second", dialogOver(first.get()));
+
+            // Long after the request, so only the activity's saved state can bring the screen back.
+            ShadowLooper.idleMainLooper(5, java.util.concurrent.TimeUnit.MINUTES);
+            first.recreate();
+            ShadowLooper.idleMainLooper();
+            assertNotNull("closing the other copy lost this one", dialogOver(first.get()));
+        } finally {
+            SettingsEntry.onClosedByUser();
+            PatchFamily.inBuildForTests = null;
+        }
+    }
+
+    /**
      * A file picked while Threads rebuilt its activity behind the picker reaches the settings it
      * brings back. The answer used to go to the page that asked, by a name the rebuilt activity no
      * longer had, so the file went nowhere and the screen came back as if nothing was picked.
