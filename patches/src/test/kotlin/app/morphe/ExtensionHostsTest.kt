@@ -120,7 +120,7 @@ class ExtensionHostsTest {
         const val RELEASE_CHECK =
             "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ReleaseCheck.java"
         val TRANSPORTS = listOf(
-            "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/Downloader.java",
+            "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/MediaConnection.java",
             "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ReleaseTransport.java",
         )
         val URL = Regex("""(?:https?|wss?)://([A-Za-z0-9.-]+)""")

@@ -434,6 +434,52 @@ public class SaveProgressTest {
         assertEquals(0, workFiles());
     }
 
+    /**
+     * A proxy on the network that asks for a password gets none: the save stops after its one
+     * request and says why, with nothing in the gallery. Off that proxy, the same save goes through.
+     */
+    @Test
+    public void aProxyThatAsksForAPasswordStopsTheSaveAndANormalSaveStillWorks() throws Exception {
+        long size = 256 * 1024;
+        server.serveGenerated("/whole.mp4", "video/mp4", MP4_HEAD, size, Long.MAX_VALUE, null);
+        Shadows.shadowOf(context.getContentResolver()).registerOutputStream(gallery.videoUri(1), published);
+        java.net.ProxySelector saved = java.net.ProxySelector.getDefault();
+        try (LocalProxy proxy = new LocalProxy(java.net.Proxy.Type.HTTP, true)) {
+            java.net.ProxySelector.setDefault(new java.net.ProxySelector() {
+                @Override public List<java.net.Proxy> select(java.net.URI uri) {
+                    return java.util.Collections.singletonList(proxy.proxy());
+                }
+
+                @Override public void connectFailed(java.net.URI uri, java.net.SocketAddress address, IOException failure) {
+                }
+            });
+            CompletableFuture<Downloader.Result> refused = new CompletableFuture<>();
+            finish(save("/whole.mp4", refused));
+
+            assertEquals(Downloader.Status.PROXY_AUTH, refused.get(5, TimeUnit.SECONDS).status);
+            assertEquals("Not saved: this network's proxy asks for a password, and saves never send one. "
+                    + "Try again on another network.", ShadowToast.getTextOfLatestToast());
+            assertEquals(1, proxy.requests().size());
+            assertFalse(proxy.requests().get(0), proxy.requests().get(0).toLowerCase(java.util.Locale.US)
+                    .contains("proxy-authorization"));
+            assertEquals(0, server.hits("/whole.mp4"));
+            assertTrue("a refused save made a gallery row", gallery.inserts.isEmpty());
+            assertNull("the notification outlived the save", saveNotification());
+            assertEquals(0, workFiles());
+        } finally {
+            java.net.ProxySelector.setDefault(saved);
+        }
+
+        CompletableFuture<Downloader.Result> ended = new CompletableFuture<>();
+        finish(save("/whole.mp4", ended));
+
+        assertEquals(Downloader.Status.OK, ended.get(5, TimeUnit.SECONDS).status);
+        assertEquals("Saved to " + L10n.isolate("Movies/Threads"), ShadowToast.getTextOfLatestToast());
+        assertEquals(size, published.count.get());
+        assertEquals(1, server.hits("/whole.mp4"));
+        assertTrue("a published row is still on the pending list", pendingList().isEmpty());
+    }
+
     @Test
     public void withNotificationsOffASaveRunsWithItsToasts() throws Exception {
         Shadows.shadowOf(notifications()).setNotificationsEnabled(false);

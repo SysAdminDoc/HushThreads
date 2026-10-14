@@ -21,12 +21,17 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * A one-connection-at-a-time HTTP server on the loopback address, for the download tests.
@@ -78,7 +83,13 @@ final class LocalServer implements Closeable {
     private static final long TRICKLE_EVERY_MS = 200;
 
     private final ServerSocket socket;
+    /** Whether it answers over TLS, as localhost with the test key's certificate. */
+    private final boolean tls;
     private final Map<String, Route> routes = new ConcurrentHashMap<>();
+    /** Header lines added to every answer of a route, a Set-Cookie for one. */
+    private final Map<String, List<String>> extra = new ConcurrentHashMap<>();
+    /** The request line and headers of every request taken, in order, as sent. */
+    private final List<String> requests = new CopyOnWriteArrayList<>();
     private final Map<String, AtomicInteger> hits = new ConcurrentHashMap<>();
     /** Routes whose body never ends, and how many bytes each sends at a time. */
     private final Map<String, Integer> endless = new ConcurrentHashMap<>();
@@ -89,7 +100,14 @@ final class LocalServer implements Closeable {
     private final Thread thread;
 
     LocalServer() throws IOException {
-        socket = new ServerSocket(0, 50, InetAddress.getLoopbackAddress());
+        this(null);
+    }
+
+    /** Over TLS with [context]'s key when it's not null: then the origin is https://localhost. */
+    LocalServer(SSLContext context) throws IOException {
+        tls = context != null;
+        socket = tls ? context.getServerSocketFactory().createServerSocket(0, 50, InetAddress.getLoopbackAddress())
+                : new ServerSocket(0, 50, InetAddress.getLoopbackAddress());
         thread = new Thread(this::serve, "local-server");
         thread.setDaemon(true);
         thread.start();
@@ -100,7 +118,17 @@ final class LocalServer implements Closeable {
     }
 
     String origin() {
-        return "http://127.0.0.1:" + port();
+        return (tls ? "https://localhost:" : "http://127.0.0.1:") + port();
+    }
+
+    /** Add the header [line] to every answer of [path], redirects and errors included. */
+    void header(String path, String line) {
+        extra.computeIfAbsent(path, k -> new CopyOnWriteArrayList<>()).add(line);
+    }
+
+    /** The head of every request so far, request line and headers, each line ending in CR LF. */
+    List<String> requests() {
+        return new ArrayList<>(requests);
     }
 
     /** Answer [path] with [body] as [type]; [announced] is the length to claim, or -1 for none. */
@@ -190,10 +218,12 @@ final class LocalServer implements Closeable {
         BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.ISO_8859_1));
         String request = in.readLine();
         if (request == null) return;
+        StringBuilder sent = new StringBuilder(request).append("\r\n");
         String line;
         while ((line = in.readLine()) != null && !line.isEmpty()) {
-            // Headers are not needed.
+            sent.append(line).append("\r\n");
         }
+        requests.add(sent.toString());
         String[] parts = request.split(" ");
         String path = parts.length > 1 ? parts[1] : "/";
         int query = path.indexOf('?');
@@ -212,6 +242,7 @@ final class LocalServer implements Closeable {
         if (route.type != null) head.append("Content-Type: ").append(route.type).append("\r\n");
         if (route.location != null) head.append("Location: ").append(route.location).append("\r\n");
         if (route.announced >= 0) head.append("Content-Length: ").append(route.announced).append("\r\n");
+        for (String added : extra.getOrDefault(path, new ArrayList<>())) head.append(added).append("\r\n");
         head.append("\r\n");
 
         OutputStream out = client.getOutputStream();

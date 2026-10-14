@@ -109,18 +109,26 @@ public final class MediaSave {
         public final boolean cancelled;
         /** Android 9 took the storage permission away, so the pages after the one it stopped were skipped. */
         public final boolean noPermission;
+        /** A proxy asked for a password, which saves never send, so the pages after that one were skipped. */
+        public final boolean proxyRefused;
 
         BatchResult(int saved, int failed, int skipped, int lower, boolean cancelled) {
             this(saved, failed, skipped, lower, cancelled, false);
         }
 
         BatchResult(int saved, int failed, int skipped, int lower, boolean cancelled, boolean noPermission) {
+            this(saved, failed, skipped, lower, cancelled, noPermission, false);
+        }
+
+        BatchResult(int saved, int failed, int skipped, int lower, boolean cancelled, boolean noPermission,
+                boolean proxyRefused) {
             this.saved = saved;
             this.failed = failed;
             this.skipped = skipped;
             this.lower = lower;
             this.cancelled = cancelled;
             this.noPermission = noPermission;
+            this.proxyRefused = proxyRefused;
         }
 
         String message(Context application) {
@@ -131,6 +139,10 @@ public final class MediaSave {
             if (noPermission) {
                 text += "\n" + L10n.t(application, "Threads needs the Storage permission to save on Android 9. "
                         + "Turn it on in Threads' app info under Permissions, then save again.");
+            }
+            if (proxyRefused) {
+                text += "\n" + L10n.t(application, "This network's proxy asks for a password, and saves never send one. "
+                        + "Try again on another network.");
             }
             return text;
         }
@@ -177,7 +189,7 @@ public final class MediaSave {
             return launch(application, false, snapshot.size(), save -> {
                 String group = known.hasVideoId() ? known.videoId : String.valueOf(save.id);
                 int saved = 0, failed = 0, skipped = 0, lower = 0;
-                boolean cancelled = false, noPermission = false;
+                boolean cancelled = false, noPermission = false, proxyRefused = false;
                 for (int index = 0; index < snapshot.size(); index++) {
                     if (save.cancelled()) {
                         skipped += snapshot.size() - index;
@@ -222,9 +234,16 @@ public final class MediaSave {
                         skipped += snapshot.size() - index - 1;
                         noPermission = true;
                         break;
+                    } else if (result.status == Downloader.Status.PROXY_AUTH) {
+                        // The same proxy would ask every page after this one, and get no password either.
+                        failed++;
+                        skipped += snapshot.size() - index - 1;
+                        proxyRefused = true;
+                        break;
                     } else failed++;
                 }
-                outcome[0] = new BatchResult(saved, failed, skipped, lower, cancelled || save.cancelled(), noPermission);
+                outcome[0] = new BatchResult(saved, failed, skipped, lower, cancelled || save.cancelled(), noPermission,
+                        proxyRefused);
             }, save -> {
                 BatchResult result = outcome[0] != null ? outcome[0]
                         : save.cancelled() ? new BatchResult(0, 0, snapshot.size(), 0, true)
@@ -351,7 +370,7 @@ public final class MediaSave {
 
     // ---------------------------------------------------------------- internals
 
-    /** The renditions whose address {@code HttpURLConnection} can fetch at all. Never null. */
+    /** The renditions whose address {@link MediaConnection} can fetch at all. Never null. */
     private static List<Rendition> usable(List<Rendition> renditions) {
         List<Rendition> usable = new ArrayList<>();
         if (renditions == null) return usable;
@@ -859,8 +878,10 @@ public final class MediaSave {
             if (!MediaStoreWriter.mayWrite(application)) return noPermission();
             Downloader.Result result = permissionChecked(application, DashSave.save(application, video, audio, writer,
                 policyFor(application), cap(), progress));
+            // A proxy that wants a password would ask the single file's fetch for one too.
             if (result.ok() || fallback == null || result.status == Downloader.Status.CANCELLED
-                    || result.status == Downloader.Status.NO_PERMISSION) {
+                    || result.status == Downloader.Status.NO_PERMISSION
+                    || result.status == Downloader.Status.PROXY_AUTH) {
                 return result;
             }
 
@@ -1063,6 +1084,9 @@ public final class MediaSave {
             case NO_PERMISSION:
                 return L10n.t(application, "Not saved: Threads needs the Storage permission to save on Android 9. "
                     + "Turn it on in Threads' app info under Permissions, then save again.");
+            case PROXY_AUTH:
+                return L10n.t(application, "Not saved: this network's proxy asks for a password, and saves never "
+                    + "send one. Try again on another network.");
             case CANCELLED:
                 return L10n.t(application, "Save cancelled");
             default:

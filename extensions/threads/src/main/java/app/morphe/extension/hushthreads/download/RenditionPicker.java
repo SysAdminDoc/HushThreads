@@ -71,7 +71,7 @@ final class RenditionPicker {
 
     // ---------------------------------------------------------------- ranking (pure)
 
-    /** Whether this text is an address that {@code HttpURLConnection} can fetch. */
+    /** Whether this text is an address that {@link MediaConnection} can fetch. */
     static boolean isHttpUrl(String text) {
         if (text == null) return false;
         if (text.length() < 11 || text.length() > MAX_URL) return false;

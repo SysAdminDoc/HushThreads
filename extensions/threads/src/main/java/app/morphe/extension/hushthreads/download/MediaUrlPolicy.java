@@ -21,6 +21,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
@@ -43,12 +44,11 @@ import java.util.function.BooleanSupplier;
  * <p>The host check is the one that matters: TLS then has to show Meta's certificate for that
  * name, which nothing on a home network can. When the socket goes straight to the address the
  * phone's own lookup gives, that answer has to be public too, a second fence against a lookup
- * that points a Meta name at a private address. It is advisory: the connection looks the name up
- * again, so a resolver that changes its answer between the two gets past it to a handshake, and
- * TLS is what stops it there. The lookup uses the host exactly as the connection does, trailing
- * dot and all, so the two at least read one cache entry. Through a VPN or a proxy the lookup
- * isn't where the socket goes, so that fence stays down there, and a proxy resolves the name
- * itself.
+ * that points a Meta name at a private address. The connection goes to the addresses this check
+ * vetted and no others ({@link #vetWithin}), so a resolver can't change its answer between the
+ * two. Through a VPN or a proxy the lookup isn't where the socket goes, so that fence stays down
+ * there: a proxy resolves the name itself, and through a VPN the connection looks the name up on
+ * the same bounded threads ({@link #addressesWithin}).
  *
  * <p>FAKE_IP: fake-IP DNS (Clash, mihomo, sing-box, v2rayNG, OpenClash, common where Facebook
  * is blocked) answers every name from 198.18.0.0/15, fc00::/18 or fdfe:dcba:9876::/64 and
@@ -101,6 +101,24 @@ class MediaUrlPolicy {
         }
     }
 
+    /**
+     * What {@link #vetWithin} found: why the address may not be fetched, or else the addresses
+     * its host resolved to, each one vetted, in the resolver's order. Null addresses when no
+     * lookup was made: the route goes through a VPN or a proxy, or a test let its own host through.
+     */
+    static final class Vetted {
+        final Refusal refusal;
+        final InetAddress[] addresses;
+
+        Vetted(Refusal refusal, InetAddress[] addresses) {
+            this.refusal = refusal;
+            this.addresses = addresses;
+        }
+    }
+
+    /** Where {@link #lookedUp} leaves the addresses it vetted while {@link #vetWithin} asks. */
+    private static final ThreadLocal<InetAddress[][]> VETTED = new ThreadLocal<>();
+
     private final Resolver resolver;
     /** Package-visible so a test can ask a production policy about its route without a lookup. */
     final Route route;
@@ -124,9 +142,16 @@ class MediaUrlPolicy {
         String shape = shapeRefusal(url);
         if (shape != null) return new Refusal(shape, false);
         if (!route.direct(url)) return null;
+        return lookedUp(url, true);
+    }
 
-        // Lowercase only. The connection resolves the host as written, trailing dot included, and
-        // a stripped name would be looked up under another cache key than the socket's.
+    /**
+     * The lookup half of {@link #refusal}: looks [url]'s host up and, with [fence], holds every
+     * answer to being public. The addresses it lets through are the ones the connection goes to.
+     * Package-visible so a test can look up a host of its own without the shape rules.
+     */
+    final Refusal lookedUp(URL url, boolean fence) {
+        // Lowercase only, trailing dot kept: the name as the address gives it.
         String host = url.getHost().toLowerCase(Locale.US);
         InetAddress[] addresses;
         try {
@@ -139,9 +164,12 @@ class MediaUrlPolicy {
         if (addresses == null || addresses.length == 0) return new Refusal("its host does not resolve", true);
 
         for (InetAddress address : addresses) {
-            String reason = nonPublic(address);
+            if (address == null) return new Refusal("its host does not resolve", true);
+            String reason = fence ? nonPublic(address) : null;
             if (reason != null) return new Refusal("its host resolves to " + reason, true);
         }
+        InetAddress[][] into = VETTED.get();
+        if (into != null) into[0] = addresses.clone();
         return null;
     }
 
@@ -166,8 +194,8 @@ class MediaUrlPolicy {
     static volatile long lookupTimeoutMs = LOOKUP_TIMEOUT_MS;
 
     /**
-     * Where {@link #refusalWithin} looks hosts up. Daemon threads that end after 30 idle seconds,
-     * so nothing stays parked in Threads' process between saves.
+     * Where {@link #vetWithin} and {@link #addressesWithin} look hosts up. Daemon threads that end
+     * after 30 idle seconds, so nothing stays parked in Threads' process between saves.
      */
     private static final ThreadPoolExecutor LOOKUPS = lookups();
 
@@ -187,30 +215,81 @@ class MediaUrlPolicy {
 
     /**
      * {@link #refusal}, worked out on a lookup thread while this one waits, so a save stuck on DNS
-     * still ends at a cancel or at its own time. Waits until [deadline] on the monotonic clock or
-     * {@link #lookupTimeoutMs}, whichever comes first, and asks [stopped] every 100 ms. A lookup
-     * given up on, a full queue or a lookup that took too long answers as the network's refusal;
-     * the caller tells a cancel or its own deadline apart by checking those first.
+     * still ends at a cancel or at its own time. Answers the refusal, or the addresses the check
+     * vetted, which are the only ones the connection may go to: it never looks the name up again
+     * on the save's thread, where nothing could end the wait. A lookup given up on, a full queue
+     * or a lookup that took too long answers as the network's refusal; the caller tells a cancel
+     * or its own deadline apart by checking those first. {@link #await} has the bounds.
+     */
+    final Vetted vetWithin(URL url, BooleanSupplier stopped, long deadline) {
+        try {
+            return await(() -> vet(url), stopped, deadline);
+        } catch (GaveUp e) {
+            return new Vetted(new Refusal(e.getMessage(), true), null);
+        }
+    }
+
+    /** {@link #refusal}, with the addresses it vetted. On a lookup thread. */
+    private Vetted vet(URL url) {
+        InetAddress[][] found = new InetAddress[1][];
+        VETTED.set(found);
+        try {
+            Refusal refusal = refusal(url);
+            return new Vetted(refusal, refusal == null ? found[0] : null);
+        } finally {
+            VETTED.remove();
+        }
+    }
+
+    /**
+     * Every address [host] resolves to, looked up on a lookup thread as {@link #vetWithin} does,
+     * for a connection to a host no check looked up: straight through a VPN, where the lookup is
+     * the VPN's, a proxy list's DIRECT fallback, or a proxy given by name. Nothing is fenced, as
+     * on those routes in {@link #refusal}. Throws when the host doesn't resolve or the wait was
+     * given up on; the message names no host.
+     */
+    final InetAddress[] addressesWithin(String host, BooleanSupplier stopped, long deadline)
+            throws UnknownHostException {
+        InetAddress[] addresses;
+        try {
+            addresses = await(() -> resolver.resolve(host), stopped, deadline);
+        } catch (GaveUp e) {
+            throw new UnknownHostException(e.getMessage());
+        }
+        if (addresses == null || addresses.length == 0) throw new UnknownHostException("its host does not resolve");
+        return addresses.clone();
+    }
+
+    /** A wait for a lookup thread given up on, and why. */
+    private static final class GaveUp extends Exception {
+        GaveUp(String reason) {
+            super(reason, null, false, false);
+        }
+    }
+
+    /**
+     * Runs [work] on a lookup thread and waits for it until [deadline] on the monotonic clock or
+     * {@link #lookupTimeoutMs}, whichever comes first, asking [stopped] every 100 ms.
      *
      * <p>The bound: at most {@link #LOOKUP_THREADS} lookups ever run, and a resolver that never
      * answers holds those threads, not new ones. Further lookups wait in a queue of
      * {@link #LOOKUP_QUEUE}, each for at most {@link #lookupTimeoutMs}, and leave it when given up
      * on. A lookup left running ends when its resolver answers, and nothing waits for it.
      */
-    final Refusal refusalWithin(URL url, BooleanSupplier stopped, long deadline) {
-        FutureTask<Refusal> lookup = new FutureTask<>(() -> refusal(url));
+    private static <T> T await(Callable<T> work, BooleanSupplier stopped, long deadline) throws GaveUp {
+        FutureTask<T> lookup = new FutureTask<>(work);
         try {
             LOOKUPS.execute(lookup);
         } catch (RejectedExecutionException e) {
-            return new Refusal("too many host lookups were waiting", true);
+            throw new GaveUp("too many host lookups were waiting");
         }
         long wait = Math.min(TimeUnit.MILLISECONDS.toNanos(lookupTimeoutMs), deadline - System.nanoTime());
         long until = System.nanoTime() + Math.max(0L, wait);
         try {
             while (true) {
-                if (stopped.getAsBoolean()) return giveUp(lookup, "the save stopped during its host lookup");
+                if (stopped.getAsBoolean()) throw giveUp(lookup, "the save stopped during its host lookup");
                 long left = until - System.nanoTime();
-                if (left <= 0) return giveUp(lookup, "its host lookup took too long");
+                if (left <= 0) throw giveUp(lookup, "its host lookup took too long");
                 try {
                     return lookup.get(Math.min(left, TimeUnit.MILLISECONDS.toNanos(LOOKUP_POLL_MS)),
                             TimeUnit.NANOSECONDS);
@@ -220,17 +299,17 @@ class MediaUrlPolicy {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return giveUp(lookup, "the save stopped during its host lookup");
+            throw giveUp(lookup, "the save stopped during its host lookup");
         } catch (ExecutionException e) {
-            return new Refusal("its host could not be looked up", true);
+            throw new GaveUp("its host could not be looked up");
         }
     }
 
-    private static Refusal giveUp(FutureTask<Refusal> lookup, String reason) {
+    private static GaveUp giveUp(FutureTask<?> lookup, String reason) {
         lookup.cancel(false);
         // Out of the queue if it never started, so a resolver that never answers can't fill it.
         LOOKUPS.remove(lookup);
-        return new Refusal(reason, true);
+        return new GaveUp(reason);
     }
 
     /** How many lookup threads there are now, for the tests that hold them. */
@@ -251,7 +330,8 @@ class MediaUrlPolicy {
         try {
             ProxySelector selector = ProxySelector.getDefault();
             if (selector == null) return false;
-            for (Proxy proxy : selector.select(url.toURI())) {
+            // The URI the connection asks the selector about, so the two get one answer.
+            for (Proxy proxy : selector.select(MediaConnection.routeOf(url))) {
                 if (proxy != null && proxy.type() != Proxy.Type.DIRECT) return true;
             }
         } catch (Throwable ignored) {

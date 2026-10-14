@@ -502,6 +502,7 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/MediaConnection.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/PostSave.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/download/SaveMediaRow.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/download/SaveMediaPatch.kt"

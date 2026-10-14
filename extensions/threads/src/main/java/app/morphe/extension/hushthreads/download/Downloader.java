@@ -20,7 +20,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -75,6 +74,11 @@ final class Downloader {
          * retry can't mend that, so the person saving is told what to turn on instead.
          */
         NO_PERMISSION,
+        /**
+         * A proxy on the way asked for a password. A save never sends one, neither Threads' nor any
+         * other, so it stops here, and a retry on the same network can't mend it.
+         */
+        PROXY_AUTH,
         /** The person saving stopped it. */
         CANCELLED
     }
@@ -282,9 +286,8 @@ final class Downloader {
     private static final int READ_TIMEOUT_MS = 20_000;
 
     /**
-     * The read timeout. A test shortens it: the JDK's connection can't be closed under a read
-     * that's waiting, so there a cancelled read ends only at the timeout. Android's can, and a
-     * cancel ends it at once (see SaveControl.Save.cancel).
+     * The read timeout, the longest any one wait for the server may take. A test shortens it. A
+     * cancel doesn't wait for it: it closes the socket under the read ({@link MediaConnection#cancel}).
      */
     static volatile int readTimeoutMs = READ_TIMEOUT_MS;
 
@@ -296,8 +299,8 @@ final class Downloader {
      * brings in a 512 MB file at under 1 MB/s. Each fetch of a save has its own, so a DASH save's
      * single-file fallback gets a full one.
      *
-     * <p>Each connection's timeouts are cut to what's left, so the fetch ends at most one read
-     * after the time is up: no thread watches the clock. A test shortens it.
+     * <p>Each connection's timeouts are cut to what's left, and a timer closes the connection when
+     * the time is up, since a TLS read can outlast every per-read timeout. A test shortens it.
      */
     static final long BUDGET_MS = 10L * 60L * 1000L;
     static volatile long budgetMs = BUDGET_MS;
@@ -325,24 +328,25 @@ final class Downloader {
      * [maxBytes] is the most the file may hold. Blocking. Never throws. On anything but OK, [into]
      * is deleted.
      *
-     * <p>No header is set on the request. A captured address was fetched from an unrelated machine
-     * with none at all and answered 200, so a guessed {@code User-Agent} or {@code Referer} can
-     * only make a refusal more likely.
+     * <p>No header of this feature's own is set on the request, only what HTTP needs and the
+     * platform's User-Agent ({@link MediaConnection}). No cookie and no password go with it. A
+     * captured address was fetched from an unrelated machine with no header at all and answered
+     * 200, so a guessed {@code Referer} can only make a refusal more likely.
      *
      * <p>The whole fetch has {@link #budgetMs} to finish, and ends TIMED_OUT when it doesn't.
      */
     static Result fetch(String url, Kind kind, File into, MediaUrlPolicy policy, long maxBytes, Progress progress) {
-        HttpURLConnection connection = null;
+        MediaConnection connection = null;
         boolean kept = false;
         long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(budgetMs);
 
         try {
             Object opened = connect(url, policy, progress, deadline);
             if (opened instanceof Result) return (Result) opened;
-            connection = (HttpURLConnection) opened;
+            connection = (MediaConnection) opened;
             if (progress.cancelled()) return cancelled();
 
-            int code = connection.getResponseCode();
+            int code = connection.code();
             if (code == 401 || code == 403 || code == 410) {
                 drain(connection, progress, deadline);
                 if (progress.cancelled()) return cancelled();
@@ -357,18 +361,18 @@ final class Downloader {
                 return Result.fail(Status.HTTP_ERROR, "the server answered " + code);
             }
 
-            String declared = mimeOf(connection.getContentType());
+            String declared = mimeOf(connection.header("Content-Type"));
             if (!declaresKind(declared, kind)) {
                 return Result.fail(Status.REFUSED, "the server sent " + (declared == null ? "no type" : declared)
                     + ", not " + kind.name().toLowerCase(Locale.US));
             }
 
-            long expected = connection.getContentLengthLong();
+            long expected = connection.length();
             if (expected > maxBytes) {
                 return Result.fail(Status.TOO_LARGE, "the server announced " + expected + " bytes, more than " + maxBytes);
             }
 
-            InputStream in = connection.getInputStream();
+            InputStream in = connection.body();
             byte[] head = new byte[HEAD];
             int headLength = readHead(in, head, deadline);
             if (headLength == 0) return Result.fail(Status.WRITE_ERROR, "the body was empty");
@@ -418,13 +422,7 @@ final class Downloader {
             return Result.fail(Status.NETWORK_ERROR, "the fetch failed: " + t.getClass().getSimpleName());
         } finally {
             if (!kept) delete(into);
-            if (connection != null) {
-                try {
-                    connection.disconnect();
-                } catch (Throwable ignored) {
-                    // Nothing useful to do.
-                }
-            }
+            if (connection != null) connection.close();
         }
     }
 
@@ -474,14 +472,16 @@ final class Downloader {
      * Open [url], following redirects by hand and holding every hop to [policy]. Answers the
      * connection, or the {@link Result} that ends the fetch.
      *
-     * <p>{@code HttpURLConnection} follows a redirect only while the protocol stays the same, and
-     * quietly hands back the 3xx when it changes. Facebook redirects between hosts, so leaving
-     * this to the default means an occasional unexplained failure, and it would also skip the
-     * policy on the hop.
+     * <p>Facebook redirects between hosts, and every hop has to pass the policy, so redirects are
+     * followed here and nowhere else. Each hop is a connection of its own, with no cookie from the
+     * one before: a {@code Set-Cookie} on a redirect is dropped like any other. A proxy that asks
+     * for a password on any hop ends the fetch as {@link Status#PROXY_AUTH}. A 407 from the server
+     * itself is just an error ({@link MediaConnection#connect}).
      *
-     * <p>Each hop's lookup runs off this thread ({@link MediaUrlPolicy#refusalWithin}), so a cancel
+     * <p>Each hop's lookup runs off this thread ({@link MediaUrlPolicy#vetWithin}), so a cancel
      * or the end of the time at [deadline] ends a fetch whose lookup never comes back. The lookup
-     * happens before there's a connection whose close could end it.
+     * happens before there's a connection whose close could end it, and the connection goes to the
+     * addresses it vetted. Any lookup the connection still needs runs on the same threads.
      */
     private static Object connect(String url, MediaUrlPolicy policy, Progress progress, long deadline)
             throws IOException {
@@ -496,7 +496,8 @@ final class Downloader {
         for (int hop = 0; hop <= MAX_REDIRECTS; hop++) {
             if (progress.cancelled()) return cancelled();
             if (expired(deadline)) return timedOut();
-            MediaUrlPolicy.Refusal refusal = policy.refusalWithin(current, progress::cancelled, deadline);
+            MediaUrlPolicy.Vetted vetted = policy.vetWithin(current, progress::cancelled, deadline);
+            MediaUrlPolicy.Refusal refusal = vetted.refusal;
             // A lookup given up for a cancel or for the time is told as that, not as the network.
             if (progress.cancelled()) return cancelled();
             if (expired(deadline)) return timedOut();
@@ -510,42 +511,34 @@ final class Downloader {
                 return Result.fail(Status.HTTP_ERROR, "redirect " + hop + " loops back to an address already fetched");
             }
 
-            HttpURLConnection connection = (HttpURLConnection) current.openConnection();
+            MediaConnection connection = new MediaConnection(current, vetted.addresses,
+                    host -> policy.addressesWithin(host, progress::cancelled, deadline),
+                    CONNECT_TIMEOUT_MS, readTimeoutMs, deadline);
             // This method's to close until it's handed back, whatever throws: a failure while the
             // headers came in used to skip the disconnect.
             boolean handedBack = false;
             String location;
             try {
-                connection.setRequestMethod("GET");
-                connection.setInstanceFollowRedirects(false);
-                connection.setConnectTimeout(within(CONNECT_TIMEOUT_MS, deadline));
-                connection.setReadTimeout(within(readTimeoutMs, deadline));
-                connection.setUseCaches(false);
-                // disconnect(), never the stream's close(): over HTTPS on Android only disconnect()
-                // ends a read that's waiting (SaveControl.Save.cancel has the measurements).
-                progress.reading(connection::disconnect);
-                // A cancel's close that runs before the connection exists closes nothing, on the
-                // JDK and on Android alike, and the fetch then waited for an answer until the read
-                // timeout. So the flag is read again once connected; a close after that ends the wait.
+                // The socket's close, never the stream's: over HTTPS on Android only closing the
+                // socket ends a read that's waiting (SaveControl.Save.cancel has the measurements).
+                progress.reading(connection::cancel);
+                // A cancel's close that runs before the connection opens keeps it from opening.
+                // The flag is read again once connected all the same.
                 connection.connect();
                 if (progress.cancelled()) return cancelled();
 
-                int code = connection.getResponseCode();
+                int code = connection.code();
                 if (code != 301 && code != 302 && code != 303 && code != 307 && code != 308) {
                     handedBack = true;
                     return connection;
                 }
 
-                location = connection.getHeaderField("Location");
+                location = connection.header("Location");
                 drain(connection, progress, deadline);
+            } catch (MediaConnection.ProxyRefused refused) {
+                return Result.fail(Status.PROXY_AUTH, refused.getMessage());
             } finally {
-                if (!handedBack) {
-                    try {
-                        connection.disconnect();
-                    } catch (Throwable ignored) {
-                        // Nothing useful to do.
-                    }
-                }
+                if (!handedBack) connection.close();
             }
 
             if (location == null || location.isEmpty()) {
@@ -740,7 +733,7 @@ final class Downloader {
      * [timeoutMs] cut to what's left before [deadline], and never 0, which a connection reads as
      * no timeout at all. A [timeoutMs] of 0 (no timeout) becomes what's left.
      */
-    private static int within(int timeoutMs, long deadline) {
+    static int within(int timeoutMs, long deadline) {
         long left = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime());
         long cut = timeoutMs <= 0 ? left : Math.min(timeoutMs, left);
         return (int) Math.max(1L, Math.min(Integer.MAX_VALUE, cut));
@@ -759,18 +752,18 @@ final class Downloader {
     }
 
     /**
-     * Read and close the error body, so the connection can go back to the pool: at most
+     * Read the error body before the connection closes, as the fetch always has: at most
      * [DRAIN_BYTES] of it, for at most [DRAIN_NANOS], and nothing past a cancel. An error page that
      * never ended used to hold its save, and one of the three save slots, for as long as it went
      * on. A read that's waiting ends at the read timeout, or on a cancel, which closes the
      * connection ({@link Progress#reading}). A redirect has no error body, so none of it is read.
      * Nothing is read past the fetch's [deadline] either.
      */
-    private static void drain(HttpURLConnection connection, Progress progress, long deadline) {
+    private static void drain(MediaConnection connection, Progress progress, long deadline) {
         InputStream stream = null;
         try {
-            stream = connection.getErrorStream();
-            if (stream == null) return;
+            if (connection.code() < 400) return;
+            stream = connection.body();
 
             byte[] buffer = new byte[4096];
             long until = System.nanoTime() + Math.max(0L, Math.min(DRAIN_NANOS, deadline - System.nanoTime()));

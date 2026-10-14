@@ -329,3 +329,7 @@ Threads needs the Storage permission to save on Android 9. Turn it on in Threads
 Not saved: the download was too slow to finish. Try again on a faster connection.	Nicht gespeichert: Der Download war zu langsam, um fertig zu werden. Versuche es mit einer schnelleren Verbindung noch einmal.
 Hide follow suggestions in Search	Vorschläge zum Folgen in der Suche ausblenden
 Takes the Follow suggestions row off the Search screen. Your searches and topics stay.	Entfernt die Reihe „Vorschläge zum Folgen“ aus der Suche. Deine Suchen und Themen bleiben.
+# A save stopped because a proxy server on the phone's network (Wi-Fi or global proxy setting) asked for a user name and password: the toast. HushThreads never sends one for a download.
+Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.	Nicht gespeichert: Der Proxy dieses Netzwerks verlangt ein Passwort, und beim Speichern wird nie eins gesendet. Versuche es in einem anderen Netzwerk noch einmal.
+# The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary.
+This network's proxy asks for a password, and saves never send one. Try again on another network.	Der Proxy dieses Netzwerks verlangt ein Passwort, und beim Speichern wird nie eins gesendet. Versuche es in einem anderen Netzwerk noch einmal.

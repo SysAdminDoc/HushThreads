@@ -329,3 +329,7 @@ Threads needs the Storage permission to save on Android 9. Turn it on in Threads
 Not saved: the download was too slow to finish. Try again on a faster connection.	Kaydedilmedi: İndirme bitemeyecek kadar yavaştı. Daha hızlı bir bağlantıyla tekrar dene.
 Hide follow suggestions in Search	Aramada takip önerilerini gizle
 Takes the Follow suggestions row off the Search screen. Your searches and topics stay.	Takip önerileri satırını Arama ekranından kaldırır. Aramalarınız ve konularınız kalır.
+# A save stopped because a proxy server on the phone's network (Wi-Fi or global proxy setting) asked for a user name and password: the toast. HushThreads never sends one for a download.
+Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.	Kaydedilmedi: Bu ağın proxy sunucusu bir parola istiyor ve kaydetme işlemleri hiçbir zaman parola göndermez. Başka bir ağda tekrar dene.
+# The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary.
+This network's proxy asks for a password, and saves never send one. Try again on another network.	Bu ağın proxy sunucusu bir parola istiyor ve kaydetme işlemleri hiçbir zaman parola göndermez. Başka bir ağda tekrar dene.

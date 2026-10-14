@@ -233,6 +233,61 @@ public class DashJoinTest {
     }
 
     /**
+     * Each track of a DASH save is fetched on its own connection, a redirect's hop too, and none of
+     * them asks Threads' cookie handler or authenticator anything, keeps a cookie it was sent, or
+     * sends one. DownloadIsolationTest holds the rest of the route; this holds the tracks.
+     */
+    @Test
+    public void theTracksOfADashSaveSendNoCookieAndKeepNone() throws Exception {
+        server.redirect("/v-moved.mp4", "/v.mp4");
+        for (String path : new String[] { "/v-moved.mp4", "/v.mp4", "/a.mp4" }) {
+            server.header(path, "Set-Cookie: cdn-session=" + path.substring(1) + "; Path=/; HttpOnly");
+        }
+        DashManifest.Track moved = new DashManifest.Track("video/mp4", "avc1.64001f", 1280, 720, 1_200_000,
+                server.origin() + "/v-moved.mp4");
+        java.net.CookieHandler cookiesBefore = java.net.CookieHandler.getDefault();
+        AtomicInteger asked = new AtomicInteger();
+        java.net.CookieHandler cookies = new java.net.CookieHandler() {
+            @Override public java.util.Map<String, List<String>> get(java.net.URI uri,
+                    java.util.Map<String, List<String>> headers) {
+                asked.incrementAndGet();
+                return java.util.Collections.singletonMap("Cookie",
+                        java.util.Collections.singletonList("account=threads-session"));
+            }
+
+            @Override public void put(java.net.URI uri, java.util.Map<String, List<String>> headers) {
+                asked.incrementAndGet();
+            }
+        };
+        java.net.Authenticator passwords = new java.net.Authenticator() {
+            @Override protected java.net.PasswordAuthentication getPasswordAuthentication() {
+                asked.incrementAndGet();
+                return new java.net.PasswordAuthentication("threads", "threads-password".toCharArray());
+            }
+        };
+        java.net.CookieHandler.setDefault(cookies);
+        java.net.Authenticator.setDefault(passwords);
+        try {
+            Downloader.Result result = DashSave.save(context, moved, audio, new Gallery(), policy, Downloader.MAX_BYTES,
+                    Downloader.SILENT);
+
+            assertEquals(result.toString(), Downloader.Status.OK, result.status);
+            assertEquals("the handlers were asked", 0, asked.get());
+            assertTrue("the cookie handler was replaced", cookies == java.net.CookieHandler.getDefault());
+            List<String> heads = server.requests();
+            assertEquals(heads.toString(), 3, heads.size());
+            for (String head : heads) {
+                String lower = head.toLowerCase(java.util.Locale.US);
+                assertFalse(head, lower.contains("\r\ncookie:") || lower.contains("authorization:")
+                        || lower.contains("session"));
+            }
+        } finally {
+            java.net.CookieHandler.setDefault(cookiesBefore);
+            java.net.Authenticator.setDefault(null);
+        }
+    }
+
+    /**
      * A track can declare any sample size, and the join allocated a buffer of whatever it said. One
      * that declares more than a join holds fails at once, and the save takes the single file.
      */

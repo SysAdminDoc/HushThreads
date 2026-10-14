@@ -419,9 +419,10 @@ public final class SaveControl {
          * threw "Socket closed" 6 ms later. Over HTTPS through Conscrypt (TLS 1.3, the path every
          * save takes) disconnect() ended the read within 1 ms in eight of nine runs and 12.5 ms in
          * the ninth. Closing the response stream from another thread instead threw "Unbalanced
-         * enter/exit" and left the read waiting out its whole 20 s timeout, which is why the
-         * closer is disconnect() (see Downloader). The notification goes straight away either
-         * way, so the person sees the cancel take.
+         * enter/exit" and left the read waiting out its whole 20 s timeout. disconnect() closed
+         * the plain socket under the connection, so that is what the closer does now that saves
+         * have a connection of their own (MediaConnection.cancel); it hasn't been timed on a phone
+         * since. The notification goes straight away either way, so the person sees the cancel take.
          */
         void cancel() {
             cancelled = true;

@@ -47,12 +47,13 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(600);
+        Map<String, String> table = new HashMap<>(604);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
         fillDe3(table);
         fillDe4(table);
+        fillDe5(table);
         return table;
     }
 
@@ -355,6 +356,8 @@ public final class L10nTranslations {
                 "Nicht gespeichert: Der Download war zu langsam, um fertig zu werden. Versuche es mit einer schnelleren Verbindung noch einmal.");
         table.put("Not saved: the file is over 512 MB",
                 "Nicht gespeichert: Die Datei ist \u00fcber 512 MB gro\u00df");
+        table.put("Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.",
+                "Nicht gespeichert: Der Proxy dieses Netzwerks verlangt ein Passwort, und beim Speichern wird nie eins gesendet. Versuche es in einem anderen Netzwerk noch einmal.");
         table.put("OK",
                 "OK");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
@@ -421,11 +424,11 @@ public final class L10nTranslations {
                 "Fortsetzen");
         table.put("Retry",
                 "Erneut versuchen");
-        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
-                "Wenn du innerhalb von zehn Minuten zu Threads zur\u00fcckkehrst, bleibst du an derselben Stelle. Zum Aktualisieren kannst du weiter nach unten ziehen.");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "Wenn du innerhalb von zehn Minuten zu Threads zur\u00fcckkehrst, bleibst du an derselben Stelle. Zum Aktualisieren kannst du weiter nach unten ziehen.");
         table.put("Save",
                 "Speichern");
         table.put("Save all",
@@ -544,11 +547,11 @@ public final class L10nTranslations {
                 "Diese Datei ist zu gro\u00df f\u00fcr eine Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
                 "Diese Datei ist kein lesbarer Text, sie wurde also wom\u00f6glich bei der \u00dcbertragung besch\u00e4digt. Es wurde nichts ge\u00e4ndert.");
-        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
-                "Diese Datei f\u00fchrt eine Einstellung zweimal auf, daher ist unklar, welcher Wert gilt. Es wurde nichts ge\u00e4ndert.");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
+                "Diese Datei f\u00fchrt eine Einstellung zweimal auf, daher ist unklar, welcher Wert gilt. Es wurde nichts ge\u00e4ndert.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Das ist keine HushThreads-Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
@@ -587,6 +590,8 @@ public final class L10nTranslations {
                 "Diese werden beim Patchen in Morphe Manager ausgew\u00e4hlt, und die Pause schaltet sie nicht aus. Patche erneut, um sie zu \u00e4ndern.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Dieser Build hat nicht festgehalten, welche Berichtsarten er abdeckt. Patche erneut, um sie zu sehen.");
+        table.put("This network's proxy asks for a password, and saves never send one. Try again on another network.",
+                "Der Proxy dieses Netzwerks verlangt ein Passwort, und beim Speichern wird nie eins gesendet. Versuche es in einem anderen Netzwerk noch einmal.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Dieses Handy hat keine Dateiauswahl, hier l\u00e4sst sich also keine Datei w\u00e4hlen.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
@@ -665,6 +670,9 @@ public final class L10nTranslations {
                 "der Fix f\u00fcr neu signierte Builds");
         table.put("the removed advertising ID permission",
                 "die entfernte Berechtigung f\u00fcr die Werbe-ID");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "der entfernte Eintrag im Teilen-Men\u00fc");
         table.put("the user certificate trust",
@@ -672,12 +680,13 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(600);
+        Map<String, String> table = new HashMap<>(604);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
         fillEs3(table);
         fillEs4(table);
+        fillEs5(table);
         return table;
     }
 
@@ -980,6 +989,8 @@ public final class L10nTranslations {
                 "No se guard\u00f3: la descarga iba demasiado lenta para terminar. Vuelve a intentarlo con una conexi\u00f3n m\u00e1s r\u00e1pida.");
         table.put("Not saved: the file is over 512 MB",
                 "No se guard\u00f3: el archivo supera los 512 MB");
+        table.put("Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.",
+                "No se guard\u00f3: el proxy de esta red pide una contrase\u00f1a, y al guardar nunca se env\u00eda ninguna. Vuelve a intentarlo en otra red.");
         table.put("OK",
                 "Aceptar");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
@@ -1046,11 +1057,11 @@ public final class L10nTranslations {
                 "Reanudar");
         table.put("Retry",
                 "Reintentar");
-        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
-                "Si vuelves a Threads en menos de diez minutos, seguir\u00e1s donde estabas. Puedes deslizar hacia abajo para actualizar.");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "Si vuelves a Threads en menos de diez minutos, seguir\u00e1s donde estabas. Puedes deslizar hacia abajo para actualizar.");
         table.put("Save",
                 "Guardar");
         table.put("Save all",
@@ -1169,11 +1180,11 @@ public final class L10nTranslations {
                 "Ese archivo es demasiado grande para ser un archivo de configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
                 "Ese archivo no es texto legible, as\u00ed que puede haberse da\u00f1ado por el camino. No se cambi\u00f3 nada.");
-        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
-                "Ese archivo incluye un ajuste dos veces, as\u00ed que no se sabe qu\u00e9 valor usar. No se cambi\u00f3 nada.");
     }
 
     private static void fillEs4(Map<String, String> table) {
+        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
+                "Ese archivo incluye un ajuste dos veces, as\u00ed que no se sabe qu\u00e9 valor usar. No se cambi\u00f3 nada.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Eso no es un archivo de configuraci\u00f3n de HushThreads. No se cambi\u00f3 nada.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
@@ -1212,6 +1223,8 @@ public final class L10nTranslations {
                 "Se eligen en Morphe Manager al parchear, y Pausar no los desactiva. Vuelve a parchear para cambiarlos.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Esta versi\u00f3n no registr\u00f3 qu\u00e9 tipos de informe cubre. Vuelve a parchear para verlos.");
+        table.put("This network's proxy asks for a password, and saves never send one. Try again on another network.",
+                "El proxy de esta red pide una contrase\u00f1a, y al guardar nunca se env\u00eda ninguna. Vuelve a intentarlo en otra red.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que aqu\u00ed no hay forma de elegir un archivo.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
@@ -1290,6 +1303,9 @@ public final class L10nTranslations {
                 "el arreglo para la nueva firma");
         table.put("the removed advertising ID permission",
                 "el permiso del ID de publicidad eliminado");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "la entrada eliminada del men\u00fa para compartir");
         table.put("the user certificate trust",
@@ -1297,12 +1313,13 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(600);
+        Map<String, String> table = new HashMap<>(604);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
         fillIn3(table);
         fillIn4(table);
+        fillIn5(table);
         return table;
     }
 
@@ -1605,6 +1622,8 @@ public final class L10nTranslations {
                 "Tidak disimpan: unduhan terlalu lambat untuk selesai. Coba lagi dengan koneksi yang lebih cepat.");
         table.put("Not saved: the file is over 512 MB",
                 "Tidak disimpan: file lebih dari 512 MB");
+        table.put("Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.",
+                "Tidak disimpan: proxy jaringan ini meminta kata sandi, dan penyimpanan tidak pernah mengirimkannya. Coba lagi di jaringan lain.");
         table.put("OK",
                 "Oke");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
@@ -1671,11 +1690,11 @@ public final class L10nTranslations {
                 "Lanjutkan");
         table.put("Retry",
                 "Coba lagi");
-        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
-                "Jika kembali ke Threads dalam sepuluh menit, posisi feed tetap sama. Tarik ke bawah untuk memuat ulang masih berfungsi.");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "Jika kembali ke Threads dalam sepuluh menit, posisi feed tetap sama. Tarik ke bawah untuk memuat ulang masih berfungsi.");
         table.put("Save",
                 "Simpan");
         table.put("Save all",
@@ -1794,11 +1813,11 @@ public final class L10nTranslations {
                 "File itu terlalu besar untuk sebuah file pengaturan. Tidak ada yang diubah.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
                 "File itu bukan teks yang dapat dibaca, jadi mungkin rusak saat ditransfer. Tidak ada yang diubah.");
-        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
-                "File itu mencantumkan satu pengaturan dua kali, jadi tidak jelas nilai mana yang harus dipakai. Tidak ada yang diubah.");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
+                "File itu mencantumkan satu pengaturan dua kali, jadi tidak jelas nilai mana yang harus dipakai. Tidak ada yang diubah.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Itu bukan file pengaturan HushThreads. Tidak ada yang diubah.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
@@ -1837,6 +1856,8 @@ public final class L10nTranslations {
                 "Semua ini dipilih di Morphe Manager saat Anda menambal, dan Jeda tidak mematikannya. Tambal ulang untuk mengubahnya.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Build ini tidak mencatat jenis laporan apa yang dicakup. Tambal ulang untuk melihatnya.");
+        table.put("This network's proxy asks for a password, and saves never send one. Try again on another network.",
+                "Proxy jaringan ini meminta kata sandi, dan penyimpanan tidak pernah mengirimkannya. Coba lagi di jaringan lain.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Ponsel ini tidak memiliki pemilih file, jadi file tidak dapat dipilih di sini.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
@@ -1915,6 +1936,9 @@ public final class L10nTranslations {
                 "perbaikan build yang ditandatangani ulang");
         table.put("the removed advertising ID permission",
                 "izin ID iklan yang dihapus");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "entri lembar bagikan yang dihapus");
         table.put("the user certificate trust",
@@ -1922,12 +1946,13 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(600);
+        Map<String, String> table = new HashMap<>(604);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
         fillPt_rBR3(table);
         fillPt_rBR4(table);
+        fillPt_rBR5(table);
         return table;
     }
 
@@ -2230,6 +2255,8 @@ public final class L10nTranslations {
                 "N\u00e3o foi salvo: o download estava lento demais para terminar. Tente de novo com uma conex\u00e3o mais r\u00e1pida.");
         table.put("Not saved: the file is over 512 MB",
                 "N\u00e3o foi salvo: o arquivo tem mais de 512 MB");
+        table.put("Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.",
+                "N\u00e3o foi salvo: o proxy desta rede pede uma senha, e os salvamentos nunca enviam uma. Tente de novo em outra rede.");
         table.put("OK",
                 "OK");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
@@ -2296,11 +2323,11 @@ public final class L10nTranslations {
                 "Retomar");
         table.put("Retry",
                 "Tentar novamente");
-        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
-                "Ao voltar ao Threads em at\u00e9 dez minutos, voc\u00ea continuar\u00e1 no ponto em que estava. O gesto de puxar para baixo para atualizar continuar\u00e1 funcionando.");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "Ao voltar ao Threads em at\u00e9 dez minutos, voc\u00ea continuar\u00e1 no ponto em que estava. O gesto de puxar para baixo para atualizar continuar\u00e1 funcionando.");
         table.put("Save",
                 "Salvar");
         table.put("Save all",
@@ -2419,11 +2446,11 @@ public final class L10nTranslations {
                 "Esse arquivo \u00e9 grande demais para ser um arquivo de configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
                 "Esse arquivo n\u00e3o cont\u00e9m texto leg\u00edvel, ent\u00e3o pode ter sido corrompido durante o processo. Nada foi alterado.");
-        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
-                "Esse arquivo cont\u00e9m uma configura\u00e7\u00e3o duplicada, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel saber qual valor usar. Nada foi alterado.");
     }
 
     private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
+                "Esse arquivo cont\u00e9m uma configura\u00e7\u00e3o duplicada, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel saber qual valor usar. Nada foi alterado.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Isso n\u00e3o \u00e9 um arquivo de configura\u00e7\u00f5es do HushThreads. Nada foi alterado.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
@@ -2462,6 +2489,8 @@ public final class L10nTranslations {
                 "Eles s\u00e3o escolhidos no Morphe Manager quando voc\u00ea aplica os patches, e a pausa n\u00e3o os desativa. Aplique os patches novamente para alter\u00e1-los.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Esta vers\u00e3o n\u00e3o registrou quais tipos de relat\u00f3rio cobre. Aplique os patches de novo para ver.");
+        table.put("This network's proxy asks for a password, and saves never send one. Try again on another network.",
+                "O proxy desta rede pede uma senha, e os salvamentos nunca enviam uma. Tente de novo em outra rede.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este dispositivo n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel escolher um arquivo aqui.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
@@ -2540,6 +2569,9 @@ public final class L10nTranslations {
                 "a corre\u00e7\u00e3o para vers\u00e3o reassinada");
         table.put("the removed advertising ID permission",
                 "a permiss\u00e3o do ID de publicidade removida");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "a entrada removida do menu de compartilhamento");
         table.put("the user certificate trust",
@@ -2547,12 +2579,13 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(600);
+        Map<String, String> table = new HashMap<>(604);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
         fillTr3(table);
         fillTr4(table);
+        fillTr5(table);
         return table;
     }
 
@@ -2855,6 +2888,8 @@ public final class L10nTranslations {
                 "Kaydedilmedi: \u0130ndirme bitemeyecek kadar yava\u015ft\u0131. Daha h\u0131zl\u0131 bir ba\u011flant\u0131yla tekrar dene.");
         table.put("Not saved: the file is over 512 MB",
                 "Kaydedilmedi: Dosya 512 MB'tan b\u00fcy\u00fck");
+        table.put("Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.",
+                "Kaydedilmedi: Bu a\u011f\u0131n proxy sunucusu bir parola istiyor ve kaydetme i\u015flemleri hi\u00e7bir zaman parola g\u00f6ndermez. Ba\u015fka bir a\u011fda tekrar dene.");
         table.put("OK",
                 "Tamam");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
@@ -2921,11 +2956,11 @@ public final class L10nTranslations {
                 "Devam et");
         table.put("Retry",
                 "Yeniden dene");
-        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
-                "Threads'e on dakika i\u00e7inde d\u00f6nersen kald\u0131\u011f\u0131n yer korunur. Yenilemek i\u00e7in a\u015fa\u011f\u0131 \u00e7ekmeye devam edebilirsin.");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "Threads'e on dakika i\u00e7inde d\u00f6nersen kald\u0131\u011f\u0131n yer korunur. Yenilemek i\u00e7in a\u015fa\u011f\u0131 \u00e7ekmeye devam edebilirsin.");
         table.put("Save",
                 "Kaydet");
         table.put("Save all",
@@ -3044,11 +3079,11 @@ public final class L10nTranslations {
                 "Bu dosya bir ayar dosyas\u0131 olamayacak kadar b\u00fcy\u00fck. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
                 "Bu dosya okunabilir bir metin de\u011fil, aktar\u0131m s\u0131ras\u0131nda hasar g\u00f6rm\u00fc\u015f olabilir. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
-                "Bu dosyada bir ayar iki kez ge\u00e7iyor, bu y\u00fczden hangi de\u011ferin kullan\u0131laca\u011f\u0131 belli de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
     }
 
     private static void fillTr4(Map<String, String> table) {
+        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
+                "Bu dosyada bir ayar iki kez ge\u00e7iyor, bu y\u00fczden hangi de\u011ferin kullan\u0131laca\u011f\u0131 belli de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Bu bir HushThreads ayar dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
@@ -3087,6 +3122,8 @@ public final class L10nTranslations {
                 "Bunlar yamalarken Morphe Manager'da se\u00e7ilir ve Duraklatma bunlar\u0131 kapatmaz. De\u011fi\u015ftirmek i\u00e7in yeniden yamala.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Bu s\u00fcr\u00fcm hangi rapor t\u00fcrlerini kapsad\u0131\u011f\u0131n\u0131 kaydetmedi. G\u00f6rmek i\u00e7in yeniden yamala.");
+        table.put("This network's proxy asks for a password, and saves never send one. Try again on another network.",
+                "Bu a\u011f\u0131n proxy sunucusu bir parola istiyor ve kaydetme i\u015flemleri hi\u00e7bir zaman parola g\u00f6ndermez. Ba\u015fka bir a\u011fda tekrar dene.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Bu telefonda dosya se\u00e7ici yok, bu y\u00fczden burada dosya se\u00e7menin bir yolu yok.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
@@ -3165,6 +3202,9 @@ public final class L10nTranslations {
                 "yeniden imzalanm\u0131\u015f s\u00fcr\u00fcm d\u00fczeltmesi");
         table.put("the removed advertising ID permission",
                 "kald\u0131r\u0131lan reklam kimli\u011fi izni");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "kald\u0131r\u0131lan payla\u015f\u0131m men\u00fcs\u00fc giri\u015fi");
         table.put("the user certificate trust",

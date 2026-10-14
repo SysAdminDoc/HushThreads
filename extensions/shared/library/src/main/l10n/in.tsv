@@ -329,3 +329,7 @@ Threads needs the Storage permission to save on Android 9. Turn it on in Threads
 Not saved: the download was too slow to finish. Try again on a faster connection.	Tidak disimpan: unduhan terlalu lambat untuk selesai. Coba lagi dengan koneksi yang lebih cepat.
 Hide follow suggestions in Search	Sembunyikan saran ikuti di Pencarian
 Takes the Follow suggestions row off the Search screen. Your searches and topics stay.	Menghapus baris Saran ikuti dari layar Pencarian. Pencarian dan topik Anda tetap ada.
+# A save stopped because a proxy server on the phone's network (Wi-Fi or global proxy setting) asked for a user name and password: the toast. HushThreads never sends one for a download.
+Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.	Tidak disimpan: proxy jaringan ini meminta kata sandi, dan penyimpanan tidak pernah mengirimkannya. Coba lagi di jaringan lain.
+# The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary.
+This network's proxy asks for a password, and saves never send one. Try again on another network.	Proxy jaringan ini meminta kata sandi, dan penyimpanan tidak pernah mengirimkannya. Coba lagi di jaringan lain.

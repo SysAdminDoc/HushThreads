@@ -483,6 +483,50 @@ public class CarouselSaveTest {
     }
 
     /**
+     * A proxy that asks for a password would ask for one on every page, and none gets one, so the
+     * carousel stops at the first page it refused and says why. The pages after it aren't fetched.
+     */
+    @Test
+    public void aProxyThatAsksForAPasswordStopsTheCarousel() throws Exception {
+        MediaSave.Item first = page(false, "/first.jpg", "1");
+        MediaSave.Item second = page(false, "/second.jpg", "2");
+        MediaSave.Item third = page(false, "/third.jpg", "3");
+        java.net.ProxySelector saved = java.net.ProxySelector.getDefault();
+        try (LocalProxy proxy = new LocalProxy(java.net.Proxy.Type.HTTP, true)) {
+            java.net.ProxySelector.setDefault(new java.net.ProxySelector() {
+                // The first page is through before the network's proxy turns up.
+                @Override public List<java.net.Proxy> select(java.net.URI uri) {
+                    return Collections.singletonList("/first.jpg".equals(uri.getPath())
+                            ? java.net.Proxy.NO_PROXY : proxy.proxy());
+                }
+
+                @Override public void connectFailed(java.net.URI uri, java.net.SocketAddress address,
+                        java.io.IOException failure) {
+                }
+            });
+            CompletableFuture<MediaSave.BatchResult> ended = new CompletableFuture<>();
+
+            assertTrue(MediaSave.saveBatch(context, Arrays.asList(first, second, third), ended::complete));
+            MediaSave.BatchResult result = ended.get(20, TimeUnit.SECONDS);
+            waitForSaves();
+
+            assertEquals(1, result.saved); assertEquals(1, result.failed); assertEquals(1, result.skipped);
+            assertTrue(result.proxyRefused); assertFalse(result.noPermission); assertFalse(result.cancelled);
+            assertEquals(1, server.hits("/first.jpg"));
+            assertEquals(0, server.hits("/second.jpg"));
+            assertEquals(0, server.hits("/third.jpg"));
+            assertEquals("the proxy was asked more than once", 1, proxy.requests().size());
+            String told = "Saved 1. Failed 1. Skipped 1.\n"
+                    + "This network's proxy asks for a password, and saves never send one. Try again on another network.";
+            assertEquals(told, ShadowToast.getTextOfLatestToast());
+            assertEquals(told, SaveControl.batchOutcome());
+            assertClean();
+        } finally {
+            java.net.ProxySelector.setDefault(saved);
+        }
+    }
+
+    /**
      * Taken away while a page's file comes in, the write fails, which is told as the missing
      * permission and not a disk error, and the next page isn't fetched. Nothing hidden is left.
      */
