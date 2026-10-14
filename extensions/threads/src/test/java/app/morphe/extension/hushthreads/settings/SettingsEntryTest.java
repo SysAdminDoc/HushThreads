@@ -507,6 +507,59 @@ public class SettingsEntryTest {
         assertNull("a screen the person closed came back with its activity", dialogOver(activity.get()));
     }
 
+    /**
+     * A file picked while Threads rebuilt its activity behind the picker reaches the settings it
+     * brings back. The answer used to go to the page that asked, by a name the rebuilt activity no
+     * longer had, so the file went nowhere and the screen came back as if nothing was picked.
+     */
+    @Test public void aFilePickedWhileThreadsRebuildsReachesTheSettingsItBringsBack() throws Exception {
+        PatchFamily.inBuildForTests = java.util.EnumSet.allOf(PatchFamily.class);
+        SettingsFileProvider.install("settings-entry");
+        try {
+            Intent shortcut = new Intent().putExtra(SettingsEntry.EXTRA_OPEN_SETTINGS, true);
+            ActivityController<ThreadsLikeActivity> activity = Robolectric.buildActivity(ThreadsLikeActivity.class, shortcut).create();
+            SettingsEntry.onActivityCreate(activity.get());
+            activity.start().resume();
+            ShadowLooper.idleMainLooper();
+            SettingsBackupTest.listPicker(activity.get());
+            HushThreadsPreferenceFragment asked = pageOver(activity.get());
+            android.preference.Preference row = asked.findPreference("action_import_settings");
+            row.getOnPreferenceClickListener().onPreferenceClick(row);
+            Intent around = org.robolectric.Shadows.shadowOf(activity.get()).getNextStartedActivity();
+            assertNotNull("Import opened nothing", around);
+            ActivityController<SettingsFilePicker> picker = Robolectric.buildActivity(SettingsFilePicker.class, around).create();
+            org.robolectric.shadows.ShadowActivity.IntentForResult started =
+                    org.robolectric.Shadows.shadowOf(picker.get()).getNextStartedActivityForResult();
+
+            // Covered by the picker, Threads is rebuilt without its fragments, as a font size change does.
+            activity.pause().stop();
+            activity.recreate();
+            ShadowLooper.idleMainLooper();
+            android.net.Uri file = SettingsFileProvider.put("settings-entry", "picked.json",
+                    SettingsBackup.create().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            org.robolectric.Shadows.shadowOf(picker.get()).receiveResult(started.intent, Activity.RESULT_OK,
+                    new Intent().setData(file));
+            activity.start().resume();
+            for (int round = 0; round < 3; round++) {
+                app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
+                ShadowLooper.idleMainLooper();
+            }
+
+            HushThreadsPreferenceFragment page = pageOver(activity.get());
+            org.junit.Assert.assertNotSame("the settings weren't rebuilt", asked, page);
+            android.app.AlertDialog preview = org.robolectric.shadows.ShadowAlertDialog.getLatestAlertDialog();
+            assertNotNull("the picked file went nowhere", preview);
+            assertTrue(preview.isShowing());
+            org.junit.Assert.assertEquals("Your switches already match that file, so nothing will change.",
+                    String.valueOf(org.robolectric.Shadows.shadowOf(preview).getMessage()));
+            preview.cancel();
+            ShadowLooper.idleMainLooper();
+        } finally {
+            SettingsEntry.onClosedByUser();
+            PatchFamily.inBuildForTests = null;
+        }
+    }
+
     /** Takes Android's fragment state out before it's restored, as Threads' IgFragmentActivity does. */
     public static final class ThreadsLikeActivity extends Activity {
         @Override protected void onCreate(android.os.Bundle state) {

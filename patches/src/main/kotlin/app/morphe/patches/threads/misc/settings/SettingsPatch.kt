@@ -25,6 +25,7 @@ import app.morphe.patches.threads.misc.fbns.pushProcessPatch
 import app.morphe.patches.threads.misc.resignedtrust.fbnsSignersPatch
 import app.morphe.util.superclassChain
 import com.android.tools.smali.dexlib2.Opcode
+import org.w3c.dom.Document
 import org.w3c.dom.Element
 
 internal const val ENTRY = "$EXTENSION_PACKAGE/settings/SettingsEntry;"
@@ -40,6 +41,12 @@ internal const val MAIN_ACTIVITY_NAME = "com.instagram.barcelona.mainactivity.Ba
  * extension's package, so it can't meet a component of Threads' own.
  */
 internal const val SETTINGS_ALIAS_NAME = "app.morphe.extension.hushthreads.settings.OpenSettings"
+
+/**
+ * The extension's activity that opens Android's file picker for Export settings and Import
+ * settings and takes its answer, which a settings page Threads rebuilt couldn't. Not exported.
+ */
+internal const val SETTINGS_FILE_PICKER_NAME = "app.morphe.extension.hushthreads.settings.SettingsFilePicker"
 
 /** The intent Android's App info page sends to "Additional settings in the app". */
 internal const val APPLICATION_PREFERENCES = "android.intent.action.APPLICATION_PREFERENCES"
@@ -65,40 +72,62 @@ internal fun BytecodePatchContext.declaredInHierarchy(
  * Adds an alias of [MAIN_ACTIVITY] that answers [APPLICATION_PREFERENCES], which is what makes
  * Android's App info page for Threads show "Additional settings in the app". The alias opens
  * Threads' own launcher activity with that action, and the extension opens the settings from there.
- * Nothing of Threads' own manifest changes.
+ * Also declares [SETTINGS_FILE_PICKER_NAME], see-through and reachable from Threads alone. Nothing
+ * of Threads' own manifest changes.
  */
 internal val settingsManifestPatch = resourcePatch {
     execute {
-        document("AndroidManifest.xml").use { document ->
-            val application = document.getElementsByTagName("application").item(0) as? Element
-                ?: throw PatchException("AndroidManifest.xml has no application element")
-            val activities = document.getElementsByTagName("activity")
-            val main = (0 until activities.length).map { activities.item(it) as Element }
-                .singleOrNull { it.getAttribute("android:name") == MAIN_ACTIVITY_NAME }
-                ?: throw PatchException("AndroidManifest.xml doesn't declare $MAIN_ACTIVITY_NAME")
-            if (main.getAttribute("android:exported") != "true") {
-                throw PatchException("$MAIN_ACTIVITY_NAME isn't exported, so Android's App info page couldn't open it")
-            }
-            val aliases = document.getElementsByTagName("activity-alias")
-            if ((0 until aliases.length).any { (aliases.item(it) as Element).getAttribute("android:name") == SETTINGS_ALIAS_NAME }) {
-                throw PatchException("AndroidManifest.xml already has $SETTINGS_ALIAS_NAME")
-            }
-
-            val alias = document.createElement("activity-alias").apply {
-                setAttribute("android:name", SETTINGS_ALIAS_NAME)
-                setAttribute("android:targetActivity", MAIN_ACTIVITY_NAME)
-                setAttribute("android:exported", "true")
-            }
-            val filter = document.createElement("intent-filter")
-            filter.appendChild(document.createElement("action").apply { setAttribute("android:name", APPLICATION_PREFERENCES) })
-            filter.appendChild(
-                document.createElement("category").apply { setAttribute("android:name", "android.intent.category.DEFAULT") },
-            )
-            alias.appendChild(filter)
-            application.appendChild(alias)
-        }
+        document("AndroidManifest.xml").use { addSettingsEntries(it) }
     }
 }
+
+/** What [settingsManifestPatch] adds to [document]. Refused, with nothing changed, when it's there already. */
+internal fun addSettingsEntries(document: Document) {
+    val application = document.getElementsByTagName("application").item(0) as? Element
+        ?: throw PatchException("AndroidManifest.xml has no application element")
+    val activities = document.getElementsByTagName("activity")
+    val main = (0 until activities.length).map { activities.item(it) as Element }
+        .singleOrNull { it.getAttribute("android:name") == MAIN_ACTIVITY_NAME }
+        ?: throw PatchException("AndroidManifest.xml doesn't declare $MAIN_ACTIVITY_NAME")
+    if (main.getAttribute("android:exported") != "true") {
+        throw PatchException("$MAIN_ACTIVITY_NAME isn't exported, so Android's App info page couldn't open it")
+    }
+    val aliases = document.getElementsByTagName("activity-alias")
+    if ((0 until aliases.length).any { (aliases.item(it) as Element).getAttribute("android:name") == SETTINGS_ALIAS_NAME }) {
+        throw PatchException("AndroidManifest.xml already has $SETTINGS_ALIAS_NAME")
+    }
+    if ((0 until activities.length).any { (activities.item(it) as Element).getAttribute("android:name") == SETTINGS_FILE_PICKER_NAME }) {
+        throw PatchException("AndroidManifest.xml already has $SETTINGS_FILE_PICKER_NAME")
+    }
+
+    val alias = document.createElement("activity-alias").apply {
+        setAttribute("android:name", SETTINGS_ALIAS_NAME)
+        setAttribute("android:targetActivity", MAIN_ACTIVITY_NAME)
+        setAttribute("android:exported", "true")
+    }
+    val filter = document.createElement("intent-filter")
+    filter.appendChild(document.createElement("action").apply { setAttribute("android:name", APPLICATION_PREFERENCES) })
+    filter.appendChild(
+        document.createElement("category").apply { setAttribute("android:name", "android.intent.category.DEFAULT") },
+    )
+    alias.appendChild(filter)
+    application.appendChild(alias)
+
+    // It draws nothing, and the picker covers it. Configuration changes don't rebuild it, though a
+    // rebuilt one still waits for the picker's answer.
+    application.appendChild(
+        document.createElement("activity").apply {
+            setAttribute("android:name", SETTINGS_FILE_PICKER_NAME)
+            setAttribute("android:exported", "false")
+            setAttribute("android:theme", "@android:style/Theme.Translucent.NoTitleBar")
+            setAttribute("android:configChanges", SETTINGS_FILE_PICKER_CONFIG_CHANGES)
+        },
+    )
+}
+
+/** The configuration changes [SETTINGS_FILE_PICKER_NAME] takes without being rebuilt. */
+internal const val SETTINGS_FILE_PICKER_CONFIG_CHANGES =
+    "keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|fontScale|density|locale|layoutDirection"
 
 /**
  * Makes the HushThreads screen reachable four ways. From the home screen, a long-press shortcut on

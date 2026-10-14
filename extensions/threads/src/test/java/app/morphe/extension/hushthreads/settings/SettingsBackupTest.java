@@ -1014,6 +1014,98 @@ public class SettingsBackupTest {
     }
 
     /**
+     * With SettingsFilePicker in Threads' manifest, the rows open the picker through it rather
+     * than from the page. It takes the answer and keeps the file's access past its own end, the
+     * page reads the file, and the access is let go once the read is done. A cancel says nothing,
+     * keeps nothing and leaves the rows usable.
+     */
+    @Test
+    public void thePickerOpensThroughHushThreadsOwnActivity() throws Exception {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            listPicker(activity);
+            HushThreadsPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+
+            ActivityController<SettingsFilePicker> picker = pickThrough(activity, page, IMPORT_ROW);
+            ShadowActivity.IntentForResult started = shadowOf(picker.get()).getNextStartedActivityForResult();
+            assertNotNull("SettingsFilePicker opened no picker", started);
+            assertEquals(SettingsBackupPreference.IMPORT, started.requestCode);
+            assertEquals(Intent.ACTION_OPEN_DOCUMENT, started.intent.getAction());
+
+            CountDownLatch release = new CountDownLatch(1);
+            SettingsFileProvider.stall = release;
+            Uri uri = SettingsFileProvider.put(AUTHORITY, "through.json",
+                    fileWith(Settings.SANITIZE_SHARING_LINKS, false).getBytes(StandardCharsets.UTF_8));
+            int grant = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+            shadowOf(picker.get()).receiveResult(started.intent, Activity.RESULT_OK,
+                    new Intent().setData(uri).addFlags(grant | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION));
+            assertTrue("SettingsFilePicker stayed after the answer", picker.get().isFinishing());
+            try {
+                awaitHeldOpen();
+                assertEquals("the file's access wasn't kept for the read", 1,
+                        activity.getContentResolver().getPersistedUriPermissions().size());
+            } finally {
+                release.countDown();
+            }
+            settle();
+            assertTrue("the file's access was kept after the read",
+                    activity.getContentResolver().getPersistedUriPermissions().isEmpty());
+            assertEquals("1 switch will change.", String.valueOf(shadowOf(shownPreview()).getMessage()));
+            shownPreview().cancel();
+            settle();
+
+            ActivityController<SettingsFilePicker> cancelled = pickThrough(activity, page, EXPORT_ROW);
+            ShadowActivity.IntentForResult export = shadowOf(cancelled.get()).getNextStartedActivityForResult();
+            assertEquals(Intent.ACTION_CREATE_DOCUMENT, export.intent.getAction());
+            ShadowToast.reset();
+            shadowOf(cancelled.get()).receiveResult(export.intent, Activity.RESULT_CANCELED, null);
+            settle();
+            assertTrue(cancelled.get().isFinishing());
+            assertNull("a cancel said something", ShadowToast.getTextOfLatestToast());
+            assertTrue(page.findPreference(EXPORT_ROW).isEnabled());
+            assertTrue(activity.getContentResolver().getPersistedUriPermissions().isEmpty());
+
+            Uri out = SettingsFileProvider.put(AUTHORITY, "through-export.json", new byte[0]);
+            ActivityController<SettingsFilePicker> saving = pickThrough(activity, page, EXPORT_ROW);
+            shadowOf(saving.get()).receiveResult(shadowOf(saving.get()).getNextStartedActivityForResult().intent,
+                    Activity.RESULT_OK, new Intent().setData(out).addFlags(grant | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION));
+            settle();
+            assertEquals(SettingsBackup.create(), new String(SettingsFileProvider.get(out), StandardCharsets.UTF_8));
+            assertEquals("Settings exported.", String.valueOf(page.findPreference(EXPORT_ROW).getSummary()));
+            assertTrue(activity.getContentResolver().getPersistedUriPermissions().isEmpty());
+        }
+    }
+
+    /**
+     * Android brings SettingsFilePicker back on its own if it ends while the picker is up. The
+     * rebuilt one opens no second picker, and the answer still reaches the page.
+     */
+    @Test
+    public void aRebuiltSettingsFilePickerWaitsForTheAnswer() throws Exception {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            listPicker(activity);
+            HushThreadsPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            ActivityController<SettingsFilePicker> first = pickThrough(activity, page, IMPORT_ROW);
+            ShadowActivity.IntentForResult started = shadowOf(first.get()).getNextStartedActivityForResult();
+            Bundle saved = new Bundle();
+            first.saveInstanceState(saved);
+
+            ActivityController<SettingsFilePicker> rebuilt = Robolectric.buildActivity(SettingsFilePicker.class,
+                    first.getIntent()).create(saved);
+            assertNull("a rebuilt SettingsFilePicker opened a second picker",
+                    shadowOf(rebuilt.get()).getNextStartedActivityForResult());
+            Uri uri = SettingsFileProvider.put(AUTHORITY, "rebuilt.json",
+                    fileWith(Settings.SANITIZE_SHARING_LINKS, false).getBytes(StandardCharsets.UTF_8));
+            shadowOf(rebuilt.get()).receiveResult(started.intent, Activity.RESULT_OK, new Intent().setData(uri));
+            settle();
+            assertEquals("1 switch will change.", String.valueOf(shadowOf(shownPreview()).getMessage()));
+            shownPreview().cancel();
+            settle();
+        }
+    }
+
+    /**
      * A full worker queue runs nothing, says so, and leaves the rows usable for another try.
      *
      * <p>The pool is one static executor for every test in the JVM, and a worker left finishing
@@ -1400,6 +1492,26 @@ public class SettingsBackupTest {
         ShadowActivity.IntentForResult started = shadowOf(activity).getNextStartedActivityForResult();
         assertNotNull(row + " opened no picker", started);
         return started;
+    }
+
+    /** Lists SettingsFilePicker the way the settings patch's manifest entry does on a phone. */
+    static void listPicker(Context context) {
+        android.content.pm.ActivityInfo info = new android.content.pm.ActivityInfo();
+        info.packageName = context.getPackageName();
+        info.name = SettingsFilePicker.class.getName();
+        info.exported = false;
+        shadowOf(context.getPackageManager()).addOrUpdateActivity(info);
+    }
+
+    /** Taps a row and starts the SettingsFilePicker it opened, which opens the picker. */
+    private static ActivityController<SettingsFilePicker> pickThrough(Activity activity, HushThreadsPreferenceFragment page, String row) {
+        click(page.findPreference(row));
+        // Robolectric lists a plain start here too, with no request code.
+        ShadowActivity.IntentForResult opened = shadowOf(activity).getNextStartedActivityForResult();
+        assertNotNull(row + " opened nothing", opened);
+        assertEquals(row + " asked for an answer from the page", -1, opened.requestCode);
+        assertEquals(SettingsFilePicker.class.getName(), opened.intent.getComponent().getClassName());
+        return Robolectric.buildActivity(SettingsFilePicker.class, opened.intent).create();
     }
 
     private static void click(Preference row) {

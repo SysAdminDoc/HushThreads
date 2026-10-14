@@ -328,6 +328,9 @@ public final class SettingsEntry {
 
         @Override
         public void onActivityResumed(Activity activity) {
+            // HushThreads' own see-through screen for the file picker, gone again at once: the
+            // settings never open over it, and it isn't the Threads screen in front.
+            if (activity instanceof SettingsFilePicker) return;
             resumed = new WeakReference<>(activity);
             if (SettingsStatus.saveMedia()) SaveLeftovers.showInterrupted(activity);
             if (openPending) openWhenSettled(activity);
