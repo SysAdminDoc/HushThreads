@@ -332,6 +332,16 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/CopyText.java"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Copy text on long press (#9): an opened post's long press override with no action in it dropped, so the post row keeps its Copy text press, and PostText's text selection flag turned to false while the switch is on, both left as Threads gave them when the switch is off, HushThreads is paused or the settings aren't ready."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/ImageQuality.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/feed/imagequality/MaxImageQualityPatch.kt"
       ],

@@ -102,7 +102,7 @@ public class HushThreadsPreferenceFragmentTest {
 
     /** The sections every build has, in the order they're drawn. */
     private static final List<String> EVERY_BUILD = Arrays.asList(
-            "Links", "Updates", "Pause, backup and diagnostics", "About");
+            "Posts", "Links", "Updates", "Pause, backup and diagnostics", "About");
 
     @After
     public void restore() {
@@ -211,13 +211,13 @@ public class HushThreadsPreferenceFragmentTest {
                         || build.contains(PatchFamily.HIDE_GHOST_POST_BUBBLES)) {
                     expected.add("Appearance");
                 }
-                expected.addAll(EVERY_BUILD.subList(0, 2));
+                expected.addAll(EVERY_BUILD.subList(0, 3));
                 if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)
                         || build.contains(PatchFamily.VERSION_CODE) || build.contains(PatchFamily.REMOVE_SHARE_TARGETS)
                         || build.contains(PatchFamily.TRUST_USER_CERTIFICATES)) {
                     expected.add("Set when you patched");
                 }
-                expected.addAll(EVERY_BUILD.subList(2, EVERY_BUILD.size()));
+                expected.addAll(EVERY_BUILD.subList(3, EVERY_BUILD.size()));
                 if (!expected.equals(sections)) wrong.add(build + ": sections " + sections);
             }
         }

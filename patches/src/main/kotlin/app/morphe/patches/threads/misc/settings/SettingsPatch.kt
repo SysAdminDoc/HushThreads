@@ -16,6 +16,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
+import app.morphe.patches.threads.feed.copytext.copyTextPatch
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.threads.misc.extension.THREADS_APPLICATION
 import app.morphe.patches.threads.misc.extension.patchLog
@@ -119,9 +120,9 @@ val settingsPatch = bytecodePatch(
     default = true,
 ) {
     category("Settings")
-    // fbnsSignersPatch and pushProcessPatch are the #6 fixes. Every HushThreads patch depends on this
-    // one, so naming them here puts them in every build.
-    dependsOn(threadsExtensionPatch, settingsManifestPatch, fbnsSignersPatch, pushProcessPatch)
+    // fbnsSignersPatch and pushProcessPatch are the #6 fixes, copyTextPatch the #9 one. Every
+    // HushThreads patch depends on this one, so naming them here puts them in every build.
+    dependsOn(threadsExtensionPatch, settingsManifestPatch, fbnsSignersPatch, pushProcessPatch, copyTextPatch)
     compatibleWith(*AppCompatibilities.threads())
 
     execute {

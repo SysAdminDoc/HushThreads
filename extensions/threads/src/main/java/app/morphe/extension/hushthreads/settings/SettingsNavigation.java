@@ -110,6 +110,7 @@ final class SettingsNavigation extends BaseAdapter {
         section("Privacy", L10n.t("Privacy"), L10n.t("Tracking in links and analytics uploads"), SettingsIcons.BLOCK, true);
         section("Downloads", L10n.t("Downloads"), L10n.t("Photos and videos you save from posts"), SettingsIcons.DOWNLOADS, true);
         section("Appearance", L10n.t("Appearance"), null, SettingsIcons.APPEARANCE, false);
+        section("Posts", L10n.t("Posts"), L10n.t("Copy text when you hold a post"), SettingsIcons.CHAT, true);
         section("Links", L10n.t("Links"), null, SettingsIcons.LINKS, false);
         section("Updates", L10n.t("Updates"), null, SettingsIcons.UPDATES, false);
         section("Set when you patched", L10n.t("Set when you patched"), null, SettingsIcons.CALENDAR, false);

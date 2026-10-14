@@ -87,7 +87,8 @@ public final class SettingsBackup {
             Settings.HIDE_INSTAGRAM_BUTTON,
             Settings.HIDE_GHOST_POST_BUBBLES,
             Settings.SAVE_MEDIA,
-            Settings.DOWNLOAD_COMPATIBLE));
+            Settings.DOWNLOAD_COMPATIBLE,
+            Settings.COPY_TEXT));
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be

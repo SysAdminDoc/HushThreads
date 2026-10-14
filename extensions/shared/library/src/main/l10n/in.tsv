@@ -298,3 +298,8 @@ Restart Threads to apply this change	Mulai ulang Threads untuk menerapkan peruba
 Restart Threads to apply %1$d changes	Mulai ulang Threads untuk menerapkan %1$d perubahan
 # context: the restart row's summary; the settings screen comes back on the page it was on
 Threads closes and reopens on this page.	Threads ditutup lalu dibuka lagi di halaman ini.
+# Copy text on long press (#9): its heading, the heading's line on the main page, the switch and its summary. Copy text is the name of Threads' own menu item for copying a post, so use the name Threads shows in this language.
+Posts	Postingan
+Copy text when you hold a post	Salin teks saat Anda menekan lama postingan
+Copy text on long press	Salin teks dengan tekan lama
+Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Menekan lama teks postingan membuka Salin teks, juga di postingan yang sedang dibuka, jadi Anda mendapat seluruh postingan beserta tautannya, bukan memilih kata satu per satu.

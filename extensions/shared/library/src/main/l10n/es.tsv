@@ -298,3 +298,8 @@ Restart Threads to apply this change	Reinicia Threads para aplicar este cambio
 Restart Threads to apply %1$d changes	Reinicia Threads para aplicar %1$d cambios
 # context: the restart row's summary; the settings screen comes back on the page it was on
 Threads closes and reopens on this page.	Threads se cierra y se vuelve a abrir en esta página.
+# Copy text on long press (#9): its heading, the heading's line on the main page, the switch and its summary. Copy text is the name of Threads' own menu item for copying a post, so use the name Threads shows in this language.
+Posts	Publicaciones
+Copy text when you hold a post	Copiar texto al mantener pulsada una publicación
+Copy text on long press	Copiar texto al mantener pulsado
+Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Al mantener pulsado el texto de una publicación se abre Copiar texto, también en una publicación abierta, así copias la publicación entera con sus enlaces en vez de elegir palabras.

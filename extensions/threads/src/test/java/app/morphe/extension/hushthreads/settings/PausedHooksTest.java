@@ -34,6 +34,7 @@ import java.util.Set;
 import app.morphe.extension.hushthreads.ads.FeedAds;
 import app.morphe.extension.hushthreads.ads.ShadowFeedAds;
 import app.morphe.extension.hushthreads.download.SavesForTests;
+import app.morphe.extension.hushthreads.feed.CopyText;
 import app.morphe.extension.hushthreads.feed.ImageQuality;
 import app.morphe.extension.hushthreads.feed.ReturnRefresh;
 import app.morphe.extension.hushthreads.feed.VideoAutoplay;
@@ -78,16 +79,20 @@ public class PausedHooksTest {
     }
 
     /**
-     * The settings entry's own switches, which no family owns, one probe each, held to the same
-     * promise as a family's: paused, or before the settings are ready, a start makes no request.
+     * The settings entry's own switches, which no family owns, with their probes, held to the same
+     * promise as a family's: paused, or before the settings are ready, a start makes no request
+     * and a post's long press is Threads' own.
      */
-    private static Map<BooleanSetting, Probe> entryProbes() {
-        Map<BooleanSetting, Probe> probes = new LinkedHashMap<>();
+    private static Map<BooleanSetting, List<Probe>> entryProbes() {
+        Map<BooleanSetting, List<Probe>> probes = new LinkedHashMap<>();
         // Loads the check's own settings here, with the context, so a probe run without one reads
         // them rather than loading them.
         ReleaseCheck.Stored.CHECKED_AT.savedValue();
         // A Threads start a day after the last try asks GitHub for the newest release.
-        probes.put(Settings.CHECK_FOR_RELEASES, ReleaseCheckForTests::aStartAsksGitHub);
+        probes.put(Settings.CHECK_FOR_RELEASES, Collections.singletonList(ReleaseCheckForTests::aStartAsksGitHub));
+        // An opened post's empty long press override is dropped, and text selection Threads turned on is off.
+        probes.put(Settings.COPY_TEXT, Arrays.asList(
+                () -> CopyText.longPress(new Object(), null) == null, () -> !CopyText.selection(true)));
         return probes;
     }
 
@@ -207,11 +212,14 @@ public class PausedHooksTest {
     }
 
     /** Adds a line to [wrong] for every entry probe that didn't answer [changes]. */
-    private static void everyEntryProbe(Map<BooleanSetting, Probe> probes, boolean changes, String when,
+    private static void everyEntryProbe(Map<BooleanSetting, List<Probe>> probes, boolean changes, String when,
                                         List<String> wrong) {
-        for (Map.Entry<BooleanSetting, Probe> entry : probes.entrySet()) {
-            if (entry.getValue().changedThreads() != changes) {
-                wrong.add(entry.getKey().key + ", " + when + (changes ? ": left Threads alone" : ": still changed Threads"));
+        for (Map.Entry<BooleanSetting, List<Probe>> entry : probes.entrySet()) {
+            for (int i = 0; i < entry.getValue().size(); i++) {
+                if (entry.getValue().get(i).changedThreads() != changes) {
+                    wrong.add(entry.getKey().key + ", probe " + i + ", " + when
+                            + (changes ? ": left Threads alone" : ": still changed Threads"));
+                }
             }
         }
     }
@@ -221,7 +229,7 @@ public class PausedHooksTest {
         for (BooleanSetting setting : settingsSwitches()) setting.save(true);
         Map<PatchFamily, List<Probe>> probes = probes();
         assertEquals("every family with a switch needs a probe here", switched(), probes.keySet());
-        Map<BooleanSetting, Probe> entry = entryProbes();
+        Map<BooleanSetting, List<Probe>> entry = entryProbes();
         assertEquals("every switch of the settings entry needs a probe here",
                 new HashSet<>(PatchFamily.ENTRY_SWITCHES), entry.keySet());
 
@@ -266,7 +274,7 @@ public class PausedHooksTest {
         for (BooleanSetting setting : settingsSwitches()) setting.save(true);
         Map<PatchFamily, List<Probe>> probes = probes();
         assertEquals("every family with a switch needs a probe here", switched(), probes.keySet());
-        Map<BooleanSetting, Probe> entry = entryProbes();
+        Map<BooleanSetting, List<Probe>> entry = entryProbes();
 
         List<String> wrong = new ArrayList<>();
         SettingsContextRule.withoutContext(() -> {

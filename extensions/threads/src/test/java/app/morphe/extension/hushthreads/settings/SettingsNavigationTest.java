@@ -88,9 +88,9 @@ public class SettingsNavigationTest {
 
     @Test public void homeAndEveryCategoryAreReachableWithoutRemovingTheModel() {
         assertNotNull(page.navigation);
-        // The status card, Browse settings, Feed, Privacy, Downloads, More settings and Support HushThreads.
-        assertEquals(7, list().getCount());
-        assertEquals(9, page.sections().size());
+        // The status card, Browse settings, Feed, Privacy, Downloads, Posts, More settings and Support HushThreads.
+        assertEquals(8, list().getCount());
+        assertEquals(10, page.sections().size());
         int total = page.getPreferenceScreen().getRootAdapter().getCount();
         for (Preference section : page.sections()) {
             assertTrue(page.navigation.open(section));
@@ -100,7 +100,7 @@ public class SettingsNavigationTest {
             assertTrue(page.navigation.back());
             while (page.navigation.back()) { }
         }
-        assertEquals(7, list().getCount());
+        assertEquals(8, list().getCount());
     }
 
     /**
@@ -361,7 +361,7 @@ public class SettingsNavigationTest {
         assertEquals(7, list().getCount());
         while (page.navigation.back()) { }
         assertEquals("the row isn't under the status card", 1, position(SettingsNavigation.RESTART));
-        assertEquals(8, list().getCount());
+        assertEquals(9, list().getCount());
         findSearch(dialog.getView()).setText("Hide ads");
         ShadowLooper.idleMainLooper();
         assertEquals(0, position(SettingsNavigation.RESTART));
@@ -376,7 +376,7 @@ public class SettingsNavigationTest {
         AbstractPreferenceFragment.restartPending.clear();
         page.navigation.restartChanged();
         assertFalse("the row stayed with nothing waiting", contains(SettingsNavigation.RESTART));
-        assertEquals(7, list().getCount());
+        assertEquals(8, list().getCount());
     }
 
     /**
@@ -457,13 +457,13 @@ public class SettingsNavigationTest {
         assertTrue(page.navigation.back());
         assertTrue("Back didn't lead to More settings", contains("section_Appearance"));
         assertTrue(page.navigation.back());
-        assertEquals(7, list().getCount());
+        assertEquals(8, list().getCount());
 
         showOn("more");
         assertTrue("the screen didn't open on More settings", contains("section_Appearance"));
 
         showOn("A page from another build");
-        assertEquals(7, list().getCount());
+        assertEquals(8, list().getCount());
         assertFalse(page.navigation.back());
     }
 
@@ -623,7 +623,7 @@ public class SettingsNavigationTest {
         assertEquals("No matching settings", ((Preference) list().getItemAtPosition(0)).getTitle());
         assertTrue(page.navigation.back());
         assertEquals("", search.getText().toString());
-        assertEquals(7, list().getCount());
+        assertEquals(8, list().getCount());
     }
 
     /**
@@ -729,13 +729,13 @@ public class SettingsNavigationTest {
         page.navigation.open(page.findPreference(Settings.HIDE_ADS.key));
         SettingsL10nTest.backOf(dialog).performClick();
         assertTrue(dialog.getDialog().isShowing());
-        assertEquals(7, list().getCount());
+        assertEquals(8, list().getCount());
         page.navigation.navigate("About");
         dialog.getDialog().onBackPressed();
         // More settings: Appearance, Links, Updates, Set when you patched, Pause, backup and diagnostics, and About.
         assertEquals(6, list().getCount());
         dialog.getDialog().onBackPressed();
-        assertEquals(7, list().getCount());
+        assertEquals(8, list().getCount());
         dialog.getDialog().onBackPressed();
         ShadowLooper.idleMainLooper();
         assertFalse(controller.get().isFinishing());
@@ -1116,7 +1116,7 @@ public class SettingsNavigationTest {
         page = page(dialog);
         Map<String, Object> before = savedValues();
 
-        assertEquals(8, list().getCount());
+        assertEquals(9, list().getCount());
         assertEquals(1, position(HushThreadsPreferenceFragment.MISSING_DEFAULTS));
         Preference row = (Preference) list().getItemAtPosition(1);
         assertEquals("1 default patch isn't in this build", String.valueOf(row.getTitle()));

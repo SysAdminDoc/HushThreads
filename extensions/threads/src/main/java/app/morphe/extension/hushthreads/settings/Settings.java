@@ -135,6 +135,16 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_download_compatible", FALSE);
 
     /**
+     * Holding a post's text opens Threads' Copy text sheet, on an opened post too, in place of a
+     * press that does nothing or Threads' word selection
+     * ({@link app.morphe.extension.hushthreads.feed.CopyText}). The settings patch carries its
+     * hooks, so it's the settings entry's own switch ({@link PatchFamily#ENTRY_SWITCHES}). On by
+     * default: an opened post's long press does nothing without it.
+     */
+    public static final BooleanSetting COPY_TEXT =
+            new BooleanSetting("hushthreads_copy_text", TRUE);
+
+    /**
      * Once a day, when Threads starts, ask api.github.com whether a newer HushThreads release is
      * out, and say so on the settings screen ({@link ReleaseCheck}). It's the settings entry's own
      * switch rather than a patch's, so every build has it ({@link PatchFamily#ENTRY_SWITCHES}). Off

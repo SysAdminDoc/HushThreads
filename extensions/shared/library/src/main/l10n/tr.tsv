@@ -298,3 +298,8 @@ Restart Threads to apply this change	Bu değişikliği uygulamak için Threads'i
 Restart Threads to apply %1$d changes	%1$d değişikliği uygulamak için Threads'i yeniden başlat
 # context: the restart row's summary; the settings screen comes back on the page it was on
 Threads closes and reopens on this page.	Threads kapanır ve bu sayfada yeniden açılır.
+# Copy text on long press (#9): its heading, the heading's line on the main page, the switch and its summary. Copy text is the name of Threads' own menu item for copying a post, so use the name Threads shows in this language.
+Posts	Gönderiler
+Copy text when you hold a post	Bir gönderiye basılı tutunca metni kopyala
+Copy text on long press	Uzun basınca metni kopyala
+Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Bir gönderinin metnine basılı tutunca, açtığın bir gönderide de Metni kopyala açılır. Böylece kelime seçmek yerine gönderinin tamamını bağlantılarıyla birlikte alırsın.

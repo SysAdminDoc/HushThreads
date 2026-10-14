@@ -356,6 +356,12 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
             }
         }
 
+        // In every build: the settings patch carries Copy text's hooks (#9).
+        PreferenceCategory posts = category(screen, L10n.t("Posts"));
+        posts.addPreference(toggle(context, Settings.COPY_TEXT, L10n.t("Copy text on long press"),
+                L10n.t("Holding a post's text opens Copy text, on an opened post too, so you get the whole post "
+                    + "with its links instead of picking out words.")));
+
         // In every build: Android checks Threads' links against Meta's signing key, which no
         // re-signed build has, whatever its patches.
         PreferenceCategory links = category(screen, L10n.t("Links"));
@@ -899,6 +905,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         else if (setting == Settings.PURE_BLACK) icon = SettingsIcons.MOON;
         else if (setting == Settings.HIDE_INSTAGRAM_BUTTON) icon = SettingsIcons.CAMERA;
         else if (setting == Settings.HIDE_GHOST_POST_BUBBLES) icon = SettingsIcons.CHAT;
+        else if (setting == Settings.COPY_TEXT) icon = SettingsIcons.CHAT;
         else if (setting == Settings.CHECK_FOR_RELEASES) icon = SettingsIcons.UPDATES;
         mark(preference, icon);
         return preference;

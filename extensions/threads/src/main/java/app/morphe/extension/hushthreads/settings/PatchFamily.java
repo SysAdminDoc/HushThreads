@@ -94,10 +94,12 @@ public enum PatchFamily {
 
     /**
      * The switches of the settings entry itself, which no family owns: every build with this screen
-     * carries them. Today that's the release check. Pause turns them off like a family's switches,
-     * so the screen draws them above the Pause row with the rest.
+     * carries them: the release check, and Copy text on long press, whose hooks the settings patch
+     * brings in. Pause turns them off like a family's switches, so the screen draws them above the
+     * Pause row with the rest.
      */
-    static final List<BooleanSetting> ENTRY_SWITCHES = Collections.singletonList(Settings.CHECK_FOR_RELEASES);
+    static final List<BooleanSetting> ENTRY_SWITCHES =
+            Collections.unmodifiableList(Arrays.asList(Settings.CHECK_FOR_RELEASES, Settings.COPY_TEXT));
 
 
     /**
