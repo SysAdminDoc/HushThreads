@@ -1001,6 +1001,11 @@ public class SettingsNavigationTest {
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
     public void renderEveryPageAndSearchOffscreen() throws Exception {
         capture("00-overview", 1734);
+        // The rows that used to sit on a More settings page of their own, at the foot of home.
+        list().setSelection(list().getCount() - 1);
+        capture("00-overview-bottom", 1734);
+        assertEquals("Support HushThreads", String.valueOf(((Preference) list().getItemAtPosition(
+                list().getLastVisiblePosition())).getTitle()));
         for (Preference section : page.sections()) {
             page.navigation.open(section);
             String name = section.getTitle().toString().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z]+", "-");
@@ -1011,9 +1016,6 @@ public class SettingsNavigationTest {
                 capture(name + "-end", height);
             }
         }
-        // The rows that used to sit on a More settings page of their own, at the foot of home.
-        list().setSelection(list().getCount() - 1);
-        capture("00-overview-bottom", 1734);
         findSearch(dialog.getView()).setText("links");
         ShadowLooper.idleMainLooper(1, java.util.concurrent.TimeUnit.SECONDS);
         capture("search-results");
@@ -1051,9 +1053,12 @@ public class SettingsNavigationTest {
         AlertDialog notice = (AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
         captureDialog("dialog-licenses", notice);
         notice.dismiss();
+        // Home again, so the screen recreated below opens on home rather than About.
+        assertTrue(page.navigation.back());
 
         PatchFamily.inBuildForTests = PatchFamily.DEFAULT_SELECTION;
         recreate();
+        assertTrue("the default overview isn't home", contains(SettingsNavigation.QUICK_SETUPS));
         capture("default-overview", 1734);
         for (Preference section : page.sections()) {
             page.navigation.open(section);
