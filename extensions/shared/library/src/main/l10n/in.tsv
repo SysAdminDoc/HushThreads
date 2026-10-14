@@ -303,3 +303,16 @@ Posts	Postingan
 Copy text when you hold a post	Salin teks saat Anda menekan lama postingan
 Copy text on long press	Salin teks dengan tekan lama
 Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Menekan lama teks postingan membuka Salin teks, juga di postingan yang sedang dibuka, jadi Anda mendapat seluruh postingan beserta tautannya, bukan memilih kata satu per satu.
+# Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
+Quick setups	Penyiapan cepat
+Turn on a set of switches in one tap, or put every switch back the way it started.	Nyalakan sekumpulan sakelar dengan sekali ketuk, atau kembalikan semua sakelar seperti semula.
+Quiet	Tenang
+Hides ads and the cards that suggest accounts to follow.	Menyembunyikan iklan dan kartu yang menyarankan akun untuk diikuti.
+Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.	Menghentikan sebagian besar laporan penggunaan dan menghapus pelacakan dari tautan yang Anda bagikan. Threads juga tidak diberi tahu tentang tangkapan layar Anda.
+Back to defaults	Kembali ke bawaan
+Puts every feature switch back the way it started.	Mengembalikan setiap sakelar fitur seperti semula.
+Changed %1$d setting	%1$d pengaturan diubah
+Changed %1$d settings	%1$d pengaturan diubah
+# Report a problem: the main page row and its summary. A tap opens a new GitHub bug report in the browser.
+Report a problem	Laporkan masalah
+Opens a GitHub report with your versions and settings filled in. Add what happened.	Membuka laporan GitHub dengan versi dan pengaturan Anda yang sudah terisi. Tambahkan apa yang terjadi.

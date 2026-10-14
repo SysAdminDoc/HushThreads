@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(558);
+        Map<String, String> table = new HashMap<>(580);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -125,6 +125,8 @@ public final class L10nTranslations {
                 "Fragt GitHub sofort nach der neuesten Version, auch wenn der Schalter dar\u00fcber aus ist.");
         table.put("Back",
                 "Zur\u00fcck");
+        table.put("Back to defaults",
+                "Zur\u00fcck zum Standard");
         table.put("Best",
                 "Beste");
         table.put("Blocked: %1$s. Not found in this build: %2$s.",
@@ -143,6 +145,10 @@ public final class L10nTranslations {
                 "Speichern dieses Videos abbrechen");
         table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "Karussell abgebrochen. Gespeichert %1$d. Fehlgeschlagen %2$d. \u00dcbersprungen %3$d.");
+        table.put("Changed %1$d setting",
+                "%1$d Einstellung ge\u00e4ndert");
+        table.put("Changed %1$d settings",
+                "%1$d Einstellungen ge\u00e4ndert");
         table.put("Changing these",
                 "So \u00e4nderst du sie");
         table.put("Check for new HushThreads releases",
@@ -171,15 +177,15 @@ public final class L10nTranslations {
                 "Kurzbericht kopieren");
         table.put("Copy text on long press",
                 "Text kopieren per langem Dr\u00fccken");
+    }
+
+    private static void fillDe1(Map<String, String> table) {
         table.put("Copy text when you hold a post",
                 "Text kopieren, wenn du einen Beitrag gedr\u00fcckt h\u00e4ltst");
         table.put("Copying to the gallery",
                 "Wird in die Galerie kopiert");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "Die Einstellungen lie\u00dfen sich nicht importieren, und deine vorherigen lie\u00dfen sich nicht wiederherstellen. Pr\u00fcfe die Schalter auf diesem Bildschirm.");
-    }
-
-    private static void fillDe1(Map<String, String> table) {
         table.put("Couldn't import the settings. Nothing was changed.",
                 "Die Einstellungen lie\u00dfen sich nicht importieren. Es wurde nichts ge\u00e4ndert.");
         table.put("Couldn't open that file. Nothing was changed.",
@@ -264,6 +270,8 @@ public final class L10nTranslations {
                 "Vorgeschlagene Nutzer ausblenden");
         table.put("Hide the Instagram button",
                 "Instagram-Button ausblenden");
+        table.put("Hides ads and the cards that suggest accounts to follow.",
+                "Blendet Werbung und die Karten mit vorgeschlagenen Konten zum Folgen aus.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
                 "H\u00e4ltst du den Text eines Beitrags gedr\u00fcckt, \u00f6ffnet sich Text kopieren, auch in einem ge\u00f6ffneten Beitrag. So bekommst du den ganzen Beitrag mit seinen Links, statt einzelne W\u00f6rter auszuw\u00e4hlen.");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
@@ -292,6 +300,9 @@ public final class L10nTranslations {
                 "Importieren");
         table.put("Import settings",
                 "Einstellungen importieren");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Importing settings",
                 "Einstellungen werden importiert");
         table.put("It targets Threads %1$s.",
@@ -300,9 +311,6 @@ public final class L10nTranslations {
                 "Bild und Ton werden zusammengef\u00fcgt");
         table.put("Jump to a section",
                 "Zu einem Abschnitt springen");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Keep feed position on return",
                 "Feedposition beim Zur\u00fcckkehren beibehalten");
         table.put("Last carousel save",
@@ -351,6 +359,8 @@ public final class L10nTranslations {
                 "Links in deinem Browser \u00f6ffnen");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201eUnterst\u00fctzte Links \u00f6ffnen\u201c ist f\u00fcr diese App in den Android-Einstellungen aus. Tippe, um es einzuschalten.");
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "\u00d6ffnet eine GitHub-Meldung, in der deine Versionen und Einstellungen schon stehen. Erg\u00e4nze, was passiert ist.");
         table.put("Page %1$d of %2$d",
                 "Seite %1$d von %2$d");
         table.put("Pause",
@@ -369,6 +379,12 @@ public final class L10nTranslations {
                 "Datenschutz");
         table.put("Pure black dark mode",
                 "Rein schwarzer Dunkelmodus");
+        table.put("Puts every feature switch back the way it started.",
+                "Setzt jeden Funktionsschalter auf seinen Ausgangszustand zur\u00fcck.");
+        table.put("Quick setups",
+                "Schnelleinstellungen");
+        table.put("Quiet",
+                "Ruhig");
         table.put("Re-signed build fix",
                 "Fix f\u00fcr neu signierte Builds");
         table.put("Reading the settings file",
@@ -381,6 +397,8 @@ public final class L10nTranslations {
                 "Entfernt die Karten, die Konten zum Folgen vorschlagen, in deinem Feed und in Profilen. Normale Beitr\u00e4ge und Reposts bleiben.");
         table.put("Reopen the post and save again.",
                 "\u00d6ffne den Beitrag erneut und speichere noch einmal.");
+        table.put("Report a problem",
+                "Problem melden");
         table.put("Restart Threads to apply %1$d changes",
                 "Starte Threads neu, um %1$d \u00c4nderungen zu \u00fcbernehmen");
         table.put("Restart Threads to apply this change",
@@ -405,6 +423,9 @@ public final class L10nTranslations {
                 "Vollst\u00e4ndigen Bericht speichern");
         table.put("Save photo",
                 "Foto speichern");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Save photos and videos",
                 "Fotos und Videos speichern");
         table.put("Save the full report in Download/Morphe.",
@@ -423,9 +444,6 @@ public final class L10nTranslations {
                 "Gespeichert unter %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Gespeichert unter %1$s, in geringerer Qualit\u00e4t als auf Threads");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "In der Galerie gespeichert");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -484,6 +502,8 @@ public final class L10nTranslations {
                 "Bleibt w\u00e4hrend der Pause aktiv");
         table.put("Stop analytics uploads",
                 "Analyse-Uploads stoppen");
+        table.put("Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.",
+                "H\u00e4lt die meisten Nutzungsberichte zur\u00fcck und entfernt das Tracking aus den Links, die du teilst. Threads erf\u00e4hrt auch nichts von deinen Screenshots.");
         table.put("Stops most usage reports from reaching Meta. Some may still get through. Turn this off to send them as before.",
                 "H\u00e4lt die meisten Nutzungsberichte von Meta fern. Einige k\u00f6nnen trotzdem durchkommen. Schalte das aus, um sie wie zuvor zu senden.");
         table.put("Suggested accounts in your feed",
@@ -526,6 +546,9 @@ public final class L10nTranslations {
                 "Die App, in der die Einstellungsdatei liegt, braucht zu lange, deshalb wartet HushThreads nicht mehr. Sie kann das Speichern noch abschlie\u00dfen, also pr\u00fcfe die Datei, bevor du dich darauf verl\u00e4sst.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Der Diagnosebericht lie\u00df sich noch nicht speichern. Versuche es gleich noch einmal.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Der Diagnosebericht lie\u00df sich nicht speichern. Versuche es noch einmal.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
@@ -546,9 +569,6 @@ public final class L10nTranslations {
                 "Es gibt keine Diagnosedaten zum Wiederherstellen.");
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Diese werden beim Patchen in Morphe Manager ausgew\u00e4hlt, und die Pause schaltet sie nicht aus. Patche erneut, um sie zu \u00e4ndern.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Dieser Build hat nicht festgehalten, welche Berichtsarten er abdeckt. Patche erneut, um sie zu sehen.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -575,6 +595,8 @@ public final class L10nTranslations {
                 "Versuche es noch einmal oder kehre zu Threads zur\u00fcck.");
         table.put("Turn features on or off",
                 "Funktionen ein- oder ausschalten");
+        table.put("Turn on a set of switches in one tap, or put every switch back the way it started.",
+                "Schalte mehrere Schalter mit einem Tippen ein oder setze alle Schalter auf ihren Ausgangszustand zur\u00fcck.");
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
                 "Schaltet beim n\u00e4chsten Start von Threads jeden HushThreads-Schalter au\u00dfer der Debug-Protokollierung aus. Was du beim Patchen gew\u00e4hlt hast, bleibt, und deine Auswahl bleibt gespeichert.");
         table.put("Undo",
@@ -630,7 +652,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(558);
+        Map<String, String> table = new HashMap<>(580);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -708,6 +730,8 @@ public final class L10nTranslations {
                 "Pregunta ahora mismo a GitHub por la versi\u00f3n m\u00e1s reciente, aunque el interruptor de arriba est\u00e9 desactivado.");
         table.put("Back",
                 "Atr\u00e1s");
+        table.put("Back to defaults",
+                "Volver a los valores predeterminados");
         table.put("Best",
                 "La mejor");
         table.put("Blocked: %1$s. Not found in this build: %2$s.",
@@ -726,6 +750,10 @@ public final class L10nTranslations {
                 "Cancelar el guardado de este video");
         table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "Carrusel cancelado. Guardados %1$d. Fallidos %2$d. Omitidos %3$d.");
+        table.put("Changed %1$d setting",
+                "Se cambi\u00f3 %1$d ajuste");
+        table.put("Changed %1$d settings",
+                "Se cambiaron %1$d ajustes");
         table.put("Changing these",
                 "C\u00f3mo cambiarlos");
         table.put("Check for new HushThreads releases",
@@ -754,15 +782,15 @@ public final class L10nTranslations {
                 "Copiar informe r\u00e1pido");
         table.put("Copy text on long press",
                 "Copiar texto al mantener pulsado");
+    }
+
+    private static void fillEs1(Map<String, String> table) {
         table.put("Copy text when you hold a post",
                 "Copiar texto al mantener pulsada una publicaci\u00f3n");
         table.put("Copying to the gallery",
                 "Copiando a la galer\u00eda");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "No se pudo importar la configuraci\u00f3n ni restaurar la que ten\u00edas. Revisa los interruptores de esta pantalla.");
-    }
-
-    private static void fillEs1(Map<String, String> table) {
         table.put("Couldn't import the settings. Nothing was changed.",
                 "No se pudo importar la configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("Couldn't open that file. Nothing was changed.",
@@ -847,6 +875,8 @@ public final class L10nTranslations {
                 "Ocultar usuarios sugeridos");
         table.put("Hide the Instagram button",
                 "Ocultar el bot\u00f3n de Instagram");
+        table.put("Hides ads and the cards that suggest accounts to follow.",
+                "Oculta los anuncios y las tarjetas que sugieren cuentas para seguir.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
                 "Al mantener pulsado el texto de una publicaci\u00f3n se abre Copiar texto, tambi\u00e9n en una publicaci\u00f3n abierta, as\u00ed copias la publicaci\u00f3n entera con sus enlaces en vez de elegir palabras.");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
@@ -875,6 +905,9 @@ public final class L10nTranslations {
                 "Importar");
         table.put("Import settings",
                 "Importar configuraci\u00f3n");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Importing settings",
                 "Importando la configuraci\u00f3n");
         table.put("It targets Threads %1$s.",
@@ -883,9 +916,6 @@ public final class L10nTranslations {
                 "Uniendo la imagen y el sonido");
         table.put("Jump to a section",
                 "Ir a una secci\u00f3n");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Keep feed position on return",
                 "Mantener la posici\u00f3n del feed al volver");
         table.put("Last carousel save",
@@ -934,6 +964,8 @@ public final class L10nTranslations {
                 "Abrir enlaces en tu navegador");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir enlaces compatibles\u201d est\u00e1 desactivado para esta app en los ajustes de Android. Toca para activarlo.");
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "Abre un informe en GitHub con tus versiones y ajustes ya puestos. A\u00f1ade qu\u00e9 pas\u00f3.");
         table.put("Page %1$d of %2$d",
                 "P\u00e1gina %1$d de %2$d");
         table.put("Pause",
@@ -952,6 +984,12 @@ public final class L10nTranslations {
                 "Privacidad");
         table.put("Pure black dark mode",
                 "Modo oscuro negro puro");
+        table.put("Puts every feature switch back the way it started.",
+                "Devuelve cada interruptor de funci\u00f3n a como estaba al principio.");
+        table.put("Quick setups",
+                "Configuraci\u00f3n r\u00e1pida");
+        table.put("Quiet",
+                "Tranquilo");
         table.put("Re-signed build fix",
                 "Arreglo para la nueva firma");
         table.put("Reading the settings file",
@@ -964,6 +1002,8 @@ public final class L10nTranslations {
                 "Quita las tarjetas que sugieren cuentas para seguir, en tu feed y en los perfiles. Las publicaciones normales y los reposts se quedan.");
         table.put("Reopen the post and save again.",
                 "Vuelve a abrir la publicaci\u00f3n y gu\u00e1rdala otra vez.");
+        table.put("Report a problem",
+                "Informar de un problema");
         table.put("Restart Threads to apply %1$d changes",
                 "Reinicia Threads para aplicar %1$d cambios");
         table.put("Restart Threads to apply this change",
@@ -988,6 +1028,9 @@ public final class L10nTranslations {
                 "Guardar informe completo");
         table.put("Save photo",
                 "Guardar foto");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Save photos and videos",
                 "Guardar fotos y videos");
         table.put("Save the full report in Download/Morphe.",
@@ -1006,9 +1049,6 @@ public final class L10nTranslations {
                 "Se guard\u00f3 en %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Se guard\u00f3 en %1$s con menos calidad que en Threads");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Se guard\u00f3 en la galer\u00eda");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -1067,6 +1107,8 @@ public final class L10nTranslations {
                 "Se mantiene durante la pausa");
         table.put("Stop analytics uploads",
                 "Detener el env\u00edo de anal\u00edticas");
+        table.put("Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.",
+                "Detiene la mayor\u00eda de los informes de uso y quita el seguimiento de los enlaces que compartes. Threads tampoco se entera de tus capturas de pantalla.");
         table.put("Stops most usage reports from reaching Meta. Some may still get through. Turn this off to send them as before.",
                 "Evita que la mayor\u00eda de los informes de uso lleguen a Meta. Algunos a\u00fan pueden pasar. Desact\u00edvalo para enviarlos como antes.");
         table.put("Suggested accounts in your feed",
@@ -1109,6 +1151,9 @@ public final class L10nTranslations {
                 "La app que guarda el archivo de configuraci\u00f3n tarda demasiado, as\u00ed que HushThreads dej\u00f3 de esperar. Esa app a\u00fan puede terminar de guardarlo, as\u00ed que revisa el archivo antes de confiar en \u00e9l.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Todav\u00eda no se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo en un momento.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "No se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
@@ -1129,9 +1174,6 @@ public final class L10nTranslations {
                 "No hay datos de diagn\u00f3stico que restaurar.");
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Se eligen en Morphe Manager al parchear, y Pausar no los desactiva. Vuelve a parchear para cambiarlos.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Esta versi\u00f3n no registr\u00f3 qu\u00e9 tipos de informe cubre. Vuelve a parchear para verlos.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -1158,6 +1200,8 @@ public final class L10nTranslations {
                 "Int\u00e9ntalo de nuevo o vuelve a Threads.");
         table.put("Turn features on or off",
                 "Activa o desactiva funciones");
+        table.put("Turn on a set of switches in one tap, or put every switch back the way it started.",
+                "Activa varios interruptores con un toque o devuelve todos los interruptores a como estaban al principio.");
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
                 "Desactiva todos los interruptores de HushThreads, salvo el Registro de depuraci\u00f3n, la pr\u00f3xima vez que se abra Threads. Lo que elegiste al parchear se mantiene y tus preferencias quedan guardadas.");
         table.put("Undo",
@@ -1213,7 +1257,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(558);
+        Map<String, String> table = new HashMap<>(580);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1291,6 +1335,8 @@ public final class L10nTranslations {
                 "Menanyakan rilis terbaru ke GitHub sekarang juga, meski sakelar di atas mati.");
         table.put("Back",
                 "Kembali");
+        table.put("Back to defaults",
+                "Kembali ke bawaan");
         table.put("Best",
                 "Terbaik");
         table.put("Blocked: %1$s. Not found in this build: %2$s.",
@@ -1309,6 +1355,10 @@ public final class L10nTranslations {
                 "Batalkan penyimpanan video ini");
         table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "Carousel dibatalkan. Disimpan %1$d. Gagal %2$d. Dilewati %3$d.");
+        table.put("Changed %1$d setting",
+                "%1$d pengaturan diubah");
+        table.put("Changed %1$d settings",
+                "%1$d pengaturan diubah");
         table.put("Changing these",
                 "Mengubah pilihan ini");
         table.put("Check for new HushThreads releases",
@@ -1337,15 +1387,15 @@ public final class L10nTranslations {
                 "Salin laporan singkat");
         table.put("Copy text on long press",
                 "Salin teks dengan tekan lama");
+    }
+
+    private static void fillIn1(Map<String, String> table) {
         table.put("Copy text when you hold a post",
                 "Salin teks saat Anda menekan lama postingan");
         table.put("Copying to the gallery",
                 "Menyalin ke galeri");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "Pengaturan tidak dapat diimpor, dan pengaturan sebelumnya tidak dapat dikembalikan. Periksa sakelar di layar ini.");
-    }
-
-    private static void fillIn1(Map<String, String> table) {
         table.put("Couldn't import the settings. Nothing was changed.",
                 "Pengaturan tidak dapat diimpor. Tidak ada yang diubah.");
         table.put("Couldn't open that file. Nothing was changed.",
@@ -1430,6 +1480,8 @@ public final class L10nTranslations {
                 "Sembunyikan pengguna yang disarankan");
         table.put("Hide the Instagram button",
                 "Sembunyikan tombol Instagram");
+        table.put("Hides ads and the cards that suggest accounts to follow.",
+                "Menyembunyikan iklan dan kartu yang menyarankan akun untuk diikuti.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
                 "Menekan lama teks postingan membuka Salin teks, juga di postingan yang sedang dibuka, jadi Anda mendapat seluruh postingan beserta tautannya, bukan memilih kata satu per satu.");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
@@ -1458,6 +1510,9 @@ public final class L10nTranslations {
                 "Impor");
         table.put("Import settings",
                 "Impor pengaturan");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Importing settings",
                 "Mengimpor pengaturan");
         table.put("It targets Threads %1$s.",
@@ -1466,9 +1521,6 @@ public final class L10nTranslations {
                 "Menggabungkan gambar dan suara");
         table.put("Jump to a section",
                 "Lompat ke bagian");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Keep feed position on return",
                 "Pertahankan posisi feed saat kembali");
         table.put("Last carousel save",
@@ -1517,6 +1569,8 @@ public final class L10nTranslations {
                 "Buka tautan di browser Anda");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cBuka link yang didukung\u201d nonaktif untuk aplikasi ini di pengaturan Android. Ketuk untuk mengaktifkannya.");
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "Membuka laporan GitHub dengan versi dan pengaturan Anda yang sudah terisi. Tambahkan apa yang terjadi.");
         table.put("Page %1$d of %2$d",
                 "Halaman %1$d dari %2$d");
         table.put("Pause",
@@ -1535,6 +1589,12 @@ public final class L10nTranslations {
                 "Privasi");
         table.put("Pure black dark mode",
                 "Mode gelap hitam pekat");
+        table.put("Puts every feature switch back the way it started.",
+                "Mengembalikan setiap sakelar fitur seperti semula.");
+        table.put("Quick setups",
+                "Penyiapan cepat");
+        table.put("Quiet",
+                "Tenang");
         table.put("Re-signed build fix",
                 "Perbaikan build yang ditandatangani ulang");
         table.put("Reading the settings file",
@@ -1547,6 +1607,8 @@ public final class L10nTranslations {
                 "Menghapus kartu yang menyarankan akun untuk diikuti, di feed Anda dan di profil. Postingan biasa dan repost tetap ada.");
         table.put("Reopen the post and save again.",
                 "Buka kembali postingan dan simpan lagi.");
+        table.put("Report a problem",
+                "Laporkan masalah");
         table.put("Restart Threads to apply %1$d changes",
                 "Mulai ulang Threads untuk menerapkan %1$d perubahan");
         table.put("Restart Threads to apply this change",
@@ -1571,6 +1633,9 @@ public final class L10nTranslations {
                 "Simpan laporan lengkap");
         table.put("Save photo",
                 "Simpan foto");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Save photos and videos",
                 "Simpan foto dan video");
         table.put("Save the full report in Download/Morphe.",
@@ -1589,9 +1654,6 @@ public final class L10nTranslations {
                 "Disimpan ke %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Disimpan ke %1$s dengan kualitas lebih rendah daripada di Threads");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Disimpan ke galeri");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -1650,6 +1712,8 @@ public final class L10nTranslations {
                 "Tetap aktif saat dijeda");
         table.put("Stop analytics uploads",
                 "Hentikan unggahan analitik");
+        table.put("Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.",
+                "Menghentikan sebagian besar laporan penggunaan dan menghapus pelacakan dari tautan yang Anda bagikan. Threads juga tidak diberi tahu tentang tangkapan layar Anda.");
         table.put("Stops most usage reports from reaching Meta. Some may still get through. Turn this off to send them as before.",
                 "Menghentikan sebagian besar laporan penggunaan agar tidak sampai ke Meta. Beberapa mungkin masih lolos. Matikan untuk mengirimnya seperti semula.");
         table.put("Suggested accounts in your feed",
@@ -1692,6 +1756,9 @@ public final class L10nTranslations {
                 "Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushThreads berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Laporan diagnostik belum dapat disimpan. Coba lagi dalam beberapa saat.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Laporan diagnostik tidak dapat disimpan. Coba lagi.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
@@ -1712,9 +1779,6 @@ public final class L10nTranslations {
                 "Tidak ada data diagnostik yang dapat dikembalikan.");
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Semua ini dipilih di Morphe Manager saat Anda menambal, dan Jeda tidak mematikannya. Tambal ulang untuk mengubahnya.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Build ini tidak mencatat jenis laporan apa yang dicakup. Tambal ulang untuk melihatnya.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -1741,6 +1805,8 @@ public final class L10nTranslations {
                 "Coba lagi, atau kembali ke Threads.");
         table.put("Turn features on or off",
                 "Aktifkan atau nonaktifkan fitur");
+        table.put("Turn on a set of switches in one tap, or put every switch back the way it started.",
+                "Nyalakan sekumpulan sakelar dengan sekali ketuk, atau kembalikan semua sakelar seperti semula.");
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
                 "Mematikan semua sakelar HushThreads kecuali Pencatatan debug saat Threads dibuka berikutnya. Yang Anda pilih saat menambal tetap berlaku, dan pilihan Anda tersimpan.");
         table.put("Undo",
@@ -1796,7 +1862,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(558);
+        Map<String, String> table = new HashMap<>(580);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1874,6 +1940,8 @@ public final class L10nTranslations {
                 "Consulta o GitHub agora mesmo em busca da vers\u00e3o mais nova, mesmo que a op\u00e7\u00e3o acima esteja desativada.");
         table.put("Back",
                 "Voltar");
+        table.put("Back to defaults",
+                "Voltar ao padr\u00e3o");
         table.put("Best",
                 "A melhor");
         table.put("Blocked: %1$s. Not found in this build: %2$s.",
@@ -1892,6 +1960,10 @@ public final class L10nTranslations {
                 "Cancelar o salvamento deste v\u00eddeo");
         table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "Carrossel cancelado. Salvos %1$d. Falhas %2$d. Ignorados %3$d.");
+        table.put("Changed %1$d setting",
+                "%1$d configura\u00e7\u00e3o alterada");
+        table.put("Changed %1$d settings",
+                "%1$d configura\u00e7\u00f5es alteradas");
         table.put("Changing these",
                 "Como alterar estas op\u00e7\u00f5es");
         table.put("Check for new HushThreads releases",
@@ -1920,15 +1992,15 @@ public final class L10nTranslations {
                 "Copiar relat\u00f3rio r\u00e1pido");
         table.put("Copy text on long press",
                 "Copiar texto ao tocar e segurar");
+    }
+
+    private static void fillPt_rBR1(Map<String, String> table) {
         table.put("Copy text when you hold a post",
                 "Copiar texto ao tocar e segurar uma publica\u00e7\u00e3o");
         table.put("Copying to the gallery",
                 "Copiando para a galeria");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "N\u00e3o foi poss\u00edvel importar as configura\u00e7\u00f5es nem restaurar as que voc\u00ea tinha. Confira as op\u00e7\u00f5es nesta tela.");
-    }
-
-    private static void fillPt_rBR1(Map<String, String> table) {
         table.put("Couldn't import the settings. Nothing was changed.",
                 "N\u00e3o foi poss\u00edvel importar as configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("Couldn't open that file. Nothing was changed.",
@@ -2013,6 +2085,8 @@ public final class L10nTranslations {
                 "Ocultar usu\u00e1rios sugeridos");
         table.put("Hide the Instagram button",
                 "Ocultar o bot\u00e3o do Instagram");
+        table.put("Hides ads and the cards that suggest accounts to follow.",
+                "Oculta os an\u00fancios e os cart\u00f5es que sugerem contas para seguir.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
                 "Tocar e segurar o texto de uma publica\u00e7\u00e3o abre Copiar texto, at\u00e9 numa publica\u00e7\u00e3o aberta, para voc\u00ea copiar a publica\u00e7\u00e3o inteira com os links em vez de escolher palavras.");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
@@ -2041,6 +2115,9 @@ public final class L10nTranslations {
                 "Importar");
         table.put("Import settings",
                 "Importar configura\u00e7\u00f5es");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Importing settings",
                 "Importando as configura\u00e7\u00f5es");
         table.put("It targets Threads %1$s.",
@@ -2049,9 +2126,6 @@ public final class L10nTranslations {
                 "Juntando a imagem e o som");
         table.put("Jump to a section",
                 "Ir para uma se\u00e7\u00e3o");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Keep feed position on return",
                 "Manter a posi\u00e7\u00e3o no feed ao voltar");
         table.put("Last carousel save",
@@ -2100,6 +2174,8 @@ public final class L10nTranslations {
                 "Abrir links no seu navegador");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir links compat\u00edveis\u201d est\u00e1 desativado para este app nas configura\u00e7\u00f5es do Android. Toque para ativar.");
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "Abre um relato no GitHub com suas vers\u00f5es e configura\u00e7\u00f5es j\u00e1 preenchidas. Conte o que aconteceu.");
         table.put("Page %1$d of %2$d",
                 "P\u00e1gina %1$d de %2$d");
         table.put("Pause",
@@ -2118,6 +2194,12 @@ public final class L10nTranslations {
                 "Privacidade");
         table.put("Pure black dark mode",
                 "Modo escuro preto puro");
+        table.put("Puts every feature switch back the way it started.",
+                "Volta cada op\u00e7\u00e3o de recurso ao estado inicial.");
+        table.put("Quick setups",
+                "Configura\u00e7\u00f5es r\u00e1pidas");
+        table.put("Quiet",
+                "Tranquilo");
         table.put("Re-signed build fix",
                 "Corre\u00e7\u00e3o para vers\u00e3o com nova assinatura");
         table.put("Reading the settings file",
@@ -2130,6 +2212,8 @@ public final class L10nTranslations {
                 "Remove os cart\u00f5es que sugerem contas para seguir, no seu feed e nos perfis. Publica\u00e7\u00f5es comuns e reposts continuam.");
         table.put("Reopen the post and save again.",
                 "Abra a publica\u00e7\u00e3o novamente e salve outra vez.");
+        table.put("Report a problem",
+                "Relatar um problema");
         table.put("Restart Threads to apply %1$d changes",
                 "Reinicie o Threads para aplicar %1$d altera\u00e7\u00f5es");
         table.put("Restart Threads to apply this change",
@@ -2154,6 +2238,9 @@ public final class L10nTranslations {
                 "Salvar relat\u00f3rio completo");
         table.put("Save photo",
                 "Salvar foto");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Save photos and videos",
                 "Salvar fotos e v\u00eddeos");
         table.put("Save the full report in Download/Morphe.",
@@ -2172,9 +2259,6 @@ public final class L10nTranslations {
                 "Salvo em %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Salvo em %1$s com qualidade menor que no Threads");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Salvo na galeria");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -2233,6 +2317,8 @@ public final class L10nTranslations {
                 "O que continua ativo na pausa");
         table.put("Stop analytics uploads",
                 "Parar o envio de dados de an\u00e1lise");
+        table.put("Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.",
+                "Bloqueia a maioria dos relat\u00f3rios de uso e tira o rastreamento dos links que voc\u00ea compartilha. O Threads tamb\u00e9m n\u00e3o fica sabendo das suas capturas de tela.");
         table.put("Stops most usage reports from reaching Meta. Some may still get through. Turn this off to send them as before.",
                 "Impede que a maioria dos relat\u00f3rios de uso chegue \u00e0 Meta. Alguns ainda podem passar. Desligue para envi\u00e1-los como antes.");
         table.put("Suggested accounts in your feed",
@@ -2275,6 +2361,9 @@ public final class L10nTranslations {
                 "O app que guarda o arquivo de configura\u00e7\u00f5es est\u00e1 demorando demais, ent\u00e3o o HushThreads parou de esperar. Esse app ainda pode terminar de salv\u00e1-lo, ent\u00e3o confira o arquivo antes de confiar nele.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "O relat\u00f3rio de diagn\u00f3stico ainda n\u00e3o p\u00f4de ser salvo. Tente de novo em instantes.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "N\u00e3o foi poss\u00edvel salvar o relat\u00f3rio de diagn\u00f3stico. Tente de novo.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
@@ -2295,9 +2384,6 @@ public final class L10nTranslations {
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para restaurar.");
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Eles s\u00e3o escolhidos no Morphe Manager quando voc\u00ea aplica os patches, e a pausa n\u00e3o os desativa. Aplique os patches novamente para alter\u00e1-los.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Esta vers\u00e3o n\u00e3o registrou quais tipos de relat\u00f3rio cobre. Aplique os patches de novo para ver.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -2324,6 +2410,8 @@ public final class L10nTranslations {
                 "Tente novamente ou volte para o Threads.");
         table.put("Turn features on or off",
                 "Ative ou desative recursos");
+        table.put("Turn on a set of switches in one tap, or put every switch back the way it started.",
+                "Ative um conjunto de op\u00e7\u00f5es com um toque ou volte todas as op\u00e7\u00f5es ao estado inicial.");
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
                 "Desliga todas as op\u00e7\u00f5es do HushThreads, menos o Registro de depura\u00e7\u00e3o, na pr\u00f3xima vez que o Threads abrir. O que voc\u00ea escolheu ao aplicar os patches continua, e suas escolhas ficam salvas.");
         table.put("Undo",
@@ -2379,7 +2467,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(558);
+        Map<String, String> table = new HashMap<>(580);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2457,6 +2545,8 @@ public final class L10nTranslations {
                 "Yukar\u0131daki anahtar kapal\u0131 olsa bile GitHub'a en yeni s\u00fcr\u00fcm\u00fc hemen sorar.");
         table.put("Back",
                 "Geri");
+        table.put("Back to defaults",
+                "Varsay\u0131lanlara d\u00f6n");
         table.put("Best",
                 "En iyi");
         table.put("Blocked: %1$s. Not found in this build: %2$s.",
@@ -2475,6 +2565,10 @@ public final class L10nTranslations {
                 "Bu videonun kaydedilmesini iptal et");
         table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "\u00c7oklu g\u00f6nderi iptal edildi. Kaydedilen %1$d. Ba\u015far\u0131s\u0131z %2$d. Atlanan %3$d.");
+        table.put("Changed %1$d setting",
+                "%1$d ayar de\u011fi\u015ftirildi");
+        table.put("Changed %1$d settings",
+                "%1$d ayar de\u011fi\u015ftirildi");
         table.put("Changing these",
                 "Bunlar\u0131 de\u011fi\u015ftirmek");
         table.put("Check for new HushThreads releases",
@@ -2503,15 +2597,15 @@ public final class L10nTranslations {
                 "H\u0131zl\u0131 raporu kopyala");
         table.put("Copy text on long press",
                 "Uzun bas\u0131nca metni kopyala");
+    }
+
+    private static void fillTr1(Map<String, String> table) {
         table.put("Copy text when you hold a post",
                 "Bir g\u00f6nderiye bas\u0131l\u0131 tutunca metni kopyala");
         table.put("Copying to the gallery",
                 "Galeriye kopyalan\u0131yor");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
                 "Ayarlar i\u00e7e aktar\u0131lamad\u0131 ve \u00f6nceki ayarlar\u0131n geri y\u00fcklenemedi. Bu ekrandaki anahtarlar\u0131 kontrol et.");
-    }
-
-    private static void fillTr1(Map<String, String> table) {
         table.put("Couldn't import the settings. Nothing was changed.",
                 "Ayarlar i\u00e7e aktar\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("Couldn't open that file. Nothing was changed.",
@@ -2596,6 +2690,8 @@ public final class L10nTranslations {
                 "\u00d6nerilen kullan\u0131c\u0131lar\u0131 gizle");
         table.put("Hide the Instagram button",
                 "Instagram d\u00fc\u011fmesini gizle");
+        table.put("Hides ads and the cards that suggest accounts to follow.",
+                "Reklamlar\u0131 ve takip edilecek hesap \u00f6neren kartlar\u0131 gizler.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
                 "Bir g\u00f6nderinin metnine bas\u0131l\u0131 tutunca, a\u00e7t\u0131\u011f\u0131n bir g\u00f6nderide de Metni kopyala a\u00e7\u0131l\u0131r. B\u00f6ylece kelime se\u00e7mek yerine g\u00f6nderinin tamam\u0131n\u0131 ba\u011flant\u0131lar\u0131yla birlikte al\u0131rs\u0131n.");
         table.put("How far a photo or video you're saving has got, with a button to cancel it",
@@ -2624,6 +2720,9 @@ public final class L10nTranslations {
                 "\u0130\u00e7e aktar");
         table.put("Import settings",
                 "Ayarlar\u0131 i\u00e7e aktar");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Importing settings",
                 "Ayarlar i\u00e7e aktar\u0131l\u0131yor");
         table.put("It targets Threads %1$s.",
@@ -2632,9 +2731,6 @@ public final class L10nTranslations {
                 "G\u00f6r\u00fcnt\u00fc ve ses birle\u015ftiriliyor");
         table.put("Jump to a section",
                 "Bir b\u00f6l\u00fcme git");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Keep feed position on return",
                 "Geri d\u00f6n\u00fcnce ak\u0131\u015f konumunu koru");
         table.put("Last carousel save",
@@ -2683,6 +2779,8 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131lar\u0131 taray\u0131c\u0131nda a\u00e7");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cDesteklenen ba\u011flant\u0131lar\u0131 a\u00e7\u201d Android ayarlar\u0131nda bu uygulama i\u00e7in kapal\u0131. A\u00e7mak i\u00e7in dokunun.");
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "S\u00fcr\u00fcmlerin ve ayarlar\u0131n doldurulmu\u015f bir GitHub raporu a\u00e7ar. Ne oldu\u011funu ekle.");
         table.put("Page %1$d of %2$d",
                 "%1$d / %2$d sayfa");
         table.put("Pause",
@@ -2701,6 +2799,12 @@ public final class L10nTranslations {
                 "Gizlilik");
         table.put("Pure black dark mode",
                 "Saf siyah karanl\u0131k mod");
+        table.put("Puts every feature switch back the way it started.",
+                "Her \u00f6zellik anahtar\u0131n\u0131 ba\u015flang\u0131\u00e7taki h\u00e2line d\u00f6nd\u00fcr\u00fcr.");
+        table.put("Quick setups",
+                "H\u0131zl\u0131 kurulumlar");
+        table.put("Quiet",
+                "Sessiz");
         table.put("Re-signed build fix",
                 "Yeniden imzalanm\u0131\u015f s\u00fcr\u00fcm d\u00fczeltmesi");
         table.put("Reading the settings file",
@@ -2713,6 +2817,8 @@ public final class L10nTranslations {
                 "Takip edilecek hesaplar \u00f6neren kartlar\u0131 ak\u0131\u015f\u0131n\u0131zdan ve profillerden kald\u0131r\u0131r. Normal g\u00f6nderiler ve yeniden payla\u015f\u0131mlar kal\u0131r.");
         table.put("Reopen the post and save again.",
                 "G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
+        table.put("Report a problem",
+                "Sorun bildir");
         table.put("Restart Threads to apply %1$d changes",
                 "%1$d de\u011fi\u015fikli\u011fi uygulamak i\u00e7in Threads'i yeniden ba\u015flat");
         table.put("Restart Threads to apply this change",
@@ -2737,6 +2843,9 @@ public final class L10nTranslations {
                 "Tam raporu kaydet");
         table.put("Save photo",
                 "Foto\u011fraf\u0131 kaydet");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Save photos and videos",
                 "Foto\u011fraflar\u0131 ve videolar\u0131 kaydet");
         table.put("Save the full report in Download/Morphe.",
@@ -2755,9 +2864,6 @@ public final class L10nTranslations {
                 "\u015euraya kaydedildi: %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "\u015euraya Threads'tekinden d\u00fc\u015f\u00fck kalitede kaydedildi: %1$s");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Galeriye kaydedildi");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -2816,6 +2922,8 @@ public final class L10nTranslations {
                 "Duraklat\u0131lsa da devrede kal\u0131r");
         table.put("Stop analytics uploads",
                 "Analiz y\u00fcklemelerini durdur");
+        table.put("Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.",
+                "Kullan\u0131m raporlar\u0131n\u0131n \u00e7o\u011funu durdurur ve payla\u015ft\u0131\u011f\u0131n ba\u011flant\u0131lardan izlemeyi kald\u0131r\u0131r. Threads'e ekran g\u00f6r\u00fcnt\u00fclerin de bildirilmez.");
         table.put("Stops most usage reports from reaching Meta. Some may still get through. Turn this off to send them as before.",
                 "Kullan\u0131m raporlar\u0131n\u0131n \u00e7o\u011funun Meta'ya ula\u015fmas\u0131n\u0131 engeller. Baz\u0131lar\u0131 yine de ge\u00e7ebilir. Eskisi gibi g\u00f6ndermek i\u00e7in kapat.");
         table.put("Suggested accounts in your feed",
@@ -2858,6 +2966,9 @@ public final class L10nTranslations {
                 "Ayar dosyas\u0131n\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushThreads beklemeyi b\u0131rakt\u0131. O uygulama kaydetmeyi yine de bitirebilir, bu y\u00fczden dosyaya g\u00fcvenmeden \u00f6nce onu kontrol et.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Tan\u0131lama raporu hen\u00fcz kaydedilemedi. Birazdan tekrar dene.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Tan\u0131lama raporu kaydedilemedi. Tekrar dene.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
@@ -2878,9 +2989,6 @@ public final class L10nTranslations {
                 "Geri getirilecek tan\u0131lama verisi yok.");
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Bunlar yamalarken Morphe Manager'da se\u00e7ilir ve Duraklatma bunlar\u0131 kapatmaz. De\u011fi\u015ftirmek i\u00e7in yeniden yamala.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Bu s\u00fcr\u00fcm hangi rapor t\u00fcrlerini kapsad\u0131\u011f\u0131n\u0131 kaydetmedi. G\u00f6rmek i\u00e7in yeniden yamala.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -2907,6 +3015,8 @@ public final class L10nTranslations {
                 "Tekrar dene veya Threads'e geri d\u00f6n.");
         table.put("Turn features on or off",
                 "\u00d6zellikleri a\u00e7 veya kapat");
+        table.put("Turn on a set of switches in one tap, or put every switch back the way it started.",
+                "Bir grup anahtar\u0131 tek dokunu\u015fla a\u00e7 veya t\u00fcm anahtarlar\u0131 ba\u015flang\u0131\u00e7taki h\u00e2line d\u00f6nd\u00fcr.");
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
                 "Threads bir sonraki a\u00e7\u0131l\u0131\u015f\u0131nda Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki t\u00fcm HushThreads anahtarlar\u0131n\u0131 kapat\u0131r. Yamalarken se\u00e7tiklerin kal\u0131r ve tercihlerin kay\u0131tl\u0131 kal\u0131r.");
         table.put("Undo",

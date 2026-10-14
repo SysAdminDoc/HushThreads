@@ -303,3 +303,16 @@ Posts	Gönderiler
 Copy text when you hold a post	Bir gönderiye basılı tutunca metni kopyala
 Copy text on long press	Uzun basınca metni kopyala
 Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Bir gönderinin metnine basılı tutunca, açtığın bir gönderide de Metni kopyala açılır. Böylece kelime seçmek yerine gönderinin tamamını bağlantılarıyla birlikte alırsın.
+# Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
+Quick setups	Hızlı kurulumlar
+Turn on a set of switches in one tap, or put every switch back the way it started.	Bir grup anahtarı tek dokunuşla aç veya tüm anahtarları başlangıçtaki hâline döndür.
+Quiet	Sessiz
+Hides ads and the cards that suggest accounts to follow.	Reklamları ve takip edilecek hesap öneren kartları gizler.
+Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.	Kullanım raporlarının çoğunu durdurur ve paylaştığın bağlantılardan izlemeyi kaldırır. Threads'e ekran görüntülerin de bildirilmez.
+Back to defaults	Varsayılanlara dön
+Puts every feature switch back the way it started.	Her özellik anahtarını başlangıçtaki hâline döndürür.
+Changed %1$d setting	%1$d ayar değiştirildi
+Changed %1$d settings	%1$d ayar değiştirildi
+# Report a problem: the main page row and its summary. A tap opens a new GitHub bug report in the browser.
+Report a problem	Sorun bildir
+Opens a GitHub report with your versions and settings filled in. Add what happened.	Sürümlerin ve ayarların doldurulmuş bir GitHub raporu açar. Ne olduğunu ekle.

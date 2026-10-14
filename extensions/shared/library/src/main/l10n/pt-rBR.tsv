@@ -300,3 +300,16 @@ Posts	Publicações
 Copy text when you hold a post	Copiar texto ao tocar e segurar uma publicação
 Copy text on long press	Copiar texto ao tocar e segurar
 Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Tocar e segurar o texto de uma publicação abre Copiar texto, até numa publicação aberta, para você copiar a publicação inteira com os links em vez de escolher palavras.
+# Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
+Quick setups	Configurações rápidas
+Turn on a set of switches in one tap, or put every switch back the way it started.	Ative um conjunto de opções com um toque ou volte todas as opções ao estado inicial.
+Quiet	Tranquilo
+Hides ads and the cards that suggest accounts to follow.	Oculta os anúncios e os cartões que sugerem contas para seguir.
+Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.	Bloqueia a maioria dos relatórios de uso e tira o rastreamento dos links que você compartilha. O Threads também não fica sabendo das suas capturas de tela.
+Back to defaults	Voltar ao padrão
+Puts every feature switch back the way it started.	Volta cada opção de recurso ao estado inicial.
+Changed %1$d setting	%1$d configuração alterada
+Changed %1$d settings	%1$d configurações alteradas
+# Report a problem: the main page row and its summary. A tap opens a new GitHub bug report in the browser.
+Report a problem	Relatar um problema
+Opens a GitHub report with your versions and settings filled in. Add what happened.	Abre um relato no GitHub com suas versões e configurações já preenchidas. Conte o que aconteceu.

@@ -417,6 +417,39 @@ public class SettingsL10nTest {
             shown.add(cancel);
             choices.dismiss();
 
+            // Quick setups and Report a problem, which like the restart row only the home list holds.
+            android.widget.ListView home = dialog.getView().findViewById(android.R.id.list);
+            int homeRows = 0;
+            for (int i = 0; i < home.getCount(); i++) {
+                Preference row = (Preference) home.getItemAtPosition(i);
+                if (!SettingsNavigation.QUICK_SETUPS.equals(row.getKey()) && !SettingsNavigation.REPORT.equals(row.getKey())) continue;
+                shown.add(String.valueOf(row.getTitle()));
+                shown.add(String.valueOf(row.getSummary()));
+                homeRows++;
+            }
+            assertEquals("Quick setups or Report a problem is missing from the home page", 2, homeRows);
+
+            // Quick setups: each choice is its name and, on the next line, what it does. Then the
+            // toast after a choice, for one change and for none.
+            page.showQuickSetups();
+            ShadowLooper.idleMainLooper();
+            AlertDialog setups = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertNotNull("Quick setups opened no dialog", setups);
+            shown.add(String.valueOf(org.robolectric.Shadows.shadowOf(setups).getTitle()));
+            android.widget.ListAdapter cards = setups.getListView().getAdapter();
+            for (int i = 0; i < cards.getCount(); i++) shown.addAll(Arrays.asList(String.valueOf(cards.getItem(i)).split("\n")));
+            String setupsCancel = String.valueOf(setups.getButton(AlertDialog.BUTTON_NEGATIVE).getText());
+            assertEquals(L10n.t("Cancel"), setupsCancel);
+            shown.add(setupsCancel);
+            setups.dismiss();
+            page.applyQuickSetup(java.util.Collections.singletonMap(Settings.HIDE_SUGGESTED_USERS,
+                    !Settings.HIDE_SUGGESTED_USERS.savedValue()));
+            addToast(shown);
+            page.applyQuickSetup(java.util.Collections.singletonMap(Settings.HIDE_SUGGESTED_USERS,
+                    Settings.HIDE_SUGGESTED_USERS.defaultValue));
+            page.applyQuickSetup(java.util.Collections.emptyMap());
+            addToast(shown);
+
             // The licences dialog's title; the notice under it stays English, as the licences do.
             Preference licenses = rows.get(rows.size() - 1);
             licenses.getOnPreferenceClickListener().onPreferenceClick(licenses);

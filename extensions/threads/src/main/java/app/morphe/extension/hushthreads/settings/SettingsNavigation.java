@@ -48,6 +48,10 @@ final class SettingsNavigation extends BaseAdapter {
     private static final String STATUS_ACTION = "hushthreads_status_action";
     /** The restart row's key. Like the other rows only this view draws, it stores nothing. */
     static final String RESTART = "action_restart_to_apply";
+    /** The home page's Quick setups row: Quiet, Privacy or Back to defaults in one tap ({@link QuickSetupKeys}). */
+    static final String QUICK_SETUPS = "action_quick_setups";
+    /** Just above Support: a new GitHub bug report with this install's versions filled in ({@link ReportProblemForm}). */
+    static final String REPORT = "action_report_problem";
     private final HushThreadsPreferenceFragment page;
     private final SettingsDialog host;
     private final ListView list;
@@ -57,6 +61,8 @@ final class SettingsNavigation extends BaseAdapter {
     private final List<Preference> visible = new ArrayList<>();
     private final Preference browse;
     private final Preference more;
+    private final Preference quickSetups;
+    private final Preference report;
     /** The home page's last row, which opens HushThreads' Ko-fi page in a browser. */
     private final Preference support;
     private final Preference empty;
@@ -120,6 +126,14 @@ final class SettingsNavigation extends BaseAdapter {
         browse.setTitle(L10n.t("Browse settings"));
         more = link(context, L10n.t("More settings"), L10n.t("Links, updates, backup and more"), SettingsIcons.SETTINGS);
         more.setOnPreferenceClickListener(ignored -> { navigate(MORE); return true; });
+        quickSetups = link(context, L10n.t("Quick setups"),
+                L10n.t("Turn on a set of switches in one tap, or put every switch back the way it started."), SettingsIcons.BUILD);
+        quickSetups.setKey(QUICK_SETUPS);
+        quickSetups.setOnPreferenceClickListener(ignored -> { page.showQuickSetups(); return true; });
+        report = link(context, L10n.t("Report a problem"),
+                L10n.t("Opens a GitHub report with your versions and settings filled in. Add what happened."), SettingsIcons.BUG);
+        report.setKey(REPORT);
+        report.setOnPreferenceClickListener(row -> { ReportProblemForm.open(row.getContext(), screen); return true; });
         support = link(context, L10n.t("Support HushThreads"), null, SettingsIcons.HEART);
         support.setKey(HushThreadsPreferenceFragment.SUPPORT);
         support.setOnPreferenceClickListener(row -> { HushThreadsPreferenceFragment.openSupport(row.getContext()); return true; });
@@ -338,9 +352,11 @@ final class SettingsNavigation extends BaseAdapter {
             // Hushfacebook 814acd23: show the missing-default row under the overview card.
             Preference missing = screen.findPreference(HushThreadsPreferenceFragment.MISSING_DEFAULTS);
             if (missing != null) visible.add(missing);
+            visible.add(quickSetups);
             visible.add(browse);
             for (Section section : sections) if (section.primary) visible.add(section.link);
             visible.add(more);
+            visible.add(report);
             visible.add(support);
         }
         addRestart();

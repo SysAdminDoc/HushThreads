@@ -514,6 +514,22 @@
       ],
       "license": "GPL-3.0-only",
       "changes": "HushPinterest's restart marker and its count of the changes a restart applies, moved from app.hushpinterest.extension.shared to app.morphe.extension.shared with HushThreads' pause class. The restart row that uses it is drawn by SettingsNavigation, and SettingsEntry reads the marker when Threads starts."
+    },
+    {
+      "paths": [
+        "extensions/shared/library/src/main/java/app/morphe/extension/shared/settings/preference/QuickSetups.java",
+        "extensions/shared/library/src/main/java/app/morphe/extension/shared/settings/preference/ReportProblem.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/QuickSetupKeys.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ReportProblemForm.java"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/HushPinterest",
+      "commit": "44fb93384a319d8e5d324f51b416efdc3d3147e6",
+      "via": [
+        "https://github.com/SysAdminDoc/hushfeed"
+      ],
+      "license": "GPL-3.0-only",
+      "changes": "HushPinterest's Quick setups and Report a problem, moved from app.hushpinterest.extension to app.morphe.extension. QuickSetupKeys picks Threads' switches (Quiet: ads and suggested accounts; Privacy: usage reports, link tracking and screenshots), ReportProblemForm names HushThreads' repository and its bug form's field ids, and the no-browser message reuses the Ko-fi row's wording with the issues address. SettingsNavigation draws both rows on the home page and the fragment shows the choices with HushThreads' ChoiceCards."
     }
   ]
 }

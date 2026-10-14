@@ -5,6 +5,7 @@ Changes in the source build, then released versions.
 ## Unreleased
 
 * **Threads:** Pressing and holding the text of an opened post brings up Copy text again, the same as in your feed, so you get the whole post with its links. It had stopped doing anything on 451. A new `Copy text on long press` switch under Posts in HushThreads settings turns this on or off. It starts on and comes with every build.
+* **Threads:** The HushThreads settings home page has two new rows. `Quick setups` changes a set of switches in one tap: Quiet hides ads and suggested accounts, Privacy stops most usage reports, takes tracking off shared links and hides your screenshots from Threads, and Back to defaults puts every feature switch back. A toast says how many changed. `Report a problem` opens a new GitHub bug report with your HushThreads and Threads versions, your phone and the switches you have on already filled in.
 * **Tooling:** A fixture test checks on 451 that both of the post row's long press override checks and PostText's selection flag go through the extension, and that a jump straight to an override check or a selection flag written over before PostText copies it stops the patch.
 
 ## 0.0.14 (2026-10-13)

@@ -303,3 +303,16 @@ Posts	Beiträge
 Copy text when you hold a post	Text kopieren, wenn du einen Beitrag gedrückt hältst
 Copy text on long press	Text kopieren per langem Drücken
 Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Hältst du den Text eines Beitrags gedrückt, öffnet sich Text kopieren, auch in einem geöffneten Beitrag. So bekommst du den ganzen Beitrag mit seinen Links, statt einzelne Wörter auszuwählen.
+# Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
+Quick setups	Schnelleinstellungen
+Turn on a set of switches in one tap, or put every switch back the way it started.	Schalte mehrere Schalter mit einem Tippen ein oder setze alle Schalter auf ihren Ausgangszustand zurück.
+Quiet	Ruhig
+Hides ads and the cards that suggest accounts to follow.	Blendet Werbung und die Karten mit vorgeschlagenen Konten zum Folgen aus.
+Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.	Hält die meisten Nutzungsberichte zurück und entfernt das Tracking aus den Links, die du teilst. Threads erfährt auch nichts von deinen Screenshots.
+Back to defaults	Zurück zum Standard
+Puts every feature switch back the way it started.	Setzt jeden Funktionsschalter auf seinen Ausgangszustand zurück.
+Changed %1$d setting	%1$d Einstellung geändert
+Changed %1$d settings	%1$d Einstellungen geändert
+# Report a problem: the main page row and its summary. A tap opens a new GitHub bug report in the browser.
+Report a problem	Problem melden
+Opens a GitHub report with your versions and settings filled in. Add what happened.	Öffnet eine GitHub-Meldung, in der deine Versionen und Einstellungen schon stehen. Ergänze, was passiert ist.
