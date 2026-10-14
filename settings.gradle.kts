@@ -60,8 +60,10 @@ pluginManagement {
 //
 // The Android Gradle plugin brings jose4j 0.9.5 and jdom2 2.0.6 here, inside GHSA-3677-xxcr-wjqv
 // (CVE-2024-29371, fixed in jose4j 0.9.6) and GHSA-2363-cqg2-863c (CVE-2021-33813, fixed in jdom2
-// 2.0.6.1). Both fixes are patch releases of the same line. The build classpath inventory below is
-// what the release receipt checks, so take a force out once the plugin asks for a fixed version.
+// 2.0.6.1). Both fixes are patch releases of the same line. Only those two requests are replaced,
+// so a later plugin asking for a newer version gets it, and any other vulnerable one is the build
+// classpath inventory's to show and the release receipt's to refuse. Take a force out once the
+// plugin asks for a fixed version.
 buildscript {
     configurations.all {
         resolutionStrategy.eachDependency {
@@ -71,10 +73,10 @@ buildscript {
             if (requested.group == "org.bouncycastle") {
                 useVersion("1.86")
             }
-            if (requested.group == "org.bitbucket.b_c" && requested.name == "jose4j") {
+            if (requested.group == "org.bitbucket.b_c" && requested.name == "jose4j" && requested.version == "0.9.5") {
                 useVersion("0.9.6")
             }
-            if (requested.group == "org.jdom" && requested.name == "jdom2") {
+            if (requested.group == "org.jdom" && requested.name == "jdom2" && requested.version == "2.0.6") {
                 useVersion("2.0.6.1")
             }
         }
