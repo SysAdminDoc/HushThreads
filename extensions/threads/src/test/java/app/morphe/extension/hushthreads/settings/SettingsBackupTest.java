@@ -972,6 +972,40 @@ public class SettingsBackupTest {
     }
 
     /**
+     * Android 12 and newer cut a text toast at two lines, which hid the end of a refusal (seen on
+     * an emulator), so the row a run started from says how it ended too. A rebuilt page still says
+     * it, and the next run takes it away.
+     */
+    @Test
+    @Config(sdk = {28, 36})
+    public void theRowSaysHowItsRunEndedPastTheToast() throws Exception {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushThreadsPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(controller.get()));
+            String exportSummary = String.valueOf(page.findPreference(EXPORT_ROW).getSummary());
+            String importSummary = String.valueOf(page.findPreference(IMPORT_ROW).getSummary());
+            String good = SettingsBackup.create();
+            String damaged = SettingsBackupPreference.refusal(SettingsBackup.Reason.DAMAGED);
+
+            deliver(controller.get(), tap(controller.get(), page, IMPORT_ROW), good.substring(0, good.length() - 3));
+            assertEquals(damaged, ShadowToast.getTextOfLatestToast());
+            assertEquals(damaged, String.valueOf(page.findPreference(IMPORT_ROW).getSummary()));
+            assertEquals(exportSummary, String.valueOf(page.findPreference(EXPORT_ROW).getSummary()));
+
+            controller.recreate();
+            ShadowLooper.idleMainLooper();
+            page = SettingsL10nTest.pageOf(dialogOf(controller.get()));
+            assertEquals("the rebuilt page forgot how the import ended",
+                    damaged, String.valueOf(page.findPreference(IMPORT_ROW).getSummary()));
+            assertTrue(page.findPreference(IMPORT_ROW).isEnabled());
+
+            export(controller.get(), page, SettingsFileProvider.put(AUTHORITY, "after.json", new byte[0]));
+            assertEquals("Settings exported.", String.valueOf(page.findPreference(EXPORT_ROW).getSummary()));
+            assertEquals("the old refusal stayed after another run",
+                    importSummary, String.valueOf(page.findPreference(IMPORT_ROW).getSummary()));
+        }
+    }
+
+    /**
      * A full worker queue runs nothing, says so, and leaves the rows usable for another try.
      *
      * <p>The pool is one static executor for every test in the JVM, and a worker left finishing

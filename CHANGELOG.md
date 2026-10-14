@@ -24,6 +24,7 @@ Changes in the source build, then released versions.
 * **Threads:** TalkBack no longer stops on the HushThreads settings list as a whole to offer a long press that does nothing there. Quick setups, the one row with a long press, still offers it.
 * **Threads:** A save's download now has a connection of its own that never asks Threads' cookie store or sign-in prompts for anything, so it can't send a cookie or a password, and it drops every cookie a server or a redirect sets. It still goes through the proxy your Wi-Fi or phone settings name and checks the server's certificate the same way. If that proxy asks for a password, the save stops and tells you, since it never sends one.
 * **Threads:** HushThreads settings stay open when Threads redraws itself, after you change the font size or switch dark theme from the quick settings, or when Android closes Threads in the background and you come back. They used to close. They now come back on the page you were on.
+* **Threads:** After an export or import, the Export settings or Import settings row says how it went, in full, until you run another. That message used to show only in a pop-up, and newer Android versions cut those off after two lines, so a refusal like a damaged file lost its "Nothing was changed."
 
 ## 0.0.14 (2026-10-13)
 

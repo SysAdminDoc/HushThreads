@@ -127,6 +127,18 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     @Nullable
     AlertDialog importPreview;
 
+    /** Where the last export or import's outcome is kept across the page being rebuilt. */
+    static final String BACKUP_OUTCOME_STATE = "hushthreads_backup_outcome";
+    static final String BACKUP_OUTCOME_ACTION_STATE = "hushthreads_backup_outcome_action";
+
+    /**
+     * How the last export or import ended, shown under the row it started from until another
+     * starts, or null; {@link #backupOutcomeAction} says which row.
+     */
+    @Nullable
+    String backupOutcome;
+    int backupOutcomeAction;
+
     /** The page's other dialogs that may still be on screen, including the report chooser. */
     private final List<Dialog> shownDialogs = new ArrayList<>();
 
@@ -166,7 +178,11 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        if (savedInstanceState != null) pendingImport = savedInstanceState.getBundle(PENDING_IMPORT_STATE);
+        if (savedInstanceState != null) {
+            pendingImport = savedInstanceState.getBundle(PENDING_IMPORT_STATE);
+            backupOutcome = savedInstanceState.getString(BACKUP_OUTCOME_STATE);
+            backupOutcomeAction = savedInstanceState.getInt(BACKUP_OUTCOME_ACTION_STATE);
+        }
         super.onCreate(savedInstanceState);
     }
 
@@ -201,6 +217,10 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (pendingImport != null) outState.putBundle(PENDING_IMPORT_STATE, pendingImport);
+        if (backupOutcome != null) {
+            outState.putString(BACKUP_OUTCOME_STATE, backupOutcome);
+            outState.putInt(BACKUP_OUTCOME_ACTION_STATE, backupOutcomeAction);
+        }
         if (navigation != null) navigation.save(outState);
     }
 
