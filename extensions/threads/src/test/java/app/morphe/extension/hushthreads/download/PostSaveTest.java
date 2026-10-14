@@ -274,6 +274,38 @@ public class PostSaveTest {
         assertTrue("the last page keeps its place: " + names, names.get(1).endsWith("_3801_04.jpg"));
     }
 
+    /**
+     * Android 9 without the storage permission: a tap says once what to turn on, and not "Download
+     * failed" after it. Nothing is fetched and the switch stays as it was. Turned on, the next tap saves.
+     */
+    @Test @Config(sdk = 28)
+    public void onAndroid9WithoutTheStoragePermissionATapSaysWhatToTurnOnOnce() throws Exception {
+        Shadows.shadowOf(RuntimeEnvironment.getApplication()).denyPermissions(
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        Post post = video("4001_77", "/v.mp4");
+        int toasts = ShadowToast.shownToastCount();
+
+        PostSave.save(context, post);
+        waitForSaves();
+
+        assertEquals("one tap, one message", toasts + 1, ShadowToast.shownToastCount());
+        assertEquals("Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' "
+                + "app info under Permissions, then save again.", ShadowToast.getTextOfLatestToast());
+        assertEquals(0, fetched());
+        assertTrue(PostSave.canSave(post));
+
+        Shadows.shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        PostSave.save(context, post);
+        waitForSaves();
+        assertEquals(1, server.hits("/v.mp4"));
+        java.io.File folder = new java.io.File(android.os.Environment.getExternalStoragePublicDirectory(
+                android.os.Environment.DIRECTORY_MOVIES), "Threads");
+        String[] saved = folder.list();
+        assertEquals(1, saved == null ? 0 : saved.length);
+        assertTrue(ShadowToast.getTextOfLatestToast(), ShadowToast.getTextOfLatestToast().startsWith("Saved to "));
+    }
+
     @Test public void aCarouselOverTheLimitIsTurnedDownBeforeAnythingMoves() throws Exception {
         Post[] pages = new Post[MediaSave.MAX_BATCH_PAGES + 1];
         for (int i = 0; i < pages.length; i++) pages[i] = photo(String.valueOf(3900 + i), "/page" + i + ".jpg");

@@ -103,6 +103,10 @@ public class SaveProgressTest {
         };
         context = RuntimeEnvironment.getApplication();
         context.getApplicationInfo().targetSdkVersion = 36;
+        // Android 9 saves only with the storage permission, and a save that can't reach the gallery
+        // never starts its fetch. Android 10 and later never ask for it.
+        Shadows.shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
         // A save of one file reads its policy through MediaSave, as every save does.
         MediaSave.policyForTests = policy;
         gallery = Robolectric.setupContentProvider(Gallery.class, MediaStore.AUTHORITY);

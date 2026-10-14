@@ -389,6 +389,144 @@ public class CarouselSaveTest {
         assertClean();
     }
 
+    private static final String NO_PERMISSION_TOAST = "Not saved: Threads needs the Storage permission to save on "
+            + "Android 9. Turn it on in Threads' app info under Permissions, then save again.";
+    private static final String NO_PERMISSION_LINE = "Threads needs the Storage permission to save on Android 9. "
+            + "Turn it on in Threads' app info under Permissions, then save again.";
+
+    private void storagePermission(boolean granted) {
+        if (granted) {
+            Shadows.shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        } else {
+            Shadows.shadowOf(RuntimeEnvironment.getApplication()).denyPermissions(
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+    }
+
+    private static String[] legacyFolder(String directory) {
+        String[] names = new File(android.os.Environment.getExternalStoragePublicDirectory(directory), "Threads").list();
+        return names == null ? new String[0] : names;
+    }
+
+    /**
+     * Android 9 without the storage permission: a single save and a carousel each stop before
+     * anything is fetched, any slot is taken or any file is made, with one message each saying what
+     * to turn on. Once it's on, the same carousel saves.
+     */
+    @Test @Config(sdk = 28)
+    public void onAndroid9WithoutTheStoragePermissionNothingStartsUntilItIsOn() throws Exception {
+        storagePermission(false);
+        MediaSave.Item photo = page(false, "/p.jpg", "1");
+        MediaSave.Item video = page(true, "/v.mp4", "2");
+        int toasts = ShadowToast.shownToastCount();
+
+        assertFalse(MediaSave.saveVideo(context, SavesForTests.renditions(server.origin() + "/v.mp4"), null, null));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(toasts + 1, ShadowToast.shownToastCount());
+        assertEquals(NO_PERMISSION_TOAST, ShadowToast.getTextOfLatestToast());
+        assertFalse(MediaSave.saveBatch(context, Arrays.asList(photo, video), null));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(toasts + 2, ShadowToast.shownToastCount());
+        assertEquals(NO_PERMISSION_TOAST, ShadowToast.getTextOfLatestToast());
+        assertEquals(0, server.hits("/p.jpg"));
+        assertEquals(0, server.hits("/v.mp4"));
+        assertEquals(0, MediaSave.savesInFlight());
+        assertEquals(0, legacyFolder(android.os.Environment.DIRECTORY_MOVIES).length);
+        assertEquals(0, legacyFolder(android.os.Environment.DIRECTORY_PICTURES).length);
+        assertClean();
+
+        storagePermission(true);
+        CompletableFuture<MediaSave.BatchResult> ended = new CompletableFuture<>();
+        assertTrue(MediaSave.saveBatch(context, Arrays.asList(photo, video), ended::complete));
+        MediaSave.BatchResult result = ended.get(20, TimeUnit.SECONDS);
+        waitForSaves();
+        assertEquals(2, result.saved); assertEquals(0, result.failed); assertFalse(result.noPermission);
+        assertEquals(1, server.hits("/p.jpg"));
+        assertEquals(1, server.hits("/v.mp4"));
+        assertEquals(1, legacyFolder(android.os.Environment.DIRECTORY_PICTURES).length);
+        assertEquals(1, legacyFolder(android.os.Environment.DIRECTORY_MOVIES).length);
+        assertEquals("Saved 2. Failed 0. Skipped 0.", ShadowToast.getTextOfLatestToast());
+        assertClean();
+    }
+
+    /**
+     * Taken away between two pages, the permission stops the carousel there: the page it stopped
+     * fails without a fetch, the rest are skipped, and the counts say why.
+     */
+    @Test @Config(sdk = 28)
+    public void onAndroid9APermissionTakenAwayBetweenPagesStopsTheCarousel() throws Exception {
+        storagePermission(true);
+        MediaSave.Item first = page(false, "/first.jpg", "1");
+        MediaSave.Item second = page(true, "/second.mp4", "2");
+        MediaSave.Item third = page(false, "/third.jpg", "3");
+        MediaSave.detailsForTests = details -> {
+            if ("2".equals(details.videoId)) storagePermission(false);
+        };
+        CompletableFuture<MediaSave.BatchResult> ended = new CompletableFuture<>();
+
+        assertTrue(MediaSave.saveBatch(context, Arrays.asList(first, second, third), ended::complete));
+        MediaSave.BatchResult result = ended.get(20, TimeUnit.SECONDS);
+        waitForSaves();
+
+        assertEquals(1, result.saved); assertEquals(1, result.failed); assertEquals(1, result.skipped);
+        assertTrue(result.noPermission); assertFalse(result.cancelled);
+        assertEquals(1, server.hits("/first.jpg"));
+        assertEquals(0, server.hits("/second.mp4"));
+        assertEquals(0, server.hits("/third.jpg"));
+        String told = "Saved 1. Failed 1. Skipped 1.\n" + NO_PERMISSION_LINE;
+        assertEquals(told, ShadowToast.getTextOfLatestToast());
+        assertEquals(told, SaveControl.batchOutcome());
+        assertEquals(1, legacyFolder(android.os.Environment.DIRECTORY_PICTURES).length);
+        assertEquals(0, legacyFolder(android.os.Environment.DIRECTORY_MOVIES).length);
+        assertClean();
+    }
+
+    /**
+     * Taken away while a page's file comes in, the write fails, which is told as the missing
+     * permission and not a disk error, and the next page isn't fetched. Nothing hidden is left.
+     */
+    @Test @Config(sdk = 28)
+    public void onAndroid9APermissionTakenAwayDuringAPageStopsTheCarousel() throws Exception {
+        storagePermission(true);
+        MediaSave.Item first = page(false, "/first.jpg", "1");
+        MediaSave.Item second = page(true, "/second.mp4", "2");
+        MediaSave.Item third = page(false, "/third.jpg", "3");
+        MediaSave.policyForTests = new MediaUrlPolicy(host -> new InetAddress[]{InetAddress.getByName("10.9.8.7")}) {
+            @Override Refusal refusal(URL url) {
+                if (url.getPath().equals("/second.mp4")) storagePermission(false);
+                return url.toString().startsWith(server.origin() + "/") ? null : super.refusal(url);
+            }
+        };
+        CompletableFuture<MediaSave.BatchResult> ended = new CompletableFuture<>();
+
+        assertTrue(MediaSave.saveBatch(context, Arrays.asList(first, second, third), ended::complete));
+        MediaSave.BatchResult result = ended.get(20, TimeUnit.SECONDS);
+        waitForSaves();
+
+        assertEquals(1, result.saved); assertEquals(1, result.failed); assertEquals(1, result.skipped);
+        assertTrue(result.noPermission);
+        assertEquals(1, server.hits("/second.mp4"));
+        assertEquals("a page after the permission went was fetched", 0, server.hits("/third.jpg"));
+        assertEquals("Saved 1. Failed 1. Skipped 1.\n" + NO_PERMISSION_LINE, ShadowToast.getTextOfLatestToast());
+        assertEquals(0, legacyFolder(android.os.Environment.DIRECTORY_MOVIES).length);
+        assertClean();
+    }
+
+    /** From Android 10 a save writes media it owns: a storage permission turned off changes nothing. */
+    @Test
+    public void fromAndroid10ACarouselNeedsNoStoragePermission() throws Exception {
+        storagePermission(false);
+        CompletableFuture<MediaSave.BatchResult> ended = new CompletableFuture<>();
+        assertTrue(MediaSave.saveBatch(context, Arrays.asList(page(false, "/a.jpg", "1"), page(true, "/b.mp4", "2")),
+                ended::complete));
+        MediaSave.BatchResult result = ended.get(20, TimeUnit.SECONDS);
+        waitForSaves();
+        assertEquals(2, result.saved); assertFalse(result.noPermission);
+        assertEquals(2, gallery.rows.size());
+        assertClean();
+    }
+
     @Test @Config(sdk = {28, 37})
     public void theSameNotificationCancelSurvivesEveryPageAndPhase() throws Exception {
         NotificationManager manager = context.getSystemService(NotificationManager.class);

@@ -67,6 +67,11 @@ final class Downloader {
         REFUSED,
         /** The file is bigger than a save will hold. */
         TOO_LARGE,
+        /**
+         * Android 9 only: Threads hasn't the storage permission a gallery write needs there. A
+         * retry can't mend that, so the person saving is told what to turn on instead.
+         */
+        NO_PERMISSION,
         /** The person saving stopped it. */
         CANCELLED
     }

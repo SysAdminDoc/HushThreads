@@ -148,6 +148,12 @@ public final class PostSave {
         Context shown = context != null ? context : Utils.getContext();
         try {
             if (media == null || !on()) return;
+            // Android 9 without the storage permission: one message saying what to turn on, and
+            // not "Download failed" after it, which a retry can't mend.
+            if (shown != null && !MediaSave.permitted(shown.getApplicationContext() != null
+                    ? shown.getApplicationContext() : shown)) {
+                return;
+            }
             Reader read = reader;
             List<?> pages = new ArrayList<>(pages(read, media));
             if (pages.size() > MediaSave.MAX_BATCH_PAGES) {

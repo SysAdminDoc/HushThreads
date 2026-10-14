@@ -322,3 +322,6 @@ Quick setups on the home page	Ana sayfada hızlı kurulumlar
 Hidden. Tap to show it again.	Gizli. Yeniden göstermek için dokun.
 Shown. Tap to hide it.	Gösteriliyor. Gizlemek için dokun.
 Quick setups hidden. Bring it back from Pause, backup and diagnostics.	Hızlı kurulumlar gizlendi. Duraklatma, yedekleme ve tanılama sayfasından geri getirebilirsin.
+# Android 9 only, a save without Threads' Storage permission: the toast, then the same advice as the line under a carousel's counts. Storage and Permissions are the names Android's app info screen shows in this language.
+Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Kaydedilmedi: Android 9'da Threads'in kaydetmek için Depolama iznine ihtiyacı var. Threads'in uygulama bilgilerinde İzinler bölümünden bu izni aç, sonra tekrar kaydet.
+Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Android 9'da Threads'in kaydetmek için Depolama iznine ihtiyacı var. Threads'in uygulama bilgilerinde İzinler bölümünden bu izni aç, sonra tekrar kaydet.

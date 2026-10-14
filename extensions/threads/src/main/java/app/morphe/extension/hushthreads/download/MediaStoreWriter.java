@@ -55,9 +55,10 @@ import app.morphe.extension.shared.diagnostics.DiagnosticCategory;
  * {@code IS_PENDING}. There the file is written straight into the same folder under Movies or
  * Pictures, under a hidden {@code .pending-} name the media scanner skips, renamed when the last
  * byte is in and then handed to the scanner so the gallery shows it. That needs
- * WRITE_EXTERNAL_STORAGE, which Threads declares and asks for itself; without it the save fails
- * and the report says why. The hidden file is on the same list as a pending row, so a save the
- * system stops leaves nothing the next start doesn't remove.
+ * WRITE_EXTERNAL_STORAGE, which Threads declares and asks for itself. Without it a save stops
+ * before it fetches anything and says what to turn on ({@link #mayWrite}). Nothing here asks for
+ * the permission or opens Android's settings. The hidden file is on the same list as a pending row,
+ * so a save the system stops leaves nothing the next start doesn't remove.
  */
 final class MediaStoreWriter implements Downloader.Sink {
 
@@ -152,6 +153,22 @@ final class MediaStoreWriter implements Downloader.Sink {
         return Build.VERSION.SDK_INT < 29;
     }
 
+    /**
+     * Whether a save can write to the gallery now. From Android 10 a save inserts media it owns,
+     * which takes no permission at all. On Android 9 it takes WRITE_EXTERNAL_STORAGE, which the
+     * person can turn off for Threads at any time, a save's middle included. Never throws: a
+     * question the system won't answer counts as no.
+     */
+    static boolean mayWrite(Context context) {
+        if (!legacyStorage()) return true;
+        try {
+            return context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     @Override
     public OutputStream open(String mimeFromServer) throws IOException {
         String mime = mime(mimeFromServer);
@@ -207,8 +224,8 @@ final class MediaStoreWriter implements Downloader.Sink {
      * file has its name.
      */
     private OutputStream openLegacy(String mime, String directory, String leaf) throws IOException {
-        if (context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
+        // Checked before the save fetched anything, and again here: it can be taken away mid-save.
+        if (!mayWrite(context)) {
             throw new IOException("Android 9 writes to the gallery only with the storage permission, "
                 + "and Threads hasn't been given it");
         }

@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(590);
+        Map<String, String> table = new HashMap<>(594);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -343,6 +343,8 @@ public final class L10nTranslations {
                 "Nicht in diesem Build: %1$s. Morphe Manager w\u00e4hlt diesen Patch standardm\u00e4\u00dfig aus. W\u00e4hle ihn aus und patche erneut, um zu bekommen, was er tut.");
         table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
                 "Nicht in diesem Build: %1$s. Morphe Manager w\u00e4hlt diese Patches standardm\u00e4\u00dfig aus. W\u00e4hle sie aus und patche erneut, um zu bekommen, was sie tun.");
+        table.put("Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "Nicht gespeichert: Threads braucht unter Android 9 die Speicher-Berechtigung, um zu speichern. Schalte sie in den App-Infos von Threads unter Berechtigungen ein und speichere dann noch einmal.");
         table.put("Not saved: a carousel can have at most %1$d pages",
                 "Nicht gespeichert: Ein Karussell darf h\u00f6chstens %1$d Seiten haben");
         table.put("Not saved: that isn't a Threads photo or video",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Speichern");
         table.put("Save all",
                 "Alle speichern");
-        table.put("Save cancelled",
-                "Speichern abgebrochen");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Save cancelled",
+                "Speichern abgebrochen");
         table.put("Save folder",
                 "Speicherordner");
         table.put("Save full report",
@@ -544,11 +546,11 @@ public final class L10nTranslations {
                 "Diese Einstellungsdatei enth\u00e4lt einen Wert, den HushThreads nicht lesen kann. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Diese Einstellungsdatei ist besch\u00e4digt oder nur teilweise heruntergeladen. Es wurde nichts ge\u00e4ndert.");
-        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
-                "Diese Einstellungsdatei stammt aus einer neueren HushThreads-Version als dieser. Es wurde nichts ge\u00e4ndert.");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
+                "Diese Einstellungsdatei stammt aus einer neueren HushThreads-Version als dieser. Es wurde nichts ge\u00e4ndert.");
         table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
                 "Die App, in der die Datei liegt, braucht zu lange, deshalb wartet HushThreads nicht mehr. Es wurde nichts ge\u00e4ndert.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
@@ -593,6 +595,8 @@ public final class L10nTranslations {
                 "Threads erscheint nicht mehr, wenn du aus anderen Apps teilst. Aus Threads in andere Apps teilen funktioniert weiterhin.");
         table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
                 "Threads erf\u00e4hrt nicht, wenn du einen Screenshot machst, und kann ihn daher weder protokollieren noch darauf reagieren.");
+        table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "Threads braucht unter Android 9 die Speicher-Berechtigung, um zu speichern. Schalte sie in den App-Infos von Threads unter Berechtigungen ein und speichere dann noch einmal.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Die Webadressen von Threads sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
         table.put("Tracking in links and analytics uploads",
@@ -662,7 +666,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(590);
+        Map<String, String> table = new HashMap<>(594);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -958,6 +962,8 @@ public final class L10nTranslations {
                 "No est\u00e1 en esta compilaci\u00f3n: %1$s. Morphe Manager lo selecciona por defecto. Selecci\u00f3nalo y vuelve a parchear para obtener lo que hace.");
         table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
                 "No est\u00e1n en esta compilaci\u00f3n: %1$s. Morphe Manager los selecciona por defecto. Selecci\u00f3nalos y vuelve a parchear para obtener lo que hacen.");
+        table.put("Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "No se guard\u00f3: en Android 9, Threads necesita el permiso de Almacenamiento para guardar. Act\u00edvalo en la informaci\u00f3n de la app de Threads, en Permisos, y vuelve a guardar.");
         table.put("Not saved: a carousel can have at most %1$d pages",
                 "No se guard\u00f3: un carrusel puede tener como m\u00e1ximo %1$d p\u00e1ginas");
         table.put("Not saved: that isn't a Threads photo or video",
@@ -1036,11 +1042,11 @@ public final class L10nTranslations {
                 "Guardar");
         table.put("Save all",
                 "Guardar todo");
-        table.put("Save cancelled",
-                "Se cancel\u00f3 el guardado");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Save cancelled",
+                "Se cancel\u00f3 el guardado");
         table.put("Save folder",
                 "Carpeta de guardado");
         table.put("Save full report",
@@ -1159,11 +1165,11 @@ public final class L10nTranslations {
                 "Ese archivo de configuraci\u00f3n contiene un valor que HushThreads no puede leer. No se cambi\u00f3 nada.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n est\u00e1 da\u00f1ado o solo se descarg\u00f3 en parte. No se cambi\u00f3 nada.");
-        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
-                "Ese archivo de configuraci\u00f3n lo escribi\u00f3 una versi\u00f3n de HushThreads m\u00e1s reciente que esta. No se cambi\u00f3 nada.");
     }
 
     private static void fillEs4(Map<String, String> table) {
+        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
+                "Ese archivo de configuraci\u00f3n lo escribi\u00f3 una versi\u00f3n de HushThreads m\u00e1s reciente que esta. No se cambi\u00f3 nada.");
         table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
                 "La app que guarda ese archivo tarda demasiado, as\u00ed que HushThreads dej\u00f3 de esperar. No se cambi\u00f3 nada.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
@@ -1208,6 +1214,8 @@ public final class L10nTranslations {
                 "Threads ya no aparece cuando compartes desde otras apps. Compartir desde Threads a otras apps sigue funcionando.");
         table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
                 "Threads no se entera cuando haces una captura de pantalla, as\u00ed que no puede registrarla ni reaccionar a ella.");
+        table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "En Android 9, Threads necesita el permiso de Almacenamiento para guardar. Act\u00edvalo en la informaci\u00f3n de la app de Threads, en Permisos, y vuelve a guardar.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Las direcciones web de Threads est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
         table.put("Tracking in links and analytics uploads",
@@ -1277,7 +1285,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(590);
+        Map<String, String> table = new HashMap<>(594);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1573,6 +1581,8 @@ public final class L10nTranslations {
                 "Tidak ada di build ini: %1$s. Morphe Manager memilihnya secara default. Pilih tambalan itu lalu tambal ulang untuk mendapatkan fungsinya.");
         table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
                 "Tidak ada di build ini: %1$s. Morphe Manager memilihnya secara default. Pilih tambalan itu lalu tambal ulang untuk mendapatkan fungsinya.");
+        table.put("Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "Tidak disimpan: di Android 9, Threads memerlukan izin Penyimpanan untuk menyimpan. Aktifkan di info aplikasi Threads pada bagian Izin, lalu simpan lagi.");
         table.put("Not saved: a carousel can have at most %1$d pages",
                 "Tidak disimpan: carousel hanya boleh memiliki paling banyak %1$d halaman");
         table.put("Not saved: that isn't a Threads photo or video",
@@ -1651,11 +1661,11 @@ public final class L10nTranslations {
                 "Simpan");
         table.put("Save all",
                 "Simpan semua");
-        table.put("Save cancelled",
-                "Penyimpanan dibatalkan");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Save cancelled",
+                "Penyimpanan dibatalkan");
         table.put("Save folder",
                 "Folder simpan");
         table.put("Save full report",
@@ -1774,11 +1784,11 @@ public final class L10nTranslations {
                 "File pengaturan itu memuat nilai yang tidak dapat dibaca HushThreads. Tidak ada yang diubah.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "File pengaturan itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.");
-        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
-                "File pengaturan itu dibuat oleh versi HushThreads yang lebih baru daripada versi ini. Tidak ada yang diubah.");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
+                "File pengaturan itu dibuat oleh versi HushThreads yang lebih baru daripada versi ini. Tidak ada yang diubah.");
         table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
                 "Aplikasi yang menyimpan file itu terlalu lama, jadi HushThreads berhenti menunggu. Tidak ada yang diubah.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
@@ -1823,6 +1833,8 @@ public final class L10nTranslations {
                 "Threads tidak muncul saat kamu berbagi dari aplikasi lain. Berbagi dari Threads ke aplikasi lain tetap berfungsi.");
         table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
                 "Threads tidak diberi tahu saat kamu mengambil tangkapan layar, jadi tidak bisa mencatat atau menanggapinya.");
+        table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "Di Android 9, Threads memerlukan izin Penyimpanan untuk menyimpan. Aktifkan di info aplikasi Threads pada bagian Izin, lalu simpan lagi.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Alamat web Threads dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
         table.put("Tracking in links and analytics uploads",
@@ -1892,7 +1904,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(590);
+        Map<String, String> table = new HashMap<>(594);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2188,6 +2200,8 @@ public final class L10nTranslations {
                 "N\u00e3o faz parte desta vers\u00e3o: %1$s. O Morphe Manager o seleciona por padr\u00e3o. Selecione-o e aplique os patches novamente para ter o que ele faz.");
         table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
                 "N\u00e3o fazem parte desta vers\u00e3o: %1$s. O Morphe Manager os seleciona por padr\u00e3o. Selecione-os e aplique os patches novamente para ter o que eles fazem.");
+        table.put("Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "N\u00e3o foi salvo: no Android 9, o Threads precisa da permiss\u00e3o de Armazenamento para salvar. Ative-a nas informa\u00e7\u00f5es do app Threads, em Permiss\u00f5es, e salve de novo.");
         table.put("Not saved: a carousel can have at most %1$d pages",
                 "N\u00e3o foi salvo: um carrossel pode ter no m\u00e1ximo %1$d p\u00e1ginas");
         table.put("Not saved: that isn't a Threads photo or video",
@@ -2266,11 +2280,11 @@ public final class L10nTranslations {
                 "Salvar");
         table.put("Save all",
                 "Salvar tudo");
-        table.put("Save cancelled",
-                "Salvamento cancelado");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Save cancelled",
+                "Salvamento cancelado");
         table.put("Save folder",
                 "Pasta de destino");
         table.put("Save full report",
@@ -2389,11 +2403,11 @@ public final class L10nTranslations {
                 "Esse arquivo de configura\u00e7\u00f5es tem um valor que o HushThreads n\u00e3o consegue ler. Nada foi alterado.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es est\u00e1 corrompido ou foi baixado apenas parcialmente. Nada foi alterado.");
-        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
-                "Esse arquivo de configura\u00e7\u00f5es foi criado por uma vers\u00e3o do HushThreads mais nova que esta. Nada foi alterado.");
     }
 
     private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
+                "Esse arquivo de configura\u00e7\u00f5es foi criado por uma vers\u00e3o do HushThreads mais nova que esta. Nada foi alterado.");
         table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
                 "O app que guarda esse arquivo est\u00e1 demorando demais, ent\u00e3o o HushThreads parou de esperar. Nada foi alterado.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
@@ -2438,6 +2452,8 @@ public final class L10nTranslations {
                 "O Threads n\u00e3o aparece quando voc\u00ea compartilha de outros apps. Compartilhar do Threads para outros apps continua funcionando.");
         table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
                 "O Threads n\u00e3o fica sabendo quando voc\u00ea faz uma captura de tela, ent\u00e3o n\u00e3o pode registr\u00e1-la nem reagir a ela.");
+        table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "No Android 9, o Threads precisa da permiss\u00e3o de Armazenamento para salvar. Ative-a nas informa\u00e7\u00f5es do app Threads, em Permiss\u00f5es, e salve de novo.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Os endere\u00e7os web do Threads est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
         table.put("Tracking in links and analytics uploads",
@@ -2507,7 +2523,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(590);
+        Map<String, String> table = new HashMap<>(594);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2803,6 +2819,8 @@ public final class L10nTranslations {
                 "Bu s\u00fcr\u00fcmde yok: %1$s. Morphe Manager bunu varsay\u0131lan olarak se\u00e7er. Yapt\u0131\u011f\u0131 i\u015fi almak i\u00e7in onu se\u00e7ip yeniden yamala.");
         table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
                 "Bu s\u00fcr\u00fcmde yok: %1$s. Morphe Manager bunlar\u0131 varsay\u0131lan olarak se\u00e7er. Yapt\u0131klar\u0131 i\u015fi almak i\u00e7in onlar\u0131 se\u00e7ip yeniden yamala.");
+        table.put("Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "Kaydedilmedi: Android 9'da Threads'in kaydetmek i\u00e7in Depolama iznine ihtiyac\u0131 var. Threads'in uygulama bilgilerinde \u0130zinler b\u00f6l\u00fcm\u00fcnden bu izni a\u00e7, sonra tekrar kaydet.");
         table.put("Not saved: a carousel can have at most %1$d pages",
                 "Kaydedilmedi: \u00e7oklu g\u00f6nderide en fazla %1$d sayfa olabilir");
         table.put("Not saved: that isn't a Threads photo or video",
@@ -2881,11 +2899,11 @@ public final class L10nTranslations {
                 "Kaydet");
         table.put("Save all",
                 "T\u00fcm\u00fcn\u00fc kaydet");
-        table.put("Save cancelled",
-                "Kaydetme iptal edildi");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Save cancelled",
+                "Kaydetme iptal edildi");
         table.put("Save folder",
                 "Kay\u0131t klas\u00f6r\u00fc");
         table.put("Save full report",
@@ -3004,11 +3022,11 @@ public final class L10nTranslations {
                 "Bu ayar dosyas\u0131nda HushThreads'un okuyamad\u0131\u011f\u0131 bir de\u011fer var. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Bu ayar dosyas\u0131 hasarl\u0131 ya da yaln\u0131zca bir k\u0131sm\u0131 indirilmi\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
-                "Bu ayar dosyas\u0131, HushThreads'un bu s\u00fcr\u00fcm\u00fcnden daha yeni bir s\u00fcr\u00fcm\u00fcyle olu\u015fturulmu\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
     }
 
     private static void fillTr4(Map<String, String> table) {
+        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
+                "Bu ayar dosyas\u0131, HushThreads'un bu s\u00fcr\u00fcm\u00fcnden daha yeni bir s\u00fcr\u00fcm\u00fcyle olu\u015fturulmu\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
                 "O dosyay\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushThreads beklemeyi b\u0131rakt\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
@@ -3053,6 +3071,8 @@ public final class L10nTranslations {
                 "Di\u011fer uygulamalardan payla\u015f\u0131rken Threads g\u00f6r\u00fcnmez. Threads'ten di\u011fer uygulamalara payla\u015f\u0131m \u00e7al\u0131\u015fmaya devam eder.");
         table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
                 "Ekran g\u00f6r\u00fcnt\u00fcs\u00fc ald\u0131\u011f\u0131nda Threads'e haber verilmez, bu y\u00fczden onu kaydedemez ya da ona tepki veremez.");
+        table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "Android 9'da Threads'in kaydetmek i\u00e7in Depolama iznine ihtiyac\u0131 var. Threads'in uygulama bilgilerinde \u0130zinler b\u00f6l\u00fcm\u00fcnden bu izni a\u00e7, sonra tekrar kaydet.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Threads'in web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
         table.put("Tracking in links and analytics uploads",

@@ -209,7 +209,8 @@ public class MediaSaveTest {
     /**
      * Android 9 has no MediaStore folders or pending rows, so a save there writes the file into
      * Movies/Threads itself: a hidden work file on the list of leftovers, renamed when it's whole.
-     * Without the storage permission the save stops before a byte is written.
+     * Without the storage permission the save stops before it asks the server for anything, as a
+     * missing permission and not a write that failed, which a retry would mend.
      */
     @Test
     @Config(sdk = 28)
@@ -222,9 +223,12 @@ public class MediaSaveTest {
         Shadows.shadowOf(RuntimeEnvironment.getApplication()).denyPermissions(
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
         Downloader.Result refused = save("/v.mp4");
-        assertEquals(refused.toString(), Downloader.Status.WRITE_ERROR, refused.status);
+        assertEquals(refused.toString(), Downloader.Status.NO_PERMISSION, refused.status);
+        assertEquals("a save with no way into the gallery fetched its file", 0, server.hits("/v.mp4"));
         String[] none = folder.list();
         assertEquals(0, none == null ? 0 : none.length);
+        String[] noWork = DashSave.workFolder(context).list();
+        assertEquals(0, noWork == null ? 0 : noWork.length);
 
         Shadows.shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -246,6 +250,62 @@ public class MediaSaveTest {
         assertTrue("a finished file stayed on the list of leftovers: " + pending, pending == null || pending.isEmpty());
         String[] left = DashSave.workFolder(context).list();
         assertEquals(0, left == null ? 0 : left.length);
+    }
+
+    /**
+     * The permission taken away while a DASH save's picture came in: the join's write fails like a
+     * full disk's would, but it's told as the missing permission, and the single file the save
+     * would fall back to isn't fetched, since the gallery can't take that either.
+     */
+    @Test
+    @Config(sdk = 28)
+    public void onAndroid9APermissionTakenAwayMidSaveStopsTheFallbackFetch() {
+        Shadows.shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        byte[] picture = mp4(4_000);
+        serve("/v.mp4", "video/mp4", picture, picture.length);
+        serve("/single.mp4", "video/mp4", picture, picture.length);
+        DashManifest.Track video = new DashManifest.Track("video/mp4", "avc1.64001f", 1280, 720, 2_000_000,
+                origin + "/v.mp4");
+        int port = server.port();
+        MediaSave.policyForTests = new MediaUrlPolicy(host -> new InetAddress[] { InetAddress.getByName("10.9.8.7") }) {
+            @Override
+            Refusal refusal(URL url) {
+                if (url.getPath().equals("/v.mp4")) {
+                    Shadows.shadowOf(RuntimeEnvironment.getApplication()).denyPermissions(
+                            android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                }
+                if (url.getHost().equals("127.0.0.1") && url.getPort() == port) return null;
+                return super.refusal(url);
+            }
+        };
+
+        Downloader.Result result = MediaSave.dashJob(context, video, null, origin + "/single.mp4")
+                .run(new MediaStoreWriter(context, true), Downloader.SILENT);
+
+        assertEquals(result.toString(), Downloader.Status.NO_PERMISSION, result.status);
+        assertEquals(1, server.hits("/v.mp4"));
+        assertEquals("the fallback was fetched for a gallery that can't take it", 0, server.hits("/single.mp4"));
+        File folder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "Threads");
+        String[] none = folder.list();
+        assertEquals(0, none == null ? 0 : none.length);
+        String[] left = DashSave.workFolder(context).list();
+        assertEquals(0, left == null ? 0 : left.length);
+    }
+
+    /** From Android 10 a save writes media it owns, which takes no permission: a denied one changes nothing. */
+    @Test
+    public void fromAndroid10ASaveNeedsNoStoragePermission() {
+        Shadows.shadowOf(RuntimeEnvironment.getApplication()).denyPermissions(
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        byte[] body = mp4(4_096);
+        serve("/v.mp4", "video/mp4", body, body.length);
+
+        assertTrue(MediaStoreWriter.mayWrite(context));
+        Downloader.Result result = save("/v.mp4");
+
+        assertEquals(result.toString(), Downloader.Status.OK, result.status);
+        assertArrayEquals(body, published.toByteArray());
     }
 
     @Test

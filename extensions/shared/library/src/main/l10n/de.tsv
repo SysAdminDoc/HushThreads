@@ -322,3 +322,6 @@ Quick setups on the home page	Schnelleinstellungen auf der Startseite
 Hidden. Tap to show it again.	Ausgeblendet. Tippe, um sie wieder anzuzeigen.
 Shown. Tap to hide it.	Werden angezeigt. Tippe, um sie auszublenden.
 Quick setups hidden. Bring it back from Pause, backup and diagnostics.	Schnelleinstellungen ausgeblendet. Unter Pause, Sicherung und Diagnose holst du sie zurück.
+# Android 9 only, a save without Threads' Storage permission: the toast, then the same advice as the line under a carousel's counts. Storage and Permissions are the names Android's app info screen shows in this language.
+Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Nicht gespeichert: Threads braucht unter Android 9 die Speicher-Berechtigung, um zu speichern. Schalte sie in den App-Infos von Threads unter Berechtigungen ein und speichere dann noch einmal.
+Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Threads braucht unter Android 9 die Speicher-Berechtigung, um zu speichern. Schalte sie in den App-Infos von Threads unter Berechtigungen ein und speichere dann noch einmal.

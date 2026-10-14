@@ -322,3 +322,6 @@ Quick setups on the home page	Penyiapan cepat di halaman utama
 Hidden. Tap to show it again.	Disembunyikan. Ketuk untuk menampilkannya lagi.
 Shown. Tap to hide it.	Ditampilkan. Ketuk untuk menyembunyikannya.
 Quick setups hidden. Bring it back from Pause, backup and diagnostics.	Penyiapan cepat disembunyikan. Tampilkan lagi dari Jeda, cadangan, dan diagnostik.
+# Android 9 only, a save without Threads' Storage permission: the toast, then the same advice as the line under a carousel's counts. Storage and Permissions are the names Android's app info screen shows in this language.
+Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Tidak disimpan: di Android 9, Threads memerlukan izin Penyimpanan untuk menyimpan. Aktifkan di info aplikasi Threads pada bagian Izin, lalu simpan lagi.
+Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Di Android 9, Threads memerlukan izin Penyimpanan untuk menyimpan. Aktifkan di info aplikasi Threads pada bagian Izin, lalu simpan lagi.

@@ -319,3 +319,6 @@ Quick setups on the home page	Configurações rápidas na página inicial
 Hidden. Tap to show it again.	Ocultas. Toque para mostrar de novo.
 Shown. Tap to hide it.	Visíveis. Toque para ocultar.
 Quick setups hidden. Bring it back from Pause, backup and diagnostics.	Configurações rápidas ocultas. Traga de volta em Pausa, backup e diagnóstico.
+# Android 9 only, a save without Threads' Storage permission: the toast, then the same advice as the line under a carousel's counts. Storage and Permissions are the names Android's app info screen shows in this language.
+Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Não foi salvo: no Android 9, o Threads precisa da permissão de Armazenamento para salvar. Ative-a nas informações do app Threads, em Permissões, e salve de novo.
+Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	No Android 9, o Threads precisa da permissão de Armazenamento para salvar. Ative-a nas informações do app Threads, em Permissões, e salve de novo.
