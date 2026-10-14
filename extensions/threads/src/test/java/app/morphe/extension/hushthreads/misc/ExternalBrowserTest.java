@@ -249,7 +249,8 @@ public class ExternalBrowserTest {
         assertEquals(lines.toString(), 1, lines.size());
         ShadowLog.LogItem line = lines.get(0);
         assertTrue(line.msg, line.msg.contains("(" + kind + ")"));
-        assertFalse("the log line never carries the link: " + line.msg, line.msg.contains("private-path"));
+        assertFalse("the log line never carries the link: " + line.msg,
+                line.msg.contains("example.org") || line.msg.contains("private-path"));
         assertNull("the exception quotes the intent, so it isn't logged", line.throwable);
     }
 }
