@@ -133,13 +133,13 @@ The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.o
 
 ## Verify a download
 
-Each release ships `SHA256SUMS.txt` beside the bundle, along with a CycloneDX SBOM and a release receipt recording the Threads build every patch was checked on. Compare the `.mpp` hash with your download. For v0.0.13 it's:
+Each release ships `SHA256SUMS.txt` beside the bundle, along with a CycloneDX SBOM and a release receipt recording the Threads build every patch was checked on. Compare the `.mpp` hash with your download. For v0.0.14 it's:
 
 ```text
-80223db018add06882921f6a840db2578b6d7a507e49a26ef9c2bc4569635068  patches-0.0.13.mpp
+c5ca5217bf24a5599abd5e466c956dc06bd2f1a170b5e963fa28744343d38368  patches-0.0.14.mpp
 ```
 
-On Windows, run `Get-FileHash -Algorithm SHA256 .\patches-0.0.13.mpp`. Inside the patched app, More settings > About shows the bundle's payload hash and the source it was built from.
+On Windows, run `Get-FileHash -Algorithm SHA256 .\patches-0.0.14.mpp`. Inside the patched app, More settings > About shows the bundle's payload hash and the source it was built from.
 
 ## Reporting a problem
 
