@@ -20,6 +20,16 @@ import java.net.ProxySelector;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Locale;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BooleanSupplier;
 
 /**
  * Which addresses a save may fetch.
@@ -51,7 +61,10 @@ import java.util.Locale;
  */
 class MediaUrlPolicy {
 
-    /** Looks a host up. Tests answer with fixed addresses instead of asking DNS. */
+    /**
+     * Looks a host up. A save uses the system's ({@link #DNS}); tests answer with fixed addresses,
+     * or hold the answer back, instead of asking DNS.
+     */
     interface Resolver {
         InetAddress[] resolve(String host) throws UnknownHostException;
     }
@@ -130,6 +143,104 @@ class MediaUrlPolicy {
             if (reason != null) return new Refusal("its host resolves to " + reason, true);
         }
         return null;
+    }
+
+    /**
+     * How many lookups run at once: one for each save that can run at once (MediaSave's limit).
+     * A resolver that never answers keeps its thread until it does, so this is also the most
+     * threads lookups can ever hold.
+     */
+    private static final int LOOKUP_THREADS = 3;
+
+    /** How many lookups may wait for a thread. One more is refused at once, as the network's. */
+    private static final int LOOKUP_QUEUE = 6;
+
+    /** How often a save waiting on its lookup asks whether it was cancelled. */
+    private static final long LOOKUP_POLL_MS = 100;
+
+    /**
+     * The longest a save waits for one lookup, queued and running together, unless its own time
+     * ends first. Android's own resolver gives up well before this. A test shortens it.
+     */
+    static final long LOOKUP_TIMEOUT_MS = 20_000;
+    static volatile long lookupTimeoutMs = LOOKUP_TIMEOUT_MS;
+
+    /**
+     * Where {@link #refusalWithin} looks hosts up. Daemon threads that end after 30 idle seconds,
+     * so nothing stays parked in Threads' process between saves.
+     */
+    private static final ThreadPoolExecutor LOOKUPS = lookups();
+
+    private static ThreadPoolExecutor lookups() {
+        AtomicInteger made = new AtomicInteger();
+        ThreadFactory factory = task -> {
+            Thread thread = new Thread(task, "hushthreads-lookup-" + made.incrementAndGet());
+            thread.setDaemon(true);
+            thread.setPriority(Thread.NORM_PRIORITY - 1);
+            return thread;
+        };
+        ThreadPoolExecutor pool = new ThreadPoolExecutor(LOOKUP_THREADS, LOOKUP_THREADS, 30, TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(LOOKUP_QUEUE), factory, new ThreadPoolExecutor.AbortPolicy());
+        pool.allowCoreThreadTimeOut(true);
+        return pool;
+    }
+
+    /**
+     * {@link #refusal}, worked out on a lookup thread while this one waits, so a save stuck on DNS
+     * still ends at a cancel or at its own time. Waits until [deadline] on the monotonic clock or
+     * {@link #lookupTimeoutMs}, whichever comes first, and asks [stopped] every 100 ms. A lookup
+     * given up on, a full queue or a lookup that took too long answers as the network's refusal;
+     * the caller tells a cancel or its own deadline apart by checking those first.
+     *
+     * <p>The bound: at most {@link #LOOKUP_THREADS} lookups ever run, and a resolver that never
+     * answers holds those threads, not new ones. Further lookups wait in a queue of
+     * {@link #LOOKUP_QUEUE}, each for at most {@link #lookupTimeoutMs}, and leave it when given up
+     * on. A lookup left running ends when its resolver answers, and nothing waits for it.
+     */
+    final Refusal refusalWithin(URL url, BooleanSupplier stopped, long deadline) {
+        FutureTask<Refusal> lookup = new FutureTask<>(() -> refusal(url));
+        try {
+            LOOKUPS.execute(lookup);
+        } catch (RejectedExecutionException e) {
+            return new Refusal("too many host lookups were waiting", true);
+        }
+        long wait = Math.min(TimeUnit.MILLISECONDS.toNanos(lookupTimeoutMs), deadline - System.nanoTime());
+        long until = System.nanoTime() + Math.max(0L, wait);
+        try {
+            while (true) {
+                if (stopped.getAsBoolean()) return giveUp(lookup, "the save stopped during its host lookup");
+                long left = until - System.nanoTime();
+                if (left <= 0) return giveUp(lookup, "its host lookup took too long");
+                try {
+                    return lookup.get(Math.min(left, TimeUnit.MILLISECONDS.toNanos(LOOKUP_POLL_MS)),
+                            TimeUnit.NANOSECONDS);
+                } catch (TimeoutException ignored) {
+                    // Not yet. Ask about a cancel again.
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return giveUp(lookup, "the save stopped during its host lookup");
+        } catch (ExecutionException e) {
+            return new Refusal("its host could not be looked up", true);
+        }
+    }
+
+    private static Refusal giveUp(FutureTask<Refusal> lookup, String reason) {
+        lookup.cancel(false);
+        // Out of the queue if it never started, so a resolver that never answers can't fill it.
+        LOOKUPS.remove(lookup);
+        return new Refusal(reason, true);
+    }
+
+    /** How many lookup threads there are now, for the tests that hold them. */
+    static int lookupThreads() {
+        return LOOKUPS.getPoolSize();
+    }
+
+    /** How many lookups are running now, for the tests that hold them. */
+    static int lookupsRunning() {
+        return LOOKUPS.getActiveCount();
     }
 
     /**

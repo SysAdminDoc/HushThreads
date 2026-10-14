@@ -1050,6 +1050,9 @@ public final class MediaSave {
                 return L10n.t(application, "Not saved: that isn't a Threads photo or video");
             case TOO_LARGE:
                 return L10n.t(application, "Not saved: the file is over 512 MB");
+            case TIMED_OUT:
+                return L10n.t(application, "Not saved: the download was too slow to finish. "
+                    + "Try again on a faster connection.");
             case NO_PERMISSION:
                 return L10n.t(application, "Not saved: Threads needs the Storage permission to save on Android 9. "
                     + "Turn it on in Threads' app info under Permissions, then save again.");

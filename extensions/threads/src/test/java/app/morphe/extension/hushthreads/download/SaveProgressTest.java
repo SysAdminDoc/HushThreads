@@ -132,7 +132,12 @@ public class SaveProgressTest {
 
     /** The same, completing [ended] with the save's result as it ends. */
     private Thread save(String path, CompletableFuture<Downloader.Result> ended) {
-        MediaSave.Job job = MediaSave.fileJob(context, server.origin() + path, Downloader.Kind.VIDEO);
+        return saveOf(server.origin() + path, ended);
+    }
+
+    /** The same for the address [url], wherever it is. Null when no save slot was free. */
+    private Thread saveOf(String url, CompletableFuture<Downloader.Result> ended) {
+        MediaSave.Job job = MediaSave.fileJob(context, url, Downloader.Kind.VIDEO);
         return MediaSave.start(context, true, (writer, progress) -> {
             Downloader.Result result = job.run(writer, progress);
             ended.complete(result);
@@ -698,6 +703,157 @@ public class SaveProgressTest {
                 report.contains("the DASH save ended with"));
         assertEquals(0, gallery.inserts.size());
         assertEquals(0, workFiles());
+    }
+
+    /**
+     * A save whose answer trickles in too slowly ends at the fetch's time and says so in words of
+     * its own, not as a network failure a retry would mend at once. Nothing is left behind.
+     */
+    @Test
+    public void aSaveThatRunsOutOfTimeSaysSoAndLeavesNothing() throws Exception {
+        server.serveGenerated("/slow.mp4", "video/mp4", MP4_HEAD, 100 * MIB, MIB, release);
+        Downloader.budgetMs = 1_500;
+        try {
+            CompletableFuture<Downloader.Result> ended = new CompletableFuture<>();
+            Thread worker = save("/slow.mp4", ended);
+            assertEquals(Downloader.Status.TIMED_OUT, ended.get(20, TimeUnit.SECONDS).status);
+            finish(worker);
+        } finally {
+            Downloader.budgetMs = Downloader.BUDGET_MS;
+        }
+
+        assertEquals("Not saved: the download was too slow to finish. Try again on a faster connection.",
+                ShadowToast.getTextOfLatestToast());
+        assertNull("the notification outlived the save", saveNotification());
+        assertEquals(0, gallery.inserts.size());
+        assertEquals(0, workFiles());
+        assertTrue(pendingList().isEmpty());
+        assertEquals(0, MediaSave.savesInFlight());
+    }
+
+    /**
+     * A DASH track that runs out of time is a failed DASH save like any other: the single file
+     * behind it is fetched with time of its own, and saves.
+     */
+    @Test
+    public void aDashTrackThatRunsOutOfTimeFallsBackToTheSingleFile() throws Exception {
+        server.serveGenerated("/track.mp4", "video/mp4", MP4_HEAD, 50 * MIB, MIB, release);
+        server.serveGenerated("/single.mp4", "video/mp4", MP4_HEAD, 64 * 1024, Long.MAX_VALUE, null);
+        Shadows.shadowOf(context.getContentResolver()).registerOutputStream(gallery.videoUri(1), published);
+        DashManifest.Track track = new DashManifest.Track("video/mp4", "avc1.64001f", 1920, 1080, 4_000_000,
+                server.origin() + "/track.mp4");
+        MediaSave.Job job = MediaSave.dashJob(context, track, null, server.origin() + "/single.mp4");
+        Downloader.budgetMs = 1_500;
+        try {
+            CompletableFuture<Downloader.Result> ended = new CompletableFuture<>();
+            Thread worker = MediaSave.start(context, true, (writer, progress) -> {
+                Downloader.Result result = job.run(writer, progress);
+                ended.complete(result);
+                return result;
+            });
+            assertEquals(Downloader.Status.OK, ended.get(30, TimeUnit.SECONDS).status);
+            finish(worker);
+        } finally {
+            Downloader.budgetMs = Downloader.BUDGET_MS;
+        }
+
+        assertEquals(1, server.hits("/single.mp4"));
+        String report = LogBufferManager.buildExportText();
+        assertTrue(report, report.contains("the DASH save ended with TIMED_OUT"));
+        assertEquals(1, gallery.inserts.size());
+        assertEquals(0, workFiles());
+        String told = ShadowToast.getTextOfLatestToast();
+        assertTrue(told, told.startsWith("Saved to "));
+    }
+
+    /**
+     * Three saves whose host lookups never answer fill every save slot before any connection
+     * exists to close. Cancel still ends all three within five seconds and frees their slots,
+     * with nothing left behind. While the resolver keeps every lookup thread, the next save waits
+     * for no longer than the lookup's limit and fails, without a thread of its own. Once the
+     * resolver answers, a save goes through.
+     */
+    @Test
+    public void threeSavesHeldInTheirLookupCanAllBeCancelled() throws Exception {
+        CountDownLatch answer = new CountDownLatch(1);
+        AtomicInteger asked = new AtomicInteger();
+        int port = server.port();
+        MediaSave.policyForTests = new MediaUrlPolicy(host -> {
+            asked.incrementAndGet();
+            try {
+                answer.await(60, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            // A private address, so a lookup that answers late is refused and nothing leaves the machine.
+            return new InetAddress[] { InetAddress.getByName("10.9.8.7") };
+        }) {
+            @Override
+            Refusal refusal(URL url) {
+                if (url.getHost().equals("127.0.0.1") && url.getPort() == port) return null;
+                return super.refusal(url);
+            }
+        };
+        List<CompletableFuture<Downloader.Result>> ended = new ArrayList<>();
+        List<Thread> workers = new ArrayList<>();
+        try {
+            for (int i = 1; i <= 3; i++) {
+                CompletableFuture<Downloader.Result> result = new CompletableFuture<>();
+                ended.add(result);
+                workers.add(saveOf("https://scontent.cdninstagram.com/v/t66/held" + i + ".mp4", result));
+            }
+            long until = System.currentTimeMillis() + 10_000;
+            while (asked.get() < 3 && System.currentTimeMillis() < until) Thread.sleep(10);
+            assertEquals("three saves, three lookups", 3, asked.get());
+            assertEquals(3, MediaSave.savesInFlight());
+            assertNull("a fourth save was let in beside three",
+                    saveOf(server.origin() + "/never.mp4", new CompletableFuture<>()));
+
+            long before = System.nanoTime();
+            for (SaveControl.Running save : SaveControl.running()) assertTrue(SaveControl.cancel(save.id));
+            for (CompletableFuture<Downloader.Result> result : ended) {
+                assertEquals(Downloader.Status.CANCELLED, result.get(5, TimeUnit.SECONDS).status);
+            }
+            while (MediaSave.savesInFlight() > 0 && System.nanoTime() - before < 5_000_000_000L) Thread.sleep(10);
+            long tookMs = (System.nanoTime() - before) / 1_000_000;
+            assertEquals("the cancelled saves kept their slots", 0, MediaSave.savesInFlight());
+            assertTrue("the cancels took " + tookMs + " ms", tookMs < 5_000);
+            for (Thread worker : workers) finish(worker);
+            assertEquals("Save cancelled", ShadowToast.getTextOfLatestToast());
+            assertEquals(0, gallery.inserts.size());
+            assertEquals(0, workFiles());
+            assertTrue(pendingList().isEmpty());
+            assertEquals("the stuck lookups ended with their saves", 3, MediaUrlPolicy.lookupsRunning());
+
+            MediaUrlPolicy.lookupTimeoutMs = 700;
+            CompletableFuture<Downloader.Result> waited = new CompletableFuture<>();
+            before = System.nanoTime();
+            Thread fourth = saveOf("https://scontent.cdninstagram.com/v/t66/fourth.mp4", waited);
+            assertNotNull("a slot freed by a cancel wasn't free", fourth);
+            assertEquals(Downloader.Status.NETWORK_ERROR, waited.get(10, TimeUnit.SECONDS).status);
+            tookMs = (System.nanoTime() - before) / 1_000_000;
+            finish(fourth);
+            assertTrue("the next save waited " + tookMs + " ms for a lookup thread", tookMs < 3_000);
+            assertEquals("the waiting save reached the stuck resolver", 3, asked.get());
+            assertTrue("lookups took " + MediaUrlPolicy.lookupThreads() + " threads", MediaUrlPolicy.lookupThreads() <= 3);
+            assertEquals("Download failed. Try again in a moment.", ShadowToast.getTextOfLatestToast());
+            assertEquals(0, workFiles());
+        } finally {
+            MediaUrlPolicy.lookupTimeoutMs = MediaUrlPolicy.LOOKUP_TIMEOUT_MS;
+            answer.countDown();
+        }
+
+        long until = System.currentTimeMillis() + 5_000;
+        while (MediaUrlPolicy.lookupsRunning() > 0 && System.currentTimeMillis() < until) Thread.sleep(10);
+        assertEquals("the lookups never ended once answered", 0, MediaUrlPolicy.lookupsRunning());
+        Shadows.shadowOf(context.getContentResolver()).registerOutputStream(gallery.videoUri(1), published);
+        server.serveGenerated("/after.mp4", "video/mp4", MP4_HEAD, 64 * 1024, Long.MAX_VALUE, null);
+        CompletableFuture<Downloader.Result> after = new CompletableFuture<>();
+        finish(save("/after.mp4", after));
+        assertEquals(Downloader.Status.OK, after.get(10, TimeUnit.SECONDS).status);
+        assertEquals(1, gallery.inserts.size());
+        assertEquals(0, workFiles());
+        assertTrue(pendingList().isEmpty());
     }
 
     /**

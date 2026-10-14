@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(594);
+        Map<String, String> table = new HashMap<>(596);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -349,6 +349,8 @@ public final class L10nTranslations {
                 "Nicht gespeichert: Ein Karussell darf h\u00f6chstens %1$d Seiten haben");
         table.put("Not saved: that isn't a Threads photo or video",
                 "Nicht gespeichert: Das ist kein Foto oder Video von Threads");
+        table.put("Not saved: the download was too slow to finish. Try again on a faster connection.",
+                "Nicht gespeichert: Der Download war zu langsam, um fertig zu werden. Versuche es mit einer schnelleren Verbindung noch einmal.");
         table.put("Not saved: the file is over 512 MB",
                 "Nicht gespeichert: Die Datei ist \u00fcber 512 MB gro\u00df");
         table.put("OK",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Wenn du innerhalb von zehn Minuten zu Threads zur\u00fcckkehrst, bleibst du an derselben Stelle. Zum Aktualisieren kannst du weiter nach unten ziehen.");
         table.put("Save",
                 "Speichern");
-        table.put("Save all",
-                "Alle speichern");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Save all",
+                "Alle speichern");
         table.put("Save cancelled",
                 "Speichern abgebrochen");
         table.put("Save folder",
@@ -544,11 +546,11 @@ public final class L10nTranslations {
                 "Das ist keine HushThreads-Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Diese Einstellungsdatei enth\u00e4lt einen Wert, den HushThreads nicht lesen kann. Es wurde nichts ge\u00e4ndert.");
-        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
-                "Diese Einstellungsdatei ist besch\u00e4digt oder nur teilweise heruntergeladen. Es wurde nichts ge\u00e4ndert.");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
+                "Diese Einstellungsdatei ist besch\u00e4digt oder nur teilweise heruntergeladen. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
                 "Diese Einstellungsdatei stammt aus einer neueren HushThreads-Version als dieser. Es wurde nichts ge\u00e4ndert.");
         table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
@@ -666,7 +668,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(594);
+        Map<String, String> table = new HashMap<>(596);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -968,6 +970,8 @@ public final class L10nTranslations {
                 "No se guard\u00f3: un carrusel puede tener como m\u00e1ximo %1$d p\u00e1ginas");
         table.put("Not saved: that isn't a Threads photo or video",
                 "No se guard\u00f3: no es una foto ni un video de Threads");
+        table.put("Not saved: the download was too slow to finish. Try again on a faster connection.",
+                "No se guard\u00f3: la descarga iba demasiado lenta para terminar. Vuelve a intentarlo con una conexi\u00f3n m\u00e1s r\u00e1pida.");
         table.put("Not saved: the file is over 512 MB",
                 "No se guard\u00f3: el archivo supera los 512 MB");
         table.put("OK",
@@ -1040,11 +1044,11 @@ public final class L10nTranslations {
                 "Si vuelves a Threads en menos de diez minutos, seguir\u00e1s donde estabas. Puedes deslizar hacia abajo para actualizar.");
         table.put("Save",
                 "Guardar");
-        table.put("Save all",
-                "Guardar todo");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Save all",
+                "Guardar todo");
         table.put("Save cancelled",
                 "Se cancel\u00f3 el guardado");
         table.put("Save folder",
@@ -1163,11 +1167,11 @@ public final class L10nTranslations {
                 "Eso no es un archivo de configuraci\u00f3n de HushThreads. No se cambi\u00f3 nada.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n contiene un valor que HushThreads no puede leer. No se cambi\u00f3 nada.");
-        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
-                "Ese archivo de configuraci\u00f3n est\u00e1 da\u00f1ado o solo se descarg\u00f3 en parte. No se cambi\u00f3 nada.");
     }
 
     private static void fillEs4(Map<String, String> table) {
+        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
+                "Ese archivo de configuraci\u00f3n est\u00e1 da\u00f1ado o solo se descarg\u00f3 en parte. No se cambi\u00f3 nada.");
         table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n lo escribi\u00f3 una versi\u00f3n de HushThreads m\u00e1s reciente que esta. No se cambi\u00f3 nada.");
         table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
@@ -1285,7 +1289,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(594);
+        Map<String, String> table = new HashMap<>(596);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1587,6 +1591,8 @@ public final class L10nTranslations {
                 "Tidak disimpan: carousel hanya boleh memiliki paling banyak %1$d halaman");
         table.put("Not saved: that isn't a Threads photo or video",
                 "Tidak disimpan: itu bukan foto atau video Threads");
+        table.put("Not saved: the download was too slow to finish. Try again on a faster connection.",
+                "Tidak disimpan: unduhan terlalu lambat untuk selesai. Coba lagi dengan koneksi yang lebih cepat.");
         table.put("Not saved: the file is over 512 MB",
                 "Tidak disimpan: file lebih dari 512 MB");
         table.put("OK",
@@ -1659,11 +1665,11 @@ public final class L10nTranslations {
                 "Jika kembali ke Threads dalam sepuluh menit, posisi feed tetap sama. Tarik ke bawah untuk memuat ulang masih berfungsi.");
         table.put("Save",
                 "Simpan");
-        table.put("Save all",
-                "Simpan semua");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Save all",
+                "Simpan semua");
         table.put("Save cancelled",
                 "Penyimpanan dibatalkan");
         table.put("Save folder",
@@ -1782,11 +1788,11 @@ public final class L10nTranslations {
                 "Itu bukan file pengaturan HushThreads. Tidak ada yang diubah.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "File pengaturan itu memuat nilai yang tidak dapat dibaca HushThreads. Tidak ada yang diubah.");
-        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
-                "File pengaturan itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
+                "File pengaturan itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.");
         table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
                 "File pengaturan itu dibuat oleh versi HushThreads yang lebih baru daripada versi ini. Tidak ada yang diubah.");
         table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
@@ -1904,7 +1910,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(594);
+        Map<String, String> table = new HashMap<>(596);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2206,6 +2212,8 @@ public final class L10nTranslations {
                 "N\u00e3o foi salvo: um carrossel pode ter no m\u00e1ximo %1$d p\u00e1ginas");
         table.put("Not saved: that isn't a Threads photo or video",
                 "N\u00e3o salvo: isso n\u00e3o \u00e9 uma foto nem um v\u00eddeo do Threads");
+        table.put("Not saved: the download was too slow to finish. Try again on a faster connection.",
+                "N\u00e3o foi salvo: o download estava lento demais para terminar. Tente de novo com uma conex\u00e3o mais r\u00e1pida.");
         table.put("Not saved: the file is over 512 MB",
                 "N\u00e3o foi salvo: o arquivo tem mais de 512 MB");
         table.put("OK",
@@ -2278,11 +2286,11 @@ public final class L10nTranslations {
                 "Ao voltar ao Threads em at\u00e9 dez minutos, voc\u00ea continuar\u00e1 no ponto em que estava. O gesto de puxar para baixo para atualizar continuar\u00e1 funcionando.");
         table.put("Save",
                 "Salvar");
-        table.put("Save all",
-                "Salvar tudo");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Save all",
+                "Salvar tudo");
         table.put("Save cancelled",
                 "Salvamento cancelado");
         table.put("Save folder",
@@ -2401,11 +2409,11 @@ public final class L10nTranslations {
                 "Isso n\u00e3o \u00e9 um arquivo de configura\u00e7\u00f5es do HushThreads. Nada foi alterado.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es tem um valor que o HushThreads n\u00e3o consegue ler. Nada foi alterado.");
-        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
-                "Esse arquivo de configura\u00e7\u00f5es est\u00e1 corrompido ou foi baixado apenas parcialmente. Nada foi alterado.");
     }
 
     private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
+                "Esse arquivo de configura\u00e7\u00f5es est\u00e1 corrompido ou foi baixado apenas parcialmente. Nada foi alterado.");
         table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es foi criado por uma vers\u00e3o do HushThreads mais nova que esta. Nada foi alterado.");
         table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
@@ -2523,7 +2531,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(594);
+        Map<String, String> table = new HashMap<>(596);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2825,6 +2833,8 @@ public final class L10nTranslations {
                 "Kaydedilmedi: \u00e7oklu g\u00f6nderide en fazla %1$d sayfa olabilir");
         table.put("Not saved: that isn't a Threads photo or video",
                 "Kaydedilmedi: Bu bir Threads foto\u011fraf\u0131 veya videosu de\u011fil");
+        table.put("Not saved: the download was too slow to finish. Try again on a faster connection.",
+                "Kaydedilmedi: \u0130ndirme bitemeyecek kadar yava\u015ft\u0131. Daha h\u0131zl\u0131 bir ba\u011flant\u0131yla tekrar dene.");
         table.put("Not saved: the file is over 512 MB",
                 "Kaydedilmedi: Dosya 512 MB'tan b\u00fcy\u00fck");
         table.put("OK",
@@ -2897,11 +2907,11 @@ public final class L10nTranslations {
                 "Threads'e on dakika i\u00e7inde d\u00f6nersen kald\u0131\u011f\u0131n yer korunur. Yenilemek i\u00e7in a\u015fa\u011f\u0131 \u00e7ekmeye devam edebilirsin.");
         table.put("Save",
                 "Kaydet");
-        table.put("Save all",
-                "T\u00fcm\u00fcn\u00fc kaydet");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Save all",
+                "T\u00fcm\u00fcn\u00fc kaydet");
         table.put("Save cancelled",
                 "Kaydetme iptal edildi");
         table.put("Save folder",
@@ -3020,11 +3030,11 @@ public final class L10nTranslations {
                 "Bu bir HushThreads ayar dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Bu ayar dosyas\u0131nda HushThreads'un okuyamad\u0131\u011f\u0131 bir de\u011fer var. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
-                "Bu ayar dosyas\u0131 hasarl\u0131 ya da yaln\u0131zca bir k\u0131sm\u0131 indirilmi\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
     }
 
     private static void fillTr4(Map<String, String> table) {
+        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
+                "Bu ayar dosyas\u0131 hasarl\u0131 ya da yaln\u0131zca bir k\u0131sm\u0131 indirilmi\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
                 "Bu ayar dosyas\u0131, HushThreads'un bu s\u00fcr\u00fcm\u00fcnden daha yeni bir s\u00fcr\u00fcm\u00fcyle olu\u015fturulmu\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",

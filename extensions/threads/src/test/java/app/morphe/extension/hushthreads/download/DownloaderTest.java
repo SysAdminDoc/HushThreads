@@ -576,6 +576,245 @@ public class DownloaderTest {
         }
     }
 
+    // ------------------------------------------------------------------ the fetch's own time
+
+    /**
+     * A 200 that sends 64 KiB every 200 ms never trips the 20 s read timeout, and 100 MiB of it
+     * would take over five minutes. It ends at the fetch's time instead, as its own status, with
+     * its file gone and its connection let go.
+     */
+    @Test
+    public void aTrickleThatNeverTripsTheReadTimeoutEndsAtTheFetchsTime() throws Exception {
+        java.util.concurrent.CountDownLatch never = new java.util.concurrent.CountDownLatch(1);
+        server.serveGenerated("/trickle.mp4", "video/mp4", mp4(64), 100L * 1024 * 1024, 64 * 1024, never);
+        File into = temp.newFile();
+        Downloader.budgetMs = 1_500;
+        try {
+            long before = System.nanoTime();
+            Downloader.Result result = within(15_000, () -> fetch("/trickle.mp4", Downloader.Kind.VIDEO, into,
+                    Downloader.MAX_BYTES));
+            long tookMs = (System.nanoTime() - before) / 1_000_000;
+
+            assertEquals(result.toString(), Downloader.Status.TIMED_OUT, result.status);
+            assertTrue("the trickle ran " + tookMs + " ms past a 1.5 s limit", tookMs < 3_000);
+            assertFalse(into.exists());
+            assertTrue("the connection stayed open", server.letGoWithin("/trickle.mp4", 5_000));
+        } finally {
+            Downloader.budgetMs = Downloader.BUDGET_MS;
+            never.countDown();
+        }
+    }
+
+    /** A slow answer that does finish within the time arrives whole: only time that runs out ends a fetch. */
+    @Test
+    public void aSlowAnswerThatFinishesInTimeArrivesWhole() throws Exception {
+        java.util.concurrent.CountDownLatch faster = new java.util.concurrent.CountDownLatch(1);
+        long length = 24L * 1024 * 1024;
+        server.serveGenerated("/slow.mp4", "video/mp4", mp4(64), length, 1024 * 1024, faster);
+        Thread speedUp = new Thread(() -> {
+            try {
+                Thread.sleep(1_200);
+            } catch (InterruptedException ignored) {
+                // The latch goes down all the same.
+            }
+            faster.countDown();
+        });
+        speedUp.setDaemon(true);
+        File into = temp.newFile();
+        Downloader.budgetMs = 20_000;
+        try {
+            speedUp.start();
+            Downloader.Result result = within(30_000, () -> fetch("/slow.mp4", Downloader.Kind.VIDEO, into,
+                    Downloader.MAX_BYTES));
+
+            assertEquals(result.toString(), Downloader.Status.OK, result.status);
+            assertEquals(length, into.length());
+        } finally {
+            Downloader.budgetMs = Downloader.BUDGET_MS;
+            faster.countDown();
+        }
+    }
+
+    /**
+     * The time covers every hop. Each check here takes 400 ms, so a chain of five redirects runs
+     * out of a one second limit partway, and the file at its end is never asked for.
+     */
+    @Test
+    public void aRedirectChainEndsAtTheFetchsTime() throws Exception {
+        int port = server.port();
+        MediaUrlPolicy slow = new MediaUrlPolicy(MediaUrlPolicy.DNS) {
+            @Override
+            Refusal refusal(URL url) {
+                try {
+                    Thread.sleep(400);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                return url.getHost().equals("127.0.0.1") && url.getPort() == port ? null : super.refusal(url);
+            }
+        };
+        serve("/final.mp4", "video/mp4", mp4(4000));
+        redirect("/r1", origin + "/r2");
+        redirect("/r2", origin + "/r3");
+        redirect("/r3", origin + "/r4");
+        redirect("/r4", origin + "/r5");
+        redirect("/r5", origin + "/final.mp4");
+        File into = temp.newFile();
+        Downloader.budgetMs = 1_000;
+        try {
+            long before = System.nanoTime();
+            Downloader.Result result = within(15_000, () -> Downloader.fetch(origin + "/r1", Downloader.Kind.VIDEO,
+                    into, slow, Downloader.MAX_BYTES, Downloader.SILENT));
+            long tookMs = (System.nanoTime() - before) / 1_000_000;
+
+            assertEquals(result.toString(), Downloader.Status.TIMED_OUT, result.status);
+            assertEquals("the end of the chain was fetched after the time ran out", 0, hitsOf("/final.mp4"));
+            assertTrue("the chain ran " + tookMs + " ms past a 1 s limit", tookMs < 2_500);
+            assertFalse(into.exists());
+        } finally {
+            Downloader.budgetMs = Downloader.BUDGET_MS;
+        }
+    }
+
+    /** A resolver that waits on [answer], counting each host it's asked for in [asked]. */
+    private static MediaUrlPolicy stuckLookup(java.util.concurrent.CountDownLatch answer,
+            java.util.concurrent.atomic.AtomicInteger asked) {
+        return new MediaUrlPolicy(host -> {
+            asked.incrementAndGet();
+            try {
+                answer.await(60, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return new InetAddress[] { InetAddress.getByName("10.0.0.7") };
+        });
+    }
+
+    private static Downloader.Progress cancelledWhen(java.util.concurrent.atomic.AtomicBoolean stop) {
+        return new Downloader.Progress() {
+            @Override public void transferred(long done, long total) {
+            }
+
+            @Override public void reading(Runnable close) {
+            }
+
+            @Override public boolean cancelled() {
+                return stop.get();
+            }
+        };
+    }
+
+    /**
+     * A lookup that never answers comes before there's a connection a cancel could close. The
+     * cancel ends the fetch all the same, at once, while the resolver is still stuck.
+     */
+    @Test
+    public void aCancelEndsAFetchWhoseLookupNeverAnswers() throws Exception {
+        java.util.concurrent.CountDownLatch answer = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicInteger asked = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.concurrent.atomic.AtomicBoolean stop = new java.util.concurrent.atomic.AtomicBoolean();
+        long[] stoppedAt = new long[1];
+        Thread canceller = new Thread(() -> {
+            long until = System.nanoTime() + 10_000_000_000L;
+            while (asked.get() == 0 && System.nanoTime() < until) Thread.yield();
+            stoppedAt[0] = System.nanoTime();
+            stop.set(true);
+        });
+        canceller.setDaemon(true);
+        File into = temp.newFile();
+        try {
+            canceller.start();
+            Downloader.Result result = within(15_000, () -> Downloader.fetch(REBOUND, Downloader.Kind.VIDEO, into,
+                    stuckLookup(answer, asked), Downloader.MAX_BYTES, cancelledWhen(stop)));
+            long afterMs = (System.nanoTime() - stoppedAt[0]) / 1_000_000;
+
+            assertEquals(result.toString(), Downloader.Status.CANCELLED, result.status);
+            assertEquals(1, asked.get());
+            assertTrue("the cancel took " + afterMs + " ms to end the fetch", afterMs < 1_000);
+            assertFalse(into.exists());
+        } finally {
+            answer.countDown();
+        }
+    }
+
+    /**
+     * A lookup that never answers ends at the lookup's own limit, as the network's failure, or at
+     * the fetch's time when that comes first, as running out of time.
+     */
+    @Test
+    public void aLookupThatNeverAnswersEndsAtTheFirstLimit() throws Exception {
+        java.util.concurrent.CountDownLatch answer = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicInteger asked = new java.util.concurrent.atomic.AtomicInteger();
+        MediaUrlPolicy stuck = stuckLookup(answer, asked);
+        try {
+            MediaUrlPolicy.lookupTimeoutMs = 500;
+            File first = temp.newFile();
+            long before = System.nanoTime();
+            Downloader.Result lookup = within(15_000, () -> Downloader.fetch(REBOUND, Downloader.Kind.VIDEO, first,
+                    stuck, Downloader.MAX_BYTES, Downloader.SILENT));
+            long tookMs = (System.nanoTime() - before) / 1_000_000;
+            assertEquals(lookup.toString(), Downloader.Status.NETWORK_ERROR, lookup.status);
+            assertTrue(lookup.reason, lookup.reason.contains("its host lookup took too long"));
+            assertTrue("the lookup was waited on for " + tookMs + " ms", tookMs < 2_000);
+
+            MediaUrlPolicy.lookupTimeoutMs = MediaUrlPolicy.LOOKUP_TIMEOUT_MS;
+            Downloader.budgetMs = 600;
+            File second = temp.newFile();
+            before = System.nanoTime();
+            Downloader.Result time = within(15_000, () -> Downloader.fetch(REBOUND, Downloader.Kind.VIDEO, second,
+                    stuck, Downloader.MAX_BYTES, Downloader.SILENT));
+            tookMs = (System.nanoTime() - before) / 1_000_000;
+            assertEquals(time.toString(), Downloader.Status.TIMED_OUT, time.status);
+            assertTrue("the lookup was waited on for " + tookMs + " ms", tookMs < 2_000);
+            assertFalse(first.exists());
+            assertFalse(second.exists());
+        } finally {
+            MediaUrlPolicy.lookupTimeoutMs = MediaUrlPolicy.LOOKUP_TIMEOUT_MS;
+            Downloader.budgetMs = Downloader.BUDGET_MS;
+            answer.countDown();
+        }
+    }
+
+    /**
+     * Lookups that never answer hold the three lookup threads and no more. Two fetches after them
+     * wait in the queue for no longer than the lookup's limit, never reach the resolver, and
+     * leave the queue as they give up. Once the resolver answers, a fetch goes through.
+     */
+    @Test
+    public void lookupsThatNeverAnswerHoldNoMoreThanTheirThreads() throws Exception {
+        java.util.concurrent.CountDownLatch answer = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicInteger asked = new java.util.concurrent.atomic.AtomicInteger();
+        MediaUrlPolicy stuck = stuckLookup(answer, asked);
+        MediaUrlPolicy.lookupTimeoutMs = 400;
+        try {
+            for (int i = 0; i < 5; i++) {
+                File into = temp.newFile();
+                long before = System.nanoTime();
+                Downloader.Result result = within(15_000, () -> Downloader.fetch(REBOUND, Downloader.Kind.VIDEO, into,
+                        stuck, Downloader.MAX_BYTES, Downloader.SILENT));
+                long tookMs = (System.nanoTime() - before) / 1_000_000;
+                assertEquals(result.toString(), Downloader.Status.NETWORK_ERROR, result.status);
+                assertTrue("fetch " + i + " waited " + tookMs + " ms", tookMs < 2_000);
+                assertTrue("lookups took " + MediaUrlPolicy.lookupThreads() + " threads",
+                        MediaUrlPolicy.lookupThreads() <= 3);
+            }
+            assertEquals("a queued lookup reached the resolver", 3, asked.get());
+            assertEquals(3, MediaUrlPolicy.lookupsRunning());
+        } finally {
+            MediaUrlPolicy.lookupTimeoutMs = MediaUrlPolicy.LOOKUP_TIMEOUT_MS;
+            answer.countDown();
+        }
+        long until = System.nanoTime() + 5_000_000_000L;
+        while (MediaUrlPolicy.lookupsRunning() > 0 && System.nanoTime() < until) Thread.sleep(10);
+        assertEquals("the held lookups never ended once answered", 0, MediaUrlPolicy.lookupsRunning());
+
+        serve("/after.mp4", "video/mp4", mp4(4000));
+        File after = temp.newFile();
+        Downloader.Result result = within(15_000, () -> fetch("/after.mp4", Downloader.Kind.VIDEO, after,
+                Downloader.MAX_BYTES));
+        assertEquals(result.toString(), Downloader.Status.OK, result.status);
+    }
+
     /**
      * A cache that can't take the file is the phone's storage, not the network, and the fetch
      * says so. It used to end as a network failure. The connection is let go all the same, and

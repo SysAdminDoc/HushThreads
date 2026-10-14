@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Fetches one address into a file in the cache, checks what arrived, and only then hands it to a
@@ -67,6 +68,8 @@ final class Downloader {
         REFUSED,
         /** The file is bigger than a save will hold. */
         TOO_LARGE,
+        /** The fetch used up its time ({@link #budgetMs}) before the whole file was in. */
+        TIMED_OUT,
         /**
          * Android 9 only: Threads hasn't the storage permission a gallery write needs there. A
          * retry can't mend that, so the person saving is told what to turn on instead.
@@ -159,6 +162,13 @@ final class Downloader {
     private static final class Cancelled extends IOException {
         Cancelled() {
             super("cancelled");
+        }
+    }
+
+    /** The fetch's time ran out between two reads of a body. */
+    private static final class OutOfTime extends IOException {
+        OutOfTime() {
+            super("out of time");
         }
     }
 
@@ -277,6 +287,20 @@ final class Downloader {
      * cancel ends it at once (see SaveControl.Save.cancel).
      */
     static volatile int readTimeoutMs = READ_TIMEOUT_MS;
+
+    /**
+     * The longest one fetch may take, on the monotonic clock, from its first host lookup through
+     * every redirect and connection to its last byte. The timeouts above only bound each wait, so
+     * an answer that sent a few bytes just inside the read timeout, or a lookup that never came
+     * back, held its save and one of the three save slots for as long as it went on. Ten minutes
+     * brings in a 512 MB file at under 1 MB/s. Each fetch of a save has its own, so a DASH save's
+     * single-file fallback gets a full one.
+     *
+     * <p>Each connection's timeouts are cut to what's left, so the fetch ends at most one read
+     * after the time is up: no thread watches the clock. A test shortens it.
+     */
+    static final long BUDGET_MS = 10L * 60L * 1000L;
+    static volatile long budgetMs = BUDGET_MS;
     private static final int BUFFER = 64 * 1024;
     static final long MAX_BYTES = 512L * 1024L * 1024L;
     private static final int MAX_REDIRECTS = 5;
@@ -304,20 +328,23 @@ final class Downloader {
      * <p>No header is set on the request. A captured address was fetched from an unrelated machine
      * with none at all and answered 200, so a guessed {@code User-Agent} or {@code Referer} can
      * only make a refusal more likely.
+     *
+     * <p>The whole fetch has {@link #budgetMs} to finish, and ends TIMED_OUT when it doesn't.
      */
     static Result fetch(String url, Kind kind, File into, MediaUrlPolicy policy, long maxBytes, Progress progress) {
         HttpURLConnection connection = null;
         boolean kept = false;
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(budgetMs);
 
         try {
-            Object opened = connect(url, policy, progress);
+            Object opened = connect(url, policy, progress, deadline);
             if (opened instanceof Result) return (Result) opened;
             connection = (HttpURLConnection) opened;
             if (progress.cancelled()) return cancelled();
 
             int code = connection.getResponseCode();
             if (code == 401 || code == 403 || code == 410) {
-                drain(connection, progress);
+                drain(connection, progress, deadline);
                 if (progress.cancelled()) return cancelled();
                 return Result.fail(Status.EXPIRED, "the server answered " + code);
             }
@@ -325,7 +352,7 @@ final class Downloader {
             // body is part of a file, of just the length it announces, so the length check below
             // passed it and the gallery got a truncated video that said it saved.
             if (code != 200) {
-                drain(connection, progress);
+                drain(connection, progress, deadline);
                 if (progress.cancelled()) return cancelled();
                 return Result.fail(Status.HTTP_ERROR, "the server answered " + code);
             }
@@ -343,7 +370,7 @@ final class Downloader {
 
             InputStream in = connection.getInputStream();
             byte[] head = new byte[HEAD];
-            int headLength = readHead(in, head);
+            int headLength = readHead(in, head, deadline);
             if (headLength == 0) return Result.fail(Status.WRITE_ERROR, "the body was empty");
 
             String sniffed = sniff(kind, head, headLength);
@@ -355,7 +382,7 @@ final class Downloader {
             try (OutputStream out = new CacheFile(into)) {
                 out.write(head, 0, headLength);
                 progress.transferred(headLength, expected);
-                total = headLength + copy(in, out, maxBytes - headLength, headLength, expected, progress);
+                total = headLength + copy(in, out, maxBytes - headLength, headLength, expected, progress, deadline);
             }
             if (total > maxBytes) return Result.fail(Status.TOO_LARGE, "the body ran past " + maxBytes + " bytes");
             // Without the length check a connection dropped near the end publishes a truncated
@@ -382,9 +409,12 @@ final class Downloader {
                 return Result.fail(Status.WRITE_ERROR, "the cache could not hold the file: "
                     + e.getCause().getClass().getSimpleName());
             }
+            // A timeout cut to the time that was left ends the read as a socket timeout.
+            if (e instanceof OutOfTime || expired(deadline)) return timedOut();
             return Result.fail(Status.NETWORK_ERROR, "the fetch failed: " + e.getClass().getSimpleName());
         } catch (Throwable t) {
             if (progress.cancelled()) return cancelled();
+            if (expired(deadline)) return timedOut();
             return Result.fail(Status.NETWORK_ERROR, "the fetch failed: " + t.getClass().getSimpleName());
         } finally {
             if (!kept) delete(into);
@@ -448,8 +478,13 @@ final class Downloader {
      * quietly hands back the 3xx when it changes. Facebook redirects between hosts, so leaving
      * this to the default means an occasional unexplained failure, and it would also skip the
      * policy on the hop.
+     *
+     * <p>Each hop's lookup runs off this thread ({@link MediaUrlPolicy#refusalWithin}), so a cancel
+     * or the end of the time at [deadline] ends a fetch whose lookup never comes back. The lookup
+     * happens before there's a connection whose close could end it.
      */
-    private static Object connect(String url, MediaUrlPolicy policy, Progress progress) throws IOException {
+    private static Object connect(String url, MediaUrlPolicy policy, Progress progress, long deadline)
+            throws IOException {
         URL current;
         try {
             current = new URL(url);
@@ -460,7 +495,11 @@ final class Downloader {
 
         for (int hop = 0; hop <= MAX_REDIRECTS; hop++) {
             if (progress.cancelled()) return cancelled();
-            MediaUrlPolicy.Refusal refusal = policy.refusal(current);
+            if (expired(deadline)) return timedOut();
+            MediaUrlPolicy.Refusal refusal = policy.refusalWithin(current, progress::cancelled, deadline);
+            // A lookup given up for a cancel or for the time is told as that, not as the network.
+            if (progress.cancelled()) return cancelled();
+            if (expired(deadline)) return timedOut();
             if (refusal != null) {
                 // A lookup that failed or lied is the network's doing; anything else means the
                 // address isn't Meta's media, and the person saving is told which.
@@ -479,8 +518,8 @@ final class Downloader {
             try {
                 connection.setRequestMethod("GET");
                 connection.setInstanceFollowRedirects(false);
-                connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
-                connection.setReadTimeout(readTimeoutMs);
+                connection.setConnectTimeout(within(CONNECT_TIMEOUT_MS, deadline));
+                connection.setReadTimeout(within(readTimeoutMs, deadline));
                 connection.setUseCaches(false);
                 // disconnect(), never the stream's close(): over HTTPS on Android only disconnect()
                 // ends a read that's waiting (SaveControl.Save.cancel has the measurements).
@@ -498,7 +537,7 @@ final class Downloader {
                 }
 
                 location = connection.getHeaderField("Location");
-                drain(connection, progress);
+                drain(connection, progress, deadline);
             } finally {
                 if (!handedBack) {
                     try {
@@ -647,13 +686,14 @@ final class Downloader {
         return new String(chars);
     }
 
-    /** Fill [head] as far as the body allows. Answers how many bytes came. */
-    private static int readHead(InputStream in, byte[] head) throws IOException {
+    /** Fill [head] as far as the body allows, by [deadline]. Answers how many bytes came. */
+    private static int readHead(InputStream in, byte[] head, long deadline) throws IOException {
         int filled = 0;
         while (filled < head.length) {
             int read = in.read(head, filled, head.length - filled);
             if (read < 0) break;
             filled += read;
+            if (expired(deadline)) throw new OutOfTime();
         }
         return filled;
     }
@@ -661,10 +701,11 @@ final class Downloader {
     /**
      * Copy the rest of the body across. Stops one byte past [allowed], so the caller can tell a
      * body that ran over from one that fit exactly. [already] bytes came before this, out of
-     * [expected] (or -1), which is what [progress] is told.
+     * [expected] (or -1), which is what [progress] is told. Stops at [deadline] too: an answer
+     * that sends a little just inside the read timeout never trips it.
      */
     private static long copy(InputStream in, OutputStream out, long allowed, long already, long expected,
-            Progress progress) throws IOException {
+            Progress progress, long deadline) throws IOException {
         byte[] buffer = new byte[BUFFER];
         long total = 0;
 
@@ -675,6 +716,7 @@ final class Downloader {
             if (total > allowed) break;
             progress.transferred(already + total, expected);
             if (progress.cancelled()) throw new Cancelled();
+            if (expired(deadline)) throw new OutOfTime();
         }
 
         out.flush();
@@ -683,6 +725,25 @@ final class Downloader {
 
     private static Result cancelled() {
         return Result.fail(Status.CANCELLED, "the person saving cancelled it");
+    }
+
+    private static Result timedOut() {
+        return Result.fail(Status.TIMED_OUT, "the fetch took longer than " + budgetMs + " ms");
+    }
+
+    /** Whether the monotonic clock has reached [deadline]. */
+    static boolean expired(long deadline) {
+        return System.nanoTime() - deadline >= 0;
+    }
+
+    /**
+     * [timeoutMs] cut to what's left before [deadline], and never 0, which a connection reads as
+     * no timeout at all. A [timeoutMs] of 0 (no timeout) becomes what's left.
+     */
+    private static int within(int timeoutMs, long deadline) {
+        long left = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime());
+        long cut = timeoutMs <= 0 ? left : Math.min(timeoutMs, left);
+        return (int) Math.max(1L, Math.min(Integer.MAX_VALUE, cut));
     }
 
     /** The type that the server gave, lowercased and without its parameters. */
@@ -703,15 +764,16 @@ final class Downloader {
      * never ended used to hold its save, and one of the three save slots, for as long as it went
      * on. A read that's waiting ends at the read timeout, or on a cancel, which closes the
      * connection ({@link Progress#reading}). A redirect has no error body, so none of it is read.
+     * Nothing is read past the fetch's [deadline] either.
      */
-    private static void drain(HttpURLConnection connection, Progress progress) {
+    private static void drain(HttpURLConnection connection, Progress progress, long deadline) {
         InputStream stream = null;
         try {
             stream = connection.getErrorStream();
             if (stream == null) return;
 
             byte[] buffer = new byte[4096];
-            long until = System.nanoTime() + DRAIN_NANOS;
+            long until = System.nanoTime() + Math.max(0L, Math.min(DRAIN_NANOS, deadline - System.nanoTime()));
             int left = DRAIN_BYTES;
             int read;
             while (left > 0 && System.nanoTime() - until < 0 && !progress.cancelled()
