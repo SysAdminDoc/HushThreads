@@ -13,6 +13,7 @@ Changes in the source build, then released versions.
 * **Threads:** When the settings list can't be put on the HushThreads screen at all, the screen shows Retry and Back instead of staying blank. Retry opens the page you were headed to, with your switches as you left them.
 * **Threads:** HushThreads now keeps a note of how each switch starts in the build you patched. When a later build changes how a switch starts, one you never changed keeps the setting it had. Earlier builds left no such note, so this starts working with the update after this one.
 * **Tooling:** The release receipt now asks OSV about the plugin classpath that builds and signs the bundle too, from an inventory settings.gradle.kts writes after each bundle build, and reports it apart from what the bundle carries, with its own exception list. A version that was only asked for and resolved to another is listed as a request, and a missing inventory or a dependency that didn't resolve stops the release instead of reading as clean.
+* **Tooling:** The bundle build holds the Android Gradle plugin's jose4j at 0.9.6 and jdom2 at 2.0.6.1, the patch releases that fix their high advisories, so the plugin classpath has none left.
 
 ## 0.0.14 (2026-10-13)
 

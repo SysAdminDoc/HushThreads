@@ -57,6 +57,11 @@ pluginManagement {
 // signing code actually runs. 1.86 is spelled out here rather than read from
 // gradle/libs.versions.toml because the version catalog does not exist yet at this point in the
 // build; the catalog pins the same value and says why it is that one. Move both together.
+//
+// The Android Gradle plugin brings jose4j 0.9.5 and jdom2 2.0.6 here, inside GHSA-3677-xxcr-wjqv
+// (CVE-2024-29371, fixed in jose4j 0.9.6) and GHSA-2363-cqg2-863c (CVE-2021-33813, fixed in jdom2
+// 2.0.6.1). Both fixes are patch releases of the same line. The build classpath inventory below is
+// what the release receipt checks, so take a force out once the plugin asks for a fixed version.
 buildscript {
     configurations.all {
         resolutionStrategy.eachDependency {
@@ -65,6 +70,12 @@ buildscript {
             }
             if (requested.group == "org.bouncycastle") {
                 useVersion("1.86")
+            }
+            if (requested.group == "org.bitbucket.b_c" && requested.name == "jose4j") {
+                useVersion("0.9.6")
+            }
+            if (requested.group == "org.jdom" && requested.name == "jdom2") {
+                useVersion("2.0.6.1")
             }
         }
     }
