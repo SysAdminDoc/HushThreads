@@ -1059,6 +1059,11 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     static final class Row extends Preference implements ImmediateAction {
         /** Set on a row whose tap does what it says at once, which then goes without a chevron. */
         boolean actsAtOnce;
+        /**
+         * What a press and hold on this row does, run for a touch through the list and for a
+         * screen reader's long press action. A row without one offers no long press.
+         */
+        @Nullable Runnable longPress;
 
         Row(Context context) {
             super(context);
@@ -1204,6 +1209,14 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 info.setClickable(true);
                 info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK);
             }
+            // The list is long-clickable for the one row that hides on a press and hold, and it
+            // hands that to every row it describes. Only a row with a long press keeps it.
+            boolean holds = preference.isEnabled() && longPressOf(preference) != null;
+            info.setLongClickable(holds);
+            if (!holds) info.removeAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_LONG_CLICK);
+            else if (!info.getActionList().contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_LONG_CLICK)) {
+                info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_LONG_CLICK);
+            }
         }
 
         @Override
@@ -1226,7 +1239,17 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                     return list.performItemClick(host, position, list.getItemIdAtPosition(position));
                 }
             }
+            Runnable longPress = longPressOf(preference);
+            if (action == AccessibilityNodeInfo.ACTION_LONG_CLICK && longPress != null && preference.isEnabled()) {
+                longPress.run();
+                return true;
+            }
             return super.performAccessibilityAction(host, action, arguments);
+        }
+
+        @Nullable
+        static Runnable longPressOf(Object preference) {
+            return preference instanceof Row ? ((Row) preference).longPress : null;
         }
 
         @Nullable

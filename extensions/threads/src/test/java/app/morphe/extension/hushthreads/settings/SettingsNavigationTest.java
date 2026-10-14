@@ -188,6 +188,26 @@ public class SettingsNavigationTest {
         assertFalse(contains(SettingsNavigation.QUICK_SETUPS));
     }
 
+    /** A screen reader is offered a long press on Quick setups alone, and that long press hides it. */
+    @Test public void onlyQuickSetupsOffersAScreenReaderALongPress() {
+        layout(dialog.getView());
+        View quick = list().getChildAt(position(SettingsNavigation.QUICK_SETUPS) - list().getFirstVisiblePosition());
+        View feed = list().getChildAt(position("section_Feed") - list().getFirstVisiblePosition());
+        android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction hold =
+                android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_LONG_CLICK;
+        assertTrue(quick.createAccessibilityNodeInfo().getActionList().contains(hold));
+        assertTrue(quick.createAccessibilityNodeInfo().isLongClickable());
+        assertFalse("a row with no long press offers one", feed.createAccessibilityNodeInfo().getActionList().contains(hold));
+        assertFalse(feed.createAccessibilityNodeInfo().isLongClickable());
+        assertFalse(feed.performAccessibilityAction(hold.getId(), null));
+        assertFalse(BaseSettings.HIDE_QUICK_SETUPS.savedValue());
+
+        assertTrue(quick.performAccessibilityAction(hold.getId(), null));
+        ShadowLooper.idleMainLooper();
+        assertTrue(BaseSettings.HIDE_QUICK_SETUPS.savedValue());
+        assertFalse(contains(SettingsNavigation.QUICK_SETUPS));
+    }
+
     /** Each Quick setups choice changes its switches through their rows and says how many changed. */
     @Test public void quickSetupsChangeTheirSwitchesAndSayHowMany() {
         assertEquals("Quick setups isn't under the status card", 1, position(SettingsNavigation.QUICK_SETUPS));

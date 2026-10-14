@@ -133,6 +133,7 @@ final class SettingsNavigation extends BaseAdapter {
                 SettingsIcons.BUILD);
         quickSetups.setKey(QUICK_SETUPS);
         quickSetups.setOnPreferenceClickListener(ignored -> { page.showQuickSetups(); return true; });
+        ((HushThreadsPreferenceFragment.Row) quickSetups).longPress = page::hideQuickSetups;
         report = link(context, L10n.t("Report a problem"),
                 L10n.t("Opens a GitHub report with your versions and settings filled in. Add what happened."), SettingsIcons.BUG);
         report.setKey(REPORT);
@@ -191,10 +192,11 @@ final class SettingsNavigation extends BaseAdapter {
             }
         });
         // A long press takes Quick setups off the home page; a row on the Pause, backup and
-        // diagnostics page brings it back. Every other row keeps the list's own long press.
+        // diagnostics page brings it back. A row with no long press of its own leaves it alone.
         list.setOnItemLongClickListener((parent, view, position, id) -> {
-            if (getItem(position) != quickSetups) return false;
-            page.hideQuickSetups();
+            Runnable longPress = HushThreadsPreferenceFragment.RowSemantics.longPressOf(getItem(position));
+            if (longPress == null) return false;
+            longPress.run();
             return true;
         });
         rebuild();
