@@ -23,6 +23,7 @@ Changes in the source build, then released versions.
 * **Threads:** Search's Follow suggestions row is gone too. It has its own switch, `Hide follow suggestions in Search`, right under Hide suggested users on the Feed page, and it starts on. Nothing takes the row's place, and search results and topics stay as they are. Turn the switch off, or pause HushThreads, and Search looks the way Threads draws it.
 * **Threads:** TalkBack no longer stops on the HushThreads settings list as a whole to offer a long press that does nothing there. Quick setups, the one row with a long press, still offers it.
 * **Threads:** A save's download now has a connection of its own that never asks Threads' cookie store or sign-in prompts for anything, so it can't send a cookie or a password, and it drops every cookie a server or a redirect sets. It still goes through the proxy your Wi-Fi or phone settings name and checks the server's certificate the same way. If that proxy asks for a password, the save stops and tells you, since it never sends one.
+* **Threads:** HushThreads settings stay open when Threads redraws itself, after you change the font size or switch dark theme from the quick settings, or when Android closes Threads in the background and you come back. They used to close. They now come back on the page you were on.
 
 ## 0.0.14 (2026-10-13)
 

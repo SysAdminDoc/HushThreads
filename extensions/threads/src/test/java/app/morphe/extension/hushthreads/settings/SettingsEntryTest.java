@@ -451,6 +451,70 @@ public class SettingsEntryTest {
         }
     }
 
+    /**
+     * Threads takes Android's fragment state out of every activity it recreates, so a font size or
+     * dark theme change, or Android ending Threads in the background, closed the screen for good
+     * (seen on an emulator). It comes back over the recreated activity on the page it was on. One
+     * the person closed stays closed.
+     */
+    @Test public void theScreenComesBackOnItsPageWhenThreadsRecreatesItsHost() {
+        PatchFamily.inBuildForTests = java.util.EnumSet.allOf(PatchFamily.class);
+        try {
+            recreatedHostBringsTheScreenBack();
+        } finally {
+            SettingsEntry.onClosedByUser();
+            PatchFamily.inBuildForTests = null;
+        }
+    }
+
+    private void recreatedHostBringsTheScreenBack() {
+        Intent shortcut = new Intent().putExtra(SettingsEntry.EXTRA_OPEN_SETTINGS, true);
+        ActivityController<ThreadsLikeActivity> activity = Robolectric.buildActivity(ThreadsLikeActivity.class, shortcut).create();
+        SettingsEntry.onActivityCreate(activity.get());
+        activity.start().resume();
+        ShadowLooper.idleMainLooper();
+        tapRow(activity.get(), "section_Feed");
+        org.junit.Assert.assertEquals("Feed", pageOver(activity.get()).navigation.route());
+        // Long after the request, so only the activity's saved state can bring the screen back.
+        ShadowLooper.idleMainLooper(5, java.util.concurrent.TimeUnit.MINUTES);
+
+        activity.recreate();
+        ShadowLooper.idleMainLooper();
+
+        assertNotNull("the screen closed when Threads recreated its activity", dialogOver(activity.get()));
+        org.junit.Assert.assertEquals("the screen came back on another page",
+                "Feed", pageOver(activity.get()).navigation.route());
+
+        // Feed, the first page, and out.
+        SettingsL10nTest.backOf((SettingsDialog) dialogOver(activity.get())).performClick();
+        SettingsL10nTest.backOf((SettingsDialog) dialogOver(activity.get())).performClick();
+        ShadowLooper.idleMainLooper();
+        assertNull("the screen stayed open", dialogOver(activity.get()));
+        activity.recreate();
+        ShadowLooper.idleMainLooper();
+        assertNull("a screen the person closed came back with its activity", dialogOver(activity.get()));
+    }
+
+    /** Takes Android's fragment state out before it's restored, as Threads' IgFragmentActivity does. */
+    public static final class ThreadsLikeActivity extends Activity {
+        @Override protected void onCreate(android.os.Bundle state) {
+            if (state != null) state.remove("android:fragments");
+            super.onCreate(state);
+        }
+    }
+
+    private static void tapRow(Activity activity, String key) {
+        android.widget.ListView list = pageOver(activity).getView().findViewById(android.R.id.list);
+        for (int i = 0; i < list.getCount(); i++) {
+            Object row = list.getItemAtPosition(i);
+            if (!(row instanceof android.preference.Preference) || !key.equals(((android.preference.Preference) row).getKey())) continue;
+            assertTrue(list.performItemClick(list.getAdapter().getView(i, null, list), i, list.getAdapter().getItemId(i)));
+            ShadowLooper.idleMainLooper();
+            return;
+        }
+        org.junit.Assert.fail("No row " + key);
+    }
+
     @SuppressWarnings("deprecation")
     private static HushThreadsPreferenceFragment pageOver(Activity activity) {
         SettingsDialog dialog = (SettingsDialog) dialogOver(activity);

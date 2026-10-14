@@ -313,6 +313,11 @@ final class SettingsNavigation extends BaseAdapter {
         }
     }
 
+    /** The page in view: a section's route, or "" for home. */
+    String route() {
+        return route;
+    }
+
     void save(Bundle out) {
         Bundle state = new Bundle();
         state.putString("route", route);

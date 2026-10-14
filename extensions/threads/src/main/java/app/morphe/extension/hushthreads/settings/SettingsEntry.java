@@ -69,6 +69,17 @@ public final class SettingsEntry {
     /** A request older than this is dropped rather than opened over some later screen. */
     private static final long REQUEST_LIFETIME_MS = 30_000;
 
+    /**
+     * Where the screen goes in a Threads activity's own saved state. Threads takes Android's
+     * fragment state out of every activity it recreates (IgFragmentActivity's internalOnCreate
+     * removes "android:fragments"), so a font size or theme change, or Android ending Threads in
+     * the background, closed the screen for good. It saves itself here instead.
+     */
+    static final String RECREATED_SCREEN = "hushthreads_settings_screen";
+    /** The screen as a recreated activity saved it, for the next open to put back. */
+    @SuppressWarnings("deprecation")
+    private static volatile android.app.Fragment.SavedState recreatedScreen;
+
     private static volatile boolean openPending;
     private static volatile long requestedAt;
     private static volatile boolean callbacksRegistered;
@@ -328,10 +339,34 @@ public final class SettingsEntry {
             if (resumed != null && resumed.get() == activity) resumed = null;
         }
 
-        @Override public void onActivityCreated(Activity activity, Bundle state) { }
+        @Override
+        @SuppressWarnings("deprecation")
+        public void onActivityCreated(Activity activity, Bundle state) {
+            try {
+                android.app.Fragment.SavedState screen = state == null ? null : state.getParcelable(RECREATED_SCREEN);
+                if (screen != null) reopenRecreated(screen);
+            } catch (Exception ex) {
+                Logger.printException(() -> "Settings entry: could not read the screen back from a recreated activity", ex);
+            }
+        }
+
         @Override public void onActivityStarted(Activity activity) { }
         @Override public void onActivityStopped(Activity activity) { }
-        @Override public void onActivitySaveInstanceState(Activity activity, Bundle state) { }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public void onActivitySaveInstanceState(Activity activity, Bundle state) {
+            try {
+                if (closedByUser) return;
+                FragmentManager fragments = activity.getFragmentManager();
+                android.app.Fragment shown = fragments.findFragmentByTag(DIALOG_TAG);
+                if (shown == null || shown.isRemoving()) return;
+                android.app.Fragment.SavedState screen = fragments.saveFragmentInstanceState(shown);
+                if (screen != null) state.putParcelable(RECREATED_SCREEN, screen);
+            } catch (Exception ex) {
+                Logger.printException(() -> "Settings entry: could not save the screen with its activity", ex);
+            }
+        }
         @Override
         public void onActivityDestroyed(Activity activity) {
             // The screen can land on an activity just before it clears itself for the next one.
@@ -384,13 +419,21 @@ public final class SettingsEntry {
                 return false;
             }
             FragmentManager fragments = activity.getFragmentManager();
-            if (fragments.findFragmentByTag(DIALOG_TAG) != null) return true;
+            if (fragments.findFragmentByTag(DIALOG_TAG) != null) {
+                // A host that keeps fragment state put the screen back itself.
+                recreatedScreen = null;
+                return true;
+            }
             if (fragments.isStateSaved()) {
                 Logger.printInfo(() -> "Settings wait: " + name + " has saved its state");
                 return false;
             }
             closedByUser = false;
-            SettingsDialog.onPage(requestedPage).show(fragments, DIALOG_TAG);
+            SettingsDialog dialog = SettingsDialog.onPage(requestedPage);
+            android.app.Fragment.SavedState screen = recreatedScreen;
+            recreatedScreen = null;
+            if (screen != null) dialog.setInitialSavedState(screen);
+            dialog.show(fragments, DIALOG_TAG);
             host = new WeakReference<>(activity);
             Logger.printInfo(() -> "Settings opened over " + name);
             return true;
@@ -405,6 +448,7 @@ public final class SettingsEntry {
         closedByUser = true;
         host = null;
         requestedPage = null;
+        recreatedScreen = null;
     }
 
     /**
@@ -449,7 +493,19 @@ public final class SettingsEntry {
         requestedAt = SystemClock.elapsedRealtime();
         openPending = true;
         requestedPage = null;
+        recreatedScreen = null;
         Logger.printInfo(() -> "Settings requested by " + from);
+    }
+
+    /**
+     * A Threads activity that had the screen open was recreated: asks for the screen again, put
+     * back as it was saved (page, search and place in the list), over the first Threads screen to
+     * resume, which is the recreated one.
+     */
+    @SuppressWarnings("deprecation")
+    static void reopenRecreated(android.app.Fragment.SavedState screen) {
+        request("a Threads screen recreated with it open");
+        recreatedScreen = screen;
     }
 
     /**
