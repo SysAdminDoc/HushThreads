@@ -93,11 +93,14 @@ public final class SettingsUpgrade {
     /** From the end of Threads' start, in the main process: this build's receipt. */
     static void onThreadsStarted() {
         try {
+            // Nothing may have read a switch by the end of Threads' start, and then the switches
+            // haven't loaded or been compared. PatchFamily loads them, so ask it first.
+            Set<PatchFamily> families = PatchFamily.inThisBuild();
             if (!earlierDefaultsSaved) {
                 Logger.printInfo(() -> "Settings upgrade: the receipt waits until the earlier defaults are saved");
                 return;
             }
-            replaceReceipt(store(), PatchFamily.inThisBuild());
+            replaceReceipt(store(), families);
         } catch (RuntimeException failure) {
             Logger.printException(() -> "Settings upgrade: couldn't save the receipt", failure);
         }
