@@ -643,8 +643,26 @@ public class SettingsEntryTest {
             ShadowLooper.idleMainLooper();
         } finally {
             SettingsEntry.onClosedByUser();
+            SettingsBackupPreference.forgetPickForTests();
+            SettingsFileGrants.forgetProcessForTests();
             PatchFamily.inBuildForTests = null;
         }
+    }
+
+    /** Threads' start lets go of the access to a settings file an ended process kept. */
+    @Test public void threadsStartingLetsGoOfFileAccessAnEndedProcessKept() throws Exception {
+        android.content.Context application = RuntimeEnvironment.getApplication();
+        SettingsFileProvider.install("settings-entry");
+        android.net.Uri left = SettingsFileProvider.put("settings-entry", "left.json", new byte[0]);
+        SettingsFileGrants.take(application, left, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        SettingsFileGrants.forgetProcessForTests();
+        org.junit.Assert.assertEquals(1, application.getContentResolver().getPersistedUriPermissions().size());
+
+        // Not the Application itself, so no second lifecycle watcher is registered.
+        SettingsEntry.onApplicationCreate(new android.content.ContextWrapper(application));
+        app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
+        assertTrue("the start kept the ended process's access",
+                application.getContentResolver().getPersistedUriPermissions().isEmpty());
     }
 
     /** Takes Android's fragment state out before it's restored, as Threads' IgFragmentActivity does. */

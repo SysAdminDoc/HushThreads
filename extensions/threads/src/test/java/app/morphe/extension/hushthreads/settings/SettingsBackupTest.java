@@ -1222,6 +1222,14 @@ public class SettingsBackupTest {
         SettingsFileGrants.release(context, now, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         assertTrue(heldFiles(context).isEmpty());
         assertTrue(context.getContentResolver().getPersistedUriPermissions().isEmpty());
+
+        // An export's read and write and an import's read of one file are one grant, so letting go
+        // after the import ends the write access too.
+        int both = flags | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+        SettingsFileGrants.take(context, now, both);
+        assertEquals(Intent.FLAG_GRANT_READ_URI_PERMISSION, SettingsFileGrants.take(context, now, flags));
+        SettingsFileGrants.release(context, now, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        assertTrue("write access outlived the release", context.getContentResolver().getPersistedUriPermissions().isEmpty());
         // A picker that made nothing lasting leaves nothing to list.
         assertEquals(0, SettingsFileGrants.take(context, now, Intent.FLAG_GRANT_READ_URI_PERMISSION));
         assertTrue(heldFiles(context).isEmpty());

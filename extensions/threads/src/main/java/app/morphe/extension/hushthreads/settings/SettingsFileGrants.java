@@ -49,26 +49,31 @@ final class SettingsFileGrants {
         String name = file.toString();
         synchronized (LOCK) {
             // Written down first, so a process that ends right after the take leaves it listed.
-            if (!list(context, name, true)) return 0;
+            int listed = list(context, name, true);
+            if (listed == FAILED) return 0;
             try {
                 context.getContentResolver().takePersistableUriPermission(file, grant);
                 takenHere.add(name);
                 return grant;
             } catch (RuntimeException refused) {
                 Logger.printInfo(() -> "Settings file: no lasting access to the file: " + refused.getClass().getSimpleName());
-                if (!takenHere.contains(name)) list(context, name, false);
+                // Only an entry this take added: one already there is an earlier process's or this one's.
+                if (listed == CHANGED) list(context, name, false);
                 return 0;
             }
         }
     }
 
-    /** Lets go of the lasting [grant] on [file], if one was taken, and crosses it off. */
+    /**
+     * Lets go of the lasting access on [file], if [grant] says one was taken, and crosses it off.
+     * Read and write both: Android keeps one grant per file with every take's access merged in.
+     */
     static void release(@Nullable Context context, Uri file, int grant) {
         if (grant == 0 || context == null) return;
         String name = file.toString();
         synchronized (LOCK) {
             try {
-                context.getContentResolver().releasePersistableUriPermission(file, grant);
+                context.getContentResolver().releasePersistableUriPermission(file, ACCESS);
             } catch (RuntimeException error) {
                 Logger.printInfo(() -> "Settings file: couldn't let go of its access: " + error.getClass().getSimpleName());
             }
@@ -124,25 +129,29 @@ final class SettingsFileGrants {
         }
     }
 
-    /** Adds or removes [name]. Answers whether the list on disk says what was asked. */
-    private static boolean list(Context context, String name, boolean add) {
+    private static final int FAILED = -1;
+    private static final int UNCHANGED = 0;
+    private static final int CHANGED = 1;
+
+    /** Adds or removes [name]: CHANGED or UNCHANGED once the list on disk says so, FAILED if it can't. */
+    private static int list(Context context, String name, boolean add) {
         try {
             SharedPreferences ledger = context.getApplicationContext() != null
                     ? context.getApplicationContext().getSharedPreferences(LEDGER, Context.MODE_PRIVATE)
                     : context.getSharedPreferences(LEDGER, Context.MODE_PRIVATE);
             Set<String> held = new HashSet<>(ledger.getStringSet(HELD, new HashSet<>()));
             boolean changed = add ? held.add(name) : held.remove(name);
-            if (!changed) return true;
+            if (!changed) return UNCHANGED;
             SharedPreferences.Editor update = ledger.edit();
             if (held.isEmpty()) update.remove(HELD);
             else update.putStringSet(HELD, held);
             // commit(), not apply(): the entry exists for a process that ends right after this.
-            if (update.commit()) return true;
+            if (update.commit()) return CHANGED;
             Logger.printInfo(() -> "Settings file: couldn't write the list of file access");
         } catch (RuntimeException error) {
             Logger.printInfo(() -> "Settings file: couldn't read the list of file access: " + error.getClass().getSimpleName());
         }
-        return false;
+        return FAILED;
     }
 
     /** As after Threads ended: this process took nothing. For tests. */
