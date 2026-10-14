@@ -125,7 +125,10 @@ final class MediaConnection {
     private final boolean https;
     /** The addresses the policy vetted for [host], or null when it looked nothing up. */
     private final InetAddress[] vetted;
+    /** Looks up a proxy given by name. */
     private final Lookup lookup;
+    /** Looks the server up for a route straight to it that no check looked up. */
+    private final Lookup direct;
     private final int connectTimeoutMs;
     private final int readTimeoutMs;
     private final long deadline;
@@ -153,6 +156,16 @@ final class MediaConnection {
      */
     MediaConnection(URL url, InetAddress[] vetted, Lookup lookup, int connectTimeoutMs, int readTimeoutMs,
             long deadline) throws IOException {
+        this(url, vetted, lookup, lookup, connectTimeoutMs, readTimeoutMs, deadline);
+    }
+
+    /**
+     * As above, with the server looked up through [direct] when a route goes straight to it and
+     * the policy looked nothing up: a proxy list's DIRECT entry, which the policy can still hold
+     * to a public answer. A proxy given by name is still looked up through [lookup].
+     */
+    MediaConnection(URL url, InetAddress[] vetted, Lookup lookup, Lookup direct, int connectTimeoutMs,
+            int readTimeoutMs, long deadline) throws IOException {
         String scheme = url.getProtocol().toLowerCase(Locale.US);
         if (!scheme.equals("https") && !scheme.equals("http")) throw new IOException("the address isn't HTTP");
         if (url.getUserInfo() != null) throw new IOException("the address carries a user name");
@@ -164,6 +177,7 @@ final class MediaConnection {
         port = url.getPort() != -1 ? url.getPort() : https ? 443 : 80;
         this.vetted = vetted == null || vetted.length == 0 ? null : vetted.clone();
         this.lookup = lookup;
+        this.direct = direct;
         this.connectTimeoutMs = connectTimeoutMs;
         this.readTimeoutMs = readTimeoutMs;
         this.deadline = deadline;
@@ -322,7 +336,7 @@ final class MediaConnection {
             default:
                 InetAddress literal = literalAddress(host);
                 first = reach(literal != null ? new InetAddress[] { literal }
-                        : vetted != null ? vetted : looked(host), port);
+                        : vetted != null ? vetted : looked(direct, host), port);
                 break;
         }
         if (https) secure(first);
@@ -354,10 +368,10 @@ final class MediaConnection {
         throw failure != null ? failure : new UnknownHostException("the host has no address");
     }
 
-    /** The addresses [lookup] gives [name], on its threads. */
-    private InetAddress[] looked(String name) throws IOException {
-        if (lookup == null) throw new UnknownHostException("nothing may look the host up");
-        InetAddress[] found = lookup.addresses(name);
+    /** The addresses [through] gives [name], on its threads. */
+    private static InetAddress[] looked(Lookup through, String name) throws IOException {
+        if (through == null) throw new UnknownHostException("nothing may look the host up");
+        InetAddress[] found = through.addresses(name);
         if (found == null || found.length == 0) throw new UnknownHostException("the host does not resolve");
         return found;
     }
@@ -368,7 +382,7 @@ final class MediaConnection {
         InetSocketAddress proxy = (InetSocketAddress) address;
         if (!proxy.isUnresolved()) return new InetAddress[] { proxy.getAddress() };
         InetAddress literal = literalAddress(proxy.getHostString());
-        return literal != null ? new InetAddress[] { literal } : looked(proxy.getHostString());
+        return literal != null ? new InetAddress[] { literal } : looked(lookup, proxy.getHostString());
     }
 
     private static int proxyPort(SocketAddress address) {
@@ -480,6 +494,16 @@ final class MediaConnection {
     /** The answer's header [name], several joined by commas, or null. Never a Set-Cookie: none is kept. */
     String header(String name) {
         return headers.get(name.toLowerCase(Locale.US));
+    }
+
+    /**
+     * The redirect's address, its bytes read as UTF-8: a path past ASCII comes that way. Read as
+     * one character a byte like the other headers, {@link #target} then encoded each such byte
+     * twice, and the next hop asked for a file that isn't there.
+     */
+    String location() {
+        String value = headers.get("location");
+        return value == null ? null : new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
     }
 
     /** The length the answer announced, or -1. */

@@ -548,6 +548,52 @@ public class DownloadIsolationTest {
         assertUntouched("after");
     }
 
+    /**
+     * A proxy list can end in DIRECT, and the check looks nothing up for it since the list names a
+     * proxy. With only the phone's own lookup between that socket and the answer, the answer has
+     * to be public: a name answered with a loopback address gets no connection. Through a VPN the
+     * same route connects, so the fence is what stopped it.
+     */
+    @Test
+    public void aProxyListsDirectEntryIsHeldToAPublicAnswer() throws Exception {
+        LocalServer cdn = server();
+        byte[] body = servePhoto(cdn, "/f.jpg", 10_000);
+        InetSocketAddress gone;
+        try (ServerSocket closed = new ServerSocket(0, 1, InetAddress.getLoopbackAddress())) {
+            gone = new InetSocketAddress(InetAddress.getLoopbackAddress(), closed.getLocalPort());
+        }
+        routes.route = Arrays.asList(new Proxy(Proxy.Type.HTTP, gone), Proxy.NO_PROXY);
+        String url = "http://localhost:" + cdn.port() + "/f.jpg";
+
+        File fenced = file();
+        Downloader.Result refused = Downloader.fetch(url, Downloader.Kind.IMAGE, fenced, directEntry(true),
+                Downloader.MAX_BYTES, Downloader.SILENT);
+        assertEquals(refused.toString(), Downloader.Status.NETWORK_ERROR, refused.status);
+        assertEquals("the loopback answer got a request", 0, cdn.requests().size());
+        assertFalse(fenced.exists());
+
+        File throughVpn = file();
+        Downloader.Result fetched = Downloader.fetch(url, Downloader.Kind.IMAGE, throughVpn, directEntry(false),
+                Downloader.MAX_BYTES, Downloader.SILENT);
+        assertEquals(fetched.toString(), Downloader.Status.OK, fetched.status);
+        assertArrayEquals(body, Files.readAllBytes(throughVpn.toPath()));
+        assertEquals(1, cdn.requests().size());
+    }
+
+    /**
+     * The class's rules for a list that names a proxy, so the check looks nothing up, with the
+     * DIRECT entry's fence up ([fenced], no VPN) or down (a VPN).
+     */
+    private MediaUrlPolicy directEntry(boolean fenced) {
+        return new MediaUrlPolicy(host -> new InetAddress[] { InetAddress.getLoopbackAddress() }, url -> false,
+                url -> fenced) {
+            @Override
+            Refusal refusal(URL url) {
+                return url.getHost().equals("localhost") && ports.contains(url.getPort()) ? null : super.refusal(url);
+            }
+        };
+    }
+
     /** A cancel closes the socket under a read that's waiting inside a tunnel, as it does without one. */
     @Test
     public void aCancelEndsAReadThroughATunnel() throws Exception {

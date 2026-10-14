@@ -385,6 +385,27 @@ public class MediaConnectionTest {
         }
     }
 
+    /**
+     * A redirect to a path past ASCII sends it as UTF-8 bytes. Each one read as a character of
+     * its own came out encoded twice, %C3%83%C2%A9 for an é, and the next hop asked for a file
+     * that isn't there.
+     */
+    @Test
+    public void aRedirectsUtf8PathIsAskedForAsSent() throws Exception {
+        try (RawServer server = new RawServer("HTTP/1.1 302 Found\r\nLocation: /cafÃ©.jpg?n=Ã©\r\n"
+                + "Content-Length: 0\r\n\r\n")) {
+            MediaConnection connection = open(server.url("/f"));
+            try {
+                assertEquals(302, connection.code());
+                assertEquals("/café.jpg?n=é", connection.location());
+                assertEquals("/caf%C3%A9.jpg?n=%C3%A9",
+                        MediaConnection.target(new URL(server.url("/f"), connection.location())));
+            } finally {
+                connection.close();
+            }
+        }
+    }
+
     /** Such an address is saved, through the fetch a save makes. */
     @Test
     public void aSaveOfSuchAnAddressGoesThrough() throws Exception {

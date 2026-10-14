@@ -48,7 +48,8 @@ import java.util.function.BooleanSupplier;
  * vetted and no others ({@link #vetWithin}), so a resolver can't change its answer between the
  * two. Through a VPN or a proxy the lookup isn't where the socket goes, so that fence stays down
  * there: a proxy resolves the name itself, and through a VPN the connection looks the name up on
- * the same bounded threads ({@link #addressesWithin}).
+ * the same bounded threads ({@link #addressesWithin}). A proxy list's DIRECT entry, tried when
+ * the proxies before it fail, is fenced again unless a VPN is up ({@link #directAddressesWithin}).
  *
  * <p>FAKE_IP: fake-IP DNS (Clash, mihomo, sing-box, v2rayNG, OpenClash, common where Facebook
  * is blocked) answers every name from 198.18.0.0/15, fc00::/18 or fdfe:dcba:9876::/64 and
@@ -122,14 +123,27 @@ class MediaUrlPolicy {
     private final Resolver resolver;
     /** Package-visible so a test can ask a production policy about its route without a lookup. */
     final Route route;
+    /**
+     * Whether a socket sent straight out, past any proxy, reaches the address the phone's own
+     * lookup gives: no VPN. A proxy list can end in DIRECT, and [route] reads any proxy in it as
+     * no direct route, so the check looks nothing up and {@link #directAddressesWithin} fences
+     * the lookup that entry makes. Off unless given: a test that lets its own host through hands
+     * its loopback server to that lookup.
+     */
+    private final Route unproxied;
 
     MediaUrlPolicy(Resolver resolver) {
         this(resolver, DIRECT);
     }
 
     MediaUrlPolicy(Resolver resolver, Route route) {
+        this(resolver, route, url -> false);
+    }
+
+    MediaUrlPolicy(Resolver resolver, Route route, Route unproxied) {
         this.resolver = resolver;
         this.route = route;
+        this.unproxied = unproxied;
     }
 
     /**
@@ -243,10 +257,9 @@ class MediaUrlPolicy {
 
     /**
      * Every address [host] resolves to, looked up on a lookup thread as {@link #vetWithin} does,
-     * for a connection to a host no check looked up: straight through a VPN, where the lookup is
-     * the VPN's, a proxy list's DIRECT fallback, or a proxy given by name. Nothing is fenced, as
-     * on those routes in {@link #refusal}. Throws when the host doesn't resolve or the wait was
-     * given up on; the message names no host.
+     * for a connection to a host no check looked up: a proxy given by name, and under
+     * {@link #directAddressesWithin} the server itself. Nothing is fenced here. Throws when the
+     * host doesn't resolve or the wait was given up on; the message names no host.
      */
     final InetAddress[] addressesWithin(String host, BooleanSupplier stopped, long deadline)
             throws UnknownHostException {
@@ -258,6 +271,24 @@ class MediaUrlPolicy {
         }
         if (addresses == null || addresses.length == 0) throw new UnknownHostException("its host does not resolve");
         return addresses.clone();
+    }
+
+    /**
+     * {@link #addressesWithin} for [url]'s own host on a route straight to it that the check
+     * didn't look up, a proxy list's DIRECT entry say. Where nothing but the phone's lookup is
+     * between the socket and the answer ({@link #unproxied}), the answer has to be public, as on
+     * a direct route in {@link #refusal}. Throws as {@link #addressesWithin} does, and when an
+     * answer isn't public; the message names no host.
+     */
+    final InetAddress[] directAddressesWithin(URL url, BooleanSupplier stopped, long deadline)
+            throws UnknownHostException {
+        InetAddress[] addresses = addressesWithin(url.getHost().toLowerCase(Locale.US), stopped, deadline);
+        if (!unproxied.direct(url)) return addresses;
+        for (InetAddress address : addresses) {
+            String reason = address == null ? "no address" : nonPublic(address);
+            if (reason != null) throw new UnknownHostException("its host resolves to " + reason);
+        }
+        return addresses;
     }
 
     /** A wait for a lookup thread given up on, and why. */

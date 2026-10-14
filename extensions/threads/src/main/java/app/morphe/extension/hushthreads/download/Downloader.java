@@ -511,8 +511,10 @@ final class Downloader {
                 return Result.fail(Status.HTTP_ERROR, "redirect " + hop + " loops back to an address already fetched");
             }
 
+            final URL fetched = current;
             MediaConnection connection = new MediaConnection(current, vetted.addresses,
                     host -> policy.addressesWithin(host, progress::cancelled, deadline),
+                    host -> policy.directAddressesWithin(fetched, progress::cancelled, deadline),
                     CONNECT_TIMEOUT_MS, readTimeoutMs, deadline);
             // This method's to close until it's handed back, whatever throws: a failure while the
             // headers came in used to skip the disconnect.
@@ -533,7 +535,7 @@ final class Downloader {
                     return connection;
                 }
 
-                location = connection.header("Location");
+                location = connection.location();
                 drain(connection, progress, deadline);
             } catch (MediaConnection.ProxyRefused refused) {
                 return Result.fail(Status.PROXY_AUTH, refused.getMessage());

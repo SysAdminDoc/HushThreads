@@ -658,7 +658,8 @@ public final class MediaSave {
     static MediaUrlPolicy policyFor(Context application) {
         MediaUrlPolicy forced = policyForTests;
         if (forced != null) return forced;
-        return new MediaUrlPolicy(MediaUrlPolicy.DNS, url -> !MediaUrlPolicy.proxied(url) && !onVpn(application));
+        return new MediaUrlPolicy(MediaUrlPolicy.DNS, url -> !MediaUrlPolicy.proxied(url) && !onVpn(application),
+                url -> !onVpn(application));
     }
 
     /**
