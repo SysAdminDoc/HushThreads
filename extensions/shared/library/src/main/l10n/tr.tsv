@@ -327,3 +327,5 @@ Not saved: Threads needs the Storage permission to save on Android 9. Turn it on
 Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Android 9'da Threads'in kaydetmek için Depolama iznine ihtiyacı var. Threads'in uygulama bilgilerinde İzinler bölümünden bu izni aç, sonra tekrar kaydet.
 # A save whose download took longer than its time limit (ten minutes for one file): the toast. The connection is the phone's internet connection.
 Not saved: the download was too slow to finish. Try again on a faster connection.	Kaydedilmedi: İndirme bitemeyecek kadar yavaştı. Daha hızlı bir bağlantıyla tekrar dene.
+Hide follow suggestions in Search	Aramada takip önerilerini gizle
+Takes the Follow suggestions row off the Search screen. Your searches and topics stay.	Takip önerileri satırını Arama ekranından kaldırır. Aramalarınız ve konularınız kalır.

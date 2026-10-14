@@ -277,6 +277,9 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 feed.addPreference(toggle(context, Settings.HIDE_SUGGESTED_USERS, L10n.t("Hide suggested users"),
                         L10n.t("Removes the cards that suggest accounts to follow, in your feed and on "
                                 + "profiles. Normal posts and reposts stay.")));
+                feed.addPreference(toggle(context, Settings.HIDE_SEARCH_SUGGESTIONS,
+                        L10n.t("Hide follow suggestions in Search"),
+                        L10n.t("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.")));
             }
             if (build.contains(PatchFamily.RETURN_REFRESH)) {
                 feed.addPreference(toggle(context, Settings.BLOCK_RETURN_REFRESH,
@@ -1008,6 +1011,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         String icon = SettingsIcons.SETTINGS;
         if (setting == Settings.HIDE_ADS) icon = SettingsIcons.BLOCK;
         else if (setting == Settings.HIDE_SUGGESTED_USERS) icon = SettingsIcons.PERSON;
+        else if (setting == Settings.HIDE_SEARCH_SUGGESTIONS) icon = SettingsIcons.SEARCH;
         else if (setting == Settings.BLOCK_RETURN_REFRESH) icon = SettingsIcons.BOOKMARK;
         else if (setting == Settings.RETURN_REFRESH_NO_LIMIT) icon = SettingsIcons.CLOCK;
         else if (setting == Settings.DISABLE_VIDEO_AUTOPLAY || setting == Settings.DOWNLOAD_COMPATIBLE) icon = SettingsIcons.PLAY;

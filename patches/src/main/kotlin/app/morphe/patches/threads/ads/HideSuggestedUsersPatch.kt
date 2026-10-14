@@ -454,14 +454,16 @@ internal fun BytecodePatchContext.suggestedTargets(): SuggestedTargets {
 
 /**
  * Server cards only. Raw type checks refuse the vendor's generic SUGGESTED_USERS fallback. The same
- * switch keeps the Suggested for you accounts off profiles, see [profileSuggestionTargets].
+ * switch keeps the Suggested for you accounts off profiles, see [profileSuggestionTargets], and a
+ * second switch of its own takes Search's Follow suggestions carousel away, see
+ * [searchSuggestionTargets].
  */
 @Suppress("unused")
 val hideSuggestedUsersPatch = bytecodePatch(
     name = PATCH,
-    description = "Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts " +
-        "and reposts stay, and so does the rest of a profile. Good if you only want posts in your feed. On by " +
-        "default. Turn it off in HushThreads settings > Feed.",
+    description = "Removes the cards that suggest accounts to follow, in your feed and on profiles, and the Follow " +
+        "suggestions row in Search. Normal posts and reposts stay, and so does the rest of a profile or Search. " +
+        "Good if you only want posts in your feed. On by default. Its two switches are in HushThreads settings > Feed.",
     default = true,
 ) {
     category("Feed")
@@ -472,8 +474,9 @@ val hideSuggestedUsersPatch = bytecodePatch(
     execute {
         requireStatusMethod("hideSuggestedUsers")
         val targets = suggestedTargets()
-        // Found before anything changes, so a profile that no longer matches refuses the whole patch cleanly.
+        // Found before anything changes, so a profile or Search that no longer matches refuses the whole patch cleanly.
         val profile = profileSuggestionTargets()
+        val search = searchSuggestionTargets()
         val owner = targets.media.definingClass
         val media = targets.media
         val kind = targets.kind
@@ -528,6 +531,7 @@ val hideSuggestedUsersPatch = bytecodePatch(
             return v0
         """)
         hookProfileSuggestions(profile)
+        hookSearchSuggestions(search)
         enableStatus("hideSuggestedUsers")
     }
 }

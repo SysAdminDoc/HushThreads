@@ -276,6 +276,17 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/search/SearchSuggestions.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/ads/SearchSuggestedUsers.kt"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Hide suggested users in Search: the method that builds Search's list asks the extension first thing past its check that the Follow suggestions list isn't empty, and leaves by that check's other side while the switch is on, so the carousel's item is never added. Found by reading Search's DiscoveryContent and the list item it keys standalone_suggested_users in 451, with no outside code."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/misc/ScreenshotDetection.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/misc/screenshot/**"
       ],

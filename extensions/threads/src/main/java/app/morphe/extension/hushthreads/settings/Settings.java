@@ -40,6 +40,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_SUGGESTED_USERS =
             new BooleanSetting("hushthreads_hide_suggested_users", TRUE);
 
+    /**
+     * Search's Follow suggestions carousel isn't added to its screen
+     * ({@link app.morphe.extension.hushthreads.search.SearchSuggestions}). The second switch of
+     * Hide suggested users, so it starts on like the first.
+     */
+    public static final BooleanSetting HIDE_SEARCH_SUGGESTIONS =
+            new BooleanSetting("hushthreads_hide_search_suggestions", TRUE);
+
     /** Keep the current feed when returning to Threads within ten minutes. */
     public static final BooleanSetting BLOCK_RETURN_REFRESH =
             new BooleanSetting("hushthreads_block_return_refresh", FALSE);

@@ -24,8 +24,9 @@ import app.morphe.extension.shared.settings.Setting;
  * row never joins the list.
  *
  * <p>Both answers belong to the Hide suggested users switch, the one that takes suggestion cards
- * out of the feed. Nothing else on a profile changes, and the suggestions in Search, Activity and
- * the feed's own follow bundles are left as they are. Off, paused, before the settings are ready,
+ * out of the feed. Nothing else on a profile changes. Search's carousel has a switch of its own
+ * ({@link app.morphe.extension.hushthreads.search.SearchSuggestions}), and the suggestions in
+ * Activity and the feed's own follow bundles are left as they are. Off, paused, before the settings are ready,
  * or a failure in here, and Threads' own answer goes back unchanged. A profile already on screen
  * keeps what it drew until Threads draws it again.
  */

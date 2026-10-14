@@ -40,7 +40,7 @@ public enum PatchFamily {
     HIDE_ADS(FamilyNames.HIDE_ADS, "hideAds", null,
             Settings.HIDE_ADS),
     HIDE_SUGGESTED_USERS(FamilyNames.HIDE_SUGGESTED_USERS, "hideSuggestedUsers", null,
-            Settings.HIDE_SUGGESTED_USERS),
+            Settings.HIDE_SUGGESTED_USERS, Settings.HIDE_SEARCH_SUGGESTIONS),
     RETURN_REFRESH(FamilyNames.RETURN_REFRESH, "returnRefresh", null,
             Settings.BLOCK_RETURN_REFRESH, Settings.RETURN_REFRESH_NO_LIMIT),
     VIDEO_AUTOPLAY(FamilyNames.VIDEO_AUTOPLAY, "disableVideoAutoplay", null,

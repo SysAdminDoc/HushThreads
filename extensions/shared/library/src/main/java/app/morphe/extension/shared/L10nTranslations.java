@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(596);
+        Map<String, String> table = new HashMap<>(600);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -264,6 +264,8 @@ public final class L10nTranslations {
                 "Ausgeblendet. Tippe, um sie wieder anzuzeigen.");
         table.put("Hide ads",
                 "Werbung ausblenden");
+        table.put("Hide follow suggestions in Search",
+                "Vorschl\u00e4ge zum Folgen in der Suche ausblenden");
         table.put("Hide ghost post bubbles",
                 "Ghost-Post-Blasen ausblenden");
         table.put("Hide screenshots from Threads",
@@ -298,11 +300,11 @@ public final class L10nTranslations {
                 "HushThreads-Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("HushThreads turns back on when Threads restarts.",
                 "HushThreads ist wieder aktiv, sobald Threads neu startet.");
-        table.put("Import",
-                "Importieren");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Import",
+                "Importieren");
         table.put("Import settings",
                 "Einstellungen importieren");
         table.put("Importing settings",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Erneut versuchen");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Wenn du innerhalb von zehn Minuten zu Threads zur\u00fcckkehrst, bleibst du an derselben Stelle. Zum Aktualisieren kannst du weiter nach unten ziehen.");
-        table.put("Save",
-                "Speichern");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Save",
+                "Speichern");
         table.put("Save all",
                 "Alle speichern");
         table.put("Save cancelled",
@@ -524,6 +526,8 @@ public final class L10nTranslations {
                 "HushThreads unterst\u00fctzen");
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
+        table.put("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.",
+                "Entfernt die Reihe \u201eVorschl\u00e4ge zum Folgen\u201c aus der Suche. Deine Suchen und Themen bleiben.");
         table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
                 "Entfernt den Instagram-Button oben in Profilen, in deinem und in denen anderer. Starte Threads neu, damit die \u00c4nderung greift.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Diese Datei ist kein lesbarer Text, sie wurde also wom\u00f6glich bei der \u00dcbertragung besch\u00e4digt. Es wurde nichts ge\u00e4ndert.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Diese Datei f\u00fchrt eine Einstellung zweimal auf, daher ist unklar, welcher Wert gilt. Es wurde nichts ge\u00e4ndert.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Das ist keine HushThreads-Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Diese Einstellungsdatei enth\u00e4lt einen Wert, den HushThreads nicht lesen kann. Es wurde nichts ge\u00e4ndert.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Diese Einstellungsdatei ist besch\u00e4digt oder nur teilweise heruntergeladen. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
@@ -668,7 +672,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(596);
+        Map<String, String> table = new HashMap<>(600);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -885,6 +889,8 @@ public final class L10nTranslations {
                 "Oculta. Toca para volver a mostrarla.");
         table.put("Hide ads",
                 "Ocultar anuncios");
+        table.put("Hide follow suggestions in Search",
+                "Ocultar sugerencias para seguir en Buscar");
         table.put("Hide ghost post bubbles",
                 "Ocultar las burbujas de publicaciones fantasma");
         table.put("Hide screenshots from Threads",
@@ -919,11 +925,11 @@ public final class L10nTranslations {
                 "No se pudo abrir la configuraci\u00f3n de HushThreads");
         table.put("HushThreads turns back on when Threads restarts.",
                 "HushThreads vuelve a activarse cuando Threads se reinicie.");
-        table.put("Import",
-                "Importar");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("Import",
+                "Importar");
         table.put("Import settings",
                 "Importar configuraci\u00f3n");
         table.put("Importing settings",
@@ -1042,11 +1048,11 @@ public final class L10nTranslations {
                 "Reintentar");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Si vuelves a Threads en menos de diez minutos, seguir\u00e1s donde estabas. Puedes deslizar hacia abajo para actualizar.");
-        table.put("Save",
-                "Guardar");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Save",
+                "Guardar");
         table.put("Save all",
                 "Guardar todo");
         table.put("Save cancelled",
@@ -1145,6 +1151,8 @@ public final class L10nTranslations {
                 "Apoya HushThreads");
         table.put("Supported links",
                 "Enlaces compatibles");
+        table.put("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.",
+                "Quita la fila de sugerencias de cuentas para seguir de la pantalla de b\u00fasqueda. Tus b\u00fasquedas y temas se quedan.");
         table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
                 "Quita el bot\u00f3n de Instagram de la parte de arriba de los perfiles, el tuyo y los de otras personas. Reinicia Threads para ver el cambio.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
@@ -1163,13 +1171,13 @@ public final class L10nTranslations {
                 "Ese archivo no es texto legible, as\u00ed que puede haberse da\u00f1ado por el camino. No se cambi\u00f3 nada.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Ese archivo incluye un ajuste dos veces, as\u00ed que no se sabe qu\u00e9 valor usar. No se cambi\u00f3 nada.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Eso no es un archivo de configuraci\u00f3n de HushThreads. No se cambi\u00f3 nada.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n contiene un valor que HushThreads no puede leer. No se cambi\u00f3 nada.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n est\u00e1 da\u00f1ado o solo se descarg\u00f3 en parte. No se cambi\u00f3 nada.");
         table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
@@ -1289,7 +1297,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(596);
+        Map<String, String> table = new HashMap<>(600);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1506,6 +1514,8 @@ public final class L10nTranslations {
                 "Disembunyikan. Ketuk untuk menampilkannya lagi.");
         table.put("Hide ads",
                 "Sembunyikan iklan");
+        table.put("Hide follow suggestions in Search",
+                "Sembunyikan saran ikuti di Pencarian");
         table.put("Hide ghost post bubbles",
                 "Sembunyikan gelembung postingan hantu");
         table.put("Hide screenshots from Threads",
@@ -1540,11 +1550,11 @@ public final class L10nTranslations {
                 "Pengaturan HushThreads tidak dapat dibuka");
         table.put("HushThreads turns back on when Threads restarts.",
                 "HushThreads aktif lagi saat Threads dimulai ulang.");
-        table.put("Import",
-                "Impor");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Import",
+                "Impor");
         table.put("Import settings",
                 "Impor pengaturan");
         table.put("Importing settings",
@@ -1663,11 +1673,11 @@ public final class L10nTranslations {
                 "Coba lagi");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Jika kembali ke Threads dalam sepuluh menit, posisi feed tetap sama. Tarik ke bawah untuk memuat ulang masih berfungsi.");
-        table.put("Save",
-                "Simpan");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Save",
+                "Simpan");
         table.put("Save all",
                 "Simpan semua");
         table.put("Save cancelled",
@@ -1766,6 +1776,8 @@ public final class L10nTranslations {
                 "Dukung HushThreads");
         table.put("Supported links",
                 "Tautan yang didukung");
+        table.put("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.",
+                "Menghapus baris Saran ikuti dari layar Pencarian. Pencarian dan topik Anda tetap ada.");
         table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
                 "Menghapus tombol Instagram di bagian atas profil, milik Anda dan milik orang lain. Mulai ulang Threads untuk melihat perubahannya.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
@@ -1784,13 +1796,13 @@ public final class L10nTranslations {
                 "File itu bukan teks yang dapat dibaca, jadi mungkin rusak saat ditransfer. Tidak ada yang diubah.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "File itu mencantumkan satu pengaturan dua kali, jadi tidak jelas nilai mana yang harus dipakai. Tidak ada yang diubah.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Itu bukan file pengaturan HushThreads. Tidak ada yang diubah.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "File pengaturan itu memuat nilai yang tidak dapat dibaca HushThreads. Tidak ada yang diubah.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "File pengaturan itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.");
         table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
@@ -1910,7 +1922,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(596);
+        Map<String, String> table = new HashMap<>(600);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2127,6 +2139,8 @@ public final class L10nTranslations {
                 "Ocultas. Toque para mostrar de novo.");
         table.put("Hide ads",
                 "Ocultar an\u00fancios");
+        table.put("Hide follow suggestions in Search",
+                "Ocultar sugest\u00f5es para seguir na pesquisa");
         table.put("Hide ghost post bubbles",
                 "Ocultar os bal\u00f5es de posts fantasma");
         table.put("Hide screenshots from Threads",
@@ -2161,11 +2175,11 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es do HushThreads");
         table.put("HushThreads turns back on when Threads restarts.",
                 "O HushThreads ser\u00e1 reativado quando o Threads for reiniciado.");
-        table.put("Import",
-                "Importar");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("Import",
+                "Importar");
         table.put("Import settings",
                 "Importar configura\u00e7\u00f5es");
         table.put("Importing settings",
@@ -2284,11 +2298,11 @@ public final class L10nTranslations {
                 "Tentar novamente");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Ao voltar ao Threads em at\u00e9 dez minutos, voc\u00ea continuar\u00e1 no ponto em que estava. O gesto de puxar para baixo para atualizar continuar\u00e1 funcionando.");
-        table.put("Save",
-                "Salvar");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Save",
+                "Salvar");
         table.put("Save all",
                 "Salvar tudo");
         table.put("Save cancelled",
@@ -2387,6 +2401,8 @@ public final class L10nTranslations {
                 "Apoie o HushThreads");
         table.put("Supported links",
                 "Links compat\u00edveis");
+        table.put("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.",
+                "Remove a fileira de sugest\u00f5es para seguir da tela de pesquisa. Suas pesquisas e t\u00f3picos continuam.");
         table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
                 "Remove o bot\u00e3o do Instagram do topo dos perfis, o seu e os de outras pessoas. Reinicie o Threads para ver a mudan\u00e7a.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
@@ -2405,13 +2421,13 @@ public final class L10nTranslations {
                 "Esse arquivo n\u00e3o cont\u00e9m texto leg\u00edvel, ent\u00e3o pode ter sido corrompido durante o processo. Nada foi alterado.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Esse arquivo cont\u00e9m uma configura\u00e7\u00e3o duplicada, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel saber qual valor usar. Nada foi alterado.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Isso n\u00e3o \u00e9 um arquivo de configura\u00e7\u00f5es do HushThreads. Nada foi alterado.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es tem um valor que o HushThreads n\u00e3o consegue ler. Nada foi alterado.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es est\u00e1 corrompido ou foi baixado apenas parcialmente. Nada foi alterado.");
         table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
@@ -2531,7 +2547,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(596);
+        Map<String, String> table = new HashMap<>(600);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2748,6 +2764,8 @@ public final class L10nTranslations {
                 "Gizli. Yeniden g\u00f6stermek i\u00e7in dokun.");
         table.put("Hide ads",
                 "Reklamlar\u0131 gizle");
+        table.put("Hide follow suggestions in Search",
+                "Aramada takip \u00f6nerilerini gizle");
         table.put("Hide ghost post bubbles",
                 "Hayalet g\u00f6nderi balonlar\u0131n\u0131 gizle");
         table.put("Hide screenshots from Threads",
@@ -2782,11 +2800,11 @@ public final class L10nTranslations {
                 "HushThreads ayarlar\u0131 a\u00e7\u0131lamad\u0131");
         table.put("HushThreads turns back on when Threads restarts.",
                 "HushThreads, Threads yeniden ba\u015flad\u0131\u011f\u0131nda tekrar a\u00e7\u0131l\u0131r.");
-        table.put("Import",
-                "\u0130\u00e7e aktar");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("Import",
+                "\u0130\u00e7e aktar");
         table.put("Import settings",
                 "Ayarlar\u0131 i\u00e7e aktar");
         table.put("Importing settings",
@@ -2905,11 +2923,11 @@ public final class L10nTranslations {
                 "Yeniden dene");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Threads'e on dakika i\u00e7inde d\u00f6nersen kald\u0131\u011f\u0131n yer korunur. Yenilemek i\u00e7in a\u015fa\u011f\u0131 \u00e7ekmeye devam edebilirsin.");
-        table.put("Save",
-                "Kaydet");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Save",
+                "Kaydet");
         table.put("Save all",
                 "T\u00fcm\u00fcn\u00fc kaydet");
         table.put("Save cancelled",
@@ -3008,6 +3026,8 @@ public final class L10nTranslations {
                 "HushThreads'i destekle");
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
+        table.put("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.",
+                "Takip \u00f6nerileri sat\u0131r\u0131n\u0131 Arama ekran\u0131ndan kald\u0131r\u0131r. Aramalar\u0131n\u0131z ve konular\u0131n\u0131z kal\u0131r.");
         table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
                 "Kendi profilinin ve ba\u015fkalar\u0131n\u0131n profillerinin \u00fcst\u00fcndeki Instagram d\u00fc\u011fmesini kald\u0131r\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
@@ -3026,13 +3046,13 @@ public final class L10nTranslations {
                 "Bu dosya okunabilir bir metin de\u011fil, aktar\u0131m s\u0131ras\u0131nda hasar g\u00f6rm\u00fc\u015f olabilir. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Bu dosyada bir ayar iki kez ge\u00e7iyor, bu y\u00fczden hangi de\u011ferin kullan\u0131laca\u011f\u0131 belli de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Bu bir HushThreads ayar dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Bu ayar dosyas\u0131nda HushThreads'un okuyamad\u0131\u011f\u0131 bir de\u011fer var. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Bu ayar dosyas\u0131 hasarl\u0131 ya da yaln\u0131zca bir k\u0131sm\u0131 indirilmi\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",

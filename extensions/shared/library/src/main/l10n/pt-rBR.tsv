@@ -324,3 +324,5 @@ Not saved: Threads needs the Storage permission to save on Android 9. Turn it on
 Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	No Android 9, o Threads precisa da permissão de Armazenamento para salvar. Ative-a nas informações do app Threads, em Permissões, e salve de novo.
 # A save whose download took longer than its time limit (ten minutes for one file): the toast. The connection is the phone's internet connection.
 Not saved: the download was too slow to finish. Try again on a faster connection.	Não foi salvo: o download estava lento demais para terminar. Tente de novo com uma conexão mais rápida.
+Hide follow suggestions in Search	Ocultar sugestões para seguir na pesquisa
+Takes the Follow suggestions row off the Search screen. Your searches and topics stay.	Remove a fileira de sugestões para seguir da tela de pesquisa. Suas pesquisas e tópicos continuam.

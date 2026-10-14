@@ -236,6 +236,10 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Hide suggested users", String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_USERS.key).getTitle()));
             assertEquals("Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.",
                     String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_USERS.key).getSummary()));
+            assertEquals("Hide follow suggestions in Search",
+                    String.valueOf(page.findPreference(Settings.HIDE_SEARCH_SUGGESTIONS.key).getTitle()));
+            assertEquals("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.",
+                    String.valueOf(page.findPreference(Settings.HIDE_SEARCH_SUGGESTIONS.key).getSummary()));
             assertEquals("Keep feed position on return", String.valueOf(page.findPreference(Settings.BLOCK_RETURN_REFRESH.key).getTitle()));
             assertEquals("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                     String.valueOf(page.findPreference(Settings.BLOCK_RETURN_REFRESH.key).getSummary()));
@@ -272,8 +276,9 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top "
                 + "of your feed. Restart Threads to see the change.",
                     String.valueOf(page.findPreference(Settings.HIDE_GHOST_POST_BUBBLES.key).getSummary()));
-            // The patches that were always in Manager's default selection ship their switches on.
-            for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS,
+            // The patches that were always in Manager's default selection ship their switches on,
+            // Search's half of Hide suggested users included.
+            for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS, Settings.HIDE_SEARCH_SUGGESTIONS,
                     Settings.SANITIZE_SHARING_LINKS, Settings.OPEN_LINKS_EXTERNALLY, Settings.DISABLE_ANALYTICS)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }

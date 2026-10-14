@@ -83,9 +83,11 @@ class HideSuggestedUsersFixtureTest {
                 }?.definingClass
             }.toSet()
             val wrappers = FixtureDex.classes(build, wrapperTypes)
-            // The same patch keeps suggested accounts off profiles, and refuses without those classes.
+            // The same patch keeps suggested accounts off profiles and out of Search, and refuses
+            // without those classes.
             val profile = ProfileSuggestionsFixture.classes(build)
-            val classes = (anchors + cache + item + kinds + rawParsers + wrappers.values + profile).distinctBy { it.type }
+            val search = SearchSuggestionsFixture.classes(build)
+            val classes = (anchors + cache + item + kinds + rawParsers + wrappers.values + profile + search).distinctBy { it.type }
             return Vendor(build.name, classes, parser.type)
         }
 
@@ -125,6 +127,8 @@ class HideSuggestedUsersFixtureTest {
                 .flatMap { it.instructions() }.mapNotNull { it.getReference<MethodReference>()?.toString() }
             assertEquals(vendor.name, 1, profileHooks.count { it == CAROUSEL })
             assertEquals(vendor.name, 1, profileHooks.count { it == SHOW_ROW })
+            // And Search's carousel asks once.
+            assertEquals(vendor.name, 1, profileHooks.count { it == SHOW_SEARCH_CAROUSEL })
             val capture = context.mutableClassDefBy(targets.wrapper.definingClass).instanceFields.single {
                 it.name == targets.capturedRaw.name
             }
