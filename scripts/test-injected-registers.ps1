@@ -747,8 +747,11 @@ try {
     }
     # Direct ad, media and lead/policy handoffs share the cleaner, while the factory and immersive
     # browser retain their stock code. Every corruption below remains structurally valid.
-    $browserDirectFaults = @('lead-missing', 'lead-url', 'lead-double-open', 'ad-missing', 'ad-url', 'ad-context', 'ad-double-open', 'ad-return', 'ad-bypass',
+    $browserDirectFaults = @('lead-missing', 'lead-url', 'lead-double-open', 'lead-parameter', 'ad-missing', 'ad-url', 'ad-context', 'ad-double-open', 'ad-return', 'ad-bypass', 'ad-live',
         'media-missing', 'media-url', 'media-context', 'media-double-open', 'media-false', 'media-uninitialized', 'media-live', 'media-bypass', 'factory-hook', 'immersive-hook', 'omitted-body')
+    # Each scratch fault reaches one part of the liveness check: the media one both edges, the ad one
+    # the hook site only, the lead one the locals bound only.
+    $browserScratchFaults = @('lead-parameter', 'ad-live', 'media-live')
     foreach ($fault in $browserDirectFaults) {
         $case = "features-bad-browser-direct-$fault"
         $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
@@ -757,6 +760,10 @@ try {
         $findings = Get-Findings $checked
         Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
             @($findings.Categories | Where-Object { $_ -cne 'contract' }).Count -eq 0) "$fault was not rejected solely by a browser contract."
+        if ($fault -cin $browserScratchFaults) {
+            Assert-True (@($findings.Fails | Where-Object { $_.Contains('direct browser hook clobbers a live local') }).Count -gt 0) `
+                "$fault was not refused as a clobbered live local: $($findings.Fails -join '; ')"
+        }
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }

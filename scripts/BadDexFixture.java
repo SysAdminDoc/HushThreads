@@ -2114,7 +2114,11 @@ public class BadDexFixture {
         int branch(Instruction instruction) { int at = size(); add(instruction); return at; }
         void to(int from, int target) { jumps.put(from, target); }
         int[] hook(int context, int url, boolean entry, String fault) {
-            int start = size(), scratch = 0, link = fault.equals("browser-direct-media-live") && !entry ? 14 : entry ? 1 : 3;
+            // media-live reuses v14, read on both edges. ad-live reuses v5, which the factory's range
+            // call reads and the ad's return-void completion doesn't, so only the hook-site check sees
+            // it. lead-parameter takes v10, a parameter nothing reads, so only the locals bound does.
+            int start = size(), scratch = 0, link = fault.equals("browser-direct-media-live") && !entry ? 14
+                    : fault.equals("browser-direct-ad-live") && !entry ? 5 : fault.equals("browser-direct-lead-parameter") && entry ? 10 : entry ? 1 : 3;
             add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, scratch, context));
             add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, link, url)); add(invoke(LINK_OPENER, scratch, link)); add(op(Opcode.MOVE_RESULT, scratch));
             int declined = branch(ifEqz(scratch, 1));
@@ -2610,7 +2614,7 @@ public class BadDexFixture {
                 "default-missing", "mqtt-missing", "trust-missing", "trust-replaced", "trust-fallback", "status-missing", "status-false")) {
             dexes.put("features-bad-" + fault, featureBuild(true, allFeatures, 7, fault));
         }
-        for (String fault : List.of("lead-missing", "lead-url", "lead-double-open", "ad-missing", "ad-url", "ad-context", "ad-double-open", "ad-return", "ad-bypass",
+        for (String fault : List.of("lead-missing", "lead-url", "lead-double-open", "lead-parameter", "ad-missing", "ad-url", "ad-context", "ad-double-open", "ad-return", "ad-bypass", "ad-live",
                 "media-missing", "media-url", "media-context", "media-double-open", "media-false", "media-uninitialized", "media-live", "media-bypass", "factory-hook", "immersive-hook")) {
             dexes.put("features-bad-browser-direct-" + fault, featureBuild(true, Set.of("openLinksExternally"), 0, "browser-direct-" + fault));
         }
