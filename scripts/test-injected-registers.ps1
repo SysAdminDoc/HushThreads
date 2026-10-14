@@ -767,6 +767,43 @@ try {
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
+    # Search's Follow suggestions carousel, with Hide suggested users selected and then left out. Each
+    # fault breaks one part of the contract and is refused by that part: the hook's call and answer,
+    # its fail-open test, one call in all of Threads, the empty side it leaves by, a dead local, and
+    # the rest of the builder; left out, no call anywhere and the builder as Threads shipped it. The
+    # scratch faults each reach one part of the liveness check: live-start the carousel's path,
+    # live-away the empty side, parameter the locals bound. The faults only one part refuses come
+    # first, so a run with that part taken out stops on its own fault; missing, double and
+    # omitted-hook break several parts at once.
+    $searchCarouselFaults = [ordered]@{
+        'inverted' = 'Search carousel hook leaves on something other than a false answer'
+        'ignored' = "Search carousel hook is missing or doesn't take the switch's answer"
+        'target' = "Search carousel hook doesn't leave by the check's own empty side"
+        'stray' = 'SearchSuggestions;->showCarousel()Z host calls differ'
+        'live-start' = 'Search carousel hook clobbers a live local'
+        'live-away' = 'Search carousel hook clobbers a live local'
+        'parameter' = 'Search carousel hook clobbers a live local'
+        'body' = 'changed original instruction 3'
+        'missing' = "Search carousel hook is missing or doesn't take the switch's answer"
+        'double' = 'SearchSuggestions;->showCarousel()Z host calls differ'
+        'omitted-call' = 'SearchSuggestions;->showCarousel()Z host calls differ'
+        'omitted-body' = 'changed original instruction 10'
+        'omitted-hook' = 'SearchSuggestions;->showCarousel()Z host calls differ'
+    }
+    foreach ($fault in $searchCarouselFaults.Keys) {
+        $case = "features-bad-search-carousel-$fault"
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $selection = if ($fault.StartsWith('omitted-')) { 'none' } else { 'hideSuggestedUsers' }
+        $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $selection
+        $findings = Get-Findings $checked
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+            @($findings.Categories | Where-Object { $_ -cne 'contract' }).Count -eq 0 -and
+            @($findings.Fails | Where-Object { -not $_.Contains('contract: hideSuggestedUsers: ') }).Count -eq 0) "$fault was not rejected solely by the Search carousel contract."
+        Assert-True (@($findings.Fails | Where-Object { $_.Contains($searchCarouselFaults[$fault]) }).Count -gt 0) `
+            "$fault was not refused as '$($searchCarouselFaults[$fault])': $($findings.Fails -join '; ')"
+        $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
     # 451's network-only fetch shares the label, and its quick coroutine copies high-register
     # this into v13. Keep the direct-this fixtures above and verify both forms independently.
     $sharingAliasClean = New-DexApk -Name 'features-sharing-alias-clean' -Entries ([ordered]@{
@@ -1206,7 +1243,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'

@@ -2141,6 +2141,61 @@ public class BadDexFixture {
         }
     }
 
+    private static final String SEARCH_LIST = "Lfixture/SearchList;";
+    private static final String SEARCH_ITEMS = "Lfixture/SearchItems;";
+    private static final String FEATURE_SEARCH = "Lapp/morphe/extension/hushthreads/search/SearchSuggestions;";
+    private static final ImmutableMethodReference SHOW_SEARCH_CAROUSEL = method(FEATURE_SEARCH, "showCarousel", "Z");
+
+    /**
+     * Search's list builder in 451's shape, as much of it as the carousel contract reads: the
+     * suggestions list read out of a field, its isEmpty() answer, an if-nez that sends an empty list
+     * to the rest of the list and falls into the carousel's path, the carousel added under its key,
+     * and then the rest. v0..v5 are locals, this is v6, the list's items v7 and an unused parameter
+     * v8. v3 is an int only the carousel's path reads, and v4 one only the rest reads, since the
+     * carousel's path writes it before it gets there: a hook taking either is live on one edge alone.
+     * [hooked] puts the hook in with v5, which nothing reads. refresh() is a second method of the
+     * class, where a stray call goes.
+     */
+    private static List<ClassDef> searchCarouselClasses(boolean hooked, String fault) {
+        BrowserCode code = new BrowserCode();
+        code.add(objectField(Opcode.IGET_OBJECT, 0, 6, SEARCH_LIST, "suggested", SHORTCUT_LIST));
+        code.add(new ImmutableInstruction35c(Opcode.INVOKE_INTERFACE, 1, 0, 0, 0, 0, 0, method(SHORTCUT_LIST, "isEmpty", "Z")));
+        code.add(op(Opcode.MOVE_RESULT, 1));
+        code.add(new ImmutableInstruction11n(Opcode.CONST_4, 3, fault.equals("search-carousel-body") ? 2 : 1));
+        code.add(new ImmutableInstruction11n(Opcode.CONST_4, 4, 1));
+        int guard = code.branch(new ImmutableInstruction21t(Opcode.IF_NEZ, 1, 1));
+        List<Integer> leaves = new ArrayList<>();
+        int copies = !hooked || fault.equals("search-carousel-missing") ? 0 : fault.equals("search-carousel-double") ? 2 : 1;
+        int scratch = fault.equals("search-carousel-live-start") ? 3 : fault.equals("search-carousel-live-away") ? 4
+                : fault.equals("search-carousel-parameter") ? 8 : 5;
+        for (int n = 0; n < copies; n++) {
+            code.add(invoke(SHOW_SEARCH_CAROUSEL));
+            // ignored drops the answer and tests a constant, so the carousel always shows.
+            code.add(fault.equals("search-carousel-ignored") ? new ImmutableInstruction11n(Opcode.CONST_4, scratch, 1) : op(Opcode.MOVE_RESULT, scratch));
+            leaves.add(code.branch(new ImmutableInstruction21t(fault.equals("search-carousel-inverted") ? Opcode.IF_NEZ : Opcode.IF_EQZ, scratch, 1)));
+        }
+        code.add(string(2, "standalone_suggested_users"));
+        code.add(virtual(method(SEARCH_ITEMS, "item", "V", OBJECT, OBJECT, "I"), 7, 2, 0, 3));
+        code.add(new ImmutableInstruction11n(Opcode.CONST_4, 4, 0));
+        int away = code.size();
+        code.add(virtual(method(SEARCH_ITEMS, "done", "V", "I"), 7, 4));
+        if (fault.equals("search-carousel-omitted-body")) code.add(op(Opcode.NOP));
+        int end = code.size();
+        code.add(op(Opcode.RETURN_VOID));
+        code.to(guard, away);
+        // target leaves for the return, past the rest of the list.
+        for (int leave : leaves) code.to(leave, fault.equals("search-carousel-target") ? end : away);
+        List<Instruction> refresh = new ArrayList<>();
+        if (fault.equals("search-carousel-stray") || fault.equals("search-carousel-omitted-call")) {
+            refresh.add(invoke(SHOW_SEARCH_CAROUSEL));
+            refresh.add(op(Opcode.MOVE_RESULT, 0));
+        }
+        refresh.add(op(Opcode.RETURN_VOID));
+        return List.of(featureClass(SEARCH_LIST, OBJECT, List.of(featureField(SEARCH_LIST, "suggested", SHORTCUT_LIST)),
+                define(SEARCH_LIST, "build", "V", false, body(9, code.finish()), SEARCH_ITEMS, OBJECT),
+                define(SEARCH_LIST, "refresh", "V", false, body(2, refresh.toArray(new Instruction[0])))));
+    }
+
     /** Independent small host shapes. Every faulty build still passes all structural checks. */
     private static List<ClassDef> featureBuild(boolean patched, Set<String> selected, int mask, String fault) {
         List<ClassDef> classes = new ArrayList<>(patched ? good() : clean(cleanHost()));
@@ -2299,6 +2354,7 @@ public class BadDexFixture {
                 body(12, launcher.toArray(new Instruction[0])), CONTEXT, OBJECT, OBJECT, OBJECT,
                 "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", OBJECT)));
         directBrowserClasses(classes, browser, fault);
+        classes.addAll(searchCarouselClasses(suggestions || fault.equals("search-carousel-omitted-hook"), fault));
 
         List<Instruction> pigeon = new ArrayList<>(List.of(string(0, "/pigeon_nest"), string(1, "/logging_client_events"),
                 ifEqz(3, fault.equals("pigeon-bypass") ? 6 : 2)));
@@ -2414,6 +2470,8 @@ public class BadDexFixture {
                         "Ljava/lang/String;", OBJECT, "Ljava/lang/String;")));
         classes.add(featureClass(FEATURE_BROWSER, OBJECT, List.of(), define(FEATURE_BROWSER, "open", "Z", true,
                 body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0)), CONTEXT, "Ljava/lang/String;")));
+        classes.add(featureClass(FEATURE_SEARCH, OBJECT, List.of(), define(FEATURE_SEARCH, "showCarousel", "Z", true,
+                body(1, new ImmutableInstruction11n(Opcode.CONST_4, 0, 1), op(Opcode.RETURN, 0)))));
         classes.add(featureClass(FEATURE_TRUST, OBJECT, List.of(), define(FEATURE_TRUST, "originalSigners", SHORTCUT_LIST, true,
                 body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0)), PACKAGE_INFO)));
         classes.add(featureClass(FEATURE_RETURN, OBJECT, List.of(),
@@ -2619,6 +2677,13 @@ public class BadDexFixture {
             dexes.put("features-bad-browser-direct-" + fault, featureBuild(true, Set.of("openLinksExternally"), 0, "browser-direct-" + fault));
         }
         dexes.put("features-bad-browser-direct-omitted-body", featureBuild(true, Set.of(), 0, "browser-direct-omitted-body"));
+        // Search's Follow suggestions carousel, Hide suggested users alone, and then left out.
+        for (String fault : List.of("missing", "inverted", "ignored", "target", "double", "stray", "live-start", "live-away", "parameter", "body")) {
+            dexes.put("features-bad-search-carousel-" + fault, featureBuild(true, Set.of("hideSuggestedUsers"), 0, "search-carousel-" + fault));
+        }
+        for (String fault : List.of("omitted-hook", "omitted-call", "omitted-body")) {
+            dexes.put("features-bad-search-carousel-" + fault, featureBuild(true, Set.of(), 0, "search-carousel-" + fault));
+        }
         // Background-return refresh alone, so a failure can only be its own.
         for (String fault : List.of("hot-start-missing", "hot-start-inverted", "reset-missing", "reset-register",
                 "warm-start-missing", "warm-start-moved", "cached-posts-missing", "cached-posts-bypass")) {

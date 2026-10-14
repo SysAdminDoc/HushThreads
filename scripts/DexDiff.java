@@ -3094,6 +3094,92 @@ public class DexDiff {
         }
         requireFeature(((WideLiteralInstruction) body.get(28)).getWideLiteral() == 0, "unknown suggestion cards do not return false");
         featureHostCalls(patched, featureSig(stub), Map.of());
+        featureSearchCarousel(clean, patched);
+    }
+
+    /** The key Search's list builder adds its Follow suggestions carousel under, which Threads keeps from build to build. */
+    private static final String SEARCH_CAROUSEL_KEY = "standalone_suggested_users";
+    private static final String SHOW_SEARCH_CAROUSEL = "Lapp/morphe/extension/hushthreads/search/SearchSuggestions;->showCarousel()Z";
+
+    /**
+     * Search's list builder [stock] as Threads shipped it: the check at [guard] that its suggestions
+     * list isn't empty is the one way into the carousel's path from [start], and [away] is where that
+     * check sends an empty list.
+     */
+    private record SearchCarouselSite(Method stock, int guard, int start, int away) {}
+
+    /**
+     * Finds the builder in the clean APK on its own: the one method holding the carousel's key, the
+     * stretch above the key that only falls from the instruction before it, and the conditional that
+     * is that stretch's single way in. The conditional has to test the answer of the list's own
+     * isEmpty(), read out of a field, and enter the stretch only for a list that isn't empty.
+     */
+    private static SearchCarouselSite featureSearchCarouselSite(Map<String, List<Method>> clean) {
+        Method stock = featureTarget(clean, m -> !m.getDefiningClass().startsWith(OWN) && holds(m, SEARCH_CAROUSEL_KEY), "Search carousel builder");
+        FeatureFlow flow = new FeatureFlow(stock);
+        List<Instruction> body = flow.layout.instructions;
+        int key = featureOne(java.util.stream.IntStream.range(0, body.size()).boxed().filter(n -> body.get(n) instanceof ReferenceInstruction r
+                && r.getReference() instanceof StringReference s && s.getString().equals(SEARCH_CAROUSEL_KEY)).toList(), "Search carousel key");
+        List<List<Integer>> into = new ArrayList<>();
+        for (int n = 0; n < body.size(); n++) into.add(new ArrayList<>());
+        for (int n = 0; n < body.size(); n++) {
+            for (int next : flow.normal.get(n)) into.get(next).add(n);
+            for (int next : flow.exceptional.get(n)) into.get(next).add(n);
+        }
+        int start = key;
+        while (start > 0 && into.get(start).equals(List.of(start - 1)) && !body.get(start - 1).getOpcode().name.startsWith("if-")) start--;
+        requireFeature(into.get(start).size() == 1 && body.get(into.get(start).get(0)).getOpcode().name.startsWith("if-"),
+                "Search carousel is not reached through one check");
+        int guard = into.get(start).get(0), entry = start;
+        int away = featureOne(flow.normal.get(guard).stream().filter(n -> n != entry).toList(), "Search carousel check's empty side");
+        Instruction check = body.get(guard);
+        boolean nonEmpty = check.getOpcode() == Opcode.IF_NEZ ? start == guard + 1 : check.getOpcode() == Opcode.IF_EQZ && start != guard + 1;
+        Set<Integer> answers = nonEmpty ? flow.reaching(guard, registerA(check)) : Set.of();
+        int answer = answers.size() == 1 ? answers.iterator().next() : -1;
+        boolean asked = answer > 0 && body.get(answer).getOpcode() == Opcode.MOVE_RESULT
+                && isPlainInvoke(body.get(answer - 1).getOpcode()) && !isStaticInvoke(body.get(answer - 1).getOpcode())
+                && ((ReferenceInstruction) body.get(answer - 1)).getReference() instanceof MethodReference call
+                && call.getName().equals("isEmpty") && call.getReturnType().equals("Z") && call.getParameterTypes().isEmpty();
+        Set<Integer> lists = asked ? flow.reaching(answer - 1, invokeRegisters(body.get(answer - 1))[0]) : Set.of();
+        requireFeature(lists.size() == 1 && lists.iterator().next() >= 0 && body.get(lists.iterator().next()).getOpcode() == Opcode.IGET_OBJECT,
+                "Search carousel check is not whether the list it reads is empty");
+        return new SearchCarouselSite(stock, guard, start, away);
+    }
+
+    /**
+     * Hide suggested users in Search: the builder asks showCarousel() once, first thing on the
+     * carousel's path, and only a false answer leaves, by the check's own empty side, so a switch
+     * that's off or paused shows the carousel. The answer's register is a local nothing reads on
+     * either edge, and every other instruction is Threads' own.
+     */
+    private static void featureSearchCarousel(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        SearchCarouselSite site = featureSearchCarouselSite(clean);
+        Method stock = site.stock();
+        Method changed = featureMethod(patched, featureSig(stock));
+        List<Instruction> body = instructions(changed);
+        int at = site.start();
+        requireFeature(body.size() > at + 2 && isStaticInvoke(body.get(at).getOpcode()) && reference(body.get(at)).equals(SHOW_SEARCH_CAROUSEL)
+                && invokeRegisters(body.get(at)).length == 0 && body.get(at + 1).getOpcode() == Opcode.MOVE_RESULT,
+                "Search carousel hook is missing or doesn't take the switch's answer");
+        int scratch = registerA(body.get(at + 1));
+        requireFeature(body.get(at + 2).getOpcode() == Opcode.IF_EQZ && registerA(body.get(at + 2)) == scratch,
+                "Search carousel hook leaves on something other than a false answer");
+        featureHostCalls(patched, SHOW_SEARCH_CAROUSEL, Map.of(featureSig(stock), 1));
+        Layout layout = new Layout(changed.getImplementation());
+        int target = layout.addresses.indexOf(layout.addresses.get(at + 2) + ((OffsetInstruction) body.get(at + 2)).getCodeOffset());
+        requireFeature(target == site.away() + (site.away() >= at ? 3 : 0), "Search carousel hook doesn't leave by the check's own empty side");
+        FeatureFlow old = new FeatureFlow(stock);
+        int locals = stock.getImplementation().getRegisterCount() - stock.getParameterTypes().stream().mapToInt(DexDiff::slots).sum()
+                - (AccessFlags.STATIC.isSet(stock.getAccessFlags()) ? 0 : 1);
+        requireFeature(scratch < locals && old.readsFrom(at, scratch).isEmpty() && old.readsFrom(site.away(), scratch).isEmpty(),
+                "Search carousel hook clobbers a live local");
+        featureBody(stock, changed, 0, Map.of(), SHOW_SEARCH_CAROUSEL, null, Map.of(at, (b, n) -> 3));
+    }
+
+    /** Left out, Search's carousel is asked nowhere and every method holding its key is Threads' own. */
+    private static void featureOmittedSearchCarousel(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        featureHostCalls(patched, SHOW_SEARCH_CAROUSEL, Map.of());
+        featurePreserveTargets(clean, patched, m -> !m.getDefiningClass().startsWith(OWN) && holds(m, SEARCH_CAROUSEL_KEY));
     }
 
     private static int ownedPermalinkStore(Method parser, Map<String, String> parents) {
@@ -4695,6 +4781,7 @@ public class DexDiff {
             File cleanApk, File patchedApk) throws Exception {
         featureFalseStub(patched, ADS + "isSuggestedUserItem(Ljava/lang/Object;)Z", true);
         featureHostCalls(patched, ADS + "isSuggestedUserItem(Ljava/lang/Object;)Z", Map.of());
+        featureOmittedSearchCarousel(clean, patched);
         MultiDexContainer<? extends DexFile> dex = DexFileFactory.loadDexContainer(patchedApk, Opcodes.getDefault());
         for (String entry : dex.getDexEntryNames()) for (ClassDef cd : dex.getEntry(entry).getDexFile().getClasses())
             for (Field field : cd.getFields()) requireFeature(!field.getName().equals(RECORDED_RAW), "omitted suggestion feature added a raw recording field: " + field);
