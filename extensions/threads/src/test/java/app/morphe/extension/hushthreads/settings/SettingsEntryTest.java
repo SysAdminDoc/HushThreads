@@ -538,12 +538,18 @@ public class SettingsEntryTest {
             android.net.Uri file = SettingsFileProvider.put("settings-entry", "picked.json",
                     SettingsBackup.create().getBytes(java.nio.charset.StandardCharsets.UTF_8));
             org.robolectric.Shadows.shadowOf(picker.get()).receiveResult(started.intent, Activity.RESULT_OK,
-                    new Intent().setData(file));
+                    new Intent().setData(file).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION));
+            // Held while the file waits for the settings, since the picker's own access ends with it.
+            org.junit.Assert.assertEquals("the file's access wasn't kept while it waited", 1,
+                    activity.get().getContentResolver().getPersistedUriPermissions().size());
             activity.start().resume();
             for (int round = 0; round < 3; round++) {
                 app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
                 ShadowLooper.idleMainLooper();
             }
+            assertTrue("the file's access was kept after the read",
+                    activity.get().getContentResolver().getPersistedUriPermissions().isEmpty());
 
             HushThreadsPreferenceFragment page = pageOver(activity.get());
             org.junit.Assert.assertNotSame("the settings weren't rebuilt", asked, page);

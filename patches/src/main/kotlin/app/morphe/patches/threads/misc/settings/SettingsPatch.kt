@@ -114,13 +114,16 @@ internal fun addSettingsEntries(document: Document) {
     application.appendChild(alias)
 
     // It draws nothing, and the picker covers it. Configuration changes don't rebuild it, though a
-    // rebuilt one still waits for the picker's answer.
+    // rebuilt one still waits for the picker's answer. Threads' application lets its activities
+    // move to Threads' own task when that comes forward; this one stays over the settings that
+    // opened it, which can sit in another app's task.
     application.appendChild(
         document.createElement("activity").apply {
             setAttribute("android:name", SETTINGS_FILE_PICKER_NAME)
             setAttribute("android:exported", "false")
             setAttribute("android:theme", "@android:style/Theme.Translucent.NoTitleBar")
             setAttribute("android:configChanges", SETTINGS_FILE_PICKER_CONFIG_CHANGES)
+            setAttribute("android:allowTaskReparenting", "false")
         },
     )
 }

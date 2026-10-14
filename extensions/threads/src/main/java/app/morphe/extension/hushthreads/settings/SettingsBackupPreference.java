@@ -164,8 +164,8 @@ public class SettingsBackupPreference extends Preference {
         setTitle(title);
         setOnPreferenceClickListener(preference -> {
             // Rows are out of reach while a run is going, so this is only the race between a tap
-            // and that.
-            if (OWNER.get() == null && !stillStalled()) pickFile(page, action);
+            // and that. A second tap before the picker covers the page opens nothing.
+            if (OWNER.get() == null && !asking && !stillStalled()) pickFile(page, action);
             return true;
         });
         latestPage = new WeakReference<>(page);
@@ -190,9 +190,10 @@ public class SettingsBackupPreference extends Preference {
             intent.setType("*/*").putExtra(Intent.EXTRA_MIME_TYPES, OPENABLE_TYPES);
         }
         // An older pick that never reached a page is let go: this one replaces it.
-        dropPicked();
+        dropPicked(null);
         Activity activity = page.getActivity();
         Intent around = activity == null ? null : SettingsFilePicker.around(activity, intent, action);
+        asking = true;
         try {
             if (around != null) page.startActivity(around);
             else page.startActivityForResult(intent, action);
@@ -205,8 +206,16 @@ public class SettingsBackupPreference extends Preference {
         return action == EXPORT || action == IMPORT;
     }
 
+    /**
+     * A picker was asked for and hasn't answered. Two quick taps used to open two, and the second
+     * answer let go of the access the first had just kept when both named the same file. Ends with
+     * the answer, a picker that didn't open, or the page back on screen, since no picker covers it then.
+     */
+    private static boolean asking;
+
     /** The picker didn't open, from the page or from {@link SettingsFilePicker}. */
     static void couldNotPick(int action, RuntimeException error) {
+        asking = false;
         if (error instanceof ActivityNotFoundException) {
             Logger.printInfo(() -> "No file picker for the settings file");
             tell(action, L10n.t("This phone has no file picker, so there's no way to choose a file here."));
@@ -224,6 +233,7 @@ public class SettingsBackupPreference extends Preference {
      */
     static boolean onResult(HushThreadsPreferenceFragment page, int request, int result, @Nullable Intent data) {
         if (!isFileAction(request)) return false;
+        asking = false;
         Uri uri = result == Activity.RESULT_OK && data != null ? data.getData() : null;
         if (uri == null) return true; // Cancelled: nothing to do and nothing to say.
         if (request == EXPORT) export(page, uri, 0);
@@ -246,12 +256,13 @@ public class SettingsBackupPreference extends Preference {
      * that's the page Threads rebuilt, if it rebuilt one. Main thread.
      */
     static void picked(int action, @Nullable Uri file, int grant) {
+        asking = false;
         if (file == null) return; // Cancelled: nothing to do and nothing to say.
         if (!isFileAction(action)) {
             letGo(Utils.getContext(), file, grant);
             return;
         }
-        dropPicked();
+        dropPicked(file);
         picked = file;
         pickedAction = action;
         pickedGrant = grant;
@@ -264,7 +275,7 @@ public class SettingsBackupPreference extends Preference {
         Utils.runOnMainThreadDelayed(() -> {
             if (picked != file) return;
             Logger.printInfo(() -> "Settings file: no settings page took the picked file");
-            dropPicked();
+            dropPicked(null);
         }, pickKeptMs);
     }
 
@@ -276,20 +287,25 @@ public class SettingsBackupPreference extends Preference {
         else readForPreview(page, file, pickedGrant);
     }
 
-    private static void dropPicked() {
+    /**
+     * Lets go of a pick no page took, unless it's [unless]: Android keeps one lasting grant per
+     * file, so letting go of an older pick of the same file would end the one just kept.
+     */
+    private static void dropPicked(@Nullable Uri unless) {
         Uri file = picked;
         picked = null;
-        if (file != null) letGo(Utils.getContext(), file, pickedGrant);
+        if (file != null && !file.equals(unless)) letGo(Utils.getContext(), file, pickedGrant);
+    }
+
+    /** No picker asked for and no pick waiting, so a test that stopped early leaves none behind. For tests. */
+    static void forgetPickForTests() {
+        asking = false;
+        dropPicked(null);
     }
 
     /** Lets go of the lasting [grant] {@link SettingsFilePicker} took on [file], if it took one. */
     private static void letGo(@Nullable Context context, Uri file, int grant) {
-        if (grant == 0 || context == null) return;
-        try {
-            context.getContentResolver().releasePersistableUriPermission(file, grant);
-        } catch (RuntimeException error) {
-            Logger.printInfo(() -> "Settings file: couldn't let go of its access: " + error.getClass().getSimpleName());
-        }
+        SettingsFileGrants.release(context, file, grant);
     }
 
     private static void export(HushThreadsPreferenceFragment page, Uri uri, int grant) {
@@ -432,6 +448,7 @@ public class SettingsBackupPreference extends Preference {
      * waiting on an answer is shown again.
      */
     static void onPageResumed(HushThreadsPreferenceFragment page) {
+        asking = false;
         takePicked(page);
         if (page.pendingImport != null) showPreview(page);
     }

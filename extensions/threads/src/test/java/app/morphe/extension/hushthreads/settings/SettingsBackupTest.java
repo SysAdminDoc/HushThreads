@@ -139,6 +139,9 @@ public class SettingsBackupTest {
         // rows come back the way they do in the app.
         CountDownLatch held = SettingsFileProvider.stall;
         if (held != null) held.countDown();
+        // A pick left waiting would be read by the next test's page as soon as it resumes.
+        SettingsBackupPreference.forgetPickForTests();
+        SettingsFileGrants.forgetProcessForTests();
         Utils.awaitBackgroundTasksForTests();
         ShadowLooper.idleMainLooper();
         for (BooleanSetting setting : SettingsBackup.ALLOWLIST) setting.resetToDefault();
@@ -1044,12 +1047,15 @@ public class SettingsBackupTest {
                 awaitHeldOpen();
                 assertEquals("the file's access wasn't kept for the read", 1,
                         activity.getContentResolver().getPersistedUriPermissions().size());
+                assertEquals("the kept access isn't listed for the next start",
+                        Collections.singleton(uri.toString()), heldFiles(activity));
             } finally {
                 release.countDown();
             }
             settle();
             assertTrue("the file's access was kept after the read",
                     activity.getContentResolver().getPersistedUriPermissions().isEmpty());
+            assertTrue("the let-go access is still listed", heldFiles(activity).isEmpty());
             assertEquals("1 switch will change.", String.valueOf(shadowOf(shownPreview()).getMessage()));
             shownPreview().cancel();
             settle();
@@ -1103,6 +1109,122 @@ public class SettingsBackupTest {
             shownPreview().cancel();
             settle();
         }
+    }
+
+    /**
+     * Two quick taps open one picker. They used to open two, and when both answers named the same
+     * file, the second let go of the access the first had just kept. The answer, a cancel included,
+     * or the page back on screen lets the rows open a picker again.
+     */
+    @Test
+    public void twoQuickTapsOpenOnePicker() throws Exception {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            listPicker(activity);
+            HushThreadsPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            ActivityController<SettingsFilePicker> picker = pickThrough(activity, page, IMPORT_ROW);
+            // Robolectric keeps one list of starts for every activity, SettingsFilePicker's included.
+            ShadowActivity.IntentForResult started = shadowOf(picker.get()).getNextStartedActivityForResult();
+            click(page.findPreference(IMPORT_ROW));
+            click(page.findPreference(EXPORT_ROW));
+            assertNull("a second tap opened another picker", shadowOf(activity).getNextStartedActivityForResult());
+
+            shadowOf(picker.get()).receiveResult(started.intent, Activity.RESULT_CANCELED, null);
+            settle();
+            ActivityController<SettingsFilePicker> again = pickThrough(activity, page, EXPORT_ROW);
+            assertEquals(Intent.ACTION_CREATE_DOCUMENT,
+                    shadowOf(again.get()).getNextStartedActivityForResult().intent.getAction());
+
+            // That picker never answers; the page coming back shows none covers it anymore.
+            controller.pause().resume();
+            settle();
+            assertNotNull(pickThrough(activity, page, IMPORT_ROW));
+        }
+    }
+
+    /**
+     * Android keeps one lasting grant per file, so a second answer naming the same file keeps the
+     * access it shares with the first rather than letting go of it.
+     */
+    @Test
+    public void theSameFilePickedTwiceKeepsItsAccess() throws Exception {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            SettingsL10nTest.show(activity);
+            controller.pause();
+            Uri uri = SettingsFileProvider.put(AUTHORITY, "twice.json",
+                    fileWith(Settings.SANITIZE_SHARING_LINKS, false).getBytes(StandardCharsets.UTF_8));
+            int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION;
+            SettingsBackupPreference.picked(SettingsBackupPreference.IMPORT, uri, SettingsFileGrants.take(activity, uri, flags));
+            Uri same = Uri.parse(uri.toString());
+            SettingsBackupPreference.picked(SettingsBackupPreference.IMPORT, same, SettingsFileGrants.take(activity, same, flags));
+            assertEquals("the second answer let go of the file's access", 1,
+                    activity.getContentResolver().getPersistedUriPermissions().size());
+
+            controller.resume();
+            settle();
+            assertEquals("1 switch will change.", String.valueOf(shadowOf(shownPreview()).getMessage()));
+            assertTrue(activity.getContentResolver().getPersistedUriPermissions().isEmpty());
+            assertTrue(heldFiles(activity).isEmpty());
+            shownPreview().cancel();
+            settle();
+        }
+    }
+
+    /** A picked file the settings don't come back for in time is let go, and nothing previews it later. */
+    @Test
+    public void aPickNoSettingsTookIsLetGoOfInTime() throws Exception {
+        long kept = SettingsBackupPreference.pickKeptMs;
+        SettingsBackupPreference.pickKeptMs = 1_000L;
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            SettingsL10nTest.show(activity);
+            controller.pause().stop();
+            Uri uri = SettingsFileProvider.put(AUTHORITY, "late.json",
+                    fileWith(Settings.SANITIZE_SHARING_LINKS, false).getBytes(StandardCharsets.UTF_8));
+            int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION;
+            SettingsBackupPreference.picked(SettingsBackupPreference.IMPORT, uri, SettingsFileGrants.take(activity, uri, flags));
+            ShadowLooper.idleMainLooper(999, TimeUnit.MILLISECONDS);
+            assertEquals("let go of before its time", 1, activity.getContentResolver().getPersistedUriPermissions().size());
+            ShadowLooper.idleMainLooper(1, TimeUnit.MILLISECONDS);
+            assertTrue("kept past its time", activity.getContentResolver().getPersistedUriPermissions().isEmpty());
+            assertTrue(heldFiles(activity).isEmpty());
+
+            controller.start().resume();
+            settle();
+            assertNull("a file let go of was previewed", ShadowAlertDialog.getLatestAlertDialog());
+        } finally {
+            SettingsBackupPreference.pickKeptMs = kept;
+        }
+    }
+
+    /**
+     * Access an ended process kept and never let go of is let go at the next start. Access this
+     * process took, as for an answer Android started it to deliver, stays.
+     */
+    @Test
+    public void accessAnEndedProcessKeptIsLetGoAtTheNextStart() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION;
+        Uri left = SettingsFileProvider.put(AUTHORITY, "left.json", new byte[0]);
+        assertEquals(Intent.FLAG_GRANT_READ_URI_PERMISSION, SettingsFileGrants.take(context, left, flags));
+        SettingsFileGrants.forgetProcessForTests();
+        Uri now = SettingsFileProvider.put(AUTHORITY, "now.json", new byte[0]);
+        SettingsFileGrants.take(context, now, flags);
+        assertEquals(new HashSet<>(Arrays.asList(left.toString(), now.toString())), heldFiles(context));
+
+        SettingsFileGrants.sweepAfterStart(context);
+        Utils.awaitBackgroundTasksForTests();
+        assertEquals(Collections.singleton(now.toString()), heldFiles(context));
+        assertEquals(1, context.getContentResolver().getPersistedUriPermissions().size());
+        assertEquals(now, context.getContentResolver().getPersistedUriPermissions().get(0).getUri());
+
+        SettingsFileGrants.release(context, now, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        assertTrue(heldFiles(context).isEmpty());
+        assertTrue(context.getContentResolver().getPersistedUriPermissions().isEmpty());
+        // A picker that made nothing lasting leaves nothing to list.
+        assertEquals(0, SettingsFileGrants.take(context, now, Intent.FLAG_GRANT_READ_URI_PERMISSION));
+        assertTrue(heldFiles(context).isEmpty());
     }
 
     /**
@@ -1512,6 +1634,12 @@ public class SettingsBackupTest {
         assertEquals(row + " asked for an answer from the page", -1, opened.requestCode);
         assertEquals(SettingsFilePicker.class.getName(), opened.intent.getComponent().getClassName());
         return Robolectric.buildActivity(SettingsFilePicker.class, opened.intent).create();
+    }
+
+    /** The files the next start of Threads would let go of. */
+    private static Set<String> heldFiles(Context context) {
+        return new HashSet<>(context.getSharedPreferences(SettingsFileGrants.LEDGER, Context.MODE_PRIVATE)
+                .getStringSet(SettingsFileGrants.HELD, Collections.emptySet()));
     }
 
     private static void click(Preference row) {

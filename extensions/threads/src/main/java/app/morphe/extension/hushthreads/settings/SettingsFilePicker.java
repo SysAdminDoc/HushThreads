@@ -13,8 +13,6 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
-import app.morphe.extension.shared.Logger;
-
 /**
  * Opens Android's file picker for Export settings and Import settings, and takes its answer.
  *
@@ -27,8 +25,8 @@ import app.morphe.extension.shared.Logger;
  * screen.
  *
  * <p>Android takes a picked file's access back when the activity that received it ends, which this
- * one does right away, so it keeps the access with a lasting grant. The settings let go of it once
- * the file is read or written. Not exported, and it draws nothing.
+ * one does right away, so it keeps the access with a lasting grant ({@link SettingsFileGrants}).
+ * The settings let go of it once the file is read or written. Not exported, and it draws nothing.
  */
 public final class SettingsFilePicker extends Activity {
     static final String EXTRA_PICKER = "hushthreads_picker";
@@ -79,23 +77,9 @@ public final class SettingsFilePicker extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Uri file = resultCode == RESULT_OK && data != null ? data.getData() : null;
-        SettingsBackupPreference.picked(requestCode, file, file == null ? 0 : keep(file, data.getFlags()));
+        // Kept past this activity's end, and only for a picker that made the access lasting.
+        int grant = file == null ? 0 : SettingsFileGrants.take(this, file, data.getFlags());
+        SettingsBackupPreference.picked(requestCode, file, grant);
         finish();
-    }
-
-    /**
-     * Keeps access to [file] past this activity's end, and answers the access kept. Zero when the
-     * picker gave none that lasts: the file is then read or written while Android still allows it.
-     */
-    private int keep(Uri file, int flags) {
-        int grant = flags & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        if (grant == 0 || (flags & Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION) == 0) return 0;
-        try {
-            getContentResolver().takePersistableUriPermission(file, grant);
-            return grant;
-        } catch (RuntimeException refused) {
-            Logger.printInfo(() -> "Settings file picker: no lasting access to the file: " + refused.getClass().getSimpleName());
-            return 0;
-        }
     }
 }

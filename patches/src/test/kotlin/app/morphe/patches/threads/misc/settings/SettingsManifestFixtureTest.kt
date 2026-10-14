@@ -15,7 +15,8 @@ import org.w3c.dom.Element
 /**
  * The settings manifest additions on every declared build: the App info alias and the file
  * picker's activity are added, nothing of Threads' own changes, the picker's activity can't be
- * reached from other apps, and a manifest that has them already is refused.
+ * reached from other apps or moved to another task, and a manifest that has either already is
+ * refused.
  */
 class SettingsManifestFixtureTest {
     @Test
@@ -39,7 +40,8 @@ class SettingsManifestFixtureTest {
                 "${alias}intent-filter[]",
                 "${application}activity-alias[android:exported=true,android:name=$SETTINGS_ALIAS_NAME," +
                     "android:targetActivity=$MAIN_ACTIVITY_NAME]",
-                "${application}activity[android:configChanges=$SETTINGS_FILE_PICKER_CONFIG_CHANGES," +
+                "${application}activity[android:allowTaskReparenting=false," +
+                    "android:configChanges=$SETTINGS_FILE_PICKER_CONFIG_CHANGES," +
                     "android:exported=false,android:name=$SETTINGS_FILE_PICKER_NAME," +
                     "android:theme=@android:style/Theme.Translucent.NoTitleBar]",
             ).sorted(), (patched - stock.toSet()).sorted())
@@ -47,6 +49,25 @@ class SettingsManifestFixtureTest {
             val again = runCatching { addSettingsEntries(manifest) }.exceptionOrNull()
             assertTrue("${build.name}: ${again?.message}", again is PatchException && again.message!!.contains("already has"))
             assertEquals("${build.name}: a refused second run changed something", patched, FixtureResources.elements(manifest))
+        }
+    }
+
+    /** The alias check comes first, so a second full run never reaches the picker's own check. */
+    @Test
+    fun aManifestWithOnlyThePickerIsRefusedUnchanged() {
+        for (build in Fixtures.declaredBuilds()) FixtureResources.of(build).use { resources ->
+            val manifest = resources.document("AndroidManifest.xml")
+            addSettingsEntries(manifest)
+            val aliases = manifest.getElementsByTagName("activity-alias")
+            val alias = (0 until aliases.length).map { aliases.item(it) as Element }
+                .single { it.getAttribute("android:name") == SETTINGS_ALIAS_NAME }
+            alias.parentNode.removeChild(alias)
+            val pickerOnly = FixtureResources.elements(manifest)
+
+            val again = runCatching { addSettingsEntries(manifest) }.exceptionOrNull()
+            assertTrue("${build.name}: ${again?.message}", again is PatchException &&
+                again.message!!.contains("already has $SETTINGS_FILE_PICKER_NAME"))
+            assertEquals("${build.name}: a refused run changed something", pickerOnly, FixtureResources.elements(manifest))
         }
     }
 }

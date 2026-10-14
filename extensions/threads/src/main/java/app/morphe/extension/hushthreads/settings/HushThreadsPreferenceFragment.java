@@ -248,8 +248,10 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     }
 
     /**
-     * The file picker's answer. Android finds this page by the name the framework gave it when
-     * the picker was opened, and a page rebuilt while the picker was up is given the same name.
+     * The file picker's answer, when the page asked from this fragment because SettingsFilePicker
+     * isn't in Threads' manifest. Android finds this page by the name the framework gave it when
+     * the picker was opened. Threads drops fragment state from an activity it rebuilds, so a page
+     * rebuilt while the picker was up has another name and never gets the answer.
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

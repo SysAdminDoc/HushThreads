@@ -126,6 +126,8 @@ public final class SettingsEntry {
         // A save Android stopped halfway left a pending gallery row, a work file or a notification.
         // Whatever the switch says now: it may have been on when the save started.
         if (SettingsStatus.saveMedia()) SaveLeftovers.sweepAfterStart(context);
+        // A process that ended between a settings file's pick and its read kept access to that file.
+        SettingsFileGrants.sweepAfterStart(context);
         ReleaseCheck.onThreadsStart();
         publishShortcut(context);
     }
