@@ -15,6 +15,8 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.net.Uri;
 
@@ -189,6 +191,35 @@ public class ExternalBrowserTest {
 
         Settings.OPEN_LINKS_EXTERNALLY.save(true);
         assertTrue(ExternalBrowser.open(feed, "https://example.org/"));
+    }
+
+    /**
+     * Before the settings are ready the switch can't be read, so every caller keeps its own
+     * browser: the launcher and the three 451 places that make the browser Intent themselves.
+     */
+    @Test
+    public void beforeTheSettingsAreReadyEveryLinkStaysWithThreads() {
+        SettingsContextRule.beforeThePauseIsDecided(() -> {
+            assertFalse(ExternalBrowser.open(feed, "https://example.org/"));
+            assertNull(opened());
+        });
+        assertTrue("the flag came back", ExternalBrowser.open(feed, "https://example.org/"));
+    }
+
+    /** The app that answered may refuse the launch. The link stays in Threads and isn't lost. */
+    @Test
+    public void aRefusedLaunchKeepsTheLinkInThreads() {
+        Context refusing = new ContextWrapper(feed) {
+            @Override
+            public void startActivity(Intent intent) {
+                throw new SecurityException("refused " + intent.getDataString());
+            }
+        };
+
+        assertFalse(ExternalBrowser.open(refusing, "https://example.org/private-path"));
+        String report = String.join("\n", HookStatus.report());
+        assertTrue(report, report.contains("links nothing else could open 1"));
+        assertFalse("the report never carries the link", report.contains("private-path"));
     }
 
     /** A phone with nothing that opens web links keeps the link in Threads' browser. */
