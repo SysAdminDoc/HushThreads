@@ -158,14 +158,19 @@ final class RenditionPicker {
     /** A size Meta writes into a picture's address: {@code s640x640} or {@code p1080x1080}. */
     private static final Pattern SIZE_MARKER = Pattern.compile("[/_]([sp](\\d{2,4})x(\\d{2,4}))");
 
-    /** The longest side any size marker in [lower] names, or 0 when it names none. */
+    /**
+     * The longest side of the smallest size [lower] names, or 0 when it names none. An address can
+     * carry a size in its path and another in its {@code stp} transform, and the transform is what's
+     * served, so a thumbnail size anywhere in it makes the copy a thumbnail.
+     */
     private static int markedSize(String lower) {
-        int largest = 0;
+        int smallest = 0;
         Matcher size = SIZE_MARKER.matcher(lower);
         while (size.find()) {
-            largest = Math.max(largest, Math.max(Integer.parseInt(size.group(2)), Integer.parseInt(size.group(3))));
+            int side = Math.max(Integer.parseInt(size.group(2)), Integer.parseInt(size.group(3)));
+            if (smallest == 0 || side < smallest) smallest = side;
         }
-        return largest;
+        return smallest;
     }
 
     /**

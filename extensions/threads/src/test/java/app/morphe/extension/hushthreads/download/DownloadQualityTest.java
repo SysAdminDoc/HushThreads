@@ -418,6 +418,12 @@ public class DownloadQualityTest {
         assertEquals(RenditionPicker.TIER_PROGRESSIVE, RenditionPicker.imageTier(s1080.url));
         assertSame(s1080, RenditionPicker.pickImage(Arrays.asList(s750, s1080)));
 
+        // Two sizes in one address: the transform's is what's served, so the smaller one decides.
+        assertEquals("a full size path with a thumbnail transform is a thumbnail", RenditionPicker.TIER_NONE,
+                RenditionPicker.imageTier(base + "p1080x1080/b_n.jpg?stp=dst-jpg_s150x150&oh=4"));
+        assertEquals(RenditionPicker.TIER_PLAUSIBLE,
+                RenditionPicker.imageTier(base + "p1080x1080/c_n.jpg?stp=dst-jpg_e35_s750x750_tt6&oh=5"));
+
         // The same address listed twice counts once, as it came first.
         MediaSave.Rendition again = new MediaSave.Rendition(full.url, 100, 100, 0);
         assertSame(full, RenditionPicker.pickImage(Arrays.asList(full, again, medium)));
