@@ -164,7 +164,7 @@ public class SettingsBackupPreference extends Preference {
         setOnPreferenceClickListener(preference -> {
             // Rows are out of reach while a run is going, so this is only the race between a tap
             // and that.
-            if (OWNER.get() == null && !stillStalled(action)) pickFile(page, action);
+            if (OWNER.get() == null && !stillStalled()) pickFile(page, action);
             return true;
         });
         latestPage = new WeakReference<>(page);
@@ -425,6 +425,8 @@ public class SettingsBackupPreference extends Preference {
                     Utils.runOnMainThread(() -> {
                         AbstractPreferenceFragment.settingImportInProgress = false;
                         finish(run);
+                        // First, so nothing below can keep the person from hearing how it went.
+                        if (result != null) tell(IMPORT, result);
                         // An imported switch that waits for a restart owes one like a flipped one
                         // does. Measured against the store, so a failed import owes what it left.
                         for (Map.Entry<Setting<?>, Object> entry : before.entrySet()) {
@@ -435,7 +437,6 @@ public class SettingsBackupPreference extends Preference {
                             current.refreshSwitches();
                             current.onRestartPendingChanged();
                         }
-                        if (result != null) tell(IMPORT, result);
                     });
                 }
             });
@@ -465,10 +466,11 @@ public class SettingsBackupPreference extends Preference {
     /** Claims the rows for one run, or says why not. */
     @Nullable
     private static Run start(int action, String line) {
-        if (stillStalled(action)) return null;
+        if (stillStalled()) return null;
         Run run = new Run(action);
         if (!OWNER.compareAndSet(null, run)) {
-            tell(action, L10n.t("Couldn't start that. Try again in a moment."));
+            // Toast only, like the other refusals to start: the rows keep how the last run ended.
+            Utils.showToastLong(L10n.t("Couldn't start that. Try again in a moment."));
             return null;
         }
         // The last run's outcome is old news once another starts.
@@ -493,7 +495,7 @@ public class SettingsBackupPreference extends Preference {
     private static void notStarted(Run run) {
         run.ended = true;
         finish(run);
-        tell(run.action, L10n.t("Couldn't start that. Try again in a moment."));
+        Utils.showToastLong(L10n.t("Couldn't start that. Try again in a moment."));
     }
 
     /**
@@ -530,13 +532,14 @@ public class SettingsBackupPreference extends Preference {
     }
 
     /**
-     * Says so under [action]'s row, and answers true, while a run the screen stopped waiting for
-     * still holds a worker.
+     * Says so, and answers true, while a run the screen stopped waiting for still holds a worker.
+     * A toast only: under the row, it would outlast the stall it describes, and the stalled run's
+     * own warning stays there.
      */
-    private static boolean stillStalled(int action) {
+    private static boolean stillStalled() {
         Run held = stalled;
         if (held == null || held.ended) return false;
-        tell(action, L10n.t("The app holding the last settings file still hasn't answered. Try again later."));
+        Utils.showToastLong(L10n.t("The app holding the last settings file still hasn't answered. Try again later."));
         return true;
     }
 

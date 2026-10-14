@@ -998,6 +998,14 @@ public class SettingsBackupTest {
                     damaged, String.valueOf(page.findPreference(IMPORT_ROW).getSummary()));
             assertTrue(page.findPreference(IMPORT_ROW).isEnabled());
 
+            // A read that ends in the preview says nothing of its own, so only its start takes the
+            // refusal away.
+            deliver(controller.get(), tap(controller.get(), page, IMPORT_ROW), good);
+            assertEquals("the refusal stayed after the next import",
+                    importSummary, String.valueOf(page.findPreference(IMPORT_ROW).getSummary()));
+            shownPreview().cancel();
+            settle();
+
             export(controller.get(), page, SettingsFileProvider.put(AUTHORITY, "after.json", new byte[0]));
             assertEquals("Settings exported.", String.valueOf(page.findPreference(EXPORT_ROW).getSummary()));
             assertEquals("the old refusal stayed after another run",
