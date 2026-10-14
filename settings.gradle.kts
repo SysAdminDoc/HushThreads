@@ -1,4 +1,10 @@
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.component.ModuleComponentSelector
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.api.artifacts.result.UnresolvedDependencyResult
+import java.security.MessageDigest
 
 rootProject.name = "hushthreads"
 
@@ -98,3 +104,155 @@ if (!allowMavenLocal) {
 }
 
 include(":patches:stub")
+
+// The classpath the plugins above load from, which builds and signs the bundle: the Morphe
+// patches plugin and everything it brings, the Android Gradle plugin, R8 and apksig among them.
+// The release SBOM leaves it out on purpose, since it lists what the bundle carries, so it's
+// written down here instead: :buildClasspathInventory puts it in build/build-classpath/inventory.json,
+// and scripts/build-release-receipt.ps1 asks OSV about it apart from the SBOM. Only this script
+// sees this classpath. Each project's own buildscript classpath goes in too, though no project
+// declares a plugin version of its own today. A version here is the one Gradle's resolution
+// chose. That says nothing about which classes a plugin actually loads from it.
+//
+// A request for another version than the one chosen is listed with the reasons Gradle gives (the
+// forces above, or conflict resolution), so a vulnerable version that was only asked for shows as
+// asked for, not as present. A dependency that didn't resolve is listed as such, and the receipt
+// refuses the inventory rather than reading it as clean.
+val buildClasspathLimit = 4000
+val buildClasspathGraphs = sortedMapOf<String, Map<String, Any?>>()
+
+fun buildClasspathPurlSegment(text: String): String = buildString {
+    for (byte in text.toByteArray(Charsets.UTF_8)) {
+        val c = byte.toInt() and 0xff
+        val plain = c in 'a'.code..'z'.code || c in 'A'.code..'Z'.code || c in '0'.code..'9'.code ||
+            c == '.'.code || c == '-'.code || c == '_'.code || c == '~'.code
+        if (plain) append(c.toChar()) else append("%%%02X".format(c))
+    }
+}
+
+fun buildClasspathGraph(name: String, configuration: Configuration): Map<String, Any?> {
+    class Edge(val requested: String, val outcome: String) {
+        val requestedBy = sortedSetOf<String>()
+        val reasons = sortedSetOf<String>()
+    }
+    val root = configuration.incoming.resolutionResult.root
+    val components = sortedMapOf<String, ModuleComponentIdentifier>()
+    val conflicts = sortedMapOf<String, Edge>()
+    val unresolved = sortedMapOf<String, Edge>()
+    val seen = mutableSetOf<Any>()
+    val queue = ArrayDeque(listOf(root))
+    while (queue.isNotEmpty()) {
+        val component = queue.removeFirst()
+        if (!seen.add(component.id)) continue
+        val id = component.id as? ModuleComponentIdentifier
+        val from = if (id == null) name else "${id.group}:${id.module}:${id.version}"
+        if (id != null) components[from] = id
+        for (dependency in component.dependencies) {
+            if (dependency.isConstraint) continue
+            val requested = dependency.requested
+            if (dependency is UnresolvedDependencyResult) {
+                val failure = dependency.failure.message.orEmpty().lineSequence().firstOrNull().orEmpty().take(300)
+                unresolved.getOrPut(requested.displayName) { Edge(requested.displayName, failure) }.requestedBy += from
+                continue
+            }
+            val selected = (dependency as ResolvedDependencyResult).selected
+            queue.addLast(selected)
+            val chosen = selected.id as? ModuleComponentIdentifier ?: continue
+            if (requested !is ModuleComponentSelector) continue
+            val asked = if (requested.version.isBlank()) "${requested.group}:${requested.module}"
+                else "${requested.group}:${requested.module}:${requested.version}"
+            val got = "${chosen.group}:${chosen.module}:${chosen.version}"
+            if (asked == got || (requested.version.isBlank() && asked == "${chosen.group}:${chosen.module}")) continue
+            val conflict = conflicts.getOrPut("$asked $got") { Edge(asked, got) }
+            conflict.requestedBy += from
+            for (reason in selected.selectionReason.descriptions) conflict.reasons += "${reason.cause}: ${reason.description}"
+        }
+    }
+    if (components.size > buildClasspathLimit) {
+        throw GradleException("The $name holds ${components.size} components, more than the inventory's bound of $buildClasspathLimit.")
+    }
+    fun listed(edges: Map<String, Edge>, outcome: String) = edges.values.map {
+        linkedMapOf("requested" to it.requested, outcome to it.outcome,
+            "requestedBy" to it.requestedBy.take(20), "requestedByCount" to it.requestedBy.size,
+            "reasons" to it.reasons.take(10))
+    }
+    return linkedMapOf(
+        "name" to name,
+        "components" to components.values.map {
+            linkedMapOf("group" to it.group, "name" to it.module, "version" to it.version,
+                "purl" to "pkg:maven/${buildClasspathPurlSegment(it.group)}/${buildClasspathPurlSegment(it.module)}@" +
+                    buildClasspathPurlSegment(it.version))
+        },
+        "conflicts" to listed(conflicts, "resolved"),
+        "unresolved" to listed(unresolved, "failure"),
+    )
+}
+
+fun buildClasspathJson(value: Any?, indent: String = ""): String {
+    val inner = "$indent  "
+    return when (value) {
+        null -> "null"
+        is String -> buildString {
+            append('"')
+            for (ch in value) when {
+                ch == '\\' -> append("\\\\")
+                ch == '"' -> append("\\\"")
+                ch.code < 0x20 || ch.code > 0x7e -> append("\\u%04x".format(ch.code))
+                else -> append(ch)
+            }
+            append('"')
+        }
+        is Number, is Boolean -> value.toString()
+        is Map<*, *> -> if (value.isEmpty()) "{}" else value.entries.joinToString(",\n", "{\n", "\n$indent}") {
+            inner + buildClasspathJson(it.key.toString()) + ": " + buildClasspathJson(it.value, inner)
+        }
+        is Iterable<*> -> if (!value.iterator().hasNext()) "[]" else value.joinToString(",\n", "[\n", "\n$indent]") {
+            inner + buildClasspathJson(it, inner)
+        }
+        else -> throw GradleException("The build classpath inventory can't hold a ${value::class.java.simpleName}.")
+    }
+}
+
+buildClasspathGraphs["settings classpath"] = buildClasspathGraph("settings classpath", buildscript.configurations.getByName("classpath"))
+val buildClasspathSettingsSha256 = MessageDigest.getInstance("SHA-256")
+    .digest(settingsDir.resolve("settings.gradle.kts").readBytes()).joinToString("") { "%02x".format(it) }
+val buildClasspathGradleVersion = gradle.gradleVersion
+
+gradle.allprojects {
+    val graphName = if (path == ":") "root project buildscript classpath" else "$path buildscript classpath"
+    // After the project's script has run, when its own plugins block has resolved, and in its own
+    // context, which Gradle wants for resolving a project's configuration.
+    afterEvaluate {
+        val graph = buildClasspathGraph(graphName, buildscript.configurations.getByName("classpath"))
+        synchronized(buildClasspathGraphs) { buildClasspathGraphs[graphName] = graph }
+    }
+}
+
+gradle.rootProject {
+    tasks.register("buildClasspathInventory") {
+        group = "verification"
+        description = "Writes the plugin classpaths this build resolved to build/build-classpath/inventory.json"
+        val output = layout.buildDirectory.file("build-classpath/inventory.json")
+        val document = provider {
+            val graphs = synchronized(buildClasspathGraphs) { buildClasspathGraphs.values.toList() }
+            buildClasspathJson(linkedMapOf(
+                "schema" to "hushthreads-build-classpath-1",
+                "gradle" to buildClasspathGradleVersion,
+                "settingsScript" to linkedMapOf("path" to "settings.gradle.kts", "sha256" to buildClasspathSettingsSha256),
+                "covers" to ("The classpath settings.gradle.kts resolved for its plugins block, which the build's " +
+                    "plugins and tools run from, and every project's buildscript classpath. Each version is the one " +
+                    "Gradle's resolution chose. A request for another version is listed under conflicts."),
+                "leavesOut" to ("What the release bundle carries (the release SBOM lists that), the patcher-provided " +
+                    "classpath, the compile-only, test and lint graphs, and the advisory comparator."),
+                "graphs" to graphs,
+            )) + "\n"
+        }
+        inputs.property("inventory", document)
+        outputs.file(output)
+        doLast {
+            val file = output.get().asFile
+            file.parentFile.mkdirs()
+            file.writeText(document.get(), Charsets.UTF_8)
+        }
+    }
+}

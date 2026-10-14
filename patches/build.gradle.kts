@@ -1155,6 +1155,9 @@ tasks {
         }
         finalizedBy(verifyBundle)
         finalizedBy(releaseSbom)
+        // The plugin classpath that built it, kept apart from the SBOM, which lists only what the
+        // bundle carries. Written by settings.gradle.kts, the one script that can see it.
+        finalizedBy(":buildClasspathInventory")
     }
     register<JavaExec>("generatePatchesList") {
         description = "Build patch with patch list"

@@ -1764,7 +1764,7 @@ try {
     # the UTC date, so on the east coast an exception ran out at 19:00 on the last day it named
     # and refused a release it still covered. The clock can't be moved here, so the defaults are
     # read as written.
-    foreach ($dated in 'Read-AdvisoryExceptions', 'Invoke-ReleaseAdvisoryGate') {
+    foreach ($dated in 'Read-AdvisoryExceptions', 'Invoke-ReleaseAdvisoryGate', 'Invoke-BuildClasspathAdvisoryGate') {
         $parameter = @((Get-Command $dated).ScriptBlock.Ast.Body.ParamBlock.Parameters |
             Where-Object { $_.Name.VariablePath.UserPath -eq 'Today' })
         $default = if ($parameter.Count -eq 1 -and $parameter[0].DefaultValue) { $parameter[0].DefaultValue.Extent.Text } else { '' }
@@ -2142,6 +2142,179 @@ Write-Host "[scripts] $($rangeCases.Count) complete Maven range gate cases passe
     $said = Invoke-Gate @()
     Assert-True ($said -like '*lists no library to ask OSV about*' -and $osvAsked.Count -eq 0) `
         "An SBOM with no library was not passed as one: $said"
+
+    # The build classpath: what settings.gradle.kts resolved for the plugins, which the SBOM leaves
+    # out, read from the inventory it writes and put to OSV by a gate of its own with its own list.
+    # GHSA-xxph-c9ww-hj94 (CVE-2026-102554) is a Guava deserialization advisory the plugin's
+    # Guava 33.5.0-jre is inside (4.0 to 33.7.1, fixed in 33.7.2). On 2026-10-14 it was a google/guava
+    # repository advisory rated medium, and OSV had no entry for it (404), so this is a controlled
+    # fixture in OSV's shape rather than a recording: the vulnerable and fixed builds, and the
+    # request for the vulnerable one that resolved to the fixed one, which isn't on the classpath.
+    $guavaDeserialization = ('{"id":"GHSA-xxph-c9ww-hj94","summary":"CompactHashMap/CompactHashSet/MapMakerInternalMap ' +
+        'deserialization triggers uncontrolled memory allocation","aliases":["CVE-2026-102554"],' +
+        '"database_specific":{"severity":"MODERATE"},"affected":[{"package":{"ecosystem":"Maven","name":"com.google.guava:guava"},' +
+        '"ranges":[{"type":"ECOSYSTEM","events":[{"introduced":"4.0"},{"fixed":"33.7.2"}]}]}]}')
+    $guavaVulnerable = 'pkg:maven/com.google.guava/guava@33.5.0-jre'
+    $guavaFixed = 'pkg:maven/com.google.guava/guava@33.7.2-jre'
+    $buildSettings = Join-Path $advisoryRoot 'settings.gradle.kts'
+    Set-Content -LiteralPath $buildSettings -Encoding ASCII -Value 'plugins { id("app.morphe.patches") version "1.3.4" }'
+    $buildInventory = Join-Path $advisoryRoot 'build-classpath.json'
+    # An inventory as :buildClasspathInventory writes it, for these package URLs on the settings
+    # classpath, with an empty project classpath beside it.
+    function New-TestBuildInventory {
+        param([string]$Path = $buildInventory, [string]$SettingsScript = $buildSettings, [string[]]$Purls = @($cleanPurl),
+            [object[]]$Conflicts = @(), [object[]]$Unresolved = @(), [scriptblock]$Mutate)
+        $components = @(foreach ($purl in @($Purls | Where-Object { $_ })) {
+            $parts = [regex]::Match($purl, '^pkg:maven/([^/]+)/([^@]+)@(.+)$')
+            [ordered]@{ group = $parts.Groups[1].Value; name = $parts.Groups[2].Value; version = $parts.Groups[3].Value; purl = $purl }
+        })
+        $document = [ordered]@{
+            schema = 'hushthreads-build-classpath-1'
+            gradle = '9.7.1'
+            settingsScript = [ordered]@{ path = 'settings.gradle.kts'
+                sha256 = (Get-FileHash -LiteralPath $SettingsScript -Algorithm SHA256).Hash.ToLowerInvariant() }
+            covers = 'The settings classpath.'
+            leavesOut = 'What the bundle carries.'
+            graphs = @(
+                [ordered]@{ name = 'root project buildscript classpath'; components = @(); conflicts = @(); unresolved = @() },
+                [ordered]@{ name = 'settings classpath'; components = $components; conflicts = @($Conflicts); unresolved = @($Unresolved) })
+        }
+        if ($Mutate) { & $Mutate $document }
+        New-Item -ItemType Directory -Path (Split-Path -Parent $Path) -Force | Out-Null
+        [System.IO.File]::WriteAllText($Path, ($document | ConvertTo-Json -Depth 12), (New-Object System.Text.UTF8Encoding($false)))
+    }
+    # The build gate on the inventory as it stands, with these lines in its own exception list,
+    # and everything it said.
+    function Invoke-BuildGate([string[]]$Exceptions = @(), [switch]$Skip) {
+        $list = Join-Path $advisoryRoot 'build-advisory-exceptions.txt'
+        Set-Content -LiteralPath $list -Encoding ASCII -Value (@('# build exceptions for this case') + @($Exceptions))
+        . $osvStandIn
+        $osvAsked.Clear()
+        $read = Read-BuildClasspathInventory -Path $buildInventory -SettingsScript $buildSettings
+        return (@(Invoke-BuildClasspathAdvisoryGate -Inventory $read -ExceptionsPath $list -Today $today `
+            -SkipAdvisoryCheck:$Skip 3>&1 6>&1 | ForEach-Object { "$_" }) -join "`n")
+    }
+    $osvAnswers = $osvRecorded.Clone()
+    $osvAnswers[$guavaVulnerable] = "{`"vulns`":[$guavaDeserialization]}"
+    $osvAnswers[$guavaFixed] = '{}'
+    $osvWithGuava = $osvAnswers
+    try {
+        # A clean classpath passes, says so as build exposure, and asks about what resolved only.
+        $request = [ordered]@{ requested = 'com.google.code.gson:gson:2.8.8'; resolved = 'com.google.code.gson:gson:2.14.0'
+            requestedBy = @('app.morphe:morphe-patches-gradle-plugin:1.3.4'); requestedByCount = 1
+            reasons = @('CONFLICT_RESOLUTION: between versions 2.14.0 and 2.8.8') }
+        New-TestBuildInventory -Conflicts @($request)
+        $said = Invoke-BuildGate
+        Assert-True ($said -like '*`[build advisories`] the settings classpath asked for com.google.code.gson:gson:2.8.8 and resolved com.google.code.gson:gson:2.14.0 (CONFLICT_RESOLUTION*' -and
+            $said -like '*`[build advisories`] OSV has no advisory for the 1 components build-classpath.json lists*' -and
+            ($osvAsked -join ', ') -eq $cleanPurl) "The build gate passed a clean classpath wrongly, or asked about a request: $said"
+
+        # The vulnerable Guava is found and reported as build exposure, apart from the bundle's lines.
+        New-TestBuildInventory -Purls @($guavaVulnerable, $cleanPurl)
+        $said = Invoke-BuildGate
+        $lines = @($said -split "`n" | Where-Object { $_ })
+        Assert-True ($said -like '*`[build advisories`] below high, let through: GHSA-xxph-c9ww-hj94 (MODERATE, CVE-2026-102554) in com.google.guava:guava 33.5.0-jre*' -and
+            @($lines | Where-Object { $_ -notlike '`[build advisories`]*' }).Count -eq 0) `
+            "The build gate missed Guava 33.5.0-jre, or reported it as something other than build exposure: $said"
+        # Held when its severity can't be read or is high, accepted only by the build list, and the
+        # build list doesn't count as stale against the bundle's advisories or the other way round.
+        foreach ($held in @(
+                @{ Name = 'unrated'; Json = $guavaDeserialization.Replace('"database_specific":{"severity":"MODERATE"},', ''); Level = 'UNRATED' },
+                @{ Name = 'high'; Json = $guavaDeserialization.Replace('"MODERATE"', '"HIGH"'); Level = 'HIGH' })) {
+            $osvAnswers = $osvWithGuava.Clone()
+            $osvAnswers[$guavaVulnerable] = "{`"vulns`":[$($held.Json)]}"
+            Assert-Throws { Invoke-BuildGate } ("*high or critical advisories for the build classpath: GHSA-xxph-c9ww-hj94 ($($held.Level)*" +
+                    'scripts/build-advisory-exceptions.txt*') `
+                "The build gate passed an $($held.Name) Guava advisory."
+            $said = Invoke-BuildGate @("CVE-2026-102554 com.google.guava:guava $later $why")
+            Assert-True ($said -like '*`[build advisories`] accepted: GHSA-xxph-c9ww-hj94*') "A build exception did not accept the $($held.Name) Guava advisory: $said"
+            $said = Invoke-Gate @($cleanPurl)
+            Assert-True ($said -like '*OSV has no advisory for the libraries*') "The bundle's gate took in the build classpath: $said"
+        }
+        $osvAnswers = $osvWithGuava
+        Assert-Throws { Invoke-BuildGate @("GHSA-4jrv-ppp4-jm57 com.google.code.gson:gson $later $why") } `
+            '*build-advisory-exceptions.txt accepts advisories OSV no longer reports for the build classpath*GHSA-4jrv-ppp4-jm57*' `
+            'A build exception that matches nothing on the build classpath went unnoticed.'
+
+        # The fixed Guava: the request for 33.5.0-jre is printed as one and never put to OSV.
+        $guavaRequest = [ordered]@{ requested = 'com.google.guava:guava:33.5.0-jre'; resolved = 'com.google.guava:guava:33.7.2-jre'
+            requestedBy = @('app.morphe:morphe-patches-gradle-plugin:1.3.4'); requestedByCount = 1
+            reasons = @('CONFLICT_RESOLUTION: between versions 33.7.2-jre and 33.5.0-jre', 'REQUESTED: requested') }
+        New-TestBuildInventory -Purls @($guavaFixed) -Conflicts @($guavaRequest)
+        $said = Invoke-BuildGate
+        Assert-True ($said -like '*asked for com.google.guava:guava:33.5.0-jre and resolved com.google.guava:guava:33.7.2-jre*' -and
+            $said -like '*OSV has no advisory for the 1 components*' -and ($osvAsked -join ', ') -eq $guavaFixed) `
+            "The fixed Guava was refused, or its request was put to OSV as if it were on the classpath: $said / $($osvAsked -join ', ')"
+
+        # OSV has to answer about the build classpath too, readably.
+        New-TestBuildInventory -Purls @('pkg:maven/com.example/unknown@1.0')
+        Assert-Throws { Invoke-BuildGate } '*could not be asked about pkg:maven/com.example/unknown@1.0*fails closed*' `
+            'The build gate read an OSV it could not reach as no advisories.'
+        $osvAnswers = $osvWithGuava.Clone()
+        $osvAnswers[$guavaFixed] = '<html>Service Unavailable</html>'
+        New-TestBuildInventory -Purls @($guavaFixed)
+        Assert-Throws { Invoke-BuildGate } '*isn''t a query result*' 'The build gate took a page of HTML from OSV for an answer.'
+        $osvAnswers = $osvWithGuava
+
+        # Offline: OSV isn't asked and the run says so, but both the inventory and the list are read.
+        $said = Invoke-BuildGate -Skip
+        Assert-True ($said -like '*-SkipAdvisoryCheck: OSV was not asked about the 1 components build-classpath.json lists*' -and
+            $osvAsked.Count -eq 0) "The skipped build check asked OSV, or did not say it was skipped: $said"
+        Assert-Throws { Invoke-BuildGate @('GHSA-xxph-c9ww-hj94 soon') -Skip } '*is not "<advisory>*' `
+            'A skipped build check left a broken exception list unread.'
+
+        # A missing, malformed or incomplete inventory is refused by name, never read as clean.
+        foreach ($broken in @(
+                @{ Name = 'no inventory'; Write = { Remove-Item -LiteralPath $buildInventory }; Pattern = '*There is no build classpath inventory at*' },
+                @{ Name = 'text that is not JSON'; Write = { Set-Content -LiteralPath $buildInventory -Value 'not json' }; Pattern = '*is not a build classpath inventory:*' },
+                @{ Name = 'a JSON array'; Write = { Set-Content -LiteralPath $buildInventory -Value '[]' }; Pattern = '*is not a build classpath inventory:*' },
+                @{ Name = 'another schema'; Write = { New-TestBuildInventory -Mutate { param($d) $d.schema = 'hushthreads-build-classpath-2' } }
+                    Pattern = '*schema hushthreads-build-classpath-1*' },
+                @{ Name = 'no settings script hash'; Write = { New-TestBuildInventory -Mutate { param($d) $d.Remove('settingsScript') } }
+                    Pattern = '*doesn''t say which settings.gradle.kts*' },
+                @{ Name = 'another settings script'; Write = { New-TestBuildInventory -Mutate { param($d) $d.settingsScript.sha256 = ('0' * 64) } }
+                    Pattern = '*was written for another settings.gradle.kts*' },
+                @{ Name = 'no classpath'; Write = { New-TestBuildInventory -Mutate { param($d) $d.graphs = @() } }; Pattern = '*lists no classpath*' },
+                @{ Name = 'a classpath with no unresolved list'; Write = { New-TestBuildInventory -Mutate { param($d) $d.graphs[1].Remove('unresolved') } }
+                    Pattern = '*without a name, components, conflicts and an unresolved list*' },
+                @{ Name = 'a classpath twice'; Write = { New-TestBuildInventory -Mutate { param($d) $d.graphs = @($d.graphs[1], $d.graphs[1]) } }
+                    Pattern = '*lists the settings classpath twice*' },
+                @{ Name = 'no settings classpath component'; Write = { New-TestBuildInventory -Purls @() }; Pattern = '*lists no settings classpath component*' },
+                @{ Name = 'a package URL naming another version'
+                    Write = { New-TestBuildInventory -Mutate { param($d) $d.graphs[1].components[0].purl = $guavaFixed } }
+                    Pattern = '*with the package URL pkg:maven/com.google.guava/guava@33.7.2-jre, which doesn''t name it*' },
+                @{ Name = 'a version with a space'
+                    Write = { New-TestBuildInventory -Mutate { param($d) $d.graphs[1].components[0].version = '2.14 .0' } }
+                    Pattern = '*without a group, name, version and package URL*' },
+                @{ Name = 'a conflict with no reasons'
+                    Write = { New-TestBuildInventory -Conflicts @([ordered]@{ requested = 'com.example:a:1'; resolved = 'com.example:a:2' }) }
+                    Pattern = '*without what was asked for, what resolved and why*' },
+                @{ Name = 'a dependency that did not resolve'
+                    Write = { New-TestBuildInventory -Unresolved @([ordered]@{ requested = 'com.example:missing:1.0'; failure = 'Could not find com.example:missing:1.0.'
+                        requestedBy = @('app.morphe:morphe-patches-gradle-plugin:1.3.4'); requestedByCount = 1; reasons = @() }) }
+                    Pattern = '*didn''t resolve: com.example:missing:1.0 in the settings classpath (Could not find*Nobody knows their versions*' },
+                @{ Name = 'more components than the bound'
+                    Write = { New-TestBuildInventory -Purls @(1..4001 | ForEach-Object { "pkg:maven/com.example/c$_@1.0" }) }
+                    Pattern = '*lists more than 4000 components*' },
+                @{ Name = 'more bytes than the bound'
+                    Write = { New-TestBuildInventory -Mutate { param($d) $d.covers = 'x' * (8MB) } }
+                    Pattern = '*larger than the 8 MB*' })) {
+            & $broken.Write
+            Assert-Throws { Invoke-BuildGate } $broken.Pattern "The build gate read an inventory with $($broken.Name)."
+            Assert-True ($osvAsked.Count -eq 0) "The build gate asked OSV about an inventory with $($broken.Name)."
+        }
+        New-TestBuildInventory
+        Assert-Throws { Read-BuildClasspathInventory -Path $buildInventory -SettingsScript (Join-Path $advisoryRoot 'absent.gradle.kts') } `
+            '*There is no*absent.gradle.kts to hold*' 'An inventory was read against a settings script that is not there.'
+    } finally {
+        $osvAnswers = $osvRecorded
+    }
+    $checkedInBuild = Join-Path $PSScriptRoot 'build-advisory-exceptions.txt'
+    try {
+        $null = @(Read-AdvisoryExceptions -Path $checkedInBuild)
+    } catch {
+        throw "The checked-in scripts/build-advisory-exceptions.txt does not read: $($_.Exception.Message)"
+    }
 } finally {
     Remove-Item -LiteralPath $advisoryRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
@@ -4794,7 +4967,7 @@ try {
     # release is held to the census, and .gitignore has to let the ledger be committed.
     $releaseFiles = @('patches-list.json', 'patches-bundle.json', 'gradle.properties', 'README.md', 'CHANGELOG.md',
         'gradle/libs.versions.toml', '.github/ISSUE_TEMPLATE/bug_report.yml', '.gitignore',
-        'sources/threads-sources.json', 'NOTICE', 'provenance.json')
+        'sources/threads-sources.json', 'NOTICE', 'provenance.json', 'settings.gradle.kts')
     foreach ($relative in $releaseFiles) {
         $destination = Join-Path $releaseRepo $relative
         New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
@@ -5235,6 +5408,11 @@ try {
     # And the SBOM buildAndroid writes beside it, listing a library OSV has nothing against.
     $releaseSbom = [System.IO.Path]::ChangeExtension($releaseBundle, '.cdx.json')
     New-TestSbom -Path $releaseSbom -Bundle $releaseBundle
+    # And the build classpath inventory settings.gradle.kts writes once buildAndroid is done, for
+    # the checkout's own settings.gradle.kts, listing a component OSV has nothing against.
+    $releaseSettings = Join-Path $releaseRepo 'settings.gradle.kts'
+    $releaseBuildInventory = Join-Path $releaseRepo 'build/build-classpath/inventory.json'
+    New-TestBuildInventory -Path $releaseBuildInventory -SettingsScript $releaseSettings
 
     # The builder reads git with a plain `git -C`, which a GIT_DIR inherited from a hook would
     # override, so every GIT_* variable is cleared for the length of a run. OSV is the stand-in
@@ -5276,6 +5454,10 @@ try {
     } catch {
         throw "build-release-receipt.ps1 refused a run of every declared build: $($_.Exception.Message)"
     }
+    # The build classpath was asked about apart from the bundle's libraries, and said so.
+    Assert-True ($builderSaid -like '*`[advisories`] OSV has no advisory for the libraries*' -and
+        $builderSaid -like '*`[build advisories`] OSV has no advisory for the 1 components inventory.json lists*') `
+        "build-release-receipt.ps1 did not report the bundle's libraries and the build classpath apart: $builderSaid"
     # Every merge and patch run in one job of the build queue (the stand-in at the top).
     $seen = @(Read-QueueLog)
     Assert-True (($seen -join '|') -eq 'hushthreads receipt') `
@@ -5541,6 +5723,7 @@ try {
     # again. An OSV out of reach stops the run, and so does an SBOM of another build or none at all.
     $cleanSbomBytes = [System.IO.File]::ReadAllBytes($releaseSbom)
     $cleanReceiptBytes = [System.IO.File]::ReadAllBytes($releaseReceipt)
+    $cleanBuildInventoryBytes = [System.IO.File]::ReadAllBytes($releaseBuildInventory)
     try {
         New-TestSbom -Path $releaseSbom -Bundle $releaseBundle -Libraries @($gsonPurl)
         Assert-Throws { Invoke-ReceiptBuilder -Fixtures $allFixtures } `
@@ -5549,8 +5732,24 @@ try {
         Assert-True (-not (Test-Path -LiteralPath $javaLog)) 'build-release-receipt.ps1 patched before it asked OSV about the SBOM.'
         Invoke-ReceiptBuilder -Fixtures $allFixtures -SkipAdvisoryCheck
         Assert-True ($builderSaid -like '*-SkipAdvisoryCheck: OSV was not asked about the libraries*' -and
+            $builderSaid -like '*-SkipAdvisoryCheck: OSV was not asked about the 1 components inventory.json lists*' -and
             (Get-Content -LiteralPath $releaseReceipt -Raw | ConvertFrom-Json).sbom.sha256 -ceq (Get-Sha256Hex -Path $releaseSbom)) `
             "An offline receipt run did not say the advisory check was skipped, or did not record the SBOM: $builderSaid"
+        # The classpath that built the bundle is held the same way and before anything is patched:
+        # a serious advisory there, an inventory written for other settings, or none at all.
+        [System.IO.File]::WriteAllBytes($releaseSbom, $cleanSbomBytes)
+        foreach ($refused in @(
+                @{ Name = 'a build classpath with gson 2.8.8 on it'; Write = { New-TestBuildInventory -Path $releaseBuildInventory -SettingsScript $releaseSettings -Purls @($gsonPurl) }
+                    Pattern = '*high or critical advisories for the build classpath: GHSA-4jrv-ppp4-jm57 (HIGH*build-advisory-exceptions.txt*' },
+                @{ Name = 'an inventory for another settings.gradle.kts'; Pattern = '*was written for another settings.gradle.kts*'
+                    Write = { New-TestBuildInventory -Path $releaseBuildInventory -SettingsScript $releaseSettings -Mutate { param($d) $d.settingsScript.sha256 = ('0' * 64) } } },
+                @{ Name = 'no build classpath inventory'; Write = { Remove-Item -LiteralPath $releaseBuildInventory }
+                    Pattern = '*There is no build classpath inventory at*' })) {
+            & $refused.Write
+            Assert-Throws { Invoke-ReceiptBuilder -Fixtures $allFixtures } $refused.Pattern "build-release-receipt.ps1 went ahead with $($refused.Name)."
+            Assert-True (-not (Test-Path -LiteralPath $javaLog)) "build-release-receipt.ps1 patched with $($refused.Name)."
+        }
+        [System.IO.File]::WriteAllBytes($releaseBuildInventory, $cleanBuildInventoryBytes)
         foreach ($refused in @(
                 @{ Name = 'an OSV out of reach'; Sbom = { New-TestSbom -Path $releaseSbom -Bundle $releaseBundle -Libraries @('pkg:maven/com.example/unknown@1.0') }
                     Pattern = '*could not be asked about pkg:maven/com.example/unknown@1.0*fails closed*' },
@@ -5578,6 +5777,8 @@ try {
     } finally {
         [System.IO.File]::WriteAllBytes($releaseSbom, $cleanSbomBytes)
         [System.IO.File]::WriteAllBytes($releaseReceipt, $cleanReceiptBytes)
+        New-Item -ItemType Directory -Path (Split-Path -Parent $releaseBuildInventory) -Force | Out-Null
+        [System.IO.File]::WriteAllBytes($releaseBuildInventory, $cleanBuildInventoryBytes)
     }
 
     # A bundle that isn't a build of the commit, from a tree that is clean by the time the receipt

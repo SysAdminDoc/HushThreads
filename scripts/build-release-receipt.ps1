@@ -47,6 +47,14 @@
     warning. The receipt records the SBOM's name, hash and component count either way, and the
     pre-push hook asks OSV again on the index push.
 
+    Then the plugin classpath that built the bundle, which the SBOM leaves out: the inventory
+    settings.gradle.kts writes when buildAndroid finishes (build/build-classpath/inventory.json),
+    held to this checkout's settings.gradle.kts and put to OSV under the same rules, with
+    scripts/build-advisory-exceptions.txt as its exception list. Its lines say [build advisories],
+    apart from what the bundle carries. A missing or unreadable inventory, or one naming a
+    dependency that didn't resolve, stops the run before anything is patched. -SkipAdvisoryCheck
+    skips OSV for both, with a warning for each.
+
 .EXAMPLE
     One -Fixture taking a comma separated list, not the switch repeated: PowerShell binds a
     parameter once and refuses the second.
@@ -67,6 +75,9 @@ param(
     [string]$OutputPath,
     # The SBOM :patches:buildAndroid writes beside the bundle, named for it. Defaults to that.
     [string]$Sbom,
+    # The build classpath inventory :buildClasspathInventory writes. Defaults to
+    # build/build-classpath/inventory.json.
+    [string]$BuildInventory,
     # For working with no network only: OSV isn't asked about the SBOM's libraries, and the run
     # says so. The index push asks again, so a release can't go out on it.
     [switch]$SkipAdvisoryCheck,
@@ -183,6 +194,11 @@ $sbomDocument = Read-ReleaseSbom -Path $Sbom
 $sbomBound = Test-ReleaseSbom -Sbom $sbomDocument -BundlePath $Bundle -BundleName (Split-Path -Leaf $Bundle)
 if (-not $sbomBound.Valid) { throw "The SBOM does not describe the bundle: $($sbomBound.Reason)" }
 Invoke-ReleaseAdvisoryGate -Sbom $sbomDocument -ExceptionsPath (Join-Path $PSScriptRoot 'advisory-exceptions.txt') `
+    -SkipAdvisoryCheck:$SkipAdvisoryCheck
+# And the classpath that built it, apart: build exposure, never counted as carried code.
+if (-not $BuildInventory) { $BuildInventory = Join-Path $Root 'build/build-classpath/inventory.json' }
+$buildClasspath = Read-BuildClasspathInventory -Path $BuildInventory -SettingsScript (Join-Path $Root 'settings.gradle.kts')
+Invoke-BuildClasspathAdvisoryGate -Inventory $buildClasspath -ExceptionsPath (Join-Path $PSScriptRoot 'build-advisory-exceptions.txt') `
     -SkipAdvisoryCheck:$SkipAdvisoryCheck
 
 function Get-ExtensionPayloads {

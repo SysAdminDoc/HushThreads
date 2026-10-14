@@ -1,0 +1,19 @@
+# Advisories accepted for the classpath that builds and signs the release bundle, which the bundle
+# doesn't carry. scripts/release-advisories.ps1 reads this when build-release-receipt.ps1 prepares
+# a release, after asking OSV about every component the build classpath inventory lists
+# (build/build-classpath/inventory.json, written by settings.gradle.kts). What the bundle carries
+# has its own list, scripts/advisory-exceptions.txt, and neither list covers the other's advisories.
+#
+# One per line, in the same shape and under the same rules as that list:
+#
+#   <advisory> <group>:<name> <yyyy-MM-dd> <reason>
+#
+# The date is the last day the exception holds, at most 90 days out. The reason says why the
+# advisory doesn't apply to what the build does with the component, in three words at least. A
+# version that was only asked for and resolved to another isn't on the classpath, so it needs no
+# line here. An exception past its date covers nothing, and one that matches no advisory any more
+# fails the run until it's taken out.
+#
+# The shape, with made-up names:
+#
+#   GHSA-aaaa-bbbb-cccc com.example:parser 2026-12-01 The build only parses files from this repository.

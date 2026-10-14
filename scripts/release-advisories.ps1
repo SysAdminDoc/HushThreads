@@ -30,6 +30,14 @@
     reading as no advisories. -SkipAdvisoryCheck is the way through for offline work, and it says
     so in a warning. The pre-push hook never passes it, so the index push that hands a release to
     Manager users asks OSV again.
+
+    The plugin classpath that builds and signs the bundle is a second subject, which the SBOM
+    leaves out because the bundle doesn't carry it. settings.gradle.kts writes it down as the
+    build classpath inventory, and build-release-receipt.ps1 puts it to OSV under the same
+    severity rules and exception policy, with its own list (scripts/build-advisory-exceptions.txt)
+    and its own report lines, so build exposure is never counted as carried code or the other way
+    round. An inventory that's missing, malformed, or names a dependency that didn't resolve stops
+    the run, rather than reading as a classpath with no advisories.
 #>
 
 function Read-AdvisoryExceptions {
@@ -478,11 +486,14 @@ function Test-AdvisoryFindings {
         Answers @{ Valid; Reason; Refused; Excused; Minor; Stale }, the last four as the lines to
         print. A serious finding needs an exception naming its advisory, or one of the advisory's
         aliases, and its package, dated today or later. An exception that matches no finding at
-        all, of any severity, is stale and refused too.
+        all, of any severity, is stale and refused too. -Subject and -ExceptionList name what was
+        asked about and the list the exceptions came from, in the reason.
     #>
     param(
         [object[]]$Findings = @(),
-        [object[]]$Exceptions = @()
+        [object[]]$Exceptions = @(),
+        [string]$Subject = 'what the bundle carries',
+        [string]$ExceptionList = 'scripts/advisory-exceptions.txt'
     )
 
     $findingsIn = @(@($Findings) | Where-Object { $null -ne $_ })
@@ -529,13 +540,13 @@ function Test-AdvisoryFindings {
 
     $reasons = @()
     if ($refused.Count -gt 0) {
-        $reasons += ('OSV reports high or critical advisories for what the bundle carries: ' + ($refused -join '; ') +
-            '. Move to a version without them, or accept one in scripts/advisory-exceptions.txt with the reason ' +
+        $reasons += ("OSV reports high or critical advisories for ${Subject}: " + ($refused -join '; ') +
+            ". Move to a version without them, or accept one in $ExceptionList with the reason " +
             'it does not apply and a date within 90 days.')
     }
     if ($stale.Count -gt 0) {
-        $reasons += ('scripts/advisory-exceptions.txt accepts advisories OSV no longer reports for what the bundle ' +
-            'carries: ' + ($stale -join '; ') + '. Take them out.')
+        $reasons += ("$ExceptionList accepts advisories OSV no longer reports for ${Subject}: " +
+            ($stale -join '; ') + '. Take them out.')
     }
     return [pscustomobject]@{
         Valid   = $reasons.Count -eq 0
@@ -581,4 +592,187 @@ function Invoke-ReleaseAdvisoryGate {
     $packages = @($libraries | ForEach-Object { "$($_.Name) $($_.Version)" }) -join ', '
     $said = if ($findings.Count -eq 0) { 'no advisory' } else { "$($findings.Count) advisories, none refused" }
     Write-Host "[advisories] OSV has $said for the libraries $sbomName lists: $packages"
+}
+
+function Test-InventoryText {
+    # One coordinate or package URL as the inventory writes it: a bounded string with no spaces.
+    param($Value)
+    return ($Value -is [string] -and $Value.Length -gt 0 -and $Value.Length -le 400 -and $Value -notmatch '\s|\p{Cc}')
+}
+
+function Read-BuildClasspathInventory {
+    <#
+    .SYNOPSIS
+        The build classpath inventory settings.gradle.kts writes (:buildClasspathInventory), read
+        into what the build advisory gate needs.
+    .DESCRIPTION
+        Answers @{ Path; Sha256; Libraries; Conflicts; Graphs }. Libraries are the components the
+        plugin classpaths resolved, one per package URL with the classpaths that hold it, in the
+        shape Get-SbomAdvisories reads. Conflicts are the requests Gradle answered with another
+        version: what was asked for, what resolved, and Gradle's reasons. A version that was only
+        asked for isn't on the classpath, so it's reported and never put to OSV.
+
+        Held to the shape the task writes, within bounds, and refused where it differs: a missing
+        or unreadable inventory, one written for another settings.gradle.kts, one with no settings
+        classpath component, a component whose package URL doesn't name it, and a dependency that
+        didn't resolve, whose version nobody knows. None of those reads as a classpath with no
+        advisories.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        # The settings.gradle.kts the inventory has to have been written for.
+        [string]$SettingsScript
+    )
+
+    $Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw ("There is no build classpath inventory at $Path, so nothing says what the plugin classpath holds. " +
+            ':patches:buildAndroid ends by writing it (:buildClasspathInventory), so build again.')
+    }
+    $name = Split-Path -Leaf $Path
+    $limitBytes = 8MB
+    $limitEntries = 4000
+    if ((Get-Item -LiteralPath $Path).Length -gt $limitBytes) {
+        throw "$name is larger than the $($limitBytes / 1MB) MB a build classpath inventory may be."
+    }
+    # As in Invoke-OsvQuery: PowerShell 7 would turn a date-like string into a DateTime.
+    $jsonArguments = @{ ErrorAction = 'Stop' }
+    if ((Get-Command ConvertFrom-Json).Parameters.ContainsKey('DateKind')) { $jsonArguments['DateKind'] = 'String' }
+    try {
+        $text = [IO.File]::ReadAllText($Path, [Text.UTF8Encoding]::new($false, $true))
+        if (-not $text.TrimStart().StartsWith('{')) { throw 'Expected a JSON object.' }
+        $document = $text | ConvertFrom-Json @jsonArguments
+    } catch {
+        throw "$name is not a build classpath inventory: $($_.Exception.Message)"
+    }
+    if ($document -isnot [System.Management.Automation.PSCustomObject] -or $document.schema -isnot [string] -or
+            $document.schema -cne 'hushthreads-build-classpath-1') {
+        throw "$name is not a build classpath inventory this script reads (schema hushthreads-build-classpath-1)."
+    }
+    $recorded = $document.settingsScript
+    if (-not (Test-AdvisoryObject $recorded) -or $recorded.sha256 -isnot [string] -or $recorded.sha256 -cnotmatch '^[0-9a-f]{64}$') {
+        throw "$name doesn't say which settings.gradle.kts it was written for."
+    }
+    if ($SettingsScript) {
+        if (-not (Test-Path -LiteralPath $SettingsScript -PathType Leaf)) {
+            throw "There is no $SettingsScript to hold $name to."
+        }
+        $current = (Get-FileHash -LiteralPath $SettingsScript -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($current -cne $recorded.sha256) {
+            throw ("$name was written for another settings.gradle.kts than $SettingsScript, so it may not be the " +
+                'classpath this build resolved. Build again.')
+        }
+    }
+    if ($document.graphs -isnot [array] -or $document.graphs.Count -eq 0) { throw "$name lists no classpath." }
+
+    $libraries = [ordered]@{}
+    $conflicts = New-Object System.Collections.Generic.List[object]
+    $unresolved = New-Object System.Collections.Generic.List[string]
+    $graphNames = New-Object System.Collections.Generic.List[string]
+    foreach ($graph in $document.graphs) {
+        if (-not (Test-AdvisoryObject $graph) -or $graph.name -isnot [string] -or [string]::IsNullOrWhiteSpace($graph.name) -or
+                $graph.name.Length -gt 400 -or $graph.components -isnot [array] -or $graph.conflicts -isnot [array] -or
+                $graph.unresolved -isnot [array]) {
+            throw "$name lists a classpath without a name, components, conflicts and an unresolved list."
+        }
+        if ($graphNames -ccontains $graph.name) { throw "$name lists the $($graph.name) twice." }
+        $graphNames.Add($graph.name)
+        foreach ($component in $graph.components) {
+            if (-not (Test-AdvisoryObject $component) -or -not (Test-InventoryText $component.group) -or
+                    -not (Test-InventoryText $component.name) -or -not (Test-InventoryText $component.version) -or
+                    -not (Test-InventoryText $component.purl)) {
+                throw "$name lists a component of the $($graph.name) without a group, name, version and package URL."
+            }
+            $purl = [regex]::Match($component.purl, '^pkg:maven/([^/@?#]+)/([^/@?#]+)@([^/@?#]+)$')
+            if (-not $purl.Success -or [Uri]::UnescapeDataString($purl.Groups[1].Value) -cne $component.group -or
+                    [Uri]::UnescapeDataString($purl.Groups[2].Value) -cne $component.name -or
+                    [Uri]::UnescapeDataString($purl.Groups[3].Value) -cne $component.version) {
+                throw ("$name lists $($component.group):$($component.name):$($component.version) with the package URL " +
+                    "$($component.purl), which doesn't name it, so OSV couldn't be asked about it.")
+            }
+            if (-not $libraries.Contains($component.purl)) {
+                if ($libraries.Count -ge $limitEntries) { throw "$name lists more than $limitEntries components." }
+                $libraries[$component.purl] = [pscustomobject]@{ Group = $component.group; Name = $component.name
+                    Version = $component.version; Purl = $component.purl
+                    Graphs = (New-Object System.Collections.Generic.List[string]) }
+            }
+            $libraries[$component.purl].Graphs.Add($graph.name)
+        }
+        foreach ($conflict in $graph.conflicts) {
+            if (-not (Test-AdvisoryObject $conflict) -or -not (Test-InventoryText $conflict.requested) -or
+                    -not (Test-InventoryText $conflict.resolved) -or $conflict.reasons -isnot [array] -or
+                    @($conflict.reasons | Where-Object { $_ -isnot [string] -or $_.Length -gt 400 }).Count -gt 0) {
+                throw "$name lists a conflict in the $($graph.name) without what was asked for, what resolved and why."
+            }
+            if ($conflicts.Count -ge $limitEntries) { throw "$name lists more than $limitEntries conflicts." }
+            $conflicts.Add([pscustomobject]@{ Graph = $graph.name; Requested = $conflict.requested
+                Resolved = $conflict.resolved; Reasons = @($conflict.reasons) })
+        }
+        foreach ($missing in $graph.unresolved) {
+            $what = if ((Test-AdvisoryObject $missing) -and (Test-InventoryText $missing.requested)) { $missing.requested } else { 'an entry it can''t name' }
+            $why = if ((Test-AdvisoryObject $missing) -and $missing.failure -is [string] -and $missing.failure) {
+                " ($($missing.failure.Substring(0, [Math]::Min(300, $missing.failure.Length))))" } else { '' }
+            $unresolved.Add("$what in the $($graph.name)$why")
+        }
+    }
+    if ($unresolved.Count -gt 0) {
+        throw ("$name lists dependencies that didn't resolve: " + (@($unresolved | Select-Object -First 10) -join '; ') +
+            '. Nobody knows their versions, so OSV can''t be asked about them, and the inventory isn''t read as clean.')
+    }
+    $settingsLibraries = @($libraries.Values | Where-Object { $_.Graphs -ccontains 'settings classpath' })
+    if ($settingsLibraries.Count -eq 0) {
+        throw "$name lists no settings classpath component, so it isn't the classpath the plugins load from."
+    }
+    return [pscustomobject]@{
+        Path      = $Path
+        Sha256    = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+        Libraries = @($libraries.Values)
+        Conflicts = $conflicts.ToArray()
+        Graphs    = $graphNames.ToArray()
+    }
+}
+
+function Invoke-BuildClasspathAdvisoryGate {
+    <#
+    .SYNOPSIS
+        Asks OSV about what the build classpath inventory lists, prints what it said apart from
+        the bundle's own advisories, and throws when the release may not go out.
+    .DESCRIPTION
+        Build exposure: code that runs while the bundle is built and signed, which the bundle
+        doesn't carry. It's held to the rules the bundle's libraries are (high, critical and
+        unrated advisories are refused unless accepted until a date), with its own exception list,
+        so neither list can excuse the other's advisories or go stale on them. Each conflict is
+        printed as asked for and resolved. A version that was only asked for isn't on the
+        classpath, and isn't put to OSV.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$Inventory,
+        [Parameter(Mandatory = $true)][string]$ExceptionsPath,
+        [switch]$SkipAdvisoryCheck,
+        [datetime]$Today = [datetime]::Today
+    )
+
+    $libraries = @($Inventory.Libraries)
+    $inventoryName = Split-Path -Leaf $Inventory.Path
+    # Read even when OSV isn't asked, as the bundle's list is.
+    $exceptions = @(Read-AdvisoryExceptions -Path $ExceptionsPath -Today $Today)
+    foreach ($conflict in @($Inventory.Conflicts)) {
+        $why = if (@($conflict.Reasons).Count -gt 0) { " ($(@($conflict.Reasons) -join ', '))" } else { '' }
+        Write-Host "[build advisories] the $($conflict.Graph) asked for $($conflict.Requested) and resolved $($conflict.Resolved)$why"
+    }
+    if ($SkipAdvisoryCheck) {
+        Write-Warning ("-SkipAdvisoryCheck: OSV was not asked about the $($libraries.Count) components $inventoryName lists, " +
+            'so nothing here says the build classpath has no serious advisory.')
+        return
+    }
+    if ($libraries.Count -eq 0) { throw "$inventoryName lists no component to ask OSV about." }
+    $findings = @(Get-SbomAdvisories -Sbom $Inventory)
+    $verdict = Test-AdvisoryFindings -Findings $findings -Exceptions $exceptions -Subject 'the build classpath' `
+        -ExceptionList ('scripts/' + (Split-Path -Leaf $ExceptionsPath))
+    foreach ($line in @($verdict.Minor)) { Write-Host "[build advisories] below high, let through: $line" }
+    foreach ($line in @($verdict.Excused)) { Write-Host "[build advisories] accepted: $line" }
+    if (-not $verdict.Valid) { throw $verdict.Reason }
+    $said = if ($findings.Count -eq 0) { 'no advisory' } else { "$($findings.Count) advisories, none refused" }
+    Write-Host ("[build advisories] OSV has $said for the $($libraries.Count) components $inventoryName lists. " +
+        'They build the bundle, and the bundle doesn''t carry them.')
 }
