@@ -404,7 +404,14 @@ public final class MediaSave {
         if (chosen == null) {
             final int candidates = renditions.size();
             final String kind = videos && images ? "a file" : videos ? "a video file" : "a picture";
-            failure(() -> "nothing to save: none of the " + candidates + " addresses was " + kind, null);
+            StringBuilder shapes = new StringBuilder();
+            for (int i = 0; i < Math.min(candidates, 6); i++) {
+                Rendition rendition = renditions.get(i);
+                if (i > 0) shapes.append(", ");
+                shapes.append(describe(rendition)).append(' ').append(RenditionPicker.markersOf(rendition.url));
+            }
+            failure(() -> "nothing to save: none of the " + candidates + " addresses was " + kind
+                    + ": " + shapes, null);
             return null;
         }
 

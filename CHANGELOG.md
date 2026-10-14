@@ -17,6 +17,7 @@ Changes in the source build, then released versions.
 * **Threads:** On Android 9, a save without Threads' Storage permission now stops before it downloads anything and tells you where to turn the permission on. A carousel stops fetching its remaining pages if the permission is taken away partway through.
 * **Threads:** A download that only trickles in now stops after ten minutes per file and says it was too slow, instead of holding one of the three save slots for as long as the server likes. A host lookup that never answers gives up after 20 seconds, and Cancel now ends a save that's still waiting on one.
 * **Threads:** Joining the picture and sound of a VP9 save (or AV1 before Android 14) now stops before it would take more than 24 MB of memory, and the save falls back to the single file. A file built from millions of tiny parts can't run Threads out of memory that way anymore. Cancel is also noticed while the join is still reading the tracks.
+* **Threads:** When a save finds no picture or video it can keep, the diagnostics report now lists the kind and size of every address it looked at, so a bug report shows why. It never includes the addresses themselves.
 
 ## 0.0.14 (2026-10-13)
 

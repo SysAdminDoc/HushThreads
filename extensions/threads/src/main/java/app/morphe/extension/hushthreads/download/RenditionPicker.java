@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Finds the best media address that an object holds, and ranks addresses against each other.
@@ -142,6 +144,25 @@ final class RenditionPicker {
         if (hasImageSuffix(pathOf(lower))) return TIER_PROGRESSIVE;
 
         return isMetaHost(lower) ? TIER_PLAUSIBLE : TIER_NONE;
+    }
+
+    /** A size Meta writes into a picture's address: {@code s640x640} or {@code p1080x1080}. */
+    private static final Pattern SIZE_MARKER = Pattern.compile("[/_]([sp]\\d{2,4}x\\d{2,4})");
+
+    /**
+     * The sizes an address names and whether the thumbnail rule or the manifest rule refuses it,
+     * for the log of a save that found nothing to keep. Never its host, name or query, so a
+     * thumbnail rule can be told from a missing picture without a copy of the address.
+     */
+    static String markersOf(String url) {
+        if (!isHttpUrl(url)) return "not an address";
+        String lower = url.toLowerCase(Locale.US);
+        StringBuilder markers = new StringBuilder();
+        Matcher size = SIZE_MARKER.matcher(lower);
+        for (int sizes = 0; sizes < 3 && size.find(); sizes++) markers.append(' ').append(size.group(1));
+        if (lower.contains("stp=dst-jpg_s")) markers.append(" stp-s");
+        if (isManifest(url)) markers.append(" manifest");
+        return markers.length() == 0 ? "no size" : markers.substring(1);
     }
 
     /**
