@@ -129,7 +129,7 @@ HushThreads doesn't collect anything and has no server. The patched app goes onl
 
 The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`, and Support HushThreads at the bottom of the settings home page links to `ko-fi.com`. Those open in your browser, and only when you tap one.
 
-`Disable analytics` points the analytics uploads it recognizes at `127.0.0.1`, on a port nothing listens on, so they fail on the phone. Other telemetry isn't covered. `Open links in browser` hands Android only the real address behind Threads' click tracker, with tags like `fbclid` removed. Links to Threads, Instagram, Facebook, Messenger and Meta stay in Threads, because sign-in and Accounts Center need its session, and so do links in the photo viewer and in ads.
+`Disable analytics` points the analytics uploads it recognizes at `127.0.0.1`, on a port nothing listens on, so they fail on the phone. Other telemetry isn't covered. `Open links in browser` hands Android only the real address behind Threads' click tracker, with tags like `fbclid` removed. Links to Threads, Instagram, Facebook, Messenger and Meta stay in Threads, because sign-in and Accounts Center need its session. On 451 ads go through the same check, from the link button or a swipe up in the photo viewer, and so do the links on a lead form.
 
 ## Verify a download
 

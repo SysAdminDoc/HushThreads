@@ -5,7 +5,6 @@
 package app.morphe.patches.threads.misc.externalbrowser
 
 import app.morphe.ExtensionDex
-import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
@@ -15,7 +14,6 @@ import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.threads.misc.extension.SETTINGS_STATUS
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -30,7 +28,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.io.File
 
 /**
  * Open links in browser on each declared build: one browser launcher in the whole build, and the
@@ -50,7 +47,8 @@ class OpenLinksExternallyFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             BrowserLauncherFingerprint.clearMatch()
             val where = build.name
-            val classes = launcherClasses(build)
+            // The launcher, the factory it shares with the three direct callers, and those callers.
+            val classes = browserFixture(build).classes
             val launchers = classes.flatMap { it.methods }.filter { it.isLauncher() }
             assertEquals("$where: launchers", 1, launchers.size)
             val launcher = launchers.single()
@@ -110,7 +108,7 @@ class OpenLinksExternallyFixtureTest {
     @Test
     fun `a launcher whose link can't be followed back to its string parameter is refused`() {
         for (build in Fixtures.declaredBuilds()) {
-            val classes = launcherClasses(build)
+            val classes = browserFixture(build).classes
             val launcher = classes.flatMap { it.methods }.single { it.isLauncher() }
             val stock = launcher.instructions()
             val parse = stock.indexOfFirst { it.method()?.let { m -> m.definingClass == "Ljava/net/URI;" && m.name == "<init>" } == true }
@@ -144,9 +142,6 @@ class OpenLinksExternallyFixtureTest {
             }
         }
     }
-
-    private fun launcherClasses(build: File): List<ClassDef> =
-        FixtureDex.classesWhere(build, { dex -> LAUNCHER_MESSAGE in dex.stringSection }) { it.isLauncher() }
 
     private fun Method.isLauncher(): Boolean =
         returnType == "V" && instructions().any { it.string() == LAUNCHER_MESSAGE }

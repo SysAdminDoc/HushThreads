@@ -30,6 +30,11 @@ import app.morphe.extension.shared.diagnostics.HookStatus;
  * browser activity, in a sheet over the feed, or in the immersive browser screen. The patch calls
  * {@link #open} first thing in that launcher, so one answer covers all three.
  *
+ * <p>On 451 three places make the browser's Intent without the launcher: the lead form's privacy
+ * policy and disclaimer links, the ad browser a call to action opens, and the media viewer's swipe
+ * up on an ad. The patch calls {@link #open} in each of them too, with that place's own context
+ * and link, and each skips only its own browser when this answers {@code true}.
+ *
  * <p>The link that arrives is often Threads' click tracker rather than the link that was tapped:
  * {@code https://l.threads.com/?u=<the link>&e=<token>}. See {@link #shimDestination}. The
  * destination goes out, so the browser makes one request and Threads doesn't learn the link opened.
@@ -89,10 +94,10 @@ public final class ExternalBrowser {
     /**
      * Sends {@code url} to the phone's browser.
      *
-     * @param context the context the launcher opens the link from, usually the activity in front.
-     * @param url     the link Threads was about to open, as the launcher got it.
-     * @return {@code true} when the link went out and the launcher must stop. {@code false} when
-     *         the launcher must go on and open its own browser as before.
+     * @param context the context the caller opens the link from, usually the activity in front.
+     * @param url     the link Threads was about to open, as the caller got it.
+     * @return {@code true} when the link went out and the caller must skip its browser. {@code false}
+     *         when the caller must go on and open its own browser as before.
      */
     public static boolean open(Context context, String url) {
         HookStatus.invoked(FamilyNames.EXTERNAL_BROWSER);

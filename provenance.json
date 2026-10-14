@@ -204,7 +204,7 @@
         "https://github.com/andrewliang25/morphe-patches"
       ],
       "license": "GPL-3.0",
-      "changes": "Renamed for Threads, with one entry point the browser launcher calls with its context and link in place of the browser activity's intent, Threads' own click trackers (l.threads.com, l.threads.net, l.instagram.com and /linkshim) unwrapped as Threads reads them, and Threads, Instagram and the other Meta sites kept in the app."
+      "changes": "Renamed for Threads, with one entry point that the browser launcher, and each place on 451 that makes the browser Intent itself, calls with its context and link in place of the browser activity's intent, Threads' own click trackers (l.threads.com, l.threads.net, l.instagram.com and /linkshim) unwrapped as Threads reads them, and Threads, Instagram and the other Meta sites kept in the app."
     },
     {
       "paths": [
@@ -216,7 +216,7 @@
         "https://github.com/SysAdminDoc/Hushfacebook"
       ],
       "license": "GPL-3.0-only",
-      "changes": "Open links in browser: the extension asked first thing in Threads' browser launcher, found by the message it logs and the link it parses."
+      "changes": "Open links in browser: the extension asked first thing in Threads' browser launcher, found by the message it logs and the link it parses, and in front of the browser Intent wherever 451 makes it without the launcher, each place proven by its context, link and ending before anything changes."
     },
     {
       "paths": [

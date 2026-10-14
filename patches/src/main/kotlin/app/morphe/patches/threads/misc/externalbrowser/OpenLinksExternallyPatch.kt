@@ -63,6 +63,12 @@ internal object BrowserLauncherFingerprint : Fingerprint(
  *
  * Found by reading 449 and 448 (2026-10-02): the launcher's first instructions move the link into a
  * register and parse it with java.net.URI, and that's how the hook finds which string is the link.
+ *
+ * Three places on 451 make the browser's Intent without the launcher (2026-10-14): the lead form
+ * and privacy policy helper, the ad browser a call to action opens, and the media viewer's swipe up
+ * on an ad. Each asks the extension the same way, with its own context and link, right before its
+ * stock browser work, and goes on to its own ending for an opened browser when the link went out.
+ * See [directBrowserSites].
  */
 @Suppress("unused")
 val openLinksExternallyPatch = bytecodePatch(
@@ -79,8 +85,11 @@ val openLinksExternallyPatch = bytecodePatch(
 
     execute {
         val method = BrowserLauncherFingerprint.method
+        val linkIndex = method.linkParameter()
+        // Every caller that skips the launcher is found and proven before anything changes.
+        val direct = directBrowserSites(method, linkIndex)
         val context = method.parameterRegister(0)
-        val link = method.parameterRegister(method.linkParameter())
+        val link = method.parameterRegister(linkIndex)
         // Nothing has run at the launcher's first instruction, so no local holds anything yet.
         method.requireLocals(PATCH, 2)
         method.addInstructionsWithLabels(
@@ -95,6 +104,7 @@ val openLinksExternallyPatch = bytecodePatch(
             """,
             ExternalLabel("launch", method.getInstruction(0)),
         )
+        direct.forEach { it.inject() }
 
         enableStatus("openLinksExternally")
     }
