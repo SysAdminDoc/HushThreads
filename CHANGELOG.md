@@ -11,6 +11,7 @@ Changes in the source build, then released versions.
 * **Threads:** Don't use Quick setups? Press and hold its row on the settings home page and it's gone, and its help line says so. To bring it back, tap the Quick setups row on the Pause, backup and diagnostics page. Screen readers get the same press and hold on that row, and no other row offers one.
 * **Tooling:** A fixture test checks on 451 that both of the post row's long press override checks and PostText's selection flag go through the extension, and that a jump straight to an override check or a selection flag written over before PostText copies it stops the patch.
 * **Threads:** When the settings list can't be put on the HushThreads screen at all, the screen shows Retry and Back instead of staying blank. Retry opens the page you were headed to, with your switches as you left them.
+* **Threads:** HushThreads now keeps a note of how each switch starts in the build you patched. When a later build changes how a switch starts, one you never changed keeps the setting it had. Earlier builds left no such note, so this starts working with the update after this one.
 
 ## 0.0.14 (2026-10-13)
 

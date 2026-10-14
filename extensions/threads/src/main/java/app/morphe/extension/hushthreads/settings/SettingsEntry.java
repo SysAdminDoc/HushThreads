@@ -105,6 +105,8 @@ public final class SettingsEntry {
             }
             // The marker is in the settings store, which can't be read before the settings are ready.
             if (Utils.settingsReady()) ReopenSettingsAfterRestart.reopenIfPending(SettingsEntry::reopenOn);
+            // This build's receipt of its families and defaults, for the next build to compare.
+            if (Utils.settingsReady()) SettingsUpgrade.onThreadsStarted();
             // SettingsStatus rather than PatchFamily: a plain answer, with no settings read this early.
             if (SettingsStatus.returnRefresh()) ReturnRefresh.register(context);
         } catch (Exception ex) {

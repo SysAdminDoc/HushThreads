@@ -153,4 +153,10 @@ public class Settings extends BaseSettings {
      */
     public static final BooleanSetting CHECK_FOR_RELEASES =
             new BooleanSetting("hushthreads_check_releases", FALSE);
+
+    static {
+        // Every switch above has loaded. One left at an earlier build's default gets that default
+        // back here, before anything reads it. See SettingsUpgrade.
+        SettingsUpgrade.onSwitchesLoaded(Settings.class);
+    }
 }

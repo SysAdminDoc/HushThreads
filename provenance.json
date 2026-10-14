@@ -311,6 +311,16 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsUpgrade.java"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "A receipt of each build's patch families and switch defaults kept in the settings store by the main process, so a switch nobody stored keeps an earlier build's default when a later build changes it, with no outside code."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/ReturnRefresh.java"
       ],
       "origin": "ported",
