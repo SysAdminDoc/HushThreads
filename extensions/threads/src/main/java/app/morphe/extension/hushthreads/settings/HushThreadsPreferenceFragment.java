@@ -99,6 +99,12 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     /** Thrown by the next initialize() and then cleared: how a test reaches the recovery page. */
     static volatile RuntimeException failNextInitialization;
 
+    /**
+     * Thrown by the next onAttach() and then cleared: a page that fails inside the dialog's
+     * transaction, before initialize() and so before it could show its own recovery.
+     */
+    static volatile RuntimeException failNextAttachment;
+
     /** The first row, which says whether HushThreads runs now and whether the next start changes that. */
     @Nullable
     private Preference statusCard;
@@ -145,6 +151,16 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         // its navigation shell only after the framework has bound that model to the list.
         if (getParentFragment() instanceof SettingsDialog && !sections().isEmpty()) {
             navigation = new SettingsNavigation(this, (SettingsDialog) getParentFragment(), savedInstanceState);
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        RuntimeException fault = failNextAttachment;
+        if (fault != null) {
+            failNextAttachment = null;
+            throw fault;
         }
     }
 

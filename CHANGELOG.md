@@ -10,6 +10,7 @@ Changes in the source build, then released versions.
 * **Threads:** More settings is now a heading on the HushThreads settings home page, with Appearance, Links, Updates, Set when you patched, Pause, backup and diagnostics and About listed under it. Every page is one tap from home and Back always goes home. Report a problem and Support HushThreads are still the last two rows, and the patch descriptions and bug report form point to the shorter paths.
 * **Threads:** Don't use Quick setups? Press and hold its row on the settings home page and it's gone, and its help line says so. To bring it back, tap the Quick setups row on the Pause, backup and diagnostics page. Screen readers get the same press and hold on that row, and no other row offers one.
 * **Tooling:** A fixture test checks on 451 that both of the post row's long press override checks and PostText's selection flag go through the extension, and that a jump straight to an override check or a selection flag written over before PostText copies it stops the patch.
+* **Threads:** When the settings list can't be put on the HushThreads screen at all, the screen shows Retry and Back instead of staying blank. Retry opens the page you were headed to, with your switches as you left them.
 
 ## 0.0.14 (2026-10-13)
 

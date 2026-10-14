@@ -9,6 +9,7 @@ package app.morphe.extension.hushthreads.settings;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
@@ -22,7 +23,9 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.preference.Preference;
+import android.preference.SwitchPreference;
 import android.view.View;
+import android.widget.TextView;
 
 import app.morphe.extension.shared.SettingsContextRule;
 
@@ -37,7 +40,9 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The settings dialog as Threads hosts it: a dialog fragment over an activity that isn't ours,
@@ -64,7 +69,114 @@ public class SettingsDialogTest {
     @After
     public void tearDown() {
         HushThreadsPreferenceFragment.failNextInitialization = null;
+        HushThreadsPreferenceFragment.failNextAttachment = null;
+        PatchFamily.inBuildForTests = null;
+        Settings.HIDE_ADS.resetToDefault();
+        Settings.PURE_BLACK.resetToDefault();
         controller.close();
+    }
+
+    /**
+     * A page that fails inside the dialog's own transaction, before initialize(), never gets to
+     * draw its recovery. The dialog shows Retry and Back in its place, in Threads' language, and
+     * Retry opens the page it was asked for, on the choices that were saved.
+     */
+    @Test
+    @Config(qualifiers = "de")
+    public void aPageThatFailsToAttachLeavesRetryAndBackAndRetryOpensOnTheSavedChoices() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        assertTrue(Settings.HIDE_ADS.save(false));
+        assertTrue(Settings.PURE_BLACK.save(true));
+        HushThreadsPreferenceFragment.failNextAttachment = new IllegalStateException("injected attach");
+        SettingsDialog dialog = SettingsDialog.onPage("Appearance");
+        dialog.show(controller.get().getFragmentManager(), TAG);
+        controller.get().getFragmentManager().executePendingTransactions();
+        ShadowLooper.idleMainLooper();
+
+        assertEquals("the page that failed stayed in the dialog", 0, pages(dialog).size());
+        Map<String, String> german = SettingsL10nTest.TranslationsForTests.of("de");
+        View failure = attachFailure(dialog);
+        TextView title = failure.findViewById(android.R.id.title);
+        assertEquals(german.get("HushThreads settings couldn't open"), String.valueOf(title.getText()));
+        for (String[] action : new String[][]{{SettingsDialog.ATTACH_RETRY, "Retry"}, {SettingsDialog.ATTACH_BACK, "Back"}}) {
+            TextView row = failure.findViewWithTag(action[0]);
+            assertNotNull(action[1] + " is missing", row);
+            assertTrue(action[1] + " isn't on screen", row.isShown());
+            assertNotEquals("the table doesn't translate " + action[1], action[1], german.get(action[1]));
+            assertEquals(german.get(action[1]), String.valueOf(row.getText()));
+            assertTrue(action[1] + " is shorter than 48 dp", row.getMinimumHeight()
+                    >= Math.round(48 * row.getResources().getDisplayMetrics().density));
+            android.view.accessibility.AccessibilityNodeInfo info = row.createAccessibilityNodeInfo();
+            assertEquals(action[1] + " role", android.widget.Button.class.getName(), String.valueOf(info.getClassName()));
+            assertTrue(action[1] + " takes no double tap", info.isClickable());
+        }
+        assertFalse("the first try's choices changed", Settings.HIDE_ADS.get());
+
+        assertTrue(failure.<View>findViewWithTag(SettingsDialog.ATTACH_RETRY).performClick());
+        ShadowLooper.idleMainLooper();
+
+        assertNull("Retry left its recovery on screen", dialog.getView().findViewWithTag(SettingsDialog.ATTACH_FAILURE));
+        assertEquals(1, pages(dialog).size());
+        HushThreadsPreferenceFragment page = pageOf(dialog);
+        assertNull("Retry reached the page's own recovery", page.findPreference(ERROR));
+        assertNotNull(page.navigation);
+        TextView pageTitle = dialog.getView().findViewWithTag("hushthreads_page_title");
+        assertEquals("Retry didn't open the page it was asked for", german.get("Appearance"), String.valueOf(pageTitle.getText()));
+        assertFalse(Settings.HIDE_ADS.get());
+        assertTrue(Settings.PURE_BLACK.get());
+        assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_ADS.key)).isChecked());
+        assertTrue(((SwitchPreference) page.findPreference(Settings.PURE_BLACK.key)).isChecked());
+        assertFalse(controller.get().isFinishing());
+    }
+
+    @Test
+    public void theAttachRecoverysBackClosesOnlyTheSettingsAndTheNextOpenAttaches() {
+        HushThreadsPreferenceFragment.failNextAttachment = new IllegalStateException("injected attach");
+        Activity activity = controller.get();
+        SettingsDialog dialog = show(activity);
+        assertTrue(attachFailure(dialog).<View>findViewWithTag(SettingsDialog.ATTACH_BACK).performClick());
+        activity.getFragmentManager().executePendingTransactions();
+        ShadowLooper.idleMainLooper();
+
+        assertNull("the settings stayed open", activity.getFragmentManager().findFragmentByTag(TAG));
+        assertFalse("Back finished the host activity", activity.isFinishing());
+        SettingsDialog again = show(activity);
+        assertNull(again.getView().findViewWithTag(SettingsDialog.ATTACH_FAILURE));
+        assertNull(pageOf(again).findPreference(ERROR));
+    }
+
+    /**
+     * A retry that fails too shows the one recovery again, not a second one under the first, and
+     * the page that failed isn't what recreation brings back: a fresh page is attached instead.
+     */
+    @Test
+    public void aRetryThatFailsAgainShowsOneRecoveryAndRecreationAttachesAFreshPage() {
+        HushThreadsPreferenceFragment.failNextAttachment = new IllegalStateException("first");
+        SettingsDialog dialog = show(controller.get());
+        HushThreadsPreferenceFragment.failNextAttachment = new IllegalStateException("second");
+        assertTrue(attachFailure(dialog).<View>findViewWithTag(SettingsDialog.ATTACH_RETRY).performClick());
+        ShadowLooper.idleMainLooper();
+
+        android.view.ViewGroup container = dialog.getView().findViewById(SettingsDialog.CONTAINER_ID);
+        assertEquals("views in the container", 1, container.getChildCount());
+        assertEquals(SettingsDialog.ATTACH_FAILURE, container.getChildAt(0).getTag());
+        assertEquals(0, pages(dialog).size());
+
+        controller.recreate();
+        ShadowLooper.idleMainLooper();
+        SettingsDialog restored = (SettingsDialog) controller.get().getFragmentManager().findFragmentByTag(TAG);
+        assertNotNull("the settings didn't come back after recreation", restored);
+        assertEquals(1, pages(restored).size());
+        assertNull(restored.getView().findViewWithTag(SettingsDialog.ATTACH_FAILURE));
+        assertNull(pageOf(restored).findPreference(ERROR));
+        assertTrue(pageOf(restored).getPreferenceScreen().getPreferenceCount() > 0);
+    }
+
+    private static View attachFailure(SettingsDialog dialog) {
+        View failure = dialog.getView().findViewWithTag(SettingsDialog.ATTACH_FAILURE);
+        assertNotNull("no Retry and Back where the page failed to attach", failure);
+        assertEquals(SettingsDialog.CONTAINER_ID, ((View) failure.getParent()).getId());
+        return failure;
     }
 
     @Test

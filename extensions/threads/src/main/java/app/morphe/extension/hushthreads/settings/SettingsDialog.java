@@ -54,6 +54,10 @@ public final class SettingsDialog extends DialogFragment {
     /** The argument naming the page the screen opens on: a route of {@link SettingsNavigation}. */
     static final String START_PAGE = "hushthreads_start_page";
     static final String RESTART_STATUS = "hushthreads_restart_status";
+    /** Tags of what shows in the container when the page couldn't be attached. */
+    static final String ATTACH_FAILURE = "hushthreads_attach_failure";
+    static final String ATTACH_RETRY = "hushthreads_attach_retry";
+    static final String ATTACH_BACK = "hushthreads_attach_back";
 
     private TextView pageTitle;
     private LinearLayout searchBox;
@@ -118,11 +122,19 @@ public final class SettingsDialog extends DialogFragment {
         return dialog;
     }
 
-    /** The settings page this dialog holds, or null before it's attached. */
+    /**
+     * The settings page this dialog holds, or null before it's attached. Only a page that was
+     * added counts: Android keeps one that failed partway in among its fragments after it's taken
+     * away, and finding pages by container id found that one, after recreation too.
+     */
     @Nullable
     private HushThreadsPreferenceFragment page() {
-        Object page = getChildFragmentManager().findFragmentById(CONTAINER_ID);
-        return page instanceof HushThreadsPreferenceFragment ? (HushThreadsPreferenceFragment) page : null;
+        for (android.app.Fragment page : getChildFragmentManager().getFragments()) {
+            if (page instanceof HushThreadsPreferenceFragment && page.getId() == CONTAINER_ID) {
+                return (HushThreadsPreferenceFragment) page;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -354,15 +366,113 @@ public final class SettingsDialog extends DialogFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // A page the framework saved comes back by itself, into the container with the same id.
+        if (page() == null) attachPage();
+    }
+
+    /**
+     * Puts a new preference page in the container. A page that fails before it's attached can't
+     * show its own Retry and Back, so the dialog shows them in its place. Nothing here writes a
+     * setting, so a retry opens on the choices that were saved.
+     */
+    private void attachPage() {
+        View failure = getView() == null ? null : getView().findViewWithTag(ATTACH_FAILURE);
+        if (failure != null) ((ViewGroup) failure.getParent()).removeView(failure);
+        android.app.FragmentManager children = getChildFragmentManager();
         try {
-            if (getChildFragmentManager().findFragmentById(CONTAINER_ID) == null) {
-                getChildFragmentManager().beginTransaction()
-                        .replace(CONTAINER_ID, new HushThreadsPreferenceFragment())
-                        .commitNow();
-            }
+            children.beginTransaction()
+                    .replace(CONTAINER_ID, new HushThreadsPreferenceFragment())
+                    .commitNow();
+            return;
         } catch (Exception ex) {
-            Logger.printException(() -> "Could not show the preference list", ex);
+            // The recovery below is what the person sees, so the log stays quiet about it.
+            Logger.printInfo(() -> "Could not show the preference list", ex);
         }
+        // A page that failed partway in is still added to the container. Left there, Back would
+        // ask it about a list it never built, and the next lifecycle step would attach it again
+        // behind Retry and Back.
+        android.app.Fragment broken = page();
+        if (broken != null) {
+            try {
+                children.beginTransaction().remove(broken).commitNowAllowingStateLoss();
+            } catch (Exception ex) {
+                Logger.printInfo(() -> "Could not take away the page that failed", ex);
+            }
+        }
+        showAttachFailure();
+    }
+
+    /**
+     * Retry and Back where the page should be, with the words and colours of the page's own
+     * recovery, in a scroll view so both stay reachable at the largest text sizes.
+     */
+    private void showAttachFailure() {
+        View root = getView();
+        ViewGroup container = root == null ? null : root.findViewById(CONTAINER_ID);
+        if (container == null) return;
+        container.removeAllViews();
+        android.content.Context context = getContext();
+
+        LinearLayout column = new LinearLayout(context);
+        column.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout message = new LinearLayout(context);
+        message.setOrientation(LinearLayout.VERTICAL);
+        TextView title = new TextView(context);
+        title.setId(android.R.id.title);
+        title.setText(L10n.t(context, "HushThreads settings couldn't open"));
+        title.setAccessibilityHeading(true);
+        message.addView(title, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        TextView summary = new TextView(context);
+        summary.setId(android.R.id.summary);
+        summary.setText(L10n.t(context, "Try again, or go back to Threads."));
+        message.addView(summary, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        column.addView(message, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        ScreenColors.recoveryMessage(message);
+
+        // Retry leads, as it does on the page's own recovery: it's the one that can fix this.
+        recoveryAction(column, ATTACH_RETRY, L10n.t(context, "Retry"), true, ignored -> attachPage());
+        recoveryAction(column, ATTACH_BACK, L10n.t(context, "Back"), false, ignored -> {
+            Dialog dialog = getDialog();
+            if (dialog != null) {
+                dialog.cancel();
+            } else {
+                SettingsEntry.onClosedByUser();
+                dismissAllowingStateLoss();
+            }
+        });
+
+        android.widget.ScrollView scroll = new android.widget.ScrollView(context);
+        scroll.setTag(ATTACH_FAILURE);
+        scroll.setFillViewport(true);
+        // Its views share the page's ids, and the page saves its own state under them.
+        scroll.setSaveFromParentEnabled(false);
+        scroll.addView(column);
+        container.addView(scroll, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+    }
+
+    private static void recoveryAction(LinearLayout column, String tag, String label, boolean primary,
+                                       View.OnClickListener action) {
+        TextView row = new TextView(column.getContext());
+        row.setId(android.R.id.title);
+        row.setTag(tag);
+        row.setText(label);
+        row.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        row.setFocusable(true);
+        row.setOnClickListener(action);
+        row.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setClassName(Button.class.getName());
+            }
+        });
+        column.addView(row, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        ScreenColors.recoveryAction(row, primary);
     }
 
     private int dp(int value) {
