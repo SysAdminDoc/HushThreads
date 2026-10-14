@@ -15,6 +15,7 @@ package app.morphe.extension.hushthreads.download;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Notification;
@@ -47,7 +48,12 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
 
 import app.morphe.extension.shared.SettingsContextRule;
@@ -293,6 +299,195 @@ public class DashJoinTest {
         assertEquals(0, workFiles());
         String report = LogBufferManager.buildExportText();
         assertTrue(report, report.contains("joining the tracks without MediaMuxer, which can't write VP9 into an MP4"));
+    }
+
+    /** A second of VP9 in [samples] frames of [size] bytes, in one fragment. */
+    private static FragmentedMp4ForTests vp9Frames(int samples, int size) {
+        FragmentedMp4ForTests picture = FragmentedMp4ForTests.picture("vp09", 1080, 1920, 15_360);
+        FragmentedMp4ForTests.Fragment frames = picture.fragment(0L);
+        for (int i = 0; i < samples; i++) {
+            frames.add(size, 512, i == 0 ? FragmentedMp4ForTests.SYNC : FragmentedMp4ForTests.NON_SYNC, 0);
+        }
+        return picture;
+    }
+
+    /** Two seconds of AAC with the edit list that trims its priming. */
+    private static byte[] aacFile() {
+        FragmentedMp4ForTests sound = FragmentedMp4ForTests.sound(44_100);
+        sound.edits = new long[][] {{0, 1_024, 0x00010000}};
+        FragmentedMp4ForTests.Fragment frames = sound.fragment(0L);
+        for (int i = 0; i < 88; i++) frames.add(200, 1_024, FragmentedMp4ForTests.SYNC, 0);
+        return sound.build();
+    }
+
+    /** A VP9 picture served at [path], and the AAC sound beside it. */
+    private DashManifest.Track[] vp9Served(String path, byte[] picture) {
+        byte[] sound = aacFile();
+        server.serve(path + ".mp4", 200, "video/mp4", picture, picture.length);
+        server.serve(path + "-sound.mp4", 200, "audio/mp4", sound, sound.length);
+        return new DashManifest.Track[] {
+            new DashManifest.Track("video/mp4", "vp09.00.40.08", 1080, 1920, 711_000, server.origin() + path + ".mp4"),
+            new DashManifest.Track("audio/mp4", "mp4a.40.2", 0, 0, 64_000, server.origin() + path + "-sound.mp4"),
+        };
+    }
+
+    /**
+     * A VP9 track whose edit list alone would take more than a join may hold is refused before a
+     * single edit is read, and the save takes the single file. It used to make an array for each
+     * edit first, as many as the track listed.
+     */
+    @Test
+    public void aVp9TrackListingMoreThanAJoinMayHoldFallsBackToTheSingleFile() {
+        FragmentedMp4ForTests picture = vp9Frames(30, 600);
+        picture.edits = new long[][] {{1, 0, 0x00010000}};
+        DashManifest.Track[] tracks = vp9Served("/edits", FragmentedMp4ForTests.repeatingTheEdit(picture.build(), 700_000));
+        byte[] single = mp4(4_096);
+        server.serve("/single.mp4", 200, "video/mp4", single, single.length);
+        MediaSave.policyForTests = policy;
+        MediaSaveTest.Gallery rows = Robolectric.setupContentProvider(MediaSaveTest.Gallery.class, MediaStore.AUTHORITY);
+        ByteArrayOutputStream published = new ByteArrayOutputStream();
+        Shadows.shadowOf(context.getContentResolver()).registerOutputStream(rows.videoUri(1), published);
+
+        Downloader.Result result = MediaSave.dashJob(context, tracks[0], tracks[1], server.origin() + "/single.mp4")
+                .run(new MediaStoreWriter(context, true), Downloader.SILENT);
+
+        assertEquals(result.toString(), Downloader.Status.OK, result.status);
+        assertArrayEquals("the single file wasn't what reached the gallery", single, published.toByteArray());
+        String report = LogBufferManager.buildExportText();
+        assertTrue(report, report.contains("joining would need more than 24 MB for its edit lists"));
+        assertFalse(report, report.contains("heap space"));
+        assertTrue(report, report.contains("Saved in place of the manifest's tracks because the DASH save ended with "
+                + "WRITE_ERROR (the tracks could not be joined)"));
+        assertEquals(0, workFiles());
+    }
+
+    /**
+     * Three VP9 saves, each cancelled while its join reads the tracks, end within five seconds of
+     * their cancel, before the join starts writing. Their slots are free again and nothing of
+     * theirs is left: no work file, no pending row, no gallery row. A save after them goes through.
+     */
+    @Test
+    public void threeVp9SavesCancelledWhileTheirJoinsReadTheTracksEndAndTheNextSaves() throws Exception {
+        // Enough frames that the join reads cancel before it has read them all.
+        DashManifest.Track[] many = vp9Served("/many", vp9Frames(5_000, 100).build());
+        MediaSave.policyForTests = policy;
+        MediaSaveTest.Gallery rows = Robolectric.setupContentProvider(MediaSaveTest.Gallery.class, MediaStore.AUTHORITY);
+
+        List<CompletableFuture<Downloader.Result>> ended = new ArrayList<>();
+        List<AtomicLong> cancelledAt = new ArrayList<>();
+        List<AtomicLong> endedAt = new ArrayList<>();
+        AtomicInteger joining = new AtomicInteger();
+        List<Thread> workers = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            CompletableFuture<Downloader.Result> result = new CompletableFuture<>();
+            AtomicLong at = new AtomicLong();
+            AtomicLong end = new AtomicLong();
+            ended.add(result);
+            cancelledAt.add(at);
+            endedAt.add(end);
+            MediaSave.Job job = MediaSave.dashJob(context, many[0], many[1], null);
+            Thread worker = MediaSave.start(context, true, (writer, progress) -> {
+                Downloader.Result outcome = job.run(writer, cancelledWhileReadingTheTracks((SaveControl.Save) progress,
+                        at, joining));
+                end.set(System.nanoTime());
+                result.complete(outcome);
+                return outcome;
+            });
+            assertNotNull("save " + (i + 1) + " found no free slot", worker);
+            workers.add(worker);
+        }
+
+        for (int i = 0; i < 3; i++) {
+            Downloader.Result result = ended.get(i).get(30, TimeUnit.SECONDS);
+            assertEquals(result.toString(), Downloader.Status.CANCELLED, result.status);
+            assertTrue("save " + (i + 1) + " was never cancelled while its join read the tracks",
+                    cancelledAt.get(i).get() != 0);
+            long tookMs = (endedAt.get(i).get() - cancelledAt.get(i).get()) / 1_000_000;
+            assertTrue("save " + (i + 1) + " ended " + tookMs + " ms after its cancel", tookMs < 5_000);
+        }
+        long until = System.currentTimeMillis() + 5_000;
+        while (MediaSave.savesInFlight() > 0 && System.currentTimeMillis() < until) Thread.sleep(10);
+        assertEquals("the cancelled saves kept their slots", 0, MediaSave.savesInFlight());
+        for (Thread worker : workers) {
+            worker.join(5_000);
+            assertFalse("a cancelled save never finished", worker.isAlive());
+        }
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals("a join got past reading the tracks", 0, joining.get());
+        assertEquals(0, workFiles());
+        assertEquals(0, rows.inserts.size());
+        assertTrue(pendingRows().isEmpty());
+
+        DashManifest.Track[] normal = vp9Served("/normal", vp9Frames(60, 600).build());
+        ByteArrayOutputStream published = new ByteArrayOutputStream();
+        Shadows.shadowOf(context.getContentResolver()).registerOutputStream(rows.videoUri(1), published);
+        CompletableFuture<Downloader.Result> saved = new CompletableFuture<>();
+        MediaSave.Job job = MediaSave.dashJob(context, normal[0], normal[1], null);
+        Thread worker = MediaSave.start(context, true, (writer, progress) -> {
+            Downloader.Result outcome = job.run(writer, progress);
+            saved.complete(outcome);
+            return outcome;
+        });
+        assertNotNull("a slot freed by a cancel wasn't free", worker);
+        assertEquals(Downloader.Status.OK, saved.get(30, TimeUnit.SECONDS).status);
+        worker.join(5_000);
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(1, rows.inserts.size());
+        PlainMp4ForTests.Movie movie = PlainMp4ForTests.read(published.toByteArray());
+        assertEquals(java.util.Arrays.asList("ftyp", "moov", "mdat"), movie.topLevel);
+        assertEquals(60, movie.tracks.get(0).count());
+        assertEquals(88, movie.tracks.get(1).count());
+        assertEquals(0, workFiles());
+        assertTrue(pendingRows().isEmpty());
+    }
+
+    /**
+     * [save]'s own progress, which cancels [save] through the settings' Cancel the first time the
+     * join reads cancel while it reads a track, and remembers when in [cancelledAt]. Counts each
+     * start of the join's writing in [joining].
+     */
+    private static Downloader.Progress cancelledWhileReadingTheTracks(SaveControl.Save save, AtomicLong cancelledAt,
+            AtomicInteger joining) {
+        return new Downloader.Progress() {
+            @Override public void transferred(long done, long total) {
+                save.transferred(done, total);
+            }
+
+            @Override public void reading(Runnable close) {
+                save.reading(close);
+            }
+
+            @Override public boolean cancelled() {
+                if (cancelledAt.get() == 0 && readingATrack()) {
+                    cancelledAt.set(System.nanoTime());
+                    SaveControl.cancel(save.id);
+                }
+                return save.cancelled();
+            }
+
+            @Override public void joining() {
+                joining.incrementAndGet();
+                save.joining();
+            }
+
+            @Override public void saving() {
+                save.saving();
+            }
+        };
+    }
+
+    /** Whether this thread is in the join, reading one of the tracks. */
+    private static boolean readingATrack() {
+        String track = Mp4Join.class.getName() + "$Track";
+        for (StackTraceElement frame : Thread.currentThread().getStackTrace()) {
+            if (frame.getClassName().equals(track)) return true;
+        }
+        return false;
+    }
+
+    private java.util.Set<String> pendingRows() {
+        return context.getSharedPreferences("hushthreads_saves", Context.MODE_PRIVATE)
+                .getStringSet("pending_rows", new java.util.HashSet<>());
     }
 
     /** Only VP9, and AV1 before Android 14, skip the muxer. Every other picture keeps the join it always had. */

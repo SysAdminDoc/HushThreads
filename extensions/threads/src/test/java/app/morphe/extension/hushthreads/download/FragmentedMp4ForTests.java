@@ -13,6 +13,7 @@
 package app.morphe.extension.hushthreads.download;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -224,6 +225,41 @@ final class FragmentedMp4ForTests {
             if (!last) file.box("styp", new Box().ascii("msdh").u32(0).bytes());
         }
         return file.bytes();
+    }
+
+    /**
+     * [file], a track built with one edit, with that edit listed [count] times: an edit list far
+     * longer than any packager writes, in a moov that can still be under the join's cap for one box.
+     * The boxes around it grow to hold it, and the fragments after it move, as their data offsets
+     * count from their own moof.
+     */
+    static byte[] repeatingTheEdit(byte[] file, int count) {
+        int elst = boxAt(file, "elst");
+        // Its size, type, version and flags, and count, then the one edit of 12 bytes.
+        int entries = elst + 16;
+        int more = Math.multiplyExact(12, count - 1);
+        byte[] out = new byte[Math.addExact(file.length, more)];
+        System.arraycopy(file, 0, out, 0, entries);
+        ByteBuffer view = ByteBuffer.wrap(out);
+        for (String type : new String[] {"moov", "trak", "edts", "elst"}) {
+            int box = boxAt(file, type);
+            view.putInt(box, view.getInt(box) + more);
+        }
+        view.putInt(elst + 12, count);
+        for (int i = 0; i < count; i++) System.arraycopy(file, entries, out, entries + 12 * i, 12);
+        System.arraycopy(file, entries + 12, out, entries + 12 * count, file.length - entries - 12);
+        return out;
+    }
+
+    /** Where the first box of [type] in [file] starts. */
+    private static int boxAt(byte[] file, String type) {
+        byte[] wanted = type.getBytes(StandardCharsets.US_ASCII);
+        outer:
+        for (int i = 4; i + 4 <= file.length; i++) {
+            for (int k = 0; k < 4; k++) if (file[i + k] != wanted[k]) continue outer;
+            return i - 4;
+        }
+        throw new IllegalStateException("the test built no " + type);
     }
 
     private byte[] moov() {

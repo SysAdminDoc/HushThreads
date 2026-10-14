@@ -62,6 +62,34 @@ final class Mp4Join {
     /** The most samples one track may list: over nine hours of 60 fps picture. */
     private static final int MAX_SAMPLES = 2_000_000;
 
+    /**
+     * The most memory one join may take, added up across both tracks and every fragment and never
+     * given back: each header box it reads whole, the boxes, edits, runs, samples and chunks it
+     * lists, and the tables and moov it writes. Each is charged before it's allocated, so a file of
+     * many small parts that each pass the caps above can't add up past it, and a join refused here
+     * has allocated nothing it was refused for. Meta's tracks need well under 1 MB; a join of about
+     * half an hour of 30 fps picture and its sound fits. Three saves can join at once, so together
+     * they hold at most 72 MB. Over it the join fails as an IOException and the save takes the
+     * single file. The sync flags aren't charged: MAX_SAMPLES holds them under 512 KB a track.
+     */
+    private static final long MEMORY = 24L * 1024 * 1024;
+
+    /** A box listed: its object, its buffer's view of its bytes and its place in the list. */
+    private static final int CHILD_BYTES = 128;
+
+    /** An edit: its three numbers in an array of their own and its place in the list. */
+    private static final int EDIT_BYTES = 64;
+
+    /** A chunk of the output: its object and its places in the two lists that hold it. */
+    private static final int CHUNK_BYTES = 128;
+
+    /**
+     * How often cancel is read while the tracks are read and the output listed: every so many
+     * steps, a box, an edit, a sample or a chunk each. Often enough that a cancel is seen at once,
+     * rarely enough that it costs nothing.
+     */
+    private static final int CANCEL_EVERY = 4_096;
+
     /** The longest run of one track the output keeps together before it turns to the other. */
     private static final double CHUNK_SECONDS = 0.5;
 
@@ -114,17 +142,53 @@ final class Mp4Join {
     /**
      * Joins [video] and [audio], each a fragmented MP4 of one track, into the plain MP4 [out].
      * [audio] is null for a picture with no sound. Answers false when [progress] was cancelled,
-     * which is read before the copy starts and before every chunk of it.
+     * which is read before the copy starts, before every chunk of it, and every
+     * {@link #CANCEL_EVERY} steps while the tracks are read and the output is listed. Fails as an
+     * IOException when the tracks would take more than {@link #MEMORY}.
      */
     static boolean join(File video, File audio, File out, Downloader.Progress progress) throws IOException {
+        Budget budget = new Budget(progress);
         try (RandomAccessFile videoIn = new RandomAccessFile(video, "r");
              RandomAccessFile audioIn = audio == null ? null : new RandomAccessFile(audio, "r")) {
             List<Track> tracks = new ArrayList<>();
-            tracks.add(Track.read(videoIn, VIDE, "video", "picture"));
-            if (audioIn != null) tracks.add(Track.read(audioIn, SOUN, "audio", "sound"));
+            tracks.add(Track.read(videoIn, VIDE, "video", "picture", budget));
+            if (audioIn != null) tracks.add(Track.read(audioIn, SOUN, "audio", "sound", budget));
             if (progress.cancelled()) return false;
             progress.joining();
-            return write(tracks, out, progress);
+            return write(tracks, out, progress, budget);
+        } catch (Cancelled cancelled) {
+            return false;
+        }
+    }
+
+    /** A cancel read while the tracks were read or the output listed. */
+    private static final class Cancelled extends IOException {
+        Cancelled() {
+            super("cancelled");
+        }
+    }
+
+    /** What one join has left of {@link #MEMORY}, and its cancel, read every so many steps. */
+    private static final class Budget {
+        private final Downloader.Progress progress;
+        private long left = MEMORY;
+        private int steps;
+
+        Budget(Downloader.Progress progress) {
+            this.progress = progress;
+        }
+
+        /** Takes [bytes] for [what], before they're allocated, or refuses the join. */
+        void take(long bytes, String what) throws IOException {
+            if (bytes < 0 || bytes > left) {
+                throw new IOException("joining would need more than " + (MEMORY >> 20) + " MB for " + what);
+            }
+            left -= bytes;
+        }
+
+        /** One step: a box, an edit, a sample or a chunk. */
+        void step() throws Cancelled {
+            if (++steps % CANCEL_EVERY == 0 && progress.cancelled()) throw new Cancelled();
         }
     }
 
@@ -136,6 +200,8 @@ final class Mp4Join {
         final int handler;
         /** What the report calls its file: "video" or "audio". */
         final String kind;
+        /** The join's, shared with the other track. */
+        final Budget budget;
 
         long trackId;
         long timescale;
@@ -156,14 +222,14 @@ final class Mp4Join {
         int defaultSize;
         int defaultFlags;
 
-        final Ints sizes = new Ints();
-        final Ints durations = new Ints();
-        final Ints offsets = new Ints();
+        final Ints sizes;
+        final Ints durations;
+        final Ints offsets;
         final BitSet nonSync = new BitSet();
         /** Each run of samples whose data lie together: where it starts, its end sample, its description. */
         long[] runStarts = new long[16];
-        final Ints runEnds = new Ints();
-        final Ints runDescriptions = new Ints();
+        final Ints runEnds;
+        final Ints runDescriptions;
 
         /** The decode time of the first sample, and of the next one to be read. */
         long firstDecodeTime = -1;
@@ -172,14 +238,21 @@ final class Mp4Join {
         /** The chunks the output writes this track's samples in, in order. */
         final List<Chunk> chunks = new ArrayList<>();
 
-        Track(RandomAccessFile file, int handler, String kind) {
+        Track(RandomAccessFile file, int handler, String kind, Budget budget) {
             this.file = file;
             this.handler = handler;
             this.kind = kind;
+            this.budget = budget;
+            sizes = new Ints(budget);
+            durations = new Ints(budget);
+            offsets = new Ints(budget);
+            runEnds = new Ints(budget);
+            runDescriptions = new Ints(budget);
         }
 
-        static Track read(RandomAccessFile file, int handler, String kind, String what) throws IOException {
-            Track track = new Track(file, handler, kind);
+        static Track read(RandomAccessFile file, int handler, String kind, String what, Budget budget)
+                throws IOException {
+            Track track = new Track(file, handler, kind, budget);
             try {
                 track.readBoxes(what);
             } catch (BufferUnderflowException | IndexOutOfBoundsException | IllegalArgumentException e) {
@@ -194,6 +267,7 @@ final class Mp4Join {
             boolean described = false;
             byte[] head = new byte[16];
             while (at + 8 <= length) {
+                budget.step();
                 file.seek(at);
                 file.readFully(head, 0, 8);
                 long size = ByteBuffer.wrap(head).getInt(0) & 0xFFFFFFFFL;
@@ -227,6 +301,7 @@ final class Mp4Join {
         /** The [size] bytes at [at], which hold one box's payload. */
         private ByteBuffer whole(long at, long size) throws IOException {
             if (size > MAX_HEADER_BOX) throw new IOException("the " + kind + " file has a header box of " + size + " bytes");
+            budget.take(size, "the header boxes it reads");
             byte[] bytes = new byte[(int) size];
             file.seek(at);
             file.readFully(bytes);
@@ -235,7 +310,7 @@ final class Mp4Join {
 
         private void describe(ByteBuffer moov, String what) throws IOException {
             ByteBuffer mvex = null;
-            for (Box box : children(moov)) {
+            for (Box box : children(moov, budget)) {
                 if (box.type == MVHD) {
                     ByteBuffer b = box.data;
                     b.position(b.get(0) == 1 ? 20 : 12);
@@ -250,7 +325,7 @@ final class Mp4Join {
             if (timescale == 0) throw new IOException("the " + kind + " track has no timescale");
             if (movieTimescale == 0) movieTimescale = timescale;
             if (mvex == null) return;
-            for (Box box : children(mvex)) {
+            for (Box box : children(mvex, budget)) {
                 if (box.type != TREX) continue;
                 ByteBuffer b = box.data;
                 b.position(4);
@@ -264,10 +339,10 @@ final class Mp4Join {
 
         /** Reads [trak] when it's a track of this file's kind. */
         private void trak(ByteBuffer trak) throws IOException {
-            List<Box> parts = children(trak);
+            List<Box> parts = children(trak, budget);
             Box mdia = find(parts, MDIA);
             if (mdia == null) return;
-            List<Box> media = children(mdia.data);
+            List<Box> media = children(mdia.data, budget);
             Box hdlr = find(media, HDLR);
             if (hdlr == null || hdlr.data.getInt(8) != handler) return;
 
@@ -287,15 +362,17 @@ final class Mp4Join {
             height = b.getInt();
 
             Box edts = find(parts, EDTS);
-            Box elst = edts == null ? null : find(children(edts.data), ELST);
+            Box elst = edts == null ? null : find(children(edts.data, budget), ELST);
             if (elst != null) {
                 ByteBuffer e = elst.data;
                 boolean wideEdits = e.get(0) == 1;
                 e.position(4);
                 long count = u32(e);
                 if (count > e.remaining() / 12) throw new IOException("the " + kind + " track's edit list is cut short");
+                budget.take(count * EDIT_BYTES, "its edit lists");
                 edits = new long[(int) count][];
                 for (int i = 0; i < count; i++) {
+                    budget.step();
                     long duration = wideEdits ? e.getLong() : u32(e);
                     long mediaTime = wideEdits ? e.getLong() : e.getInt();
                     edits[i] = new long[] {duration, mediaTime, e.getInt()};
@@ -312,14 +389,14 @@ final class Mp4Join {
             language = m.getShort() & 0x7FFF;
 
             Box minf = find(media, MINF);
-            Box stbl = minf == null ? null : find(children(minf.data), STBL);
+            Box stbl = minf == null ? null : find(children(minf.data, budget), STBL);
             if (stbl == null) throw new IOException("the " + kind + " track has no sample table");
-            List<Box> tables = children(stbl.data);
+            List<Box> tables = children(stbl.data, budget);
             Box stsd = find(tables, STSD);
             if (stsd == null) throw new IOException("the " + kind + " track has no sample description");
             descriptions = stsd.data;
             descriptionCount = descriptions.getInt(4);
-            List<Box> entries = children(slice(descriptions, 8, descriptions.limit()));
+            List<Box> entries = children(slice(descriptions, 8, descriptions.limit()), budget);
             if (descriptionCount < 1 || entries.size() < descriptionCount) {
                 throw new IOException("the " + kind + " track's sample descriptions are cut short");
             }
@@ -336,11 +413,11 @@ final class Mp4Join {
         /** Reads the samples of this track in [moof], which starts at [moofStart] of a file of [length]. */
         private void fragment(ByteBuffer moof, long moofStart, long length) throws IOException {
             boolean firstTraf = true;
-            for (Box traf : children(moof)) {
+            for (Box traf : children(moof, budget)) {
                 if (traf.type != TRAF) continue;
                 boolean first = firstTraf;
                 firstTraf = false;
-                List<Box> parts = children(traf.data);
+                List<Box> parts = children(traf.data, budget);
                 Box tfhd = find(parts, TFHD);
                 if (tfhd == null) throw new IOException("a fragment of the " + kind + " file has no header");
                 ByteBuffer h = tfhd.data;
@@ -397,6 +474,7 @@ final class Mp4Join {
 
             long bytes = 0;
             for (long i = 0; i < count; i++) {
+                budget.step();
                 int sampleDuration = (flags & 0x100) != 0 ? r.getInt() : duration;
                 int sampleSize = (flags & 0x200) != 0 ? r.getInt() : size;
                 int flagsOf = (flags & 0x400) != 0 ? r.getInt() : (i == 0 && hasFirstFlags ? firstFlags : sampleFlags);
@@ -414,7 +492,10 @@ final class Mp4Join {
                 throw new IOException("a fragment's samples run past the end of the " + kind + " file");
             }
             int runs = runEnds.size;
-            if (runs == runStarts.length) runStarts = Arrays.copyOf(runStarts, runs * 2);
+            if (runs == runStarts.length) {
+                budget.take(runs * 2L * Long.BYTES, "the runs it lists");
+                runStarts = Arrays.copyOf(runStarts, runs * 2);
+            }
             runStarts[runs] = start;
             runEnds.add(sizes.size);
             runDescriptions.add(description);
@@ -474,8 +555,11 @@ final class Mp4Join {
             mediaDuration = decode;
 
             long[][] input = track.edits != null && track.edits.length > 0 ? track.edits : new long[][] {{0, 0, 0x00010000}};
+            // Each edit can become two, an empty one and the one that shows, and then an array of them.
+            track.budget.take(input.length * (2L * EDIT_BYTES + 2L * Long.BYTES), "its edit lists");
             List<long[]> output = new ArrayList<>();
             for (long[] edit : input) {
+                track.budget.step();
                 long segment = edit[0];
                 if (edit[1] == -1) {
                     if (segment > 0) output.add(new long[] {scale(segment, track.movieTimescale), -1, 0x00010000});
@@ -534,8 +618,9 @@ final class Mp4Join {
         }
     }
 
-    private static boolean write(List<Track> tracks, File out, Downloader.Progress progress) throws IOException {
-        List<Chunk> chunks = interleave(tracks);
+    private static boolean write(List<Track> tracks, File out, Downloader.Progress progress, Budget budget)
+            throws IOException {
+        List<Chunk> chunks = interleave(tracks, budget);
         long data = 0;
         for (Chunk chunk : chunks) {
             chunk.at = data;
@@ -544,11 +629,11 @@ final class Mp4Join {
         Timing[] timing = new Timing[tracks.size()];
         for (int i = 0; i < timing.length; i++) timing[i] = new Timing(tracks.get(i));
 
-        byte[] ftyp = ftyp();
+        byte[] ftyp = ftyp(budget);
         boolean wide = data + (64L << 20) > 0xFFFFFFFFL;
         int mdatHeader = data + 8 > 0xFFFFFFFFL ? 16 : 8;
-        long dataStart = ftyp.length + moov(tracks, timing, 0, wide).length + mdatHeader;
-        byte[] moov = moov(tracks, timing, dataStart, wide);
+        long dataStart = ftyp.length + moov(tracks, timing, 0, wide, budget).length + mdatHeader;
+        byte[] moov = moov(tracks, timing, dataStart, wide, budget);
 
         try (FileOutputStream stream = new FileOutputStream(out)) {
             FileChannel channel = stream.getChannel();
@@ -584,7 +669,7 @@ final class Mp4Join {
      * The order the samples go out in: each time a run of the track whose next sample comes first,
      * up to {@link #CHUNK_SECONDS} of it and never past the end of the run its data lie in.
      */
-    private static List<Chunk> interleave(List<Track> tracks) {
+    private static List<Chunk> interleave(List<Track> tracks, Budget budget) throws IOException {
         int n = tracks.size();
         int[] next = new int[n];
         int[] run = new int[n];
@@ -616,6 +701,8 @@ final class Mp4Join {
                 time[pick] += track.durations.get(i) & 0xFFFFFFFFL;
                 i++;
             }
+            budget.step();
+            budget.take(CHUNK_BYTES, "the chunks it writes");
             Chunk chunk = new Chunk(track, first, i - first, track.runStarts[run[pick]] + within[pick], bytes,
                 track.runDescriptions.get(run[pick]));
             chunks.add(chunk);
@@ -630,18 +717,19 @@ final class Mp4Join {
         }
     }
 
-    private static byte[] ftyp() {
-        Boxes out = new Boxes();
+    private static byte[] ftyp(Budget budget) throws IOException {
+        Boxes out = new Boxes(budget);
         out.begin(FTYP).u32(type("isom")).u32(0x200).u32(type("isom")).u32(type("iso2")).u32(type("mp41")).end();
         return out.bytes();
     }
 
     /** The moov, its chunk offsets counted from [dataStart], 64-bit when [wide]. */
-    private static byte[] moov(List<Track> tracks, Timing[] timing, long dataStart, boolean wide) {
+    private static byte[] moov(List<Track> tracks, Timing[] timing, long dataStart, boolean wide, Budget budget)
+            throws IOException {
         long duration = 0;
         for (Timing t : timing) duration = Math.max(duration, t.duration);
 
-        Boxes out = new Boxes();
+        Boxes out = new Boxes(budget);
         out.begin(MOOV);
         boolean wideMovie = duration > 0xFFFFFFFFL;
         out.full(MVHD, wideMovie ? 1 : 0, 0);
@@ -655,7 +743,8 @@ final class Mp4Join {
         return out.end().bytes();
     }
 
-    private static void trak(Boxes out, Track track, Timing timing, int id, long dataStart, boolean wide) {
+    private static void trak(Boxes out, Track track, Timing timing, int id, long dataStart, boolean wide)
+            throws IOException {
         out.begin(TRAK);
 
         boolean wideTrack = timing.duration > 0xFFFFFFFFL;
@@ -702,19 +791,22 @@ final class Mp4Join {
         out.end().end().end();
     }
 
-    private static void stbl(Boxes out, Track track, Timing timing, long dataStart, boolean wide) {
+    private static void stbl(Boxes out, Track track, Timing timing, long dataStart, boolean wide) throws IOException {
         int count = track.count();
         out.begin(STBL);
         out.begin(STSD).bytes(track.descriptions).end();
 
-        Ints stts = new Ints();
-        for (int i = 0; i < count; i++) runLength(stts, track.durations.get(i));
+        Ints stts = new Ints(track.budget);
+        for (int i = 0; i < count; i++) {
+            track.budget.step();
+            runLength(stts, track.durations.get(i));
+        }
         out.full(STTS, 0, 0).u32(stts.size / 2).ints(stts).end();
 
         boolean composed = timing.shift != 0;
         for (int i = 0; i < count && !composed; i++) composed = track.offsets.get(i) != 0;
         if (composed) {
-            Ints ctts = new Ints();
+            Ints ctts = new Ints(track.budget);
             for (int i = 0; i < count; i++) runLength(ctts, (int) (track.offsets.get(i) + timing.shift));
             out.full(CTTS, 0, 0).u32(ctts.size / 2).ints(ctts).end();
         }
@@ -725,7 +817,7 @@ final class Mp4Join {
             out.end();
         }
 
-        Ints stsc = new Ints();
+        Ints stsc = new Ints(track.budget);
         for (int c = 0; c < track.chunks.size(); c++) {
             Chunk chunk = track.chunks.get(c);
             int entries = stsc.size / 3;
@@ -757,7 +849,7 @@ final class Mp4Join {
     }
 
     /** Adds [value] to [table], pairs of a count and a value, as a run of the last pair where it can. */
-    private static void runLength(Ints table, int value) {
+    private static void runLength(Ints table, int value) throws IOException {
         if (table.size > 0 && table.get(table.size - 1) == value) {
             table.set(table.size - 2, table.get(table.size - 2) + 1);
         } else {
@@ -767,11 +859,11 @@ final class Mp4Join {
     }
 
     /** A header's creation and modification times: none, as MediaMuxer writes them. */
-    private static Boxes times(Boxes out, boolean wide) {
+    private static Boxes times(Boxes out, boolean wide) throws IOException {
         return wide ? out.u64(0).u64(0) : out.u32(0).u32(0);
     }
 
-    private static void length(Boxes out, boolean wide, long value) {
+    private static void length(Boxes out, boolean wide, long value) throws IOException {
         if (wide) out.u64(value);
         else out.u32(value);
     }
@@ -789,12 +881,14 @@ final class Mp4Join {
         }
     }
 
-    /** The boxes inside [parent], from its start to its limit. */
-    private static List<Box> children(ByteBuffer parent) throws IOException {
+    /** The boxes inside [parent], from its start to its limit, each charged to [budget] first. */
+    private static List<Box> children(ByteBuffer parent, Budget budget) throws IOException {
         List<Box> boxes = new ArrayList<>();
         int at = 0;
         int end = parent.limit();
         while (end - at >= 8) {
+            budget.step();
+            budget.take(CHILD_BYTES, "the boxes it lists");
             long size = parent.getInt(at) & 0xFFFFFFFFL;
             int type = parent.getInt(at + 4);
             int header = 8;
@@ -835,19 +929,27 @@ final class Mp4Join {
         return (name.charAt(0) << 24) | (name.charAt(1) << 16) | (name.charAt(2) << 8) | name.charAt(3);
     }
 
-    /** Big-endian bytes, with boxes whose sizes are filled in as they end. */
+    /**
+     * Big-endian bytes, with boxes whose sizes are filled in as they end. Each time it grows, and the
+     * copy {@link #bytes()} hands back, is charged to the join's budget first.
+     */
     private static final class Boxes {
-        private byte[] bytes = new byte[4096];
+        private final Budget budget;
+        private byte[] bytes = new byte[0];
         private int size;
         private final int[] open = new int[16];
         private int depth;
 
-        Boxes begin(int type) {
+        Boxes(Budget budget) {
+            this.budget = budget;
+        }
+
+        Boxes begin(int type) throws IOException {
             open[depth++] = size;
             return u32(0).u32(type);
         }
 
-        Boxes full(int type, int version, int flags) {
+        Boxes full(int type, int version, int flags) throws IOException {
             return begin(type).u32(((long) version << 24) | flags);
         }
 
@@ -857,50 +959,53 @@ final class Mp4Join {
             return this;
         }
 
-        private void room(int more) {
-            if (size + more > bytes.length) bytes = Arrays.copyOf(bytes, Math.max(bytes.length * 2, size + more));
+        private void room(int more) throws IOException {
+            if (size + more <= bytes.length) return;
+            int grown = Math.max(Math.max(4096, bytes.length * 2), size + more);
+            budget.take(grown, "the moov it writes");
+            bytes = Arrays.copyOf(bytes, grown);
         }
 
-        Boxes u8(int value) {
+        Boxes u8(int value) throws IOException {
             room(1);
             bytes[size++] = (byte) value;
             return this;
         }
 
-        Boxes u16(int value) {
+        Boxes u16(int value) throws IOException {
             return u8(value >> 8).u8(value);
         }
 
-        Boxes u32(long value) {
+        Boxes u32(long value) throws IOException {
             room(4);
             ByteBuffer.wrap(bytes).putInt(size, (int) value);
             size += 4;
             return this;
         }
 
-        Boxes u64(long value) {
+        Boxes u64(long value) throws IOException {
             return u32(value >>> 32).u32(value);
         }
 
-        Boxes zeros(int count) {
+        Boxes zeros(int count) throws IOException {
             room(count);
             size += count;
             return this;
         }
 
-        Boxes ascii(String text) {
+        Boxes ascii(String text) throws IOException {
             for (int i = 0; i < text.length(); i++) u8(text.charAt(i));
             return this;
         }
 
-        Boxes bytes(byte[] more) {
+        Boxes bytes(byte[] more) throws IOException {
             room(more.length);
             System.arraycopy(more, 0, bytes, size, more.length);
             size += more.length;
             return this;
         }
 
-        Boxes bytes(ByteBuffer more) {
+        Boxes bytes(ByteBuffer more) throws IOException {
             ByteBuffer copy = more.duplicate();
             copy.position(0);
             int length = copy.remaining();
@@ -910,7 +1015,7 @@ final class Mp4Join {
             return this;
         }
 
-        Boxes ints(Ints values) {
+        Boxes ints(Ints values) throws IOException {
             room(values.size * 4);
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
             for (int i = 0; i < values.size; i++) buffer.putInt(size + i * 4, values.get(i));
@@ -918,18 +1023,31 @@ final class Mp4Join {
             return this;
         }
 
-        byte[] bytes() {
+        byte[] bytes() throws IOException {
+            budget.take(size, "the moov it writes");
             return Arrays.copyOf(bytes, size);
         }
     }
 
-    /** A growing list of ints, without boxing each one. */
+    /**
+     * A growing list of ints, without boxing each one. Each time it grows is charged to the join's
+     * budget first.
+     */
     private static final class Ints {
-        private int[] values = new int[256];
+        private final Budget budget;
+        private int[] values = new int[0];
         int size;
 
-        void add(int value) {
-            if (size == values.length) values = Arrays.copyOf(values, size * 2);
+        Ints(Budget budget) {
+            this.budget = budget;
+        }
+
+        void add(int value) throws IOException {
+            if (size == values.length) {
+                int grown = Math.max(256, size * 2);
+                budget.take(grown * (long) Integer.BYTES, "the tables it lists");
+                values = Arrays.copyOf(values, grown);
+            }
             values[size++] = value;
         }
 

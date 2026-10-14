@@ -30,8 +30,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +42,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -334,6 +338,305 @@ public class Mp4JoinTest {
         assertFalse(Mp4Join.join(write(vp9Picture(), "video"), write(aacSound(), "audio"), out, progress));
         assertEquals("cancel wasn't read once before the copy and once before each chunk", 5, asked.get());
         assertEquals(1, joining.get());
+    }
+
+    /**
+     * Cancel is read while the tracks are read too, every few thousand boxes, edits and samples. A
+     * track of many samples used to be read whole before the first read of cancel. This one ends in
+     * a box cut short, so a join that read it to the end would fail rather than stop.
+     */
+    @Test
+    public void aCancelStopsTheJoinWhileItReadsTheTracks() throws IOException {
+        File video = temp.newFile("many.mp4");
+        streamed(video, emptyPicture(), 1, 5_000, 512, true);
+        try (FileOutputStream out = new FileOutputStream(video, true)) {
+            out.write(new byte[] {0, 0, 0, 100, 'f', 'r', 'e', 'e', 0, 0});
+        }
+        AtomicInteger asked = new AtomicInteger();
+        AtomicInteger joining = new AtomicInteger();
+        Downloader.Progress progress = new Downloader.Progress() {
+            @Override public void transferred(long done, long total) {
+            }
+
+            @Override public void reading(Runnable close) {
+            }
+
+            @Override public boolean cancelled() {
+                asked.incrementAndGet();
+                return true;
+            }
+
+            @Override public void joining() {
+                joining.incrementAndGet();
+            }
+        };
+
+        assertFalse(Mp4Join.join(video, null, temp.newFile(), progress));
+        assertEquals("cancel wasn't read while the samples were", 1, asked.get());
+        assertEquals("the join got past reading the tracks", 0, joining.get());
+    }
+
+    /**
+     * What a join may hold is far above what a real video needs: half an hour of 30 fps picture in
+     * two-second fragments beside its 44.1 kHz sound, every sample a size of its own, joins whole.
+     */
+    @Test
+    public void halfAnHourOfPictureAndSoundFitsWhatAJoinMayHold() throws IOException {
+        File video = temp.newFile("long-video.mp4");
+        File audio = temp.newFile("long-audio.mp4");
+        streamed(video, emptyPicture(), 900, 60, 512, true);
+        streamed(audio, FragmentedMp4ForTests.sound(44_100).build(), 900, 86, 1_024, true);
+
+        PlainMp4ForTests.Movie movie = PlainMp4ForTests.read(Files.readAllBytes(joined(video, audio, Downloader.SILENT)
+                .toPath()));
+
+        assertEquals(Arrays.asList("ftyp", "moov", "mdat"), movie.topLevel);
+        assertEquals(54_000, movie.tracks.get(0).count());
+        assertEquals(54_000L * 512, movie.tracks.get(0).mediaDuration);
+        assertEquals(77_400, movie.tracks.get(1).count());
+        assertEquals(77_400L * 1_024, movie.tracks.get(1).mediaDuration);
+    }
+
+    /**
+     * What a join may hold is for both tracks together: a picture that fits on its own is refused
+     * beside a sound of the same size, before either is written.
+     */
+    @Test
+    public void whatAJoinMayHoldCoversBothTracksTogether() throws IOException {
+        File video = temp.newFile("video.mp4");
+        File audio = temp.newFile("audio.mp4");
+        streamed(video, emptyPicture(), 1, 300_000, 512, false);
+        streamed(audio, FragmentedMp4ForTests.sound(44_100).build(), 1, 300_000, 1_024, false);
+
+        joined(video, null, Downloader.SILENT);
+        File out = temp.newFile();
+        IOException refused = assertThrows(IOException.class, () -> Mp4Join.join(video, audio, out, Downloader.SILENT));
+        assertTrue(refused.getMessage(), refused.getMessage().startsWith("joining would need more than 24 MB"));
+        assertEquals("the refused join wrote something", 0, out.length());
+    }
+
+    /**
+     * Files that pass every cap on one box or one track and still add up past what a join may
+     * hold: millions of tiny boxes in one fragment, a million edits, fragments of half a million
+     * samples each, a thousand runs in each of many small fragments, and two tracks that fit apart
+     * but not together. A Java of its own with a 128 MB heap joins three of each at once, as three
+     * saves can. Every join is refused for memory before it takes it, none runs out of memory, and
+     * an ordinary join still works after them.
+     */
+    @Test
+    public void threeAdversarialJoinsAtOnceFitA128MbHeap() throws Exception {
+        File folder = temp.newFolder("heap");
+        byte[] picture = emptyPicture();
+
+        try (DataOutputStream out = stream(new File(folder, "boxes-video.mp4"))) {
+            out.write(picture);
+            int boxes = 2 * 1024 * 1024;
+            out.writeInt(8 + boxes * 8);
+            out.writeBytes("moof");
+            for (int i = 0; i < boxes; i++) {
+                out.writeInt(8);
+                out.writeBytes("free");
+            }
+        }
+
+        FragmentedMp4ForTests edited = vp9Picture();
+        edited.edits = new long[][] {{1, 0, 0x00010000}};
+        Files.write(new File(folder, "edits-video.mp4").toPath(),
+                FragmentedMp4ForTests.repeatingTheEdit(edited.build(), 1_300_000));
+
+        streamed(new File(folder, "samples-video.mp4"), picture, 4, 497_000, 1, false);
+        manyRuns(new File(folder, "runs-video.mp4"), picture, 64, 13_000);
+        streamed(new File(folder, "both-video.mp4"), picture, 1, 300_000, 512, false);
+        streamed(new File(folder, "both-audio.mp4"), FragmentedMp4ForTests.sound(44_100).build(), 1, 300_000, 1_024,
+                false);
+        Files.write(new File(folder, "normal-video.mp4").toPath(), vp9Picture().build());
+        Files.write(new File(folder, "normal-audio.mp4").toPath(), aacSound().build());
+
+        String[] kinds = {"boxes", "edits", "samples", "runs", "both"};
+        String java = new File(System.getProperty("java.home"), "bin" + File.separator
+                + (File.separatorChar == '\\' ? "java.exe" : "java")).getPath();
+        List<String> command = new ArrayList<>(Arrays.asList(java, "-Xmx128m", "-cp",
+                codeOf(Mp4Join.class) + File.pathSeparator + codeOf(HeapProbe.class), HeapProbe.class.getName(),
+                folder.getPath()));
+        command.addAll(Arrays.asList(kinds));
+        File printed = new File(folder, "printed.txt");
+        // Java starts it with no console window.
+        Process process = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(printed).start();
+        boolean ended = process.waitFor(180, TimeUnit.SECONDS);
+        if (!ended) process.destroyForcibly().waitFor(10, TimeUnit.SECONDS);
+        String text = new String(Files.readAllBytes(printed.toPath()), StandardCharsets.UTF_8);
+
+        assertTrue("the joins never ended:\n" + text, ended);
+        assertFalse(text, text.contains("OutOfMemoryError"));
+        for (String kind : kinds) {
+            int refused = 0;
+            for (String line : text.split("\\r?\\n")) {
+                if (line.startsWith(kind + ": refused: joining would need more than 24 MB")) refused++;
+            }
+            assertEquals(kind + " wasn't refused three times:\n" + text, 3, refused);
+        }
+        assertTrue(text, text.contains("normal: joined"));
+        assertEquals(text, 0, process.exitValue());
+        System.out.println("Mp4JoinTest: the joins in a 128 MB heap ended as\n" + text.trim());
+    }
+
+    /** The class folder or jar [type] was loaded from. */
+    private static String codeOf(Class<?> type) throws Exception {
+        return new File(type.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
+    }
+
+    /**
+     * Three joins of each file named on the command line at once, in a Java of their own, then an
+     * ordinary join. Prints how each ended, and exits with 0 only when every one was refused for
+     * memory and the ordinary join worked. Reads nothing of the test around it, so neither it nor
+     * JUnit has to load here.
+     */
+    public static final class HeapProbe {
+        public static void main(String[] args) throws Exception {
+            File folder = new File(args[0]);
+            Downloader.Progress quiet = new Downloader.Progress() {
+                @Override public void transferred(long done, long total) {
+                }
+
+                @Override public void reading(Runnable close) {
+                }
+
+                @Override public boolean cancelled() {
+                    return false;
+                }
+            };
+            boolean fine = true;
+            for (int k = 1; k < args.length; k++) {
+                String kind = args[k];
+                File video = new File(folder, kind + "-video.mp4");
+                File audio = new File(folder, kind + "-audio.mp4");
+                String[] ended = new String[3];
+                CountDownLatch go = new CountDownLatch(1);
+                Thread[] joins = new Thread[3];
+                for (int i = 0; i < joins.length; i++) {
+                    int n = i;
+                    joins[i] = new Thread(() -> {
+                        try {
+                            go.await();
+                            boolean joined = Mp4Join.join(video, audio.isFile() ? audio : null,
+                                    new File(folder, kind + "-joined" + n + ".mp4"), quiet);
+                            ended[n] = joined ? "joined" : "stopped";
+                        } catch (IOException e) {
+                            ended[n] = "refused: " + e.getMessage();
+                        } catch (Throwable t) {
+                            ended[n] = t.toString();
+                        }
+                    });
+                    joins[i].start();
+                }
+                go.countDown();
+                for (Thread join : joins) join.join();
+                for (String end : ended) {
+                    System.out.println(kind + ": " + end);
+                    fine &= end.startsWith("refused: joining would need more than");
+                }
+            }
+            try {
+                boolean joined = Mp4Join.join(new File(folder, "normal-video.mp4"), new File(folder, "normal-audio.mp4"),
+                        new File(folder, "normal-joined.mp4"), quiet);
+                System.out.println("normal: " + (joined ? "joined" : "stopped"));
+                fine &= joined;
+            } catch (Throwable t) {
+                System.out.println("normal: " + t);
+                fine = false;
+            }
+            System.out.flush();
+            System.exit(fine ? 0 : 1);
+        }
+    }
+
+    /** A picture track's ftyp and moov, with no fragments yet. */
+    private static byte[] emptyPicture() {
+        return FragmentedMp4ForTests.picture("vp09", 1080, 1920, 15_360).build();
+    }
+
+    private static DataOutputStream stream(File file) throws IOException {
+        return new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file), 1 << 16));
+    }
+
+    /**
+     * Writes [head], a track's moov, then [count] fragments of [samples] samples each into [file]:
+     * a moof whose one run lists each sample's duration, [duration] for all, and size, then the mdat
+     * that holds them. Sizes differ from sample to sample when [varied], and are all one byte
+     * otherwise. Streamed, for tracks too long to build as a list of samples.
+     */
+    private static void streamed(File file, byte[] head, int count, int samples, int duration, boolean varied)
+            throws IOException {
+        try (DataOutputStream out = stream(file)) {
+            out.write(head);
+            for (int f = 0; f < count; f++) {
+                int trun = 20 + 8 * samples;
+                int traf = 8 + 16 + trun;
+                int moof = 8 + 16 + traf;
+                out.writeInt(moof);
+                out.writeBytes("moof");
+                out.writeInt(16);
+                out.writeBytes("mfhd");
+                out.writeInt(0);
+                out.writeInt(f + 1);
+                out.writeInt(traf);
+                out.writeBytes("traf");
+                out.writeInt(16);
+                out.writeBytes("tfhd");
+                out.writeInt(0x020000);
+                out.writeInt(1);
+                out.writeInt(trun);
+                out.writeBytes("trun");
+                out.writeInt(DURATION | SIZE | 0x1);
+                out.writeInt(samples);
+                out.writeInt(moof + 8);
+                int data = 0;
+                for (int i = 0; i < samples; i++) {
+                    int size = varied ? 1 + i % 7 : 1;
+                    out.writeInt(duration);
+                    out.writeInt(size);
+                    data += size;
+                }
+                out.writeInt(8 + data);
+                out.writeBytes("mdat");
+                out.write(new byte[data]);
+            }
+        }
+    }
+
+    /**
+     * Writes [head], then [count] fragments of [runs] runs each into [file]: every run a single
+     * empty sample, which trex gives its size and duration, and every fragment an empty mdat.
+     */
+    private static void manyRuns(File file, byte[] head, int count, int runs) throws IOException {
+        try (DataOutputStream out = stream(file)) {
+            out.write(head);
+            for (int f = 0; f < count; f++) {
+                int traf = 8 + 16 + 20 * runs;
+                int moof = 8 + 16 + traf;
+                out.writeInt(moof);
+                out.writeBytes("moof");
+                out.writeInt(16);
+                out.writeBytes("mfhd");
+                out.writeInt(0);
+                out.writeInt(f + 1);
+                out.writeInt(traf);
+                out.writeBytes("traf");
+                out.writeInt(16);
+                out.writeBytes("tfhd");
+                out.writeInt(0x020000);
+                out.writeInt(1);
+                for (int r = 0; r < runs; r++) {
+                    out.writeInt(20);
+                    out.writeBytes("trun");
+                    out.writeInt(0x1);
+                    out.writeInt(1);
+                    out.writeInt(moof + 8);
+                }
+                out.writeInt(8);
+                out.writeBytes("mdat");
+            }
+        }
     }
 
     @Test
