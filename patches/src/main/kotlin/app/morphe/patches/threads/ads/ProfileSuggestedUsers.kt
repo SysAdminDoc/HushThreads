@@ -73,6 +73,9 @@ private val OBJECT_MOVES = EnumSet.of(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FRO
 /** One call to the suggested accounts row, and the Compose note governing it, if any. */
 internal class RowCall(val method: Method, val call: Int, val callee: MethodReference, val note: String?)
 
+/** Threads' suggested accounts row composable [method], and the descriptors a caller may call it by, [entries]. */
+internal class SuggestedRow(val method: Method, val entries: Set<String>)
+
 /**
  * The profile screen's carousel check: in [method], the field read at [read] that puts the
  * carousel's list in [register], and the null check right after it at [guard] that builds the
@@ -119,24 +122,13 @@ internal class ProfileSuggestionTargets(
  * other side.
  */
 internal fun BytecodePatchContext.profileSuggestionTargets(): ProfileSuggestionTargets {
-    val row = classDefByStrings(SUGGESTED_ROW_NOTE, StringComparisonType.STARTS_WITH)
-        .filterNot { it.type.startsWith(EXTENSION_ROOT) }
-        .flatMap { it.methods }
-        .filter { method -> method.implementation?.instructions?.any { it.note()?.startsWith(SUGGESTED_ROW_NOTE) == true } == true }
-        .distinctBy { it.descriptor() }
-        .singleOrPatchException("$PATCH: Threads' suggested accounts row, the method holding \"$SUGGESTED_ROW_NOTE\"")
-    if (!AccessFlags.STATIC.isSet(row.accessFlags)) throw PatchException("$PATCH: the suggested accounts row ${row.descriptor()} isn't static")
-    // The default-argument overloads the row's own class keeps next to it, which callers use instead.
-    val entries = (listOf(row) + classDefBy(row.definingClass).methods.filter { method ->
-        AccessFlags.STATIC.isSet(method.accessFlags) && method.descriptor() != row.descriptor() &&
-            method.implementation?.instructions?.any { it.getReference<MethodReference>()?.descriptor() == row.descriptor() } == true
-    }).map { it.descriptor() }.toSet()
-
+    val suggested = suggestedRow()
+    val row = suggested.method
     val profile = classDefByStrings(PROFILE_UI, StringComparisonType.STARTS_WITH)
         .filterNot { it.type.startsWith(EXTENSION_ROOT) || it.type == row.definingClass }
         .flatMap { it.methods }
         .distinctBy { it.descriptor() }
-    val calls = profile.flatMap { it.rowCalls(entries) }
+    val calls = profile.flatMap { it.rowCalls(suggested.entries) }
     val screen = calls.filter { it.note.isProfileNote(PROFILE_SCREEN_FILE) }
         .singleOrPatchException("$PATCH: the suggested accounts row under a $PROFILE_SCREEN_FILE note")
     val infoRows = calls.filter { it.note.isProfileNote(PROFILE_INFO_ROWS_FILE) }
@@ -146,6 +138,25 @@ internal fun BytecodePatchContext.profileSuggestionTargets(): ProfileSuggestionT
     val carousel = carousel(screen, list, profile)
     val headerRow = headerRow(rowType)
     return ProfileSuggestionTargets(row, calls, screen, infoRows, carousel, headerRow)
+}
+
+/**
+ * Threads' suggested accounts row, found by its kept source note, with the default-argument
+ * overloads its own class keeps next to it, which callers use instead.
+ */
+internal fun BytecodePatchContext.suggestedRow(): SuggestedRow {
+    val row = classDefByStrings(SUGGESTED_ROW_NOTE, StringComparisonType.STARTS_WITH)
+        .filterNot { it.type.startsWith(EXTENSION_ROOT) }
+        .flatMap { it.methods }
+        .filter { method -> method.implementation?.instructions?.any { it.note()?.startsWith(SUGGESTED_ROW_NOTE) == true } == true }
+        .distinctBy { it.descriptor() }
+        .singleOrPatchException("$PATCH: Threads' suggested accounts row, the method holding \"$SUGGESTED_ROW_NOTE\"")
+    if (!AccessFlags.STATIC.isSet(row.accessFlags)) throw PatchException("$PATCH: the suggested accounts row ${row.descriptor()} isn't static")
+    val entries = (listOf(row) + classDefBy(row.definingClass).methods.filter { method ->
+        AccessFlags.STATIC.isSet(method.accessFlags) && method.descriptor() != row.descriptor() &&
+            method.implementation?.instructions?.any { it.getReference<MethodReference>()?.descriptor() == row.descriptor() } == true
+    }).map { it.descriptor() }.toSet()
+    return SuggestedRow(row, entries)
 }
 
 /** Puts both hooks in. Call only with what [profileSuggestionTargets] found, before anything else changes those methods. */
@@ -176,24 +187,27 @@ internal fun hookProfileSuggestions(targets: ProfileSuggestionTargets) {
 }
 
 /** The note this instruction loads, when it loads a Compose source note. */
-private fun Instruction.note(): String? =
+internal fun Instruction.note(): String? =
     if (opcode != Opcode.CONST_STRING && opcode != Opcode.CONST_STRING_JUMBO) null
     else getReference<StringReference>()?.string?.takeIf { NOTE.matches(it) }
 
+/** Whether this is a note of a screen whose notes begin with [prefix], from [file]. */
+internal fun String?.isNoteOf(prefix: String, file: String): Boolean =
+    this != null && startsWith(prefix) && NOTE.matchEntire(this)?.groupValues?.get(1) == file
+
 /** Whether this is a note of the profile's own screens from [file]. */
-private fun String?.isProfileNote(file: String): Boolean =
-    this != null && startsWith(PROFILE_UI) && NOTE.matchEntire(this)?.groupValues?.get(1) == file
+private fun String?.isProfileNote(file: String): Boolean = isNoteOf(PROFILE_UI, file)
 
-private fun MethodReference.descriptor() = "$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
+internal fun MethodReference.descriptor() = "$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
 
-private fun Method.code(): List<Instruction> = implementation?.instructions?.toList()
+internal fun Method.code(): List<Instruction> = implementation?.instructions?.toList()
     ?: throw PatchException("$PATCH: ${descriptor()} has no body")
 
 /** How many registers come before parameter [index] in a call, `this` aside. */
-private fun MethodReference.wordOffset(index: Int): Int =
+internal fun MethodReference.wordOffset(index: Int): Int =
     parameterTypes.take(index).sumOf { if (it.toString() == "J" || it.toString() == "D") 2 else 1 }
 
-private fun Method.thisRegister(): Int {
+internal fun Method.thisRegister(): Int {
     if (AccessFlags.STATIC.isSet(accessFlags)) throw PatchException("$PATCH: ${descriptor()} is static, so it has no this")
     return localRegisterCount()
 }
@@ -216,7 +230,7 @@ private fun ControlFlow.reaches(from: Int, to: Int): Boolean {
  * The Compose note nearest above [at], when it can reach [at]. A note further up, or one that can't
  * reach it, belongs to another lambda Redex merged into the same method.
  */
-private fun ControlFlow.governingNote(at: Int): String? {
+internal fun ControlFlow.governingNote(at: Int): String? {
     for (index in at - 1 downTo 0) {
         val note = instructions[index].note() ?: continue
         return note.takeIf { reaches(index, at) }
@@ -224,7 +238,7 @@ private fun ControlFlow.governingNote(at: Int): String? {
     return null
 }
 
-private fun Method.rowCalls(entries: Set<String>): List<RowCall> {
+internal fun Method.rowCalls(entries: Set<String>): List<RowCall> {
     val body = implementation?.instructions?.toList() ?: return emptyList()
     val sites = body.indices.filter { at ->
         (body[at].opcode == Opcode.INVOKE_STATIC || body[at].opcode == Opcode.INVOKE_STATIC_RANGE) &&
@@ -236,13 +250,13 @@ private fun Method.rowCalls(entries: Set<String>): List<RowCall> {
 }
 
 /** Where a value was made: the instruction at [at] that wrote it into [register], or at -1 the method's own [register] on entry. */
-private data class Source(val at: Int, val register: Int)
+internal data class Source(val at: Int, val register: Int)
 
 /**
  * Where the value [register] holds at [at] was made, followed back through object moves and casts.
  * Null when more than one write can reach it, or a write and the method's entry.
  */
-private fun Method.sourceOrNull(at: Int, register: Int): Source? {
+internal fun Method.sourceOrNull(at: Int, register: Int): Source? {
     val code = code()
     var index = at
     var held = register
@@ -417,11 +431,11 @@ private fun BytecodePatchContext.headerRow(rowType: String): ProfileRow {
     return ProfileRow(method, entry.guard, entry.start, entry.away, free)
 }
 
-private fun Instruction.allocates(type: String) =
+internal fun Instruction.allocates(type: String) =
     opcode == Opcode.NEW_INSTANCE && getReference<TypeReference>()?.type == type
 
 /** The check at [guard] that is the only way into the code from [start], and where it goes otherwise, [away]. */
-private class SoleEntry(val guard: Int, val start: Int, val away: Int, private val predecessors: Array<List<Int>>) {
+internal class SoleEntry(val guard: Int, val start: Int, val away: Int, private val predecessors: Array<List<Int>>) {
     fun into(index: Int): List<Int> = predecessors[index]
 }
 
@@ -430,7 +444,7 @@ private class SoleEntry(val guard: Int, val start: Int, val away: Int, private v
  * and answers the conditional branch that is then the single way in. Refuses anything else: a jump,
  * a switch or a handler into the stretch, or a stretch reached from more than one place.
  */
-private fun Method.soleEntry(target: Int, what: String): SoleEntry {
+internal fun Method.soleEntry(target: Int, what: String): SoleEntry {
     val flow = ControlFlow.of(this)
     val code = flow.instructions
     val into = Array(code.size) { mutableListOf<Int>() }
