@@ -2170,7 +2170,7 @@ Write-Host "[scripts] $($rangeCases.Count) complete Maven range gate cases passe
         })
         $document = [ordered]@{
             schema = 'hushthreads-build-classpath-1'
-            gradle = '9.7.1'
+            gradle = '9.8.1'
             settingsScript = [ordered]@{ path = 'settings.gradle.kts'
                 sha256 = (Get-FileHash -LiteralPath $SettingsScript -Algorithm SHA256).Hash.ToLowerInvariant() }
             covers = 'The settings classpath.'
@@ -2199,6 +2199,24 @@ Write-Host "[scripts] $($rangeCases.Count) complete Maven range gate cases passe
     $osvAnswers[$guavaFixed] = '{}'
     $osvWithGuava = $osvAnswers
     try {
+        # A component-only clean answer can't clear an affected Gradle distribution. Public
+        # fixes and the maintainer's subscription backports pass only the distribution check.
+        foreach ($version in '7.6.6', '8.14.5', '9.0.0', '9.1.1', '9.7.1', '9.8.0') {
+            New-TestBuildInventory -Mutate { param($d) $d.gradle = $version }
+            Assert-Throws { Invoke-BuildGate } '*High distribution advisories GHSA-xwqc-3h47-hg64*GHSA-mvvg-497x-hmj8*GHSA-j5m7-59rp-24f5*' `
+                "A clean component answer cleared Gradle $version."
+            Assert-True ($osvAsked.Count -eq 0) 'An affected distribution reached component queries.'
+        }
+        Assert-Throws { Invoke-BuildGate -Skip } '*High distribution advisories*' `
+            'Offline component work bypassed the known distribution advisories.'
+        foreach ($version in '7.6.7', '8.14.6', '9.1.2', '9.7.2', '9.8.1', '9.9', '10.0.0') {
+            New-TestBuildInventory -Mutate { param($d) $d.gradle = $version }
+            $read = Read-BuildClasspathInventory -Path $buildInventory -SettingsScript $buildSettings
+            Assert-True ($read.Gradle -ceq $version) 'The inventory lost the actual Gradle version.'
+            $said = Invoke-BuildGate
+            Assert-True ($said -like "*Gradle $version is outside the affected versions*" -and
+                ($osvAsked -join ', ') -eq $cleanPurl) "Gradle $version was refused or put to OSV as carried code."
+        }
         # A clean classpath passes, says so as build exposure, and asks about what resolved only.
         $request = [ordered]@{ requested = 'com.google.code.gson:gson:2.8.8'; resolved = 'com.google.code.gson:gson:2.14.0'
             requestedBy = @('app.morphe:morphe-patches-gradle-plugin:1.3.4'); requestedByCount = 1
@@ -2270,6 +2288,18 @@ Write-Host "[scripts] $($rangeCases.Count) complete Maven range gate cases passe
                 @{ Name = 'a JSON array'; Write = { Set-Content -LiteralPath $buildInventory -Value '[]' }; Pattern = '*is not a build classpath inventory:*' },
                 @{ Name = 'another schema'; Write = { New-TestBuildInventory -Mutate { param($d) $d.schema = 'hushthreads-build-classpath-2' } }
                     Pattern = '*schema hushthreads-build-classpath-1*' },
+                @{ Name = 'no Gradle distribution'; Write = { New-TestBuildInventory -Mutate { param($d) $d.Remove('gradle') } }
+                    Pattern = '*doesn''t name a stable Gradle distribution version*' },
+                @{ Name = 'null Gradle'; Write = { New-TestBuildInventory -Mutate { param($d) $d.gradle = $null } }
+                    Pattern = '*doesn''t name a stable Gradle distribution version*' },
+                @{ Name = 'numeric Gradle'; Write = { New-TestBuildInventory -Mutate { param($d) $d.gradle = 9.81 } }
+                    Pattern = '*doesn''t name a stable Gradle distribution version*' },
+                @{ Name = 'prerelease Gradle'; Write = { New-TestBuildInventory -Mutate { param($d) $d.gradle = '9.8.1-rc-1' } }
+                    Pattern = '*doesn''t name a stable Gradle distribution version*' },
+                @{ Name = 'malformed Gradle'; Write = { New-TestBuildInventory -Mutate { param($d) $d.gradle = '9.8.1.0' } }
+                    Pattern = '*doesn''t name a stable Gradle distribution version*' },
+                @{ Name = 'Gradle with a trailing newline'; Write = { New-TestBuildInventory -Mutate { param($d) $d.gradle = '9.8.1' + [char]10 } }
+                    Pattern = '*doesn''t name a stable Gradle distribution version*' },
                 @{ Name = 'no settings script hash'; Write = { New-TestBuildInventory -Mutate { param($d) $d.Remove('settingsScript') } }
                     Pattern = '*doesn''t say which settings.gradle.kts*' },
                 @{ Name = 'another settings script'; Write = { New-TestBuildInventory -Mutate { param($d) $d.settingsScript.sha256 = ('0' * 64) } }

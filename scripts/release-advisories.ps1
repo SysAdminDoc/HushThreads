@@ -606,7 +606,7 @@ function Read-BuildClasspathInventory {
         The build classpath inventory settings.gradle.kts writes (:buildClasspathInventory), read
         into what the build advisory gate needs.
     .DESCRIPTION
-        Answers @{ Path; Sha256; Libraries; Conflicts; Graphs }. Libraries are the components the
+        Answers @{ Path; Sha256; Gradle; Libraries; Conflicts; Graphs }. Libraries are the components the
         plugin classpaths resolved, one per package URL with the classpaths that hold it, in the
         shape Get-SbomAdvisories reads. Conflicts are the requests Gradle answered with another
         version: what was asked for, what resolved, and Gradle's reasons. A version that was only
@@ -648,6 +648,9 @@ function Read-BuildClasspathInventory {
     if ($document -isnot [System.Management.Automation.PSCustomObject] -or $document.schema -isnot [string] -or
             $document.schema -cne 'hushthreads-build-classpath-1') {
         throw "$name is not a build classpath inventory this script reads (schema hushthreads-build-classpath-1)."
+    }
+    if (-not (Test-InventoryText $document.gradle) -or $document.gradle -cnotmatch '^[0-9]{1,4}\.[0-9]{1,4}(\.[0-9]{1,4})?$') {
+        throw "$name doesn't name a stable Gradle distribution version. Build again with the supported wrapper."
     }
     $recorded = $document.settingsScript
     if (-not (Test-AdvisoryObject $recorded) -or $recorded.sha256 -isnot [string] -or $recorded.sha256 -cnotmatch '^[0-9a-f]{64}$') {
@@ -726,6 +729,7 @@ function Read-BuildClasspathInventory {
     return [pscustomobject]@{
         Path      = $Path
         Sha256    = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+        Gradle    = $document.gradle
         Libraries = @($libraries.Values)
         Conflicts = $conflicts.ToArray()
         Graphs    = $graphNames.ToArray()
@@ -756,6 +760,27 @@ function Invoke-BuildClasspathAdvisoryGate {
     $inventoryName = Split-Path -Leaf $Inventory.Path
     # Read even when OSV isn't asked, as the bundle's list is.
     $exceptions = @(Read-AdvisoryExceptions -Path $ExceptionsPath -Today $Today)
+    # The distribution isn't a Maven component. These maintainer records (2026-10-07) cover
+    # daemon deserialization and SSL repository fallback; OSV component results don't cover it.
+    # https://github.com/gradle/gradle/security/advisories/GHSA-xwqc-3h47-hg64
+    # https://github.com/gradle/gradle/security/advisories/GHSA-mvvg-497x-hmj8
+    # https://github.com/gradle/gradle/security/advisories/GHSA-j5m7-59rp-24f5
+    # The public fixes are 8.14.6/9.8.1. The table also names subscription backports on 7.6
+    # and 9.1 through 9.7, which must not be mistaken for affected distributions.
+    if (-not (Test-InventoryText $Inventory.Gradle) -or $Inventory.Gradle -cnotmatch '^[0-9]{1,4}\.[0-9]{1,4}(\.[0-9]{1,4})?$') {
+        throw "$inventoryName doesn't name a stable Gradle distribution version. Build again with the supported wrapper."
+    }
+    $gradle = [version]$Inventory.Gradle
+    $backport = ($gradle.Major -eq 7 -and $gradle.Minor -eq 6 -and $gradle.Build -ge 7) -or
+        ($gradle.Major -eq 9 -and $gradle.Minor -ge 1 -and $gradle.Minor -le 7 -and $gradle.Build -ge 2)
+    if (-not $backport -and ($gradle -lt [version]'8.14.6' -or
+            ($gradle -ge [version]'9.0' -and $gradle -lt [version]'9.8.1'))) {
+        throw ("Gradle $($Inventory.Gradle) is affected by High distribution advisories GHSA-xwqc-3h47-hg64, " +
+            'GHSA-mvvg-497x-hmj8 and GHSA-j5m7-59rp-24f5. Use the supported wrapper with public Gradle 9.8.1. ' +
+            'Component OSV results and dependency checksums do not fix daemon deserialization.')
+    }
+    Write-Host ("[build advisories] Gradle $($Inventory.Gradle) is outside the affected versions in the three " +
+        'maintainer distribution advisories dated 2026-10-07. Component results are separate.')
     foreach ($conflict in @($Inventory.Conflicts)) {
         $why = if (@($conflict.Reasons).Count -gt 0) { " ($(@($conflict.Reasons) -join ', '))" } else { '' }
         Write-Host "[build advisories] the $($conflict.Graph) asked for $($conflict.Requested) and resolved $($conflict.Resolved)$why"

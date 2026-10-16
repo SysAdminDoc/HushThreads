@@ -149,6 +149,8 @@ Use [Issues](https://github.com/SysAdminDoc/HushThreads/issues) for bugs and [Di
 
 You need JDK 21, the Android SDK and PowerShell 7.5 or newer (Windows PowerShell 5.1 works too). Set `JAVA_HOME` and `ANDROID_HOME`, or set the SDK in `local.properties`. GitHub Packages needs `GITHUB_ACTOR` and `GITHUB_TOKEN` with `read:packages`.
 
+The checked-in wrapper uses Gradle 9.8.1. Release checks examine that build-tool version separately from the libraries carried in the bundle.
+
 ```powershell
 $env:HUSHTHREADS_FIXTURE_DIR = '<fixture folder>'
 $env:HUSHTHREADS_DESKTOP_JAR = '<Morphe desktop JAR>'
