@@ -50,13 +50,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.ServerSocket;
+import java.net.SocketAddress;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
@@ -897,6 +906,130 @@ public class SaveProgressTest {
         CompletableFuture<Downloader.Result> after = new CompletableFuture<>();
         finish(save("/after.mp4", after));
         assertEquals(Downloader.Status.OK, after.get(10, TimeUnit.SECONDS).status);
+        assertEquals(1, gallery.inserts.size());
+        assertEquals(0, workFiles());
+        assertTrue(pendingList().isEmpty());
+    }
+
+    @Test public void threeSavesHeldInProxySelectionCanAllBeCancelled() throws Exception {
+        heldProxyCallbacks(false, true);
+    }
+
+    @Test public void threeSavesHeldInProxySelectionAllReachTheirDeadline() throws Exception {
+        heldProxyCallbacks(false, false);
+    }
+
+    @Test public void threeSavesHeldInProxyFailureReportsCanAllBeCancelled() throws Exception {
+        heldProxyCallbacks(true, true);
+    }
+
+    @Test public void threeSavesHeldInProxyFailureReportsAllReachTheirDeadline() throws Exception {
+        heldProxyCallbacks(true, false);
+    }
+
+    /** Policy discovery answers first; only the connection's callback is held, ignoring interrupts. */
+    private void heldProxyCallbacks(boolean failureReport, boolean cancel) throws Exception {
+        ProxySelector before = ProxySelector.getDefault();
+        CountDownLatch held = new CountDownLatch(3);
+        CountDownLatch answer = new CountDownLatch(1);
+        Map<URI, AtomicInteger> selections = new ConcurrentHashMap<>();
+        InetSocketAddress gone;
+        try (ServerSocket closed = new ServerSocket(0, 1, InetAddress.getLoopbackAddress())) {
+            gone = new InetSocketAddress(InetAddress.getLoopbackAddress(), closed.getLocalPort());
+        }
+        ProxySelector waiting = new ProxySelector() {
+            private void hold() {
+                held.countDown();
+                while (answer.getCount() != 0) {
+                    try { answer.await(); }
+                    catch (InterruptedException ignored) { /* A system callback needn't cooperate. */ }
+                }
+            }
+
+            @Override public List<Proxy> select(URI uri) {
+                int count = selections.computeIfAbsent(uri, key -> new AtomicInteger()).incrementAndGet();
+                if (!failureReport && uri.getPath().startsWith("/held") && count > 1) hold();
+                return failureReport ? Arrays.asList(new Proxy(Proxy.Type.HTTP, gone), Proxy.NO_PROXY)
+                        : Collections.singletonList(Proxy.NO_PROXY);
+            }
+
+            @Override public void connectFailed(URI uri, SocketAddress address, IOException error) {
+                if (failureReport && uri.getPath().startsWith("/held")) hold();
+            }
+        };
+        MediaSave.policyForTests = new MediaUrlPolicy(host -> new InetAddress[]{InetAddress.getLoopbackAddress()},
+                url -> !MediaUrlPolicy.proxied(url)) {
+            @Override Refusal refusal(URL url) {
+                if (url.getHost().equals("127.0.0.1") && url.getPort() == server.port()) {
+                    return route.direct(url) ? lookedUp(url, false) : null;
+                }
+                return super.refusal(url);
+            }
+        };
+        List<Thread> workers = new ArrayList<>();
+        try {
+            ProxySelector.setDefault(waiting);
+            Downloader.budgetMs = 3_000;
+            List<CompletableFuture<Downloader.Result>> ended = new ArrayList<>();
+            for (int i = 0; i < 3; i++) {
+                CompletableFuture<Downloader.Result> result = new CompletableFuture<>();
+                ended.add(result);
+                workers.add(save("/held" + i + ".mp4", result));
+            }
+            assertTrue("the connection callbacks never all started", held.await(10, TimeUnit.SECONDS));
+            assertEquals(3, selections.size());
+            for (AtomicInteger count : selections.values()) assertEquals("policy must answer before connect", 2, count.get());
+            assertEquals(3, MediaSave.savesInFlight());
+            assertEquals(3, SaveControl.running().size());
+            assertEquals(3, notifications().getActiveNotifications().length);
+            assertNull(save("/fourth.mp4", new CompletableFuture<>()));
+
+            long stopped = System.nanoTime();
+            if (cancel) for (SaveControl.Running save : SaveControl.running()) assertTrue(SaveControl.cancel(save.id));
+            for (CompletableFuture<Downloader.Result> result : ended) {
+                assertEquals(cancel ? Downloader.Status.CANCELLED : Downloader.Status.TIMED_OUT,
+                        result.get(5, TimeUnit.SECONDS).status);
+            }
+            for (Thread worker : workers) finish(worker);
+            assertTrue("callback wait outlived cancel/deadline", System.nanoTime() - stopped < 5_000_000_000L);
+            assertEquals("callbacks kept the save admissions", 0, MediaSave.savesInFlight());
+            assertTrue(SaveControl.running().isEmpty());
+            assertNull(saveNotification());
+            assertEquals(0, workFiles());
+            assertEquals(0, gallery.inserts.size());
+            assertTrue(pendingList().isEmpty());
+            assertTrue(context.getSharedPreferences("hushthreads_saves", Context.MODE_PRIVATE)
+                    .getStringSet("active_jobs", Collections.emptySet()).isEmpty());
+            assertEquals("callbacks must still be blocked", 3, MediaUrlPolicy.lookupsRunning());
+
+            MediaUrlPolicy.lookupTimeoutMs = 400;
+            for (int i = 0; i < 3; i++) {
+                CompletableFuture<Downloader.Result> result = new CompletableFuture<>();
+                long start = System.nanoTime();
+                Thread worker = save("/queued" + i + ".mp4", result);
+                workers.add(worker);
+                assertNotNull("a cancelled or expired save kept its slot", worker);
+                assertEquals(Downloader.Status.NETWORK_ERROR, result.get(5, TimeUnit.SECONDS).status);
+                finish(worker);
+                assertTrue("queued work exceeded its budget", System.nanoTime() - start < 3_000_000_000L);
+                assertTrue("callbacks spawned extra workers", MediaUrlPolicy.lookupThreads() <= 3);
+            }
+            assertEquals("queued callbacks reached the occupied workers", 3, selections.size());
+        } finally {
+            answer.countDown();
+            Downloader.budgetMs = Downloader.BUDGET_MS;
+            MediaUrlPolicy.lookupTimeoutMs = MediaUrlPolicy.LOOKUP_TIMEOUT_MS;
+            for (Thread worker : workers) if (worker != null) worker.join(5_000);
+            ProxySelector.setDefault(before);
+        }
+        long until = System.nanoTime() + 5_000_000_000L;
+        while (MediaUrlPolicy.lookupsRunning() != 0 && System.nanoTime() < until) Thread.sleep(10);
+        assertEquals("released callbacks kept their workers", 0, MediaUrlPolicy.lookupsRunning());
+        Shadows.shadowOf(context.getContentResolver()).registerOutputStream(gallery.videoUri(1), published);
+        server.serveGenerated("/after-proxy.mp4", "video/mp4", MP4_HEAD, 64 * 1024, Long.MAX_VALUE, null);
+        CompletableFuture<Downloader.Result> after = new CompletableFuture<>();
+        finish(save("/after-proxy.mp4", after));
+        assertEquals(Downloader.Status.OK, after.get(5, TimeUnit.SECONDS).status);
         assertEquals(1, gallery.inserts.size());
         assertEquals(0, workFiles());
         assertTrue(pendingList().isEmpty());

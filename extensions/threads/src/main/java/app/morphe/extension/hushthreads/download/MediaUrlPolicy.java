@@ -12,6 +12,7 @@
  */
 package app.morphe.extension.hushthreads.download;
 
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -237,7 +238,7 @@ class MediaUrlPolicy {
      */
     final Vetted vetWithin(URL url, BooleanSupplier stopped, long deadline) {
         try {
-            return await(() -> vet(url), stopped, deadline);
+            return await(() -> vet(url), stopped, deadline, "host lookup");
         } catch (GaveUp e) {
             return new Vetted(new Refusal(e.getMessage(), true), null);
         }
@@ -265,7 +266,7 @@ class MediaUrlPolicy {
             throws UnknownHostException {
         InetAddress[] addresses;
         try {
-            addresses = await(() -> resolver.resolve(host), stopped, deadline);
+            addresses = await(() -> resolver.resolve(host), stopped, deadline, "host lookup");
         } catch (GaveUp e) {
             throw new UnknownHostException(e.getMessage());
         }
@@ -291,10 +292,10 @@ class MediaUrlPolicy {
         return addresses;
     }
 
-    /** A wait for a lookup thread given up on, and why. */
-    private static final class GaveUp extends Exception {
+    /** A wait for a network callback given up on, and why. */
+    static final class GaveUp extends IOException {
         GaveUp(String reason) {
-            super(reason, null, false, false);
+            super(reason);
         }
     }
 
@@ -305,22 +306,26 @@ class MediaUrlPolicy {
      * <p>The bound: at most {@link #LOOKUP_THREADS} lookups ever run, and a resolver that never
      * answers holds those threads, not new ones. Further lookups wait in a queue of
      * {@link #LOOKUP_QUEUE}, each for at most {@link #lookupTimeoutMs}, and leave it when given up
-     * on. A lookup left running ends when its resolver answers, and nothing waits for it.
+     * on. A callback left running ends when it answers, and nothing waits for it. Proxy selection
+     * and failure reports share these bounds with host lookups. [operation] is a fixed label,
+     * never a host, address or exception message.
      */
-    private static <T> T await(Callable<T> work, BooleanSupplier stopped, long deadline) throws GaveUp {
+    static <T> T await(Callable<T> work, BooleanSupplier stopped, long deadline, String operation) throws GaveUp {
+        if (stopped.getAsBoolean()) throw new GaveUp("the save stopped during its " + operation);
+        if (Downloader.expired(deadline)) throw new GaveUp("its " + operation + " took too long");
         FutureTask<T> lookup = new FutureTask<>(work);
         try {
             LOOKUPS.execute(lookup);
         } catch (RejectedExecutionException e) {
-            throw new GaveUp("too many host lookups were waiting");
+            throw new GaveUp("too many " + operation + "s were waiting");
         }
         long wait = Math.min(TimeUnit.MILLISECONDS.toNanos(lookupTimeoutMs), deadline - System.nanoTime());
         long until = System.nanoTime() + Math.max(0L, wait);
         try {
             while (true) {
-                if (stopped.getAsBoolean()) throw giveUp(lookup, "the save stopped during its host lookup");
+                if (stopped.getAsBoolean()) throw giveUp(lookup, "the save stopped during its " + operation);
                 long left = until - System.nanoTime();
-                if (left <= 0) throw giveUp(lookup, "its host lookup took too long");
+                if (left <= 0) throw giveUp(lookup, "its " + operation + " took too long");
                 try {
                     return lookup.get(Math.min(left, TimeUnit.MILLISECONDS.toNanos(LOOKUP_POLL_MS)),
                             TimeUnit.NANOSECONDS);
@@ -330,9 +335,9 @@ class MediaUrlPolicy {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw giveUp(lookup, "the save stopped during its host lookup");
+            throw giveUp(lookup, "the save stopped during its " + operation);
         } catch (ExecutionException e) {
-            throw new GaveUp("its host could not be looked up");
+            throw new GaveUp("its " + operation + " failed");
         }
     }
 

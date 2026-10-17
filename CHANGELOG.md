@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** Cancel and the download time limit now end a save even when the phone's proxy service stops answering. Waiting proxy calls share the fixed limit on background network checks, so repeated attempts can't keep creating threads.
+
 * **Threads:** Settings file access stays tracked when a disk write or Android's permission service fails. Cleanup retries after a restart, and retrying the same file can't keep lasting access without a saved cleanup record.
 
 * **Tooling:** Updated the build wrapper to Gradle 9.8.1, which fixes three high security advisories. The build advisory check now checks the recorded Gradle distribution separately from component libraries and refuses missing or unreadable version evidence, including when online component checks are skipped.

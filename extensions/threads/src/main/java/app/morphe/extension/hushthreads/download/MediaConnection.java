@@ -63,7 +63,8 @@ import javax.net.ssl.SSLSocketFactory;
  *
  * <p>Straight to the server, the socket goes to the addresses {@link MediaUrlPolicy#vetWithin}
  * vetted, each in turn, and nothing here looks a name up on the save's thread: a lookup the
- * policy didn't make runs on its bounded lookup threads ({@link Lookup}).
+ * policy didn't make runs on its bounded lookup threads ({@link Lookup}). Proxy discovery and
+ * failure reports share those threads, so a callback can't hold a save past Cancel or its deadline.
  *
  * <p>One request a connection, closed after it ({@code Connection: close}), so nothing is pooled
  * between saves. Every wait is cut to what's left before the fetch's deadline, and a timer closes
@@ -199,11 +200,14 @@ final class MediaConnection {
         ProxySelector selector = ProxySelector.getDefault();
         List<Proxy> proxies = null;
         if (selector != null) {
-            try {
-                proxies = selector.select(route);
-            } catch (RuntimeException e) {
-                // A selector that can't answer leaves the fetch to go direct, as no selector does.
-            }
+            proxies = MediaUrlPolicy.await(() -> {
+                try {
+                    return selector.select(route);
+                } catch (RuntimeException e) {
+                    // A selector that can't answer leaves the fetch to go direct, as no selector does.
+                    return null;
+                }
+            }, this::isCancelled, deadline, "proxy selection");
         }
         if (proxies == null || proxies.isEmpty()) proxies = Collections.singletonList(Proxy.NO_PROXY);
 
@@ -225,11 +229,14 @@ final class MediaConnection {
                 failure = e;
                 if (isCancelled() || Downloader.expired(deadline)) break;
                 if (proxy.type() != Proxy.Type.DIRECT && selector != null) {
-                    try {
-                        selector.connectFailed(route, proxy.address(), e);
-                    } catch (RuntimeException ignored) {
-                        // The next proxy is tried all the same.
-                    }
+                    MediaUrlPolicy.await(() -> {
+                        try {
+                            selector.connectFailed(route, proxy.address(), e);
+                        } catch (RuntimeException ignored) {
+                            // The next proxy is tried all the same.
+                        }
+                        return null;
+                    }, this::isCancelled, deadline, "proxy failure report");
                 }
             }
         }
