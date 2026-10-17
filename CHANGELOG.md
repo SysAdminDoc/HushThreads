@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** Settings file access stays tracked when a disk write or Android's permission service fails. Cleanup retries after a restart, and retrying the same file can't keep lasting access without a saved cleanup record.
+
 * **Tooling:** Updated the build wrapper to Gradle 9.8.1, which fixes three high security advisories. The build advisory check now checks the recorded Gradle distribution separately from component libraries and refuses missing or unreadable version evidence, including when online component checks are skipped.
 
 * **Threads:** Open links in browser now also covers the places on 451 that used to skip it. An ad's link button and a swipe up on an ad in the media viewer send the ad's web link to your browser the same way post links go, and so do the privacy policy and disclaimer links on a lead form. Meta's own pages still open in Threads.

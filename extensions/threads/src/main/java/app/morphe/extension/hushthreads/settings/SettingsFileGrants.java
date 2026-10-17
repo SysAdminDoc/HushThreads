@@ -7,11 +7,13 @@ package app.morphe.extension.hushthreads.settings;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.UriPermission;
 import android.net.Uri;
 
 import androidx.annotation.Nullable;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import app.morphe.extension.shared.Logger;
@@ -58,7 +60,7 @@ final class SettingsFileGrants {
             } catch (RuntimeException refused) {
                 Logger.printInfo(() -> "Settings file: no lasting access to the file: " + refused.getClass().getSimpleName());
                 // Only an entry this take added: one already there is an earlier process's or this one's.
-                if (listed == CHANGED) list(context, name, false);
+                if (listed == CHANGED && endAccess(context, file)) list(context, name, false);
                 return 0;
             }
         }
@@ -72,13 +74,30 @@ final class SettingsFileGrants {
         if (grant == 0 || context == null) return;
         String name = file.toString();
         synchronized (LOCK) {
-            try {
-                context.getContentResolver().releasePersistableUriPermission(file, ACCESS);
-            } catch (RuntimeException error) {
-                Logger.printInfo(() -> "Settings file: couldn't let go of its access: " + error.getClass().getSimpleName());
-            }
+            boolean ended = endAccess(context, file);
             takenHere.remove(name);
-            list(context, name, false);
+            if (ended) list(context, name, false);
+        }
+    }
+
+    /** A service failure isn't proof the grant is gone. Unknown inspection stays retryable. */
+    private static boolean endAccess(Context context, Uri file) {
+        try {
+            context.getContentResolver().releasePersistableUriPermission(file, ACCESS);
+            return true;
+        } catch (RuntimeException error) {
+            Logger.printInfo(() -> "Settings file: couldn't let go of its access: " + error.getClass().getSimpleName());
+        }
+        try {
+            List<UriPermission> held = context.getContentResolver().getPersistedUriPermissions();
+            if (held == null) return false;
+            for (UriPermission grant : held) {
+                if (grant == null || grant.getUri() == null || file.equals(grant.getUri())) return false;
+            }
+            return true;
+        } catch (RuntimeException error) {
+            Logger.printInfo(() -> "Settings file: couldn't check its access: " + error.getClass().getSimpleName());
+            return false;
         }
     }
 
@@ -110,12 +129,8 @@ final class SettingsFileGrants {
                         kept.add(name);
                         continue;
                     }
-                    try {
-                        application.getContentResolver().releasePersistableUriPermission(Uri.parse(name), ACCESS);
-                        released++;
-                    } catch (RuntimeException gone) {
-                        // Android has no grant for it anymore: nothing to let go of.
-                    }
+                    if (endAccess(application, Uri.parse(name))) released++;
+                    else kept.add(name);
                 }
                 SharedPreferences.Editor update = ledger.edit();
                 if (kept.isEmpty()) update.remove(HELD);
@@ -141,12 +156,11 @@ final class SettingsFileGrants {
                     : context.getSharedPreferences(LEDGER, Context.MODE_PRIVATE);
             Set<String> held = new HashSet<>(ledger.getStringSet(HELD, new HashSet<>()));
             boolean changed = add ? held.add(name) : held.remove(name);
-            if (!changed) return UNCHANGED;
             SharedPreferences.Editor update = ledger.edit();
             if (held.isEmpty()) update.remove(HELD);
             else update.putStringSet(HELD, held);
-            // commit(), not apply(): the entry exists for a process that ends right after this.
-            if (update.commit()) return CHANGED;
+            // A failed commit can change memory, so even an unchanged retry must reach disk.
+            if (update.commit()) return changed ? CHANGED : UNCHANGED;
             Logger.printInfo(() -> "Settings file: couldn't write the list of file access");
         } catch (RuntimeException error) {
             Logger.printInfo(() -> "Settings file: couldn't read the list of file access: " + error.getClass().getSimpleName());
