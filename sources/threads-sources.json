@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "note": "Every public source found for com.instagram.barcelona, with the branches and commits it was last read at, its licence and what HushThreads may take from it. scripts/threads-sources.ps1 holds it to its rules, scripts/audit-threads-sources.ps1 refreshes it, and a local release needs a census from the last 14 days. README.md#where-the-patches-come-from is the readable version. branches[].commit pins the newest commit touching watchPaths on that branch. branches[].head and headChecked preserve the separately inspected whole-branch snapshot. License URLs and any adoption or provenance pins are independent of those watched-path commits.",
   "census": {
-    "checkedAt": "2026-10-07",
+    "checkedAt": "2026-10-18",
     "skipped": [
       "gitlab-code-search"
     ]
@@ -24,7 +24,7 @@
       "hushthreads": {
         "status": "listed",
         "url": "https://morphe-patches.software/#bundles",
-        "checked": "2026-10-07",
+        "checked": "2026-10-18",
         "evidence": {
           "url": "https://morphe-patches.software/data/bundles.json",
           "sha256": "419c486bd921bd821a318b3e8928333a603d826a7c08d88ba7f8400e0e4c0cb6",
@@ -39,7 +39,7 @@
       "hushthreads": {
         "status": "listed",
         "url": "https://github.com/nvbangg/awesome-morphe/blob/main/data/hashes.json",
-        "checked": "2026-10-07",
+        "checked": "2026-10-18",
         "evidence": {
           "url": "https://github.com/nvbangg/awesome-morphe/blob/a34fea1164242e1deffcbcb825ed0e3b901a6122/data/hashes.json",
           "sha256": "e1dcd0c0190d8de10133ec7ea65b43f1c0ac6008804bcdf332d1c7ddc3372b0b",
@@ -55,7 +55,7 @@
       "hushthreads": {
         "status": "listed",
         "url": "https://drnx64.github.io/morphe-track-patches/",
-        "checked": "2026-10-07",
+        "checked": "2026-10-18",
         "evidence": {
           "url": "https://github.com/drnx64/morphe-track-patches/blob/f12583ba9c068e64f316453fd759dde9b218e9cd/data/bundles.json",
           "sha256": "82c5a05a76b0eac218d3c4e835f26111c2a78d4b7c238887c5087ce91438049d",
@@ -71,7 +71,7 @@
       "hushthreads": {
         "status": "listed",
         "url": "https://github.com/Jman-Github/Patch-Bundle-Registry/blob/bundles/config/sources.json",
-        "checked": "2026-10-17",
+        "checked": "2026-10-18",
         "evidence": {
           "url": "https://github.com/Jman-Github/Patch-Bundle-Registry/blob/d51a430ba4db2c2ff832964839ad3f121c8e6451/config/sources.json",
           "sha256": "42e9f24eb6b47c616bd0661f9a5282449ac70f21ca0646a003a34aeedc465782",
@@ -87,7 +87,7 @@
       "hushthreads": {
         "status": "listed",
         "url": "https://github.com/rushiforai/morphe-archive/blob/main/examplepatches/SysAdminDoc/HushThreads/patches-list.json",
-        "checked": "2026-10-07",
+        "checked": "2026-10-18",
         "evidence": {
           "url": "https://github.com/rushiforai/morphe-archive/blob/5815efc27c8b699e0ac757a73bb3dee39bbf6348/examplepatches/SysAdminDoc/HushThreads/patches-list.json",
           "sha256": "e404a0c27fecb28fcb8474ef5854df723058c50185bfc20c0ac0d9d7a9a2d371",
@@ -143,6 +143,23 @@
       "reason": "The first Threads patch anyone published: Hide ads through the same meta/ads fingerprint ReVanced uses for Instagram, which shows the two apps share their ad code. It's pinned to 382 and its anchor string, SponsoredContentController.insertItem, is gone from 449. Ancestry and shared-code evidence, no code to port.",
       "archived": false,
       "forks": [
+        "rachel.green.r/ecoscan-80488462-deletion_scheduled-87752871",
+        "chandler.bing/ecoscan-80488462-deletion_scheduled-87715729",
+        "rachel.green.r/ecoscan-80488462-deletion_scheduled-87616265",
+        "h-jangra/revanced-patches",
+        "cornyabs/revanced-patches-neo",
+        "EddSC/revanced-patches",
+        "load-test3/ReVanced-revanced-patches-255",
+        "rachel.green.r/ecoscan-80488462-deletion_scheduled-87563593",
+        "chandler.bing/ecoscan-80488462-deletion_scheduled-87521398",
+        "rachel.green.r/ecoscan-80488462-deletion_scheduled-87487475",
+        "radkawwa/revanced-patches",
+        "sudo-panda/revanced-patches",
+        "rachel.green.r/ecoscan-80488462-deletion_scheduled-87462565",
+        "Bobocato/revanced-patches",
+        "rachel.green.r/ecoscan-80488462-deletion_scheduled-87427817",
+        "chandler.bing/ecoscan-80488462-deletion_scheduled-87382344",
+        "chandler.bing/ecoscan-80488462-deletion_scheduled-87336999",
         "chandler.bing/ecoscan-80488462-deletion_scheduled-87193458",
         "rachel.green.r/ecoscan-80488462-deletion_scheduled-87246759",
         "chandler.bing/ecoscan-80488462-deletion_scheduled-87291057",
@@ -163,27 +180,12 @@
         "Crafter-Y/revanced-patches",
         "chandler.bing/ecoscan-80488462-deletion_scheduled-86675967",
         "rachel.green.r/ecoscan-80488462-deletion_scheduled-86653713",
-        "chandler.bing/ecoscan-80488462-deletion_scheduled-86577065",
-        "rachel.green.r/ecoscan-80488462-deletion_scheduled-86533980",
         "isdzjfs/revanced-patches",
-        "rachel.green.r/ecoscan-80488462-deletion_scheduled-86488202",
-        "rachel.green.r/ecoscan-80488462-deletion_scheduled-86447130",
         "Leandro-734/revanced-patches",
-        "rachel.green.r/ecoscan-80488462-deletion_scheduled-86411624",
-        "rachel.green.r/ecoscan-80488462-deletion_scheduled-86383433",
-        "rachel.green.r/ecoscan-80488462-deletion_scheduled-86347573",
         "rosset.nocpes/revanced-patches",
-        "chandler.bing/ecoscan-80488462-deletion_scheduled-86259657",
-        "chandler.bing/ecoscan-80488462-deletion_scheduled-86217480",
-        "chandler.bing/ecoscan-80488462-deletion_scheduled-86179411",
-        "rachel.green.r/ecoscan-80488462-deletion_scheduled-86146681",
-        "chandler.bing/ecoscan-80488462-deletion_scheduled-86126979",
-        "rachel.green.r/ecoscan-80488462-deletion_scheduled-86093532",
-        "chandler.bing/ecoscan-80488462-deletion_scheduled-86014315",
         "Vic-41148/revanced-patches",
         "LulzRose/revanced-patches",
         "THE-M0P/revanced-patches",
-        "eathtespagheti/revanced-patches",
         "joshi33/revanced-patches",
         "patrickvanc/revanced-patches",
         "ALSchwalm/revanced-patches",
@@ -266,7 +268,7 @@
             "url": "https://github.com/4lifeeee/TulipPatch/blob/1c4365c55c67380eb2ef7678784f651567f43dd1/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/AndrJ/revanced-patches",
@@ -285,7 +287,7 @@
             "url": "https://github.com/AndrJ/revanced-patches/blob/b632d0f04239d49f14425f86f21784a526594518/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/brnywz/Patches",
@@ -304,7 +306,7 @@
             "url": "https://github.com/brnywz/Patches/blob/6f66187af930386703fea1c8e96de1676efa7447/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/cevente/revanced-patches",
@@ -323,7 +325,7 @@
             "url": "https://github.com/cevente/revanced-patches/blob/a324e63c59d6422bf2f689bc1d8db0e317c4b341/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/error-reporting/revanced-android-studio-client-bump-test",
@@ -342,7 +344,7 @@
             "url": "https://github.com/error-reporting/revanced-android-studio-client-bump-test/blob/e113674489159c453210b523c63b59dc83cd50ec/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/hajs110208/test123",
@@ -361,7 +363,7 @@
             "url": "https://github.com/hajs110208/test123/blob/56a1a645ad5334e0e9394725972808293edd5b4d/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/israelterry/Patch33",
@@ -380,7 +382,7 @@
             "url": "https://github.com/israelterry/Patch33/blob/f060fd5ed7cb76720a8b3373b4d1c4b251791ccc/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/LOrhun/Revanced-Patches.5.51.0",
@@ -399,7 +401,7 @@
             "url": "https://github.com/LOrhun/Revanced-Patches.5.51.0/blob/ffa5f3775170a8fd14926cffac2004a04079ce4c/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/phit/revanced-patch",
@@ -418,7 +420,7 @@
             "url": "https://github.com/phit/revanced-patch/blob/b9bc7e3e58f9fe860e0285bd91499d72c52b93f6/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/thelok1s/tiktok-rv",
@@ -437,7 +439,7 @@
             "url": "https://github.com/thelok1s/tiktok-rv/blob/12b3ff57e07124c917830c8b6b5eb97db55ba120/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/TheMaskedGuardian/revanced-patches",
@@ -456,7 +458,7 @@
             "url": "https://github.com/TheMaskedGuardian/revanced-patches/blob/d92d979a8e84a5633c09f2cd735a593e9cdba510/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/vinh2201/rv-NEW-patch22",
@@ -475,7 +477,7 @@
             "url": "https://github.com/vinh2201/rv-NEW-patch22/blob/63a6304f867bc14f4025cb65dacd7627bbef436c/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/vomw/patches",
@@ -494,7 +496,7 @@
             "url": "https://github.com/vomw/patches/blob/4d0229ea2a6ae743783cc23cfba79817356bed5f/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/vomw/revanced-patches",
@@ -513,7 +515,7 @@
             "url": "https://github.com/vomw/revanced-patches/blob/b632d0f04239d49f14425f86f21784a526594518/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         },
         {
           "repository": "https://github.com/nstefan13/personal-revanced-patches",
@@ -532,10 +534,10 @@
             "url": "https://github.com/nstefan13/personal-revanced-patches/blob/d5832122f5c4c9d9628e5230310391674d378b5f/LICENSE",
             "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
           },
-          "checked": "2026-10-07"
+          "checked": "2026-10-18"
         }
       ],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "id": "chiggi",
@@ -583,7 +585,7 @@
       ],
       "contentHashes": [],
       "mirrors": [],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "id": "zeldrisho",
@@ -610,10 +612,16 @@
       ],
       "branches": [
         {
+          "name": "docs/consistent-analysis-layout",
+          "commit": "446b878616f6c2692cd7074d7f18f6bd48733c19",
+          "head": "bb2c187d6a21f28272216936943895efe48d8599",
+          "headChecked": "2026-10-18"
+        },
+        {
           "name": "main",
-          "commit": "5711fdfe7cec0b3de6a65059a8a1ade666becca2",
-          "head": "79c9aa5516c024047899a93a79c8647744c0ad1a",
-          "headChecked": "2026-10-06"
+          "commit": "446b878616f6c2692cd7074d7f18f6bd48733c19",
+          "head": "9418386935c67b382a58cbac7084eb67bc20ae86",
+          "headChecked": "2026-10-18"
         }
       ],
       "watchPaths": [
@@ -627,15 +635,16 @@
       },
       "contaminatedBy": null,
       "disposition": "candidate",
-      "reason": "Found the place HushThreads takes ads out, the feed cache's merge of a fetched page, found by its shape and the Kotlin lambda it builds. That anchor is unique on 449 and HushThreads credits it. Its extension reflects on obfuscated names written down per build (DED, DGK, A05, A02 and more), so none of its code is taken. Its Open links externally (21c07f40cf, 2026-10-02) hooks the named WebLinkUseCase and returns Unit after a launch; HushThreads' own Open links in browser already covers it, so nothing is taken from it either.",
+      "reason": "Found the place HushThreads takes ads out, the feed cache's merge of a fetched page, found by its shape and the Kotlin lambda it builds. That anchor is unique on 449 and HushThreads credits it. Its extension reflects on obfuscated names written down per build (DED, DGK, A05, A02 and more), so none of its code is taken. Its Open links externally (21c07f40cf, 2026-10-02) hooks the named WebLinkUseCase and returns Unit after a launch; HushThreads' own Open links in browser already covers it, so nothing is taken from it either. Its 2026-10-07 change (446b878) makes Open links check an http(s) link's host (IDN names too) and port before launching. HushThreads checks only the scheme and leaves a link with a broken host to the browser, which shows its own error, so nothing is taken from that one.",
       "archived": false,
       "forks": [
         "truongvantuan/morphe-patches",
-        "fakeoomblues/Threads-Patches"
+        "fakeoomblues/Threads-Patches",
+        "haocv95-netizen/Zalo-mod"
       ],
       "contentHashes": [],
       "mirrors": [],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "id": "kareem",
@@ -683,7 +692,7 @@
       ],
       "contentHashes": [],
       "mirrors": [],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "id": "chirag127",
@@ -728,7 +737,7 @@
       ],
       "contentHashes": [],
       "mirrors": [],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "id": "mrxsin",
@@ -772,7 +781,7 @@
       "forks": [],
       "contentHashes": [],
       "mirrors": [],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "id": "aunali-revanced-experiments",
@@ -831,7 +840,8 @@
         "SamBlu0/ReVancedExperiments",
         "dimon222/ReVancedExperiments",
         "sam-reza/ReVancedExperiments",
-        "Adish08/ReVancedExperiments"
+        "Adish08/ReVancedExperiments",
+        "who0ps/ReVancedExperiments"
       ],
       "contentHashes": [
         "221bc588d8cc9db6cc92a28ac38623e77786189b",
@@ -839,7 +849,7 @@
         "e61b63f36f6c40866350243845ce0f308b0a8bb4"
       ],
       "mirrors": [],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "id": "nexalloy",
@@ -872,9 +882,9 @@
         },
         {
           "name": "main",
-          "commit": "97e14d5184e03268d17af1ecd658ebe881cbc5a7",
-          "head": "ebab7a812c95b6ae33cd0ecb9f18bf847d24c5f6",
-          "headChecked": "2026-10-02"
+          "commit": "904107829d0479694f1243ce4933e9c6023e1286",
+          "head": "7c3cc7d02f8e02396655159db0eca2f05af612a6",
+          "headChecked": "2026-10-18"
         }
       ],
       "watchPaths": [
@@ -894,17 +904,23 @@
       },
       "contaminatedBy": null,
       "disposition": "candidate",
-      "reason": "The canonical ChsBuffer/ReVancedXposed repository now resolves to NexAlloy/NexAlloy. Its GPL-3.0 current source explicitly routes Threads to Hide ads, matches Is ad pod, and replaces the method with a false return. The 2026-08-03 change claims v435+ compatibility but declares no exact Threads version list. Archived source branches retain the older processValidatedContent void hook. No code has been adopted or fixture compatibility verified.",
+      "reason": "The canonical ChsBuffer/ReVancedXposed repository now resolves to NexAlloy/NexAlloy. Its GPL-3.0 current source explicitly routes Threads to Hide ads, matches Is ad pod, and replaces the method with a false return. The 2026-08-03 change claims v435+ compatibility but declares no exact Threads version list. Archived source branches retain the older processValidatedContent void hook. No code has been adopted or fixture compatibility verified. Its 2026-10-17 watched change (9041078) only moved MainHook's resource lookup to the app's own getIdentifier.",
       "archived": false,
       "forks": [
         "luthfeew/NexAlloy",
+        "T0pyt0p/NexAlloy-my-",
+        "1mad3/NexAlloy",
+        "nutine/NexAlloy",
+        "tariqbinmostafiz/NexAlloy-",
+        "S88S/NexAlloy",
+        "sharpscrutal-wq/NexAlloy",
+        "zahinabil25-code/NexAlloy",
         "2eno/NexAlloy",
         "microllate/NexAlloy",
         "enocbazanblanco-png/NexAlloy",
         "Itsfitts/NexAlloy",
         "NULL0B/NexAlloy",
         "DenBroLiik/NexAlloy",
-        "Kerrrrrdda/NexAlloy",
         "shensuisenlin/NexAlloy",
         "x3cl1Meero/NexAlloy",
         "A-Archives-and-Forks/NexAlloy",
@@ -913,8 +929,6 @@
         "gassity/NexAlloy",
         "tryigit/NexAlloy",
         "anhduc2003/NexAlloy",
-        "littletakbest/NexAlloy",
-        "xrz324/NexAlloy",
         "azxle/NexAlloy",
         "Rocker14427c/NexAlloy",
         "redkazey/NexAlloy",
@@ -933,7 +947,6 @@
         "cappuccinoassasino/NexAlloy",
         "0556sagar/YoutubePremium",
         "wuc656/NexAlloy",
-        "yierxiaokeai/NexAlloy",
         "omeos-fork/NexAlloy.NexAlloy",
         "jemimajenkins4335-lgtm/NexAlloy",
         "AGmcxiao10/NexAlloy",
@@ -1001,7 +1014,6 @@
         "xu782734853/ReVancedXposed",
         "raviraj0007/ReVancedXposed",
         "Hiirbaf/Spotify-ReVancedXposed",
-        "MarticaI/ReVancedXposed",
         "pda24/ReVancedXposed",
         "devaige/ReVancedXposed",
         "RunTheBot/ReVancedXposed",
@@ -1046,7 +1058,7 @@
         "f013850d61b0d96c0b7cb19be52ea7171d193400"
       ],
       "mirrors": [],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "id": "joel-revancedxposed",
@@ -1095,7 +1107,7 @@
         "b2295a92d0cc2780bb61158ca38c6eed5fb55204"
       ],
       "mirrors": [],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "id": "kairus-yt-revanced-icon",
@@ -1139,7 +1151,7 @@
         "bcc0b26f64d22386279b22357f7b5bf061e218c9"
       ],
       "mirrors": [],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "id": "soda-revanced-troubleshooting-guide",
@@ -1195,7 +1207,7 @@
         "2cf32f37c1b75ba3f633a34437c29fd6cf33aac8"
       ],
       "mirrors": [],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "id": "user2user1-rvmm-config-gen",
@@ -1239,54 +1251,69 @@
         "9356919505866b8a49d24042afda389c64572f58"
       ],
       "mirrors": [],
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     }
   ],
   "outOfScope": [
     {
       "repository": "https://github.com/crimera/piko",
       "reason": "Instagram only, with no Threads target. Its Instagram fingerprints were run against Threads 449 for research: 65 of 299 match uniquely, which is shared-code evidence. HushGram's ledger holds it.",
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "repository": "https://github.com/bluecxt/instagram-revanced-patches",
       "reason": "Instagram only, ReVanced-derived. HushGram's ledger holds it.",
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "repository": "https://github.com/daboynb/revanced-instagram-viewonce",
       "reason": "Instagram only: view-once media.",
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "repository": "https://github.com/wb1016/instagram-revanced-patches",
       "reason": "Instagram only, and no licence.",
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "repository": "https://github.com/ReSo7200/InstaEclipse",
       "reason": "An Instagram Xposed module (Apache-2.0). Nothing for Threads.",
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "repository": "https://github.com/mamiiblt/instafel",
       "reason": "An Instagram Alpha patcher with its own engine (MIT). Nothing for Threads.",
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "repository": "https://github.com/pawjects/PawGram",
       "reason": "An Instagram client (MIT). Nothing for Threads.",
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "repository": "https://github.com/rushiforai/morphe-archive",
       "reason": "An archive of other projects' builds with no licence of its own. It's listed under indexes.",
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
     },
     {
       "repository": "https://github.com/rushiforai/revanced-archive",
       "reason": "An archive of ReVanced builds with no licence of its own.",
-      "lastChecked": "2026-10-07"
+      "lastChecked": "2026-10-18"
+    },
+    {
+      "repository": "https://github.com/joristdh/platypatch",
+      "reason": "No Threads code on main. Its v1.0.0 (2026-04-14) carried a copy of ReVanced's Threads Hide ads and removed it the same day (cc7b0fd). The stale predictive-back-gesture branch still holds that copy, which the revanced entry already covers.",
+      "lastChecked": "2026-10-18"
+    },
+    {
+      "repository": "https://github.com/rookieenough/de-vanced",
+      "reason": "A fork of morphe-patches-template that carried the same copy of ReVanced's Threads Hide ads from v1.0.2 to v1.1.1 and dropped it on 2026-08-12 (e554c2b5da). Nothing on main targets Threads.",
+      "lastChecked": "2026-10-18"
+    },
+    {
+      "repository": "https://github.com/kveld9/kveld-morphe-patches",
+      "reason": "A universal Block Trackers resource patch, off by default and with no compatibleWith. Its tracker list names two Threads providers (the liteprovider usdid UsdidValuesProvider and BarcelonaLiteContentProvider). Nothing else in it targets Threads and none of its code is taken.",
+      "lastChecked": "2026-10-18"
     }
   ]
 }
