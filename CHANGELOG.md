@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** The final APK check now holds Hide suggested users on profiles to its own contract. It finds both places from the clean DEX alone: the profile screen's suggested accounts carousel, which has to hand its list to the extension right before Threads' own null check and cast the answer back, and the header row, which has to ask first thing on its path and leave by its check's other side through a local nothing reads. A build without the patch has to leave both as Threads wrote them, with no call to the extension anywhere.
+
 * **Tooling:** The final APK check now holds Copy text on long press to its own contract whenever Settings is selected. Every override check in the post row has to carry the patch's hook, which hands the override and its own action to the extension in a free local and casts the answer back, and PostText has to ask about its selection switch first thing. A build without Settings has to leave both exactly as Threads wrote them.
 
 * **Tooling:** The build classpath inventory now records a SHA-256 of settings.gradle.kts, patches/build.gradle.kts, gradle/libs.versions.toml and gradle/verification-metadata.xml, and the release receipt refuses an inventory whose hash for any of them differs from the checkout, naming the file. Before, only the settings script was checked, so a changed plugin version or dependency pin could leave an old inventory standing for the new build. Each hash is the lowercase hex SHA-256 of the file's raw bytes.

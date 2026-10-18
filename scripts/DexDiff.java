@@ -3105,6 +3105,7 @@ public class DexDiff {
         requireFeature(((WideLiteralInstruction) body.get(28)).getWideLiteral() == 0, "unknown suggestion cards do not return false");
         featureHostCalls(patched, featureSig(stub), Map.of());
         featureSearchCarousel(clean, patched);
+        featureProfileSuggestions(clean, patched);
     }
 
     /** The key Search's list builder adds its Follow suggestions carousel under, which Threads keeps from build to build. */
@@ -3190,6 +3191,374 @@ public class DexDiff {
     private static void featureOmittedSearchCarousel(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
         featureHostCalls(patched, SHOW_SEARCH_CAROUSEL, Map.of());
         featurePreserveTargets(clean, patched, m -> !m.getDefiningClass().startsWith(OWN) && holds(m, SEARCH_CAROUSEL_KEY));
+    }
+
+    /** The Compose note of Threads' suggested accounts row, the one Search, Activity and profiles share. */
+    private static final String SUGGESTED_ROW_NOTE = "com.instagram.barcelona.suggestedusers.ui.SuggestedUsersRow (SuggestedUsersRow.kt:";
+    /** How every Compose note of the profile's own screens begins. */
+    private static final String PROFILE_UI = "com.instagram.barcelona.profile.ui.";
+    /** Threads keeps this class's name. It builds the list of rows above a profile's tabs. */
+    private static final String PROFILE_VIEW_MODEL = "Lcom/instagram/barcelona/profile/viewmodel/ProfileViewModel;";
+    private static final String PROFILE_CAROUSEL = "Lapp/morphe/extension/hushthreads/profile/ProfileSuggestions;->carousel(Ljava/lang/Object;)Ljava/lang/Object;";
+    private static final String SHOW_PROFILE_ROW = "Lapp/morphe/extension/hushthreads/profile/ProfileSuggestions;->showRow()Z";
+    /** A Compose source note, `<function> (<File>.kt:<line>)`, which Threads keeps from build to build. */
+    private static final java.util.regex.Pattern COMPOSE_NOTE = java.util.regex.Pattern.compile("^[^ ()]+ \\(([A-Za-z0-9_]+\\.kt):\\d+\\)$");
+
+    /**
+     * The profile's two places as Threads shipped them: in [screen], the read at [read] that puts the
+     * carousel's list, a [type], in [list], with the null check right after it the only way to the
+     * carousel; in [builder], the view model's check at [guard] that is the only way to the row's
+     * path from [start], and [away], where that check goes otherwise.
+     */
+    private record ProfileSites(Method screen, int read, int list, String type, Method builder, int guard, int start, int away) {}
+
+    /** One call to the suggested accounts row, at [at] of [method], and the Compose note governing it, if any. */
+    private record ProfileRowCall(Method method, int at, MethodReference callee, String note) {}
+
+    /** The Compose note [i] loads, or null. */
+    private static String featureNote(Instruction i) {
+        if (i.getOpcode() != Opcode.CONST_STRING && i.getOpcode() != Opcode.CONST_STRING_JUMBO) return null;
+        String s = ((StringReference) ((ReferenceInstruction) i).getReference()).getString();
+        return COMPOSE_NOTE.matcher(s).matches() ? s : null;
+    }
+
+    /** Whether [note] is a note of the profile's own screens from [file]. */
+    private static boolean profileNote(String note, String file) {
+        if (note == null || !note.startsWith(PROFILE_UI)) return false;
+        java.util.regex.Matcher matcher = COMPOSE_NOTE.matcher(note);
+        return matcher.matches() && matcher.group(1).equals(file);
+    }
+
+    /** Whether [to] can run after [from], along branches, switches and the handlers of every try an instruction sits in. */
+    private static boolean featureReaches(FeatureFlow flow, int from, int to) {
+        BitSet seen = new BitSet();
+        Deque<Integer> work = new ArrayDeque<>(List.of(from));
+        seen.set(from);
+        while (!work.isEmpty()) {
+            int at = work.removeFirst();
+            if (at == to) return true;
+            List<Integer> next = new ArrayList<>(flow.normal.get(at));
+            next.addAll(flow.guarded.get(at));
+            for (int n : next) if (!seen.get(n)) { seen.set(n); work.add(n); }
+        }
+        return false;
+    }
+
+    /**
+     * The Compose note nearest above [at], when it can reach [at]. A note further up, or one that can't
+     * reach it, belongs to another lambda Redex merged into the same method.
+     */
+    private static String featureGoverningNote(FeatureFlow flow, int at) {
+        for (int index = at - 1; index >= 0; index--) {
+            String note = featureNote(flow.layout.instructions.get(index));
+            if (note != null) return featureReaches(flow, index, at) ? note : null;
+        }
+        return null;
+    }
+
+    /**
+     * Where the value [register] holds at [at] was made, followed back through object moves and casts:
+     * {the write, the register it wrote}, or {-1, the register} for the value the method got. Null
+     * when more than one write can reach it, or a write and the method's entry.
+     */
+    private static int[] featureSource(FeatureFlow flow, int at, int register) {
+        List<Instruction> body = flow.layout.instructions;
+        int index = at, held = register;
+        for (int step = 0; step < body.size(); step++) {
+            Set<Integer> writes = flow.reaching(index, held);
+            if (writes.size() != 1) return null;
+            int write = writes.iterator().next();
+            if (write < 0) return new int[]{-1, held};
+            Opcode op = body.get(write).getOpcode();
+            if (op == Opcode.CHECK_CAST) index = write;
+            else if (op == Opcode.MOVE_OBJECT || op == Opcode.MOVE_OBJECT_FROM16 || op == Opcode.MOVE_OBJECT_16) {
+                index = write;
+                held = ((TwoRegisterInstruction) body.get(write)).getRegisterB();
+            } else return new int[]{write, held};
+        }
+        return null;
+    }
+
+    /** The register [m] keeps this in, past its locals and parameters' words. */
+    private static int featureThis(Method m) {
+        requireFeature(!AccessFlags.STATIC.isSet(m.getAccessFlags()), featureSig(m) + " is static, so it has no this");
+        return m.getImplementation().getRegisterCount() - m.getParameterTypes().stream().mapToInt(DexDiff::slots).sum() - 1;
+    }
+
+    /** How many words come before parameter [index] in a call to [callee], this aside. */
+    private static int featureWord(MethodReference callee, int index) {
+        int words = 0;
+        for (int p = 0; p < index; p++) words += slots(callee.getParameterTypes().get(p));
+        return words;
+    }
+
+    /**
+     * {guard, start, away}: walks back from [target] while each instruction is reached only by falling
+     * from the one above, and answers the conditional that is then the single way in, and where it
+     * goes otherwise. Refuses a jump, a switch or a handler into the stretch, or more than one way in.
+     */
+    private static int[] featureSoleEntry(FeatureFlow flow, int target, String what) {
+        List<Instruction> body = flow.layout.instructions;
+        List<List<Integer>> into = new ArrayList<>();
+        for (int n = 0; n < body.size(); n++) into.add(new ArrayList<>());
+        for (int n = 0; n < body.size(); n++) {
+            for (int next : flow.normal.get(n)) into.get(next).add(n);
+            for (int next : flow.guarded.get(n)) into.get(next).add(n);
+        }
+        int start = target;
+        while (start > 0 && into.get(start).equals(List.of(start - 1)) && !body.get(start - 1).getOpcode().name.startsWith("if-")) start--;
+        requireFeature(into.get(start).size() == 1 && body.get(into.get(start).get(0)).getOpcode().name.startsWith("if-"),
+                what + " in " + featureSig(flow.method) + " is reached from " + into.get(start) + " at instruction " + start + ", not through one check");
+        int guard = into.get(start).get(0), entry = start;
+        List<Integer> away = flow.normal.get(guard).stream().filter(n -> n != entry).toList();
+        requireFeature(away.size() == 1, "the check at " + guard + " in " + featureSig(flow.method) + " has no way past " + what);
+        return new int[]{guard, start, away.get(0), into.get(guard).size() == 1 ? into.get(guard).get(0) : -1};
+    }
+
+    /** Whether [i] makes a new [type]. */
+    private static boolean featureAllocates(Instruction i, String type) {
+        return i.getOpcode() == Opcode.NEW_INSTANCE && reference(i).equals(type);
+    }
+
+    /**
+     * Finds both profile places in the clean APK on its own, the way the patch does. Threads' one
+     * static suggested accounts row and the static overloads its class keeps are the entries; every
+     * call to one in the classes holding a profile note belongs to the nearest note above it that can
+     * reach it, and exactly one sits under a ProfileScreen.kt note and one under a ProfileInfoRows.kt
+     * note. The info rows' call reads its list from its own captured row, which names the list's type
+     * and the row's. The screen's call hands the row a list its lambda was built with, one constructor
+     * parameter fills that field, and the screen builds the lambda once, from a list it reads out of a
+     * field and checks for null right after. The view model makes the row once, past one check whose
+     * other side nothing reads what the check compared on.
+     */
+    private static ProfileSites featureProfileSites(Map<String, List<Method>> clean) {
+        Map<String, List<Method>> byClass = new TreeMap<>();
+        for (List<Method> definitions : clean.values()) byClass.computeIfAbsent(definitions.get(0).getDefiningClass(), k -> new ArrayList<>()).add(definitions.get(0));
+        Method row = featureTarget(clean, m -> !m.getDefiningClass().startsWith(OWN)
+                && instructions(m).stream().anyMatch(i -> { String note = featureNote(i); return note != null && note.startsWith(SUGGESTED_ROW_NOTE); }),
+                "Threads' suggested accounts row, the method holding \"" + SUGGESTED_ROW_NOTE + "\",");
+        String rowSig = featureSig(row);
+        requireFeature(AccessFlags.STATIC.isSet(row.getAccessFlags()), "the suggested accounts row " + rowSig + " isn't static");
+        Set<String> entries = new TreeSet<>(List.of(rowSig));
+        for (Method m : byClass.get(row.getDefiningClass())) {
+            if (AccessFlags.STATIC.isSet(m.getAccessFlags()) && !featureSig(m).equals(rowSig) && instructions(m).stream().anyMatch(i -> i instanceof ReferenceInstruction r
+                    && r.getReference() instanceof MethodReference called && featureSig(called).equals(rowSig))) entries.add(featureSig(m));
+        }
+        List<Method> profile = new ArrayList<>();
+        for (Map.Entry<String, List<Method>> e : byClass.entrySet()) {
+            if (e.getKey().startsWith(OWN) || e.getKey().equals(row.getDefiningClass())) continue;
+            if (e.getValue().stream().anyMatch(m -> holdsNote(m, PROFILE_UI))) profile.addAll(e.getValue());
+        }
+        List<ProfileRowCall> calls = new ArrayList<>();
+        for (Method m : profile) {
+            List<Instruction> body = instructions(m);
+            FeatureFlow flow = null;
+            for (int at = 0; at < body.size(); at++) {
+                if (!isStaticInvoke(body.get(at).getOpcode()) || !entries.contains(featureSig((MethodReference) ((ReferenceInstruction) body.get(at)).getReference()))) continue;
+                if (flow == null) flow = new FeatureFlow(m);
+                calls.add(new ProfileRowCall(m, at, (MethodReference) ((ReferenceInstruction) body.get(at)).getReference(), featureGoverningNote(flow, at)));
+            }
+        }
+        ProfileRowCall screen = featureOne(calls.stream().filter(c -> profileNote(c.note(), "ProfileScreen.kt")).toList(), "the suggested accounts row under a ProfileScreen.kt note");
+        ProfileRowCall infoRows = featureOne(calls.stream().filter(c -> profileNote(c.note(), "ProfileInfoRows.kt")).toList(), "the suggested accounts row under a ProfileInfoRows.kt note");
+
+        // The info rows' call hands the row ((Row) this.row).list: that names the list's type and the row's.
+        Method info = infoRows.method();
+        FeatureFlow infoFlow = new FeatureFlow(info);
+        List<Instruction> infoBody = infoFlow.layout.instructions;
+        int self = featureThis(info);
+        List<String[]> found = new ArrayList<>();
+        List<Integer> foundAt = new ArrayList<>();
+        int[] infoArguments = invokeRegisters(infoBody.get(infoRows.at()));
+        for (int index = 0; index < infoRows.callee().getParameterTypes().size(); index++) {
+            int word = featureWord(infoRows.callee(), index);
+            if (!infoRows.callee().getParameterTypes().get(index).toString().startsWith("L") || word >= infoArguments.length) continue;
+            int[] source = featureSource(infoFlow, infoRows.at(), infoArguments[word]);
+            if (source == null || source[0] < 0 || infoBody.get(source[0]).getOpcode() != Opcode.IGET_OBJECT) continue;
+            FieldReference field = (FieldReference) ((ReferenceInstruction) infoBody.get(source[0])).getReference();
+            if (field.getDefiningClass().equals(info.getDefiningClass())) continue;
+            int holder = ((TwoRegisterInstruction) infoBody.get(source[0])).getRegisterB();
+            Set<Integer> casts = infoFlow.reaching(source[0], holder);
+            int cast = casts.size() == 1 ? casts.iterator().next() : -1;
+            if (cast < 0 || infoBody.get(cast).getOpcode() != Opcode.CHECK_CAST || !reference(infoBody.get(cast)).equals(field.getDefiningClass())) continue;
+            int[] captured = featureSource(infoFlow, cast, holder);
+            if (captured == null || captured[0] < 0 || infoBody.get(captured[0]).getOpcode() != Opcode.IGET_OBJECT
+                    || !((FieldReference) ((ReferenceInstruction) infoBody.get(captured[0])).getReference()).getDefiningClass().equals(info.getDefiningClass())
+                    || !Arrays.equals(featureSource(infoFlow, captured[0], ((TwoRegisterInstruction) infoBody.get(captured[0])).getRegisterB()), new int[]{-1, self})) continue;
+            found.add(new String[]{field.getType(), field.getDefiningClass()});
+            foundAt.add(index);
+        }
+        String[] data = featureOne(found, "the list " + featureSig(info) + " reads from its own row for the suggested accounts row");
+        String list = data[0], rowType = data[1];
+        requireFeature(infoRows.callee().getParameterTypes().get(foundAt.get(0)).toString().equals(list),
+                featureSig(infoRows.callee()) + " takes a " + infoRows.callee().getParameterTypes().get(foundAt.get(0)) + " where the profile's row hands it a " + list);
+
+        // The screen's lambda hands the row a list it was built with.
+        Method lambda = screen.method();
+        String owner = lambda.getDefiningClass();
+        FeatureFlow lambdaFlow = new FeatureFlow(lambda);
+        List<Instruction> lambdaBody = lambdaFlow.layout.instructions;
+        List<Integer> listIndices = new ArrayList<>();
+        for (int p = 0; p < screen.callee().getParameterTypes().size(); p++) if (screen.callee().getParameterTypes().get(p).toString().equals(list)) listIndices.add(p);
+        int listIndex = featureOne(listIndices, "the list among " + featureSig(screen.callee()) + "'s parameters");
+        int[] screenArguments = invokeRegisters(lambdaBody.get(screen.at()));
+        requireFeature(featureWord(screen.callee(), listIndex) < screenArguments.length, featureSig(lambda) + " hands the row no list");
+        int[] handedRow = featureSource(lambdaFlow, screen.at(), screenArguments[featureWord(screen.callee(), listIndex)]);
+        requireFeature(handedRow != null && handedRow[0] >= 0, featureSig(lambda) + " sets the list it hands the row on more than one path");
+        Instruction capture = lambdaBody.get(handedRow[0]);
+        requireFeature(capture.getOpcode() == Opcode.IGET_OBJECT && ((FieldReference) ((ReferenceInstruction) capture).getReference()).getDefiningClass().equals(owner),
+                featureSig(lambda) + " doesn't hand the row a list it was built with");
+        String captured = reference(capture);
+        requireFeature(Arrays.equals(featureSource(lambdaFlow, handedRow[0], ((TwoRegisterInstruction) capture).getRegisterB()), new int[]{-1, featureThis(lambda)}),
+                featureSig(lambda) + " reads the row's list from something other than itself");
+
+        // One constructor parameter goes into that field, and nothing else writes it.
+        List<Method> storing = new ArrayList<>();
+        List<Integer> stores = new ArrayList<>();
+        for (Method m : byClass.getOrDefault(owner, List.of())) {
+            List<Instruction> body = instructions(m);
+            for (int at = 0; at < body.size(); at++) if (body.get(at).getOpcode() == Opcode.IPUT_OBJECT && reference(body.get(at)).equals(captured)) { storing.add(m); stores.add(at); }
+        }
+        Method constructor = featureOne(storing, "the one write of " + captured);
+        int store = stores.get(0);
+        FeatureFlow constructorFlow = new FeatureFlow(constructor);
+        TwoRegisterInstruction stored = (TwoRegisterInstruction) constructorFlow.layout.instructions.get(store);
+        int[] storedFrom = featureSource(constructorFlow, store, stored.getRegisterA());
+        List<Integer> parameters = new ArrayList<>();
+        int word = featureThis(constructor) + 1;
+        for (int p = 0; p < constructor.getParameterTypes().size(); p++) {
+            if (storedFrom != null && storedFrom[0] == -1 && storedFrom[1] == word) parameters.add(p);
+            word += slots(constructor.getParameterTypes().get(p));
+        }
+        requireFeature(constructor.getName().equals("<init>") && parameters.size() == 1
+                && Arrays.equals(featureSource(constructorFlow, store, stored.getRegisterB()), new int[]{-1, featureThis(constructor)}),
+                featureSig(constructor) + " doesn't fill " + captured + " from one of its own parameters");
+        int parameter = parameters.get(0);
+
+        // The screen builds that lambda once, under a profile screen note, from a list it reads and checks for null right away.
+        List<Method> builders = new ArrayList<>();
+        for (Method m : profile) {
+            List<Instruction> body = instructions(m);
+            if (body.stream().noneMatch(i -> featureAllocates(i, owner))) continue;
+            FeatureFlow flow = new FeatureFlow(m);
+            for (int at = 0; at < body.size(); at++) if (featureAllocates(body.get(at), owner) && profileNote(featureGoverningNote(flow, at), "ProfileScreen.kt")) { builders.add(m); break; }
+        }
+        Method built = featureOne(builders, "the ProfileScreen.kt method that builds the suggested accounts carousel");
+        FeatureFlow flow = new FeatureFlow(built);
+        List<Instruction> body = flow.layout.instructions;
+        List<Integer> allocations = new ArrayList<>();
+        for (int at = 0; at < body.size(); at++) if (featureAllocates(body.get(at), owner) && profileNote(featureGoverningNote(flow, at), "ProfileScreen.kt")) allocations.add(at);
+        int allocation = featureOne(allocations, "the carousel built in " + featureSig(built));
+        int init = -1;
+        for (int at = allocation + 1; at < body.size() && init < 0; at++) {
+            Instruction i = body.get(at);
+            if ((i.getOpcode() == Opcode.INVOKE_DIRECT || i.getOpcode() == Opcode.INVOKE_DIRECT_RANGE) && reference(i).equals(featureSig(constructor))) {
+                int[] made = featureSource(flow, at, invokeRegisters(i)[0]);
+                if (made != null && made[0] == allocation) init = at;
+            }
+        }
+        requireFeature(init >= 0, featureSig(built) + " never constructs the carousel it allocates at " + allocation);
+        int[] initArguments = invokeRegisters(body.get(init));
+        requireFeature(1 + featureWord(constructor, parameter) < initArguments.length, featureSig(built) + " hands the carousel no list");
+        int[] handed = featureSource(flow, init, initArguments[1 + featureWord(constructor, parameter)]);
+        requireFeature(handed != null && handed[0] >= 0, featureSig(built) + " sets the carousel's list on more than one path");
+        int read = handed[0];
+        requireFeature(body.get(read).getOpcode() == Opcode.IGET_OBJECT && ((FieldReference) ((ReferenceInstruction) body.get(read)).getReference()).getType().equals(list),
+                featureSig(built) + " doesn't hand the carousel a list it reads from a field");
+        int register = registerA(body.get(read));
+        int[] entry = featureSoleEntry(flow, allocation, "the suggested accounts carousel");
+        Instruction check = body.get(entry[0]);
+        boolean past = check.getOpcode() == Opcode.IF_NEZ ? entry[1] != entry[0] + 1 : check.getOpcode() == Opcode.IF_EQZ && entry[1] == entry[0] + 1;
+        requireFeature(past && registerA(check) == register && entry[0] == read + 1 && entry[3] == read,
+                featureSig(built) + " doesn't build its carousel only past a null check of the list it reads at " + read);
+        requireFeature(register <= 255, featureSig(built) + " keeps the carousel's list in v" + register + ", past move-result's reach");
+
+        // The view model makes the row once, past one check, and nothing past the check's other side reads what it compared.
+        requireFeature(byClass.containsKey(PROFILE_VIEW_MODEL), "Threads carries no profile view model " + PROFILE_VIEW_MODEL);
+        List<Method> makers = byClass.get(PROFILE_VIEW_MODEL).stream()
+                .filter(m -> instructions(m).stream().anyMatch(i -> featureAllocates(i, rowType))).toList();
+        Method maker = featureOne(makers, "the profile view model's method that adds the suggested accounts row");
+        FeatureFlow makerFlow = new FeatureFlow(maker);
+        List<Instruction> makerBody = makerFlow.layout.instructions;
+        List<Integer> made = new ArrayList<>();
+        for (int at = 0; at < makerBody.size(); at++) if (featureAllocates(makerBody.get(at), rowType)) made.add(at);
+        int[] rowEntry = featureSoleEntry(makerFlow, featureOne(made, "the suggested accounts row made in " + featureSig(maker)), "the suggested accounts row");
+        List<String> compared = new ArrayList<>();
+        for (int r : namedRegisters(makerBody.get(rowEntry[0]))) if (!makerFlow.readsFrom(rowEntry[2], r).isEmpty()) compared.add("v" + r);
+        requireFeature(compared.isEmpty(), featureSig(maker) + " reads " + String.join(", ", compared) + " again past its check at " + rowEntry[0]
+                + ", so leaving the row's path there wouldn't match Threads' own");
+        return new ProfileSites(built, read, register, list, maker, rowEntry[0], rowEntry[1], rowEntry[2]);
+    }
+
+    /**
+     * Hide suggested users on profiles. The screen hands the carousel's list to carousel() right
+     * after reading it, takes the answer back into the same register and casts it to the list's own
+     * type, so the null check Threads already makes drops the carousel. The view model asks showRow()
+     * first thing on the row's path, branches into it included, and only a false answer leaves, by the
+     * check's own other side, in a local nothing reads from there or from that side. Each is called
+     * once, from its own method, and every other instruction is Threads' own.
+     */
+    private static void featureProfileSuggestions(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        try {
+            ProfileSites sites = featureProfileSites(clean);
+            String screenSig = featureSig(sites.screen()), builderSig = featureSig(sites.builder());
+            featureHostCalls(patched, PROFILE_CAROUSEL, Map.of(screenSig, 1));
+            featureHostCalls(patched, SHOW_PROFILE_ROW, Map.of(builderSig, 1));
+            int guard = sites.read() + 1, list = sites.list();
+            String atCheck = " at the carousel's null check at " + guard + " in " + screenSig;
+            featureBody(sites.screen(), featureMethod(patched, screenSig), 0, Map.of(), PROFILE_CAROUSEL, null, Map.of(guard, (body, at) -> {
+                requireFeature(at + 3 <= body.size() && isStaticInvoke(body.get(at).getOpcode()) && reference(body.get(at)).equals(PROFILE_CAROUSEL)
+                        && Arrays.equals(invokeRegisters(body.get(at)), new int[]{list}), "no hook" + atCheck + " that hands carousel() the list in v" + list);
+                requireFeature(body.get(at + 1).getOpcode() == Opcode.MOVE_RESULT_OBJECT && registerA(body.get(at + 1)) == list,
+                        "the hook" + atCheck + " doesn't take carousel()'s answer back into the list's register, v" + list);
+                requireFeature(body.get(at + 2).getOpcode() == Opcode.CHECK_CAST && registerA(body.get(at + 2)) == list && reference(body.get(at + 2)).equals(sites.type()),
+                        "the hook" + atCheck + " doesn't cast carousel()'s answer back to the list's type, " + sites.type());
+                return 3;
+            }));
+            Method builder = featureMethod(patched, builderSig);
+            Layout now = new Layout(builder.getImplementation());
+            FeatureFlow old = new FeatureFlow(sites.builder());
+            int locals = sites.builder().getImplementation().getRegisterCount() - sites.builder().getParameterTypes().stream().mapToInt(DexDiff::slots).sum()
+                    - (AccessFlags.STATIC.isSet(sites.builder().getAccessFlags()) ? 0 : 1);
+            String atRow = " at the start of the row's path at " + sites.start() + " in " + builderSig;
+            featureBody(sites.builder(), builder, 0, Map.of(), SHOW_PROFILE_ROW, null, Map.of(sites.start(), (body, at) -> {
+                requireFeature(at + 3 <= body.size() && isStaticInvoke(body.get(at).getOpcode()) && reference(body.get(at)).equals(SHOW_PROFILE_ROW)
+                        && invokeRegisters(body.get(at)).length == 0 && body.get(at + 1).getOpcode() == Opcode.MOVE_RESULT,
+                        "no hook" + atRow + " that takes showRow()'s answer");
+                int scratch = registerA(body.get(at + 1));
+                requireFeature(body.get(at + 2).getOpcode() == Opcode.IF_EQZ && registerA(body.get(at + 2)) == scratch,
+                        "the hook" + atRow + " leaves on something other than a false answer");
+                int target = now.addresses.indexOf(now.addresses.get(at + 2) + ((OffsetInstruction) body.get(at + 2)).getCodeOffset());
+                int away = sites.away() + (sites.away() >= sites.start() ? 3 : 0);
+                requireFeature(target == away, "the hook" + atRow + " sends a false answer to instruction " + target + ", not the check's own other side at " + away);
+                requireFeature(scratch < locals && old.readsFrom(sites.start(), scratch).isEmpty() && old.readsFrom(sites.away(), scratch).isEmpty(),
+                        "the hook" + atRow + " clobbers v" + scratch + ", which isn't a local nothing reads from there or from the check's other side");
+                return 3;
+            }));
+            System.out.println("[diff] threads-feature hideSuggestedUsers: Profile suggestions hook the carousel at " + guard + " of " + screenSig
+                    + " and the row at " + sites.start() + " of " + builderSig);
+        } catch (IllegalArgumentException | ClassCastException | IndexOutOfBoundsException ex) {
+            throw new IllegalArgumentException("Profile suggestions: " + ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Left out, profiles ask neither question, and the screen and view model methods the hooks go
+     * into are Threads' own. Only those two: Hide ghost post bubbles changes other profile code.
+     * A build with no suggested accounts row has nothing to keep.
+     */
+    private static void featureOmittedProfileSuggestions(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        try {
+            featureHostCalls(patched, PROFILE_CAROUSEL, Map.of());
+            featureHostCalls(patched, SHOW_PROFILE_ROW, Map.of());
+            boolean rowed = false;
+            for (List<Method> definitions : clean.values()) if (!definitions.get(0).getDefiningClass().startsWith(OWN) && holdsNote(definitions.get(0), SUGGESTED_ROW_NOTE)) rowed = true;
+            if (!rowed) return;
+            ProfileSites sites = featureProfileSites(clean);
+            for (Method stock : List.of(sites.screen(), sites.builder())) featureBody(stock, featureMethod(patched, featureSig(stock)), 0, Map.of(), "");
+        } catch (IllegalArgumentException | ClassCastException | IndexOutOfBoundsException ex) {
+            throw new IllegalArgumentException("Profile suggestions: " + ex.getMessage(), ex);
+        }
     }
 
     private static int ownedPermalinkStore(Method parser, Map<String, String> parents) {
@@ -4969,6 +5338,7 @@ public class DexDiff {
         featureFalseStub(patched, ADS + "isSuggestedUserItem(Ljava/lang/Object;)Z", true);
         featureHostCalls(patched, ADS + "isSuggestedUserItem(Ljava/lang/Object;)Z", Map.of());
         featureOmittedSearchCarousel(clean, patched);
+        featureOmittedProfileSuggestions(clean, patched);
         MultiDexContainer<? extends DexFile> dex = DexFileFactory.loadDexContainer(patchedApk, Opcodes.getDefault());
         for (String entry : dex.getDexEntryNames()) for (ClassDef cd : dex.getEntry(entry).getDexFile().getClasses())
             for (Field field : cd.getFields()) requireFeature(!field.getName().equals(RECORDED_RAW), "omitted suggestion feature added a raw recording field: " + field);

@@ -2330,6 +2330,138 @@ public class BadDexFixture {
                 define(SEARCH_LIST, "refresh", "V", false, body(2, refresh.toArray(new Instruction[0])))));
     }
 
+    private static final String SUGGESTED_ROW = "Lfixture/SuggestedUsersRow;";
+    private static final String PROFILE_CAROUSEL_ROW = "Lfixture/ProfileCarouselRow;";
+    private static final String PROFILE_INFO_ROW = "Lfixture/ProfileInfoRow;";
+    private static final String SUGGESTIONS_ROW = "Lfixture/SuggestionsRow;";
+    private static final String PROFILE_SCREEN = "Lfixture/ProfileScreen;";
+    private static final String PROFILE_VIEW_MODEL = "Lcom/instagram/barcelona/profile/viewmodel/ProfileViewModel;";
+    private static final String FEATURE_PROFILE = "Lapp/morphe/extension/hushthreads/profile/ProfileSuggestions;";
+    private static final ImmutableMethodReference PROFILE_CAROUSEL = method(FEATURE_PROFILE, "carousel", OBJECT, OBJECT);
+    private static final ImmutableMethodReference SHOW_PROFILE_ROW = method(FEATURE_PROFILE, "showRow", "Z");
+    private static final ImmutableMethodReference ROW_DEFAULT = method(SUGGESTED_ROW, "Row$default", "V", SHORTCUT_LIST, OBJECT, "I");
+
+    /**
+     * The profile's suggested accounts in 451's shape, as much of it as the contract reads. Threads'
+     * static row composable holds the row's note, and Row$default is the overload callers use. The
+     * screen's lambda hands the row the list its constructor stored, under a ProfileScreen.kt note;
+     * the info rows' lambda hands it ((SuggestionsRow) this.row).users, under a ProfileInfoRows.kt
+     * note. The screen reads the list out of the state into v1 and builds the lambda only past an
+     * if-nez on it. The view model's rows() makes the SuggestionsRow only past an if-eq of the list's
+     * size against 0: v0..v4 are locals, this is v5, then the rows, the users and an unused int v8.
+     * v0 is an int only the row's path reads and v4 one only the other side reads, since the row's
+     * path writes it first, so a hook taking either is live on one edge alone; v2 and v3 are free.
+     *
+     * [carousel] hooks the screen with the list's own register and [row] the view model with v2. The
+     * faults break one part each, and the omitted ones keep a hook, a call or a changed instruction
+     * with the patch left out. shared and compared are stock faults, on both sides: a second way onto
+     * the carousel, and a view model that reads what its check compared past the check's other side.
+     */
+    private static List<ClassDef> profileClasses(boolean carousel, boolean row, String fault) {
+        List<ClassDef> classes = new ArrayList<>();
+        classes.add(featureClass(SUGGESTED_ROW, OBJECT, List.of(),
+                define(SUGGESTED_ROW, "Row", "V", true, body(3, string(0, "com.instagram.barcelona.suggestedusers.ui.SuggestedUsersRow (SuggestedUsersRow.kt:120)"),
+                        op(Opcode.RETURN_VOID)), SHORTCUT_LIST, OBJECT),
+                define(SUGGESTED_ROW, "Row$default", "V", true, body(3, invoke(method(SUGGESTED_ROW, "Row", "V", SHORTCUT_LIST, OBJECT), 0, 1),
+                        op(Opcode.RETURN_VOID)), SHORTCUT_LIST, OBJECT, "I")));
+        // The screen's lambda: v0..v2 locals, this v3, the argument v4.
+        classes.add(featureClass(PROFILE_CAROUSEL_ROW, OBJECT, List.of(featureField(PROFILE_CAROUSEL_ROW, "list", SHORTCUT_LIST)),
+                define(PROFILE_CAROUSEL_ROW, "<init>", "V", false, body(2, direct(method(OBJECT, "<init>", "V"), 0),
+                        objectField(Opcode.IPUT_OBJECT, 1, 0, PROFILE_CAROUSEL_ROW, "list", SHORTCUT_LIST), op(Opcode.RETURN_VOID)), SHORTCUT_LIST),
+                define(PROFILE_CAROUSEL_ROW, "invoke", OBJECT, false, body(5,
+                        string(0, "com.instagram.barcelona.profile.ui.ProfileScreenKt$Content$1 (ProfileScreen.kt:310)"),
+                        objectField(Opcode.IGET_OBJECT, 1, 3, PROFILE_CAROUSEL_ROW, "list", SHORTCUT_LIST),
+                        new ImmutableInstruction11n(Opcode.CONST_4, 2, 0),
+                        invoke(ROW_DEFAULT, 1, 4, 2),
+                        op(Opcode.RETURN_OBJECT, 4)), OBJECT)));
+        // The info rows' lambda, laid out the same way.
+        classes.add(featureClass(PROFILE_INFO_ROW, OBJECT, List.of(featureField(PROFILE_INFO_ROW, "row", OBJECT)),
+                define(PROFILE_INFO_ROW, "invoke", OBJECT, false, body(5,
+                        string(0, "com.instagram.barcelona.profile.ui.ProfileInfoRowsKt$Rows$2 (ProfileInfoRows.kt:210)"),
+                        objectField(Opcode.IGET_OBJECT, 1, 3, PROFILE_INFO_ROW, "row", OBJECT),
+                        type(Opcode.CHECK_CAST, 1, SUGGESTIONS_ROW),
+                        objectField(Opcode.IGET_OBJECT, 2, 1, SUGGESTIONS_ROW, "users", SHORTCUT_LIST),
+                        new ImmutableInstruction11n(Opcode.CONST_4, 0, 0),
+                        invoke(ROW_DEFAULT, 2, 4, 0),
+                        op(Opcode.RETURN_OBJECT, 4)), OBJECT)));
+        classes.add(featureClass(SUGGESTIONS_ROW, OBJECT, List.of(featureField(SUGGESTIONS_ROW, "users", SHORTCUT_LIST)),
+                define(SUGGESTIONS_ROW, "<init>", "V", false, body(2, direct(method(OBJECT, "<init>", "V"), 0),
+                        objectField(Opcode.IPUT_OBJECT, 1, 0, SUGGESTIONS_ROW, "users", SHORTCUT_LIST), op(Opcode.RETURN_VOID)), SHORTCUT_LIST)));
+
+        // The screen, static Content(state, modifier): v0..v2 locals, the arguments v3 and v4.
+        BrowserCode screen = new BrowserCode();
+        screen.add(string(0, "com.instagram.barcelona.profile.ui.ProfileScreenKt$Content (ProfileScreen.kt:300)"));
+        screen.add(objectField(Opcode.IGET_OBJECT, 1, 3, "Lfixture/ProfileState;", "suggested", SHORTCUT_LIST));
+        int copies = !carousel || fault.equals("profile-carousel-missing") || fault.equals("profile-carousel-moved") ? 0
+                : fault.equals("profile-carousel-double") ? 2 : 1;
+        List<Instruction> carouselHook = List.of(
+                new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, fault.equals("profile-carousel-register") ? 0 : 1, 1, PROFILE_CAROUSEL),
+                op(Opcode.MOVE_RESULT_OBJECT, fault.equals("profile-carousel-result") ? 0 : 1),
+                type(Opcode.CHECK_CAST, 1, fault.equals("profile-carousel-cast") ? "Ljava/util/Collection;" : SHORTCUT_LIST));
+        for (int n = 0; n < copies; n++) carouselHook.forEach(screen::add);
+        int check = screen.branch(new ImmutableInstruction21t(Opcode.IF_NEZ, 1, 0));
+        int second = fault.equals("profile-carousel-shared") ? screen.branch(ifEqz(4, 0)) : -1;
+        screen.add(op(Opcode.RETURN_VOID));
+        int built = screen.size();
+        // moved puts the hook past the check, on the carousel's own path.
+        if (carousel && fault.equals("profile-carousel-moved")) carouselHook.forEach(screen::add);
+        screen.add(type(Opcode.NEW_INSTANCE, 2, PROFILE_CAROUSEL_ROW));
+        screen.add(direct(method(PROFILE_CAROUSEL_ROW, "<init>", "V", SHORTCUT_LIST), 2, 1));
+        screen.add(invoke(method(PROFILE_SCREEN, "show", "V", OBJECT), 2));
+        if (fault.equals("profile-carousel-body") || fault.equals("profile-carousel-omitted-body")) screen.add(op(Opcode.NOP));
+        screen.add(op(Opcode.RETURN_VOID));
+        screen.to(check, built);
+        if (second >= 0) screen.to(second, built);
+        List<Instruction> refresh = new ArrayList<>();
+        if (fault.equals("profile-carousel-stray")) refresh.addAll(List.of(invoke(PROFILE_CAROUSEL, 0), op(Opcode.MOVE_RESULT_OBJECT, 0)));
+        refresh.add(op(Opcode.RETURN_VOID));
+        classes.add(featureClass(PROFILE_SCREEN, OBJECT, List.of(),
+                define(PROFILE_SCREEN, "Content", "V", true, body(5, screen.finish()), OBJECT, OBJECT),
+                define(PROFILE_SCREEN, "show", "V", true, body(1, op(Opcode.RETURN_VOID)), OBJECT),
+                define(PROFILE_SCREEN, "refresh", "V", true, body(1, refresh.toArray(new Instruction[0])), OBJECT)));
+
+        // The view model's rows(rows, users, unused).
+        BrowserCode rows = new BrowserCode();
+        rows.add(new ImmutableInstruction11n(Opcode.CONST_4, 0, 2));
+        rows.add(new ImmutableInstruction11n(Opcode.CONST_4, 4, 1));
+        rows.add(new ImmutableInstruction35c(Opcode.INVOKE_INTERFACE, 1, 7, 0, 0, 0, 0, method(SHORTCUT_LIST, "size", "I")));
+        rows.add(op(Opcode.MOVE_RESULT, 1));
+        rows.add(new ImmutableInstruction11n(Opcode.CONST_4, 2, 0));
+        int guard = rows.branch(new ImmutableInstruction22t(Opcode.IF_EQ, 1, 2, 0));
+        List<Integer> leaves = new ArrayList<>();
+        int rowCopies = !row || fault.equals("profile-row-missing") ? 0 : fault.equals("profile-row-double") ? 2 : 1;
+        int scratch = fault.equals("profile-row-live-start") ? 0 : fault.equals("profile-row-live-away") ? 4
+                : fault.equals("profile-row-parameter") ? 8 : 2;
+        for (int n = 0; n < rowCopies; n++) {
+            rows.add(invoke(SHOW_PROFILE_ROW));
+            // ignored drops the answer and tests a constant, so the row always shows.
+            rows.add(fault.equals("profile-row-ignored") ? new ImmutableInstruction11n(Opcode.CONST_4, scratch, 1) : op(Opcode.MOVE_RESULT, scratch));
+            leaves.add(rows.branch(new ImmutableInstruction21t(fault.equals("profile-row-inverted") ? Opcode.IF_NEZ : Opcode.IF_EQZ, scratch, 0)));
+        }
+        rows.add(type(Opcode.NEW_INSTANCE, 3, SUGGESTIONS_ROW));
+        rows.add(direct(method(SUGGESTIONS_ROW, "<init>", "V", SHORTCUT_LIST), 3, 7));
+        rows.add(new ImmutableInstruction35c(Opcode.INVOKE_INTERFACE, 2, 6, 3, 0, 0, 0, method(SHORTCUT_LIST, "add", "Z", OBJECT)));
+        rows.add(virtual(method(PROFILE_VIEW_MODEL, "count", "V", "I"), 5, 0));
+        rows.add(new ImmutableInstruction11n(Opcode.CONST_4, 4, 0));
+        int away = rows.size();
+        // compared reads the size the check compared again, on its other side.
+        rows.add(virtual(method(PROFILE_VIEW_MODEL, "count", "V", "I"), 5, fault.equals("profile-row-compared") ? 1 : 4));
+        if (fault.equals("profile-row-body") || fault.equals("profile-row-omitted-body")) rows.add(op(Opcode.NOP));
+        int end = rows.size();
+        rows.add(op(Opcode.RETURN_VOID));
+        rows.to(guard, away);
+        // target leaves for the return, past the other side's own work.
+        for (int leave : leaves) rows.to(leave, fault.equals("profile-row-target") ? end : away);
+        List<Instruction> load = new ArrayList<>();
+        if (fault.equals("profile-row-stray") || fault.equals("profile-row-omitted-call")) load.addAll(List.of(invoke(SHOW_PROFILE_ROW), op(Opcode.MOVE_RESULT, 0)));
+        load.add(op(Opcode.RETURN_VOID));
+        classes.add(featureClass(PROFILE_VIEW_MODEL, OBJECT, List.of(),
+                define(PROFILE_VIEW_MODEL, "rows", "V", false, body(9, rows.finish()), SHORTCUT_LIST, SHORTCUT_LIST, "I"),
+                define(PROFILE_VIEW_MODEL, "count", "V", false, body(2, op(Opcode.RETURN_VOID)), "I"),
+                define(PROFILE_VIEW_MODEL, "load", "V", false, body(2, load.toArray(new Instruction[0])))));
+        return classes;
+    }
+
     /** Independent small host shapes. Every faulty build still passes all structural checks. */
     private static List<ClassDef> featureBuild(boolean patched, Set<String> selected, int mask, String fault) {
         List<ClassDef> classes = new ArrayList<>(patched ? good() : clean(cleanHost()));
@@ -2489,6 +2621,7 @@ public class BadDexFixture {
                 "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", OBJECT)));
         directBrowserClasses(classes, browser, fault);
         classes.addAll(searchCarouselClasses(suggestions || fault.equals("search-carousel-omitted-hook"), fault));
+        classes.addAll(profileClasses(suggestions || fault.equals("profile-carousel-omitted-hook"), suggestions || fault.equals("profile-row-omitted-hook"), fault));
 
         List<Instruction> pigeon = new ArrayList<>(List.of(string(0, "/pigeon_nest"), string(1, "/logging_client_events"),
                 ifEqz(3, fault.equals("pigeon-bypass") ? 6 : 2)));
@@ -2608,6 +2741,9 @@ public class BadDexFixture {
                 body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0)), CONTEXT, "Ljava/lang/String;")));
         classes.add(featureClass(FEATURE_SEARCH, OBJECT, List.of(), define(FEATURE_SEARCH, "showCarousel", "Z", true,
                 body(1, new ImmutableInstruction11n(Opcode.CONST_4, 0, 1), op(Opcode.RETURN, 0)))));
+        classes.add(featureClass(FEATURE_PROFILE, OBJECT, List.of(),
+                define(FEATURE_PROFILE, "carousel", OBJECT, true, body(1, op(Opcode.RETURN_OBJECT, 0)), OBJECT),
+                define(FEATURE_PROFILE, "showRow", "Z", true, body(1, new ImmutableInstruction11n(Opcode.CONST_4, 0, 1), op(Opcode.RETURN, 0)))));
         classes.add(featureClass(FEATURE_TRUST, OBJECT, List.of(), define(FEATURE_TRUST, "originalSigners", SHORTCUT_LIST, true,
                 body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0)), PACKAGE_INFO)));
         classes.add(featureClass(FEATURE_RETURN, OBJECT, List.of(),
@@ -2819,6 +2955,20 @@ public class BadDexFixture {
         }
         for (String fault : List.of("omitted-hook", "omitted-call", "omitted-body")) {
             dexes.put("features-bad-search-carousel-" + fault, featureBuild(true, Set.of(), 0, "search-carousel-" + fault));
+        }
+        // The profile's carousel and header row the same way, then the two stock faults, which need a
+        // clean build of their own.
+        for (String fault : List.of("carousel-missing", "carousel-register", "carousel-result", "carousel-cast", "carousel-moved", "carousel-double",
+                "carousel-stray", "carousel-body", "row-missing", "row-inverted", "row-ignored", "row-target", "row-double", "row-stray",
+                "row-live-start", "row-live-away", "row-parameter", "row-body")) {
+            dexes.put("features-bad-profile-" + fault, featureBuild(true, Set.of("hideSuggestedUsers"), 0, "profile-" + fault));
+        }
+        for (String fault : List.of("carousel-omitted-hook", "carousel-omitted-body", "row-omitted-hook", "row-omitted-call", "row-omitted-body")) {
+            dexes.put("features-bad-profile-" + fault, featureBuild(true, Set.of(), 0, "profile-" + fault));
+        }
+        for (String fault : List.of("carousel-shared", "row-compared")) {
+            dexes.put("features-profile-" + fault + "-clean", featureBuild(false, Set.of(), 0, "profile-" + fault));
+            dexes.put("features-bad-profile-" + fault, featureBuild(true, Set.of("hideSuggestedUsers"), 0, "profile-" + fault));
         }
         // Background-return refresh alone, so a failure can only be its own.
         for (String fault : List.of("hot-start-missing", "hot-start-inverted", "reset-missing", "reset-register",

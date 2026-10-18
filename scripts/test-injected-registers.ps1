@@ -804,6 +804,65 @@ try {
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
+    # The profile's suggested accounts, found from the clean DEX alone: the screen's carousel and the
+    # header row's builder, each the sole site its Compose note and its one check point at. The good
+    # build names both sites. Each fault breaks one part and is refused by that part: the carousel's
+    # call, answer and cast at its null check, the row's answer, false edge, target and dead local,
+    # one call each in all of Threads, and the rest of both methods; left out, no call anywhere and
+    # both methods as Threads shipped them. The scratch faults reach one part of the liveness check
+    # each: live-start the row's path, live-away the check's other side, parameter the locals bound.
+    # Two stock builds have their own clean DEX: a carousel reached past its check from a second
+    # branch, and a row whose check's register is read again on its other side. The faults only one
+    # part refuses come first; missing, double and the omitted hooks break several parts at once.
+    $profileGood = Invoke-DexDiff -Clean $featureClean -Patched (New-DexApk -Name 'features-profile-good' -Entries ([ordered]@{
+        'classes.dex' = (Get-Dex 'features-only-hideSuggestedUsers') })) -Allowlist $emptyAllowlist -Name 'features-profile-good' -Contracts $contracts -Features 'hideSuggestedUsers'
+    Assert-True ($profileGood.ExitCode -eq 0 -and ($profileGood.Output -join [Environment]::NewLine) -match
+        [regex]::Escape('Profile suggestions hook the carousel at 2 of Lfixture/ProfileScreen;->Content(Ljava/lang/Object;Ljava/lang/Object;)V and the row at 6 of')) `
+        ("The good build did not name both profile suggestion sites. " + ($profileGood.Output -join [Environment]::NewLine))
+    $profileFaults = [ordered]@{
+        'carousel-register' = "no hook at the carousel's null check at 2 in Lfixture/ProfileScreen;->Content(Ljava/lang/Object;Ljava/lang/Object;)V that hands carousel() the list in v1"
+        'carousel-result' = "doesn't take carousel()'s answer back into the list's register, v1"
+        'carousel-cast' = "doesn't cast carousel()'s answer back to the list's type, Ljava/util/List;"
+        'carousel-moved' = "no hook at the carousel's null check at 2 in Lfixture/ProfileScreen;->Content(Ljava/lang/Object;Ljava/lang/Object;)V that hands carousel() the list in v1"
+        'carousel-stray' = 'ProfileSuggestions;->carousel(Ljava/lang/Object;)Ljava/lang/Object; host calls differ'
+        'carousel-body' = 'ProfileScreen;->Content(Ljava/lang/Object;Ljava/lang/Object;)V changed original instruction 7'
+        'carousel-shared' = 'is reached from [2, 3] at instruction 5, not through one check'
+        'row-inverted' = 'leaves on something other than a false answer'
+        'row-ignored' = "no hook at the start of the row's path at 6 in Lcom/instagram/barcelona/profile/viewmodel/ProfileViewModel;->rows(Ljava/util/List;Ljava/util/List;I)V that takes showRow()'s answer"
+        'row-target' = "sends a false answer to instruction 15, not the check's own other side at 14"
+        'row-live-start' = "clobbers v0, which isn't a local nothing reads from there or from the check's other side"
+        'row-live-away' = "clobbers v4, which isn't a local nothing reads from there or from the check's other side"
+        'row-parameter' = "clobbers v8, which isn't a local nothing reads from there or from the check's other side"
+        'row-stray' = 'ProfileSuggestions;->showRow()Z host calls differ'
+        'row-body' = 'ProfileViewModel;->rows(Ljava/util/List;Ljava/util/List;I)V changed original instruction 12'
+        'row-compared' = "reads v1 again past its check at 5, so leaving the row's path there wouldn't match Threads' own"
+        'carousel-missing' = 'ProfileSuggestions;->carousel(Ljava/lang/Object;)Ljava/lang/Object; host calls differ'
+        'carousel-double' = 'ProfileSuggestions;->carousel(Ljava/lang/Object;)Ljava/lang/Object; host calls differ'
+        'row-missing' = 'ProfileSuggestions;->showRow()Z host calls differ'
+        'row-double' = 'ProfileSuggestions;->showRow()Z host calls differ'
+        'carousel-omitted-hook' = 'ProfileSuggestions;->carousel(Ljava/lang/Object;)Ljava/lang/Object; host calls differ'
+        'carousel-omitted-body' = 'ProfileScreen;->Content(Ljava/lang/Object;Ljava/lang/Object;)V changed original instruction 7'
+        'row-omitted-hook' = 'ProfileSuggestions;->showRow()Z host calls differ'
+        'row-omitted-call' = 'ProfileSuggestions;->showRow()Z host calls differ'
+        'row-omitted-body' = 'ProfileViewModel;->rows(Ljava/util/List;Ljava/util/List;I)V changed original instruction 12'
+    }
+    foreach ($fault in $profileFaults.Keys) {
+        $case = "features-bad-profile-$fault"
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $stock = if ($fault -in @('carousel-shared', 'row-compared')) {
+            New-DexApk -Name "features-profile-$fault-clean" -Entries ([ordered]@{ 'classes.dex' = (Get-Dex "features-profile-$fault-clean") })
+        } else { $featureClean }
+        $selection = if ($fault.Contains('omitted-')) { 'none' } else { 'hideSuggestedUsers' }
+        $checked = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $selection
+        $findings = Get-Findings $checked
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+            @($findings.Fails | Where-Object { -not $_.Contains('contract: hideSuggestedUsers: Profile suggestions: ') }).Count -eq 0) `
+            ("$fault was not rejected solely by the profile suggestions contract. " + ($checked.Output -join [Environment]::NewLine))
+        Assert-True (@($findings.Fails | Where-Object { $_.Contains($profileFaults[$fault]) }).Count -gt 0) `
+            "$fault was not refused as '$($profileFaults[$fault])': $($findings.Fails -join '; ')"
+        $structural = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
     # 451's network-only fetch shares the label, and its quick coroutine copies high-register
     # this into v13. Keep the direct-this fixtures above and verify both forms independently.
     $sharingAliasClean = New-DexApk -Name 'features-sharing-alias-clean' -Entries ([ordered]@{
@@ -1296,7 +1355,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $copyTextFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 7) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $profileFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $copyTextFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'
