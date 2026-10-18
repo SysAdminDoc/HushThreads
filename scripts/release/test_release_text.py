@@ -114,6 +114,11 @@ class ReleaseTextTest(unittest.TestCase):
         self.assertIn("The latest release is [v0.0.12]", readme)
         self.assertEqual(self.read(release_text.USER_AGENT_TEST).count("HushThreads/0.0.13"), 2)
 
+    def test_cut_moves_a_user_agent_an_earlier_release_left_behind(self):
+        self.write(release_text.USER_AGENT_TEST, USER_AGENT.replace("0.0.12", "0.0.11"))
+        self.run_command(release_text.cut, version="0.0.13", date="2026-10-09")
+        self.assertEqual(self.read(release_text.USER_AGENT_TEST).count("HushThreads/0.0.13"), 2)
+
     def test_cut_refuses_what_manager_would_misread_and_writes_nothing(self):
         for bad, needle in (("* **Threads:** Hide the Instagram", "- **Threads:** Hide the Instagram"),
                             ("* **Threads:** Hide the Instagram", "* **Feed:** Hide the Instagram"),

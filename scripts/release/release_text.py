@@ -228,7 +228,8 @@ def cut(args) -> None:
                   rf"\g<1>{version}-", "README version badge")
     edits["README.md"] = swap(readme, rf'alt="Version {re.escape(old)}"', f'alt="Version {version}"',
                               "README version badge text")
-    edits[USER_AGENT_TEST] = swap(read(here(USER_AGENT_TEST)), rf"HushThreads/{re.escape(old)}(?![\w.])",
+    # Any version, not only the previous one: v0.0.14's prep left this test on 0.0.13.
+    edits[USER_AGENT_TEST] = swap(read(here(USER_AGENT_TEST)), r"HushThreads/\d+\.\d+\.\d+(?![\w.])",
                                   f"HushThreads/{version}", "the release check test's User-Agent", expected=None)
     for name, text in edits.items():
         write(here(name), text)
