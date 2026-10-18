@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Settings:** When Threads rebuilds its screen with the settings open (after a text size change, say, or when Android closed Threads in the background), a settings page that fails to come back now gives way to a fresh page. Before, that failure would have crashed Threads, since it happens where the settings' own Retry and Back can't catch it.
+
 * **Settings:** TalkBack now reads the Threads logo at the top of the feed as "Threads". Before, it stopped on the refresh spinner inside the logo and said "Progress bar". The README also says the logo ignores taps and holds while the feed loads or refreshes.
 
 * **Tooling:** The file picker behind Export settings and Import settings now has its own entry in the source ledger. Its two classes never had one, so the provenance test failed on every full run since they were added.

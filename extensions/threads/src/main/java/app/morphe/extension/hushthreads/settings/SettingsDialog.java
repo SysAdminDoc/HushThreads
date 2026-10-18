@@ -92,7 +92,17 @@ public final class SettingsDialog extends DialogFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        try {
+            super.onCreate(savedInstanceState);
+        } catch (Exception ex) {
+            // A saved page is put back in here, out of attachPage's reach, so one that fails to
+            // attach would crash Threads. Taken away, it gives way to a fresh page when the view
+            // is made, or to Retry and Back if that fails too. The second call lets the dialog
+            // finish its own setup, now with no page to put back.
+            Logger.printInfo(() -> "Could not put the saved preference list back", ex);
+            dropBrokenPage();
+            super.onCreate(null);
+        }
         setStyle(STYLE_NO_TITLE, ScreenColors.THEME);
     }
 
@@ -388,18 +398,23 @@ public final class SettingsDialog extends DialogFragment {
             // The recovery below is what the person sees, so the log stays quiet about it.
             Logger.printInfo(() -> "Could not show the preference list", ex);
         }
-        // A page that failed partway in is still added to the container. Left there, Back would
-        // ask it about a list it never built, and the next lifecycle step would attach it again
-        // behind Retry and Back.
-        android.app.Fragment broken = page();
-        if (broken != null) {
-            try {
-                children.beginTransaction().remove(broken).commitNowAllowingStateLoss();
-            } catch (Exception ex) {
-                Logger.printInfo(() -> "Could not take away the page that failed", ex);
-            }
-        }
+        dropBrokenPage();
         showAttachFailure();
+    }
+
+    /**
+     * A page that failed partway in is still added to the container. Left there, Back would ask
+     * it about a list it never built, and the next lifecycle step would attach it again behind
+     * Retry and Back.
+     */
+    private void dropBrokenPage() {
+        android.app.Fragment broken = page();
+        if (broken == null) return;
+        try {
+            getChildFragmentManager().beginTransaction().remove(broken).commitNowAllowingStateLoss();
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not take away the page that failed", ex);
+        }
     }
 
     /**

@@ -172,6 +172,69 @@ public class SettingsDialogTest {
         assertTrue(pageOf(restored).getPreferenceScreen().getPreferenceCount() > 0);
     }
 
+    /**
+     * A saved page is put back inside the dialog's own onCreate, where attachPage's recovery can't
+     * reach, so a page that fails to attach there used to crash the host. It gives way to a fresh
+     * page instead. The marker tells the fresh page from the saved one, which the next lifecycle
+     * step would attach again if it weren't taken away.
+     */
+    @Test
+    @Config(sdk = {28, 36})
+    public void aRestoredPageThatFailsToAttachGivesWayToAFreshPage() {
+        android.os.Bundle marker = new android.os.Bundle();
+        marker.putString("marker", "the page the framework saved");
+        pageOf(show(controller.get())).setArguments(marker);
+        HushThreadsPreferenceFragment.failNextAttachment = new IllegalStateException("injected restore");
+
+        controller.recreate();
+        ShadowLooper.idleMainLooper();
+
+        assertNull("the saved page was never attached", HushThreadsPreferenceFragment.failNextAttachment);
+        assertFreshPageAfterRestore((SettingsDialog) controller.get().getFragmentManager().findFragmentByTag(TAG));
+    }
+
+    /**
+     * The same on a Threads screen that doesn't keep fragment state: the entry saves the screen
+     * with the activity and shows it again through setInitialSavedState, whose commit runs after
+     * open() has returned, so open()'s own catch can't reach the failure either.
+     */
+    @Test
+    @Config(sdk = {28, 36})
+    public void aReopenedScreenWhoseSavedPageFailsToAttachGetsAFreshPage() {
+        Activity activity = controller.get();
+        SettingsEntry.OpenWhenResumed watcher = new SettingsEntry.OpenWhenResumed();
+        SettingsDialog shown = show(activity);
+        android.os.Bundle marker = new android.os.Bundle();
+        marker.putString("marker", "the page the entry saved");
+        pageOf(shown).setArguments(marker);
+        android.os.Bundle state = new android.os.Bundle();
+        watcher.onActivitySaveInstanceState(activity, state);
+        assertNotNull("the entry didn't save the screen", state.getParcelable(SettingsEntry.RECREATED_SCREEN));
+        activity.getFragmentManager().beginTransaction().remove(shown).commitNow();
+        watcher.onActivityCreated(activity, state);
+        HushThreadsPreferenceFragment.failNextAttachment = new IllegalStateException("injected restore");
+
+        watcher.onActivityResumed(activity);
+        ShadowLooper.idleMainLooper();
+        activity.getFragmentManager().executePendingTransactions();
+
+        assertNull("the saved page was never attached", HushThreadsPreferenceFragment.failNextAttachment);
+        assertFreshPageAfterRestore((SettingsDialog) activity.getFragmentManager().findFragmentByTag(TAG));
+    }
+
+    private void assertFreshPageAfterRestore(SettingsDialog restored) {
+        assertNotNull("the settings didn't come back", restored);
+        assertEquals("pages after the failed restore", 1, pages(restored).size());
+        HushThreadsPreferenceFragment page = pageOf(restored);
+        assertTrue("the page that failed is still the one shown",
+                page.getArguments() == null || !page.getArguments().containsKey("marker"));
+        assertEquals(SettingsDialog.CONTAINER_ID, ((View) page.getView().getParent()).getId());
+        assertNull(restored.getView().findViewWithTag(SettingsDialog.ATTACH_FAILURE));
+        assertNull(page.findPreference(ERROR));
+        assertTrue(page.getPreferenceScreen().getPreferenceCount() > 0);
+        assertFalse(controller.get().isFinishing());
+    }
+
     private static View attachFailure(SettingsDialog dialog) {
         View failure = dialog.getView().findViewWithTag(SettingsDialog.ATTACH_FAILURE);
         assertNotNull("no Retry and Back where the page failed to attach", failure);
