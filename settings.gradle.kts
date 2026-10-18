@@ -227,8 +227,21 @@ fun buildClasspathJson(value: Any?, indent: String = ""): String {
 }
 
 buildClasspathGraphs["settings classpath"] = buildClasspathGraph("settings classpath", buildscript.configurations.getByName("classpath"))
-val buildClasspathSettingsSha256 = MessageDigest.getInstance("SHA-256")
-    .digest(settingsDir.resolve("settings.gradle.kts").readBytes()).joinToString("") { "%02x".format(it) }
+// SHA-256 of a file's raw bytes as lowercase hex, the format scripts/release-advisories.ps1 gets from
+// Get-FileHash. The inventory ties itself to these four files, and the receipt refuses one whose
+// hashes differ from the checkout it builds from.
+fun buildClasspathFileSha256(relative: String): String {
+    val file = settingsDir.resolve(relative)
+    if (!file.isFile) throw GradleException("The build classpath inventory can't hash $relative, which isn't there.")
+    return MessageDigest.getInstance("SHA-256").digest(file.readBytes()).joinToString("") { "%02x".format(it) }
+}
+val buildClasspathSettingsSha256 = buildClasspathFileSha256("settings.gradle.kts")
+val buildClasspathInputs = linkedMapOf(
+    "settings.gradle.kts" to buildClasspathSettingsSha256,
+    "patches/build.gradle.kts" to buildClasspathFileSha256("patches/build.gradle.kts"),
+    "gradle/libs.versions.toml" to buildClasspathFileSha256("gradle/libs.versions.toml"),
+    "gradle/verification-metadata.xml" to buildClasspathFileSha256("gradle/verification-metadata.xml"),
+)
 val buildClasspathGradleVersion = gradle.gradleVersion
 
 gradle.allprojects {
@@ -252,6 +265,7 @@ gradle.rootProject {
                 "schema" to "hushthreads-build-classpath-1",
                 "gradle" to buildClasspathGradleVersion,
                 "settingsScript" to linkedMapOf("path" to "settings.gradle.kts", "sha256" to buildClasspathSettingsSha256),
+                "buildInputs" to buildClasspathInputs,
                 "covers" to ("The classpath settings.gradle.kts resolved for its plugins block, which the build's " +
                     "plugins and tools run from, and every project's buildscript classpath. Each version is the one " +
                     "Gradle's resolution chose. A request for another version is listed under conflicts."),

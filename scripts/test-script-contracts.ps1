@@ -2168,11 +2168,23 @@ Write-Host "[scripts] $($rangeCases.Count) complete Maven range gate cases passe
             $parts = [regex]::Match($purl, '^pkg:maven/([^/]+)/([^@]+)@(.+)$')
             [ordered]@{ group = $parts.Groups[1].Value; name = $parts.Groups[2].Value; version = $parts.Groups[3].Value; purl = $purl }
         })
+        # The four build files the writer hashes, beside the settings script. One a checkout lacks is
+        # made up so there is something to hash.
+        $buildInputs = [ordered]@{}
+        foreach ($relative in @('settings.gradle.kts', 'patches/build.gradle.kts', 'gradle/libs.versions.toml', 'gradle/verification-metadata.xml')) {
+            $inputPath = Join-Path (Split-Path -Parent $SettingsScript) $relative
+            if (-not (Test-Path -LiteralPath $inputPath -PathType Leaf)) {
+                New-Item -ItemType Directory -Path (Split-Path -Parent $inputPath) -Force | Out-Null
+                Set-Content -LiteralPath $inputPath -Encoding ASCII -Value "build input $relative"
+            }
+            $buildInputs[$relative] = (Get-FileHash -LiteralPath $inputPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        }
         $document = [ordered]@{
             schema = 'hushthreads-build-classpath-1'
             gradle = '9.8.1'
             settingsScript = [ordered]@{ path = 'settings.gradle.kts'
                 sha256 = (Get-FileHash -LiteralPath $SettingsScript -Algorithm SHA256).Hash.ToLowerInvariant() }
+            buildInputs = $buildInputs
             covers = 'The settings classpath.'
             leavesOut = 'What the bundle carries.'
             graphs = @(
@@ -2304,6 +2316,18 @@ Write-Host "[scripts] $($rangeCases.Count) complete Maven range gate cases passe
                     Pattern = '*doesn''t say which settings.gradle.kts*' },
                 @{ Name = 'another settings script'; Write = { New-TestBuildInventory -Mutate { param($d) $d.settingsScript.sha256 = ('0' * 64) } }
                     Pattern = '*was written for another settings.gradle.kts*' },
+                @{ Name = 'no build input hashes'; Write = { New-TestBuildInventory -Mutate { param($d) $d.Remove('buildInputs') } }
+                    Pattern = '*doesn''t say which settings.gradle.kts it was written for*' },
+                @{ Name = 'no patches/build.gradle.kts hash'; Write = { New-TestBuildInventory -Mutate { param($d) $d.buildInputs.Remove('patches/build.gradle.kts') } }
+                    Pattern = '*doesn''t say which patches/build.gradle.kts it was written for*' },
+                @{ Name = 'another patches/build.gradle.kts'; Write = { New-TestBuildInventory -Mutate { param($d) $d.buildInputs['patches/build.gradle.kts'] = ('0' * 64) } }
+                    Pattern = '*was written for another patches/build.gradle.kts than*' },
+                @{ Name = 'another gradle/libs.versions.toml'; Write = { New-TestBuildInventory -Mutate { param($d) $d.buildInputs['gradle/libs.versions.toml'] = ('0' * 64) } }
+                    Pattern = '*was written for another gradle/libs.versions.toml than*' },
+                @{ Name = 'another gradle/verification-metadata.xml'; Write = { New-TestBuildInventory -Mutate { param($d) $d.buildInputs['gradle/verification-metadata.xml'] = ('0' * 64) } }
+                    Pattern = '*was written for another gradle/verification-metadata.xml than*' },
+                @{ Name = 'an upper-case hash'; Write = { New-TestBuildInventory -Mutate { param($d) $d.buildInputs['gradle/libs.versions.toml'] = $d.buildInputs['gradle/libs.versions.toml'].ToUpperInvariant() } }
+                    Pattern = '*doesn''t say which gradle/libs.versions.toml it was written for*' },
                 @{ Name = 'no classpath'; Write = { New-TestBuildInventory -Mutate { param($d) $d.graphs = @() } }; Pattern = '*lists no classpath*' },
                 @{ Name = 'a classpath with no unresolved list'; Write = { New-TestBuildInventory -Mutate { param($d) $d.graphs[1].Remove('unresolved') } }
                     Pattern = '*without a name, components, conflicts and an unresolved list*' },
@@ -5016,7 +5040,8 @@ try {
     # release is held to the census, and .gitignore has to let the ledger be committed.
     $releaseFiles = @('patches-list.json', 'patches-bundle.json', 'gradle.properties', 'README.md', 'CHANGELOG.md',
         'gradle/libs.versions.toml', '.github/ISSUE_TEMPLATE/bug_report.yml', '.gitignore',
-        'sources/threads-sources.json', 'NOTICE', 'provenance.json', 'settings.gradle.kts')
+        'sources/threads-sources.json', 'NOTICE', 'provenance.json', 'settings.gradle.kts',
+        'patches/build.gradle.kts', 'gradle/verification-metadata.xml')
     foreach ($relative in $releaseFiles) {
         $destination = Join-Path $releaseRepo $relative
         New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
@@ -5792,6 +5817,8 @@ try {
                     Pattern = '*high or critical advisories for the build classpath: GHSA-4jrv-ppp4-jm57 (HIGH*build-advisory-exceptions.txt*' },
                 @{ Name = 'an inventory for another settings.gradle.kts'; Pattern = '*was written for another settings.gradle.kts*'
                     Write = { New-TestBuildInventory -Path $releaseBuildInventory -SettingsScript $releaseSettings -Mutate { param($d) $d.settingsScript.sha256 = ('0' * 64) } } },
+                @{ Name = 'an inventory for another gradle/libs.versions.toml'; Pattern = '*was written for another gradle/libs.versions.toml than*'
+                    Write = { New-TestBuildInventory -Path $releaseBuildInventory -SettingsScript $releaseSettings -Mutate { param($d) $d.buildInputs['gradle/libs.versions.toml'] = ('0' * 64) } } },
                 @{ Name = 'no build classpath inventory'; Write = { Remove-Item -LiteralPath $releaseBuildInventory }
                     Pattern = '*There is no build classpath inventory at*' })) {
             & $refused.Write

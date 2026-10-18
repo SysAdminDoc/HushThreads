@@ -613,7 +613,9 @@ function Read-BuildClasspathInventory {
         asked for isn't on the classpath, so it's reported and never put to OSV.
 
         Held to the shape the task writes, within bounds, and refused where it differs: a missing
-        or unreadable inventory, one written for another settings.gradle.kts, one with no settings
+        or unreadable inventory, one written for another settings.gradle.kts, patches/build.gradle.kts,
+        gradle/libs.versions.toml or gradle/verification-metadata.xml (judged by the hash of each, in the
+        directory that holds the settings script), one with no settings
         classpath component, a component whose package URL doesn't name it, and a dependency that
         didn't resolve, whose version nobody knows. None of those reads as a classpath with no
         advisories.
@@ -664,6 +666,26 @@ function Read-BuildClasspathInventory {
         if ($current -cne $recorded.sha256) {
             throw ("$name was written for another settings.gradle.kts than $SettingsScript, so it may not be the " +
                 'classpath this build resolved. Build again.')
+        }
+    }
+    if ($SettingsScript) {
+        # The other build files the plugin classpath depends on, beside the settings script. Each is
+        # recorded as the lowercase hex SHA-256 of its raw bytes, which Get-FileHash answers too.
+        $projectRoot = Split-Path -Parent $SettingsScript
+        $inputs = $document.buildInputs
+        foreach ($relative in @('settings.gradle.kts', 'patches/build.gradle.kts', 'gradle/libs.versions.toml', 'gradle/verification-metadata.xml')) {
+            $property = if (Test-AdvisoryObject $inputs) { $inputs.PSObject.Properties[$relative] } else { $null }
+            if ($null -eq $property -or $property.Value -isnot [string] -or $property.Value -cnotmatch '^[0-9a-f]{64}$') {
+                throw "$name doesn't say which $relative it was written for. Build again."
+            }
+            $inputPath = Join-Path $projectRoot $relative
+            if (-not (Test-Path -LiteralPath $inputPath -PathType Leaf)) {
+                throw "There is no $inputPath to hold $name to."
+            }
+            if ((Get-FileHash -LiteralPath $inputPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $property.Value) {
+                throw ("$name was written for another $relative than $inputPath, so it may not be the " +
+                    'classpath this build resolved. Build again.')
+            }
         }
     }
     if ($document.graphs -isnot [array] -or $document.graphs.Count -eq 0) { throw "$name lists no classpath." }
