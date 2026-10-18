@@ -2569,7 +2569,9 @@ public class BadDexFixture {
      * original. A second lambda holds the note without checking for Copy link, and the models the
      * bridges read come along. Faults: no hook, a copy of another call, the wrong registers passed,
      * a goto past the wrong place, a second add on the shared row call, a second host caller, Share's
-     * goto sent to the copy, and, left out, the copy and goto alone.
+     * goto sent to the copy, a branch in Copy link's case straight to its row call (stock as well as
+     * hooked, so it takes a clean build of its own), and, left out, the copy and goto alone or an add
+     * in the second lambda.
      */
     private static List<ClassDef> saveMediaClasses(boolean patched, boolean hooked, String fault) {
         Instruction none = new ImmutableInstruction11n(Opcode.CONST_4, 0, 0);
@@ -2595,8 +2597,12 @@ public class BadDexFixture {
         menu.addAll(List.of(new ImmutableInstruction11n(Opcode.CONST_4, 6, 1), invoke(MENU_CLICKABLE, 3, 4, 5, 6), op(Opcode.MOVE_RESULT_OBJECT, 3),
                 invoke(MENU_SEMANTICS, 3, 12), op(Opcode.MOVE_RESULT_OBJECT, 3), invoke(MENU_STYLE_OF, 12), op(Opcode.MOVE_RESULT_OBJECT, 4),
                 new ImmutableInstruction31i(Opcode.CONST, 6, 0x7f080123), new ImmutableInstruction11n(Opcode.CONST_4, 7, 2),
-                new ImmutableInstruction11n(Opcode.CONST_4, 8, 0), invoke(MENU_ICON_OF, 12, 6, 7, 8), op(Opcode.MOVE_RESULT_OBJECT, 5),
-                string(7, "Copy link")));
+                new ImmutableInstruction11n(Opcode.CONST_4, 8, 0), invoke(MENU_ICON_OF, 12, 6, 7, 8), op(Opcode.MOVE_RESULT_OBJECT, 5)));
+        menu.add(string(7, "Copy link"));
+        // bypass branches from the label, the last instruction before the row call, so v7 holds the
+        // label on both of the row call's ways in, and only the branch skips the Save row.
+        int bypass = fault.equals("save-bypass") ? menu.size() : -1;
+        if (bypass >= 0) menu.add(ifEqz(2, 0));
         Instruction row = invoke(MENU_ROW, 12, 3, 4, 5, 7);
         int copyAt = menu.size();
         boolean copied = hooked && !fault.equals("save-missing") || patched && fault.equals("save-omitted-menu");
@@ -2618,13 +2624,15 @@ public class BadDexFixture {
         featureBranch(menu, remembered, clicked, Opcode.IF_NE, 5, 6);
         if (copied) featureBranch(menu, rowAt - 1, hooked && fault.equals("save-goto") ? after : rowAt + 1, Opcode.GOTO, 0, 0);
         featureBranch(menu, rowGoto, after, Opcode.GOTO, 0, 0);
+        if (bypass >= 0) featureBranch(menu, bypass, rowAt, Opcode.IF_EQZ, 2, 0);
 
         List<ClassDef> classes = new ArrayList<>();
         classes.add(featureClass(POST_MENU, OBJECT, List.of(featureField(POST_MENU, "post", FEATURE_MEDIA), featureField(POST_MENU, "activity", ACTIVITY),
                 featureField(POST_MENU, "controller", MENU_CONTROLLER), featureField(POST_MENU, "item", OBJECT)),
                 define(POST_MENU, "invoke", OBJECT, false, body(16, menu.toArray(new Instruction[0])), OBJECT, OBJECT)));
         List<Instruction> header = new ArrayList<>(List.of(string(0, MENU_NOTE + "88)")));
-        if (hooked && fault.equals("save-duplicate")) header.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 1, 2, ADD_SAVE_ROW));
+        if (hooked && fault.equals("save-duplicate") || patched && fault.equals("save-omitted-add"))
+            header.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 1, 2, ADD_SAVE_ROW));
         header.addAll(List.of(none, op(Opcode.RETURN_OBJECT, 0)));
         classes.add(featureClass(POST_MENU_HEADER, OBJECT, List.of(), define(POST_MENU_HEADER, "invoke", OBJECT, false,
                 body(4, header.toArray(new Instruction[0])), OBJECT, OBJECT)));
@@ -2692,13 +2700,15 @@ public class BadDexFixture {
     /**
      * The extension's SaveMediaRow, its click and the InstagramMedia bridges, as a bundle carries
      * them: written the way the Save patch writes them when [hooked], and otherwise the empty stubs
-     * they ship as. Faults name the one piece written wrong or, left out, the one stub written anyway.
+     * they ship as. Faults name the one piece written wrong, a bridge left its stub, a bridge the
+     * patch doesn't know or, left out, the one stub written anyway.
      */
     private static List<ClassDef> saveMediaExtension(boolean hooked, String fault) {
         Instruction none = new ImmutableInstruction11n(Opcode.CONST_4, 0, 0);
         ImmutableMethodImplementation nothing = body(1, none, op(Opcode.RETURN_OBJECT, 0));
         boolean show = hooked && !fault.equals("save-show-stub") || fault.equals("save-omitted-show");
         boolean media = hooked || fault.equals("save-omitted-media");
+        boolean activity = hooked || fault.equals("save-omitted-activity");
         boolean dismiss = hooked || fault.equals("save-omitted-dismiss");
         String mediaField = fault.equals("save-media-field") ? "activity" : "post";
         String activityField = fault.equals("save-activity-field") ? "post" : "activity";
@@ -2710,7 +2720,8 @@ public class BadDexFixture {
                         type(Opcode.CHECK_CAST, 0, fault.equals("save-media-cast") ? MENU_CONTROLLER : POST_MENU),
                         objectField(Opcode.IGET_OBJECT, 0, 0, POST_MENU, mediaField, mediaField.equals("post") ? FEATURE_MEDIA : ACTIVITY),
                         op(Opcode.RETURN_OBJECT, 0)), OBJECT),
-                define(SAVE_ROW, "activity", ACTIVITY, true, !hooked ? nothing : body(1, type(Opcode.CHECK_CAST, 0, POST_MENU),
+                define(SAVE_ROW, "activity", ACTIVITY, true, !activity ? nothing : body(1,
+                        type(Opcode.CHECK_CAST, 0, fault.equals("save-activity-cast") ? MENU_CONTROLLER : POST_MENU),
                         objectField(Opcode.IGET_OBJECT, 0, 0, POST_MENU, activityField, activityField.equals("post") ? FEATURE_MEDIA : ACTIVITY),
                         op(Opcode.RETURN_OBJECT, 0)), OBJECT),
                 define(SAVE_ROW, "dismiss", "V", true, !dismiss ? body(1, op(Opcode.RETURN_VOID)) : body(1,
@@ -2723,13 +2734,17 @@ public class BadDexFixture {
         classes.add(new ImmutableClassDef(SAVE_CLICK, AccessFlags.PUBLIC.getValue() | AccessFlags.FINAL.getValue(), OBJECT, interfaces,
                 null, null, List.of(), List.of(define(SAVE_CLICK, "invoke", OBJECT, fault.equals("save-click-static"),
                         body(2, none, op(Opcode.RETURN_OBJECT, 0))))));
-        // Each bridge, written, casts its argument, calls the getter and returns its answer in front of the stub's own zero return.
+        // Each bridge, written, casts its argument, calls the getter and returns its answer in front of
+        // the stub's own zero return. bridge-extra adds one more stub, never written, standing for a
+        // bridge the patch doesn't know.
         List<Method> bridges = new ArrayList<>();
         for (SaveBridgeShape bridge : SAVE_BRIDGES) {
             boolean primitive = bridge.returns().equals("I");
             Instruction zero = op(primitive ? Opcode.RETURN : Opcode.RETURN_OBJECT, 0);
             List<Instruction> code = new ArrayList<>();
-            if (hooked || fault.equals("save-omitted-bridge") && bridge.name().equals("videoVersions")) {
+            if (hooked && !(fault.equals("save-bridge-stub") && bridge.name().equals("carouselMedia"))
+                    || fault.equals("save-omitted-bridge") && bridge.name().equals("videoVersions")
+                    || fault.equals("save-omitted-bridge-int") && bridge.name().equals("candidateHeight")) {
                 String receiver = fault.equals("save-bridge-cast") && bridge.name().equals("username") ? FEATURE_MEDIA : bridge.receiver();
                 Opcode call = fault.equals("save-bridge-call") && bridge.name().equals("versionUrl") ? Opcode.INVOKE_VIRTUAL : bridge.call();
                 ImmutableMethodReference getter = fault.equals("save-bridge-getter") && bridge.name().equals("videoVersions")
@@ -2743,6 +2758,7 @@ public class BadDexFixture {
             code.addAll(List.of(none, zero));
             bridges.add(define(INSTAGRAM_MEDIA, bridge.name(), bridge.returns(), true, body(1, code.toArray(new Instruction[0])), OBJECT));
         }
+        if (fault.equals("save-bridge-extra")) bridges.add(define(INSTAGRAM_MEDIA, "likeCount", INTEGER, true, nothing, OBJECT));
         classes.add(featureClass(INSTAGRAM_MEDIA, OBJECT, List.of(), bridges.toArray(new Method[0])));
         return classes;
     }
@@ -3342,14 +3358,17 @@ public class BadDexFixture {
         for (String fault : List.of("settings-row-missing", "settings-row-outside", "settings-row-register", "settings-row-stub", "settings-row-click")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("settingsRow"), 0, fault));
         }
-        // And Save photos and videos: one bad build for each thing its contract checks, alone, then left out.
+        // And Save photos and videos: one bad build for each thing its contract checks, alone, then left
+        // out. The branch straight to Copy link's row call is Threads' own, so it has a clean build too.
         for (String fault : List.of("missing", "copy", "capture", "goto", "twice", "duplicate", "other-item", "show-stub", "show-row",
                 "show-composer", "show-role", "show-style", "show-icon", "show-label", "media-field", "media-cast", "activity-field",
-                "dismiss-cast", "dismiss-field", "dismiss-call", "click", "click-static", "bridge-getter", "bridge-call", "bridge-cast",
-                "bridge-result", "status-false")) {
+                "activity-cast", "dismiss-cast", "dismiss-field", "dismiss-call", "click", "click-static", "bridge-getter", "bridge-call",
+                "bridge-cast", "bridge-result", "bridge-stub", "bridge-extra", "status-false", "bypass")) {
             dexes.put("features-bad-save-" + fault, featureBuild(true, Set.of("saveMedia"), 0, "save-" + fault));
         }
-        for (String fault : List.of("omitted-menu", "omitted-show", "omitted-media", "omitted-dismiss", "omitted-bridge", "omitted-status")) {
+        dexes.put("features-save-bypass-clean", featureBuild(false, Set.of(), 0, "save-bypass"));
+        for (String fault : List.of("omitted-menu", "omitted-add", "omitted-show", "omitted-media", "omitted-activity", "omitted-dismiss",
+                "omitted-bridge", "omitted-bridge-int", "omitted-status")) {
             dexes.put("features-bad-save-" + fault, featureBuild(true, Set.of(), 0, "save-" + fault));
         }
         // And Copy text, which comes with the settings row: hook faults with it selected, then left out,

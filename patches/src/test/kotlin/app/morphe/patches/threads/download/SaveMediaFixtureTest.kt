@@ -148,9 +148,9 @@ class SaveMediaFixtureTest {
 
     /**
      * Each way the menu could stop being what was read refuses the build: a second Copy link
-     * check, a branch into its case, a composer that isn't the lambda's parameter, a
-     * parameter the lambda overwrites, a click that no longer closes the menu, a second post field,
-     * and a closing call the extension couldn't reach.
+     * check, a branch into its case, a branch in its case straight to its row call, a composer that
+     * isn't the lambda's parameter, a parameter the lambda overwrites, a click that no longer closes
+     * the menu, a second post field, and a closing call the extension couldn't reach.
      */
     @Test
     fun `a post menu that differs from the one read is refused`() {
@@ -168,6 +168,12 @@ class SaveMediaFixtureTest {
                 "branches into its Copy link case" to { context ->
                     val menu = context.menu(fixture)
                     menu.addInstructionsWithLabels(0, "if-eqz v0, :inside", ExternalLabel("inside", menu.getInstruction(rowAt - 1)))
+                },
+                // A label stays on the original call, so this branch would skip the Save row put in front of it.
+                "straight to its row call" to { context ->
+                    val menu = context.menu(fixture)
+                    val check = stock.indexOfFirst { it.isCopyLinkCheck(fixture.copyLink) }
+                    menu.addInstructionsWithLabels(check + 2, "if-eqz v0, :row", ExternalLabel("row", menu.getInstruction(rowAt)))
                 },
                 "isn't passed the menu's composer parameter" to { context ->
                     context.menu(fixture).addInstructions(rowAt, "move-object/from16 v$composer, p0")

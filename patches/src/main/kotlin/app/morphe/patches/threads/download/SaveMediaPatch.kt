@@ -192,7 +192,7 @@ internal fun BytecodePatchContext.writeSaveRowStubs(site: SaveRowSite) {
  * Reads [SaveRowSite] and refuses a build where any of it differs from what was read on 451, 450,
  * 449 and 448: one menu lambda that checks for Copy link once, with one row call in that case, taking
  * (composer, modifier, style, icon, String), which Copy link's own path falls into from a case
- * nothing else branches into; a composer that is the lambda's second parameter, cast; a modifier built by a click call taking (modifier, role,
+ * nothing else branches into, and which nothing in the case branches to; a composer that is the lambda's second parameter, cast; a modifier built by a click call taking (modifier, role,
  * Object, boolean), or its older form with a null String label, on a static base modifier, a literal role, a new click
  * and a literal; a style built from the composer alone; an icon built from the composer, a literal
  * drawable and other literals; a click whose case for Copy link casts its Object field to the
@@ -240,13 +240,20 @@ internal fun BytecodePatchContext.saveRowSite(): SaveRowSite {
 
     // The copy of the row call goes in just before it, where only Copy link's own path runs: that
     // path falls into the call from the instruction before it, and nothing outside the case
-    // branches into the case. Other items may still branch to the call itself.
+    // branches into the case. Other items may still branch to the call itself, but nothing in the
+    // case may: code inserted with labels leaves a branch, case or handler aimed at the call
+    // landing on the original, past the copy, so only falling into it runs the Save row.
     val flow = ControlFlow.of(menu)
     val inside = checkAt + 2 until rowAt
-    if (rowAt - 1 !in inside || rowAt + 1 >= body.size || rowAt !in flow.normal[rowAt - 1] ||
-        body.indices.any { from -> from !in checkAt + 1 until rowAt && flow.normal[from].any { it in inside } } ||
+    if (rowAt - 1 !in inside) throw PatchException("$PATCH: the post menu's Copy link case starts with its row call")
+    if (rowAt + 1 >= body.size) throw PatchException("$PATCH: the post menu ends on Copy link's row call")
+    if (rowAt !in flow.normal[rowAt - 1]) throw PatchException("$PATCH: Copy link's own path doesn't fall into its row call")
+    if (body.indices.any { from -> from !in checkAt + 1 until rowAt && flow.normal[from].any { it in inside } } ||
         flow.exceptional.any { targets -> targets.any { it in inside } }
     ) throw PatchException("$PATCH: the post menu branches into its Copy link case")
+    (checkAt + 1 until rowAt).firstOrNull { from -> rowAt in branches(body, address, from) || rowAt in flow.exceptional[from] }?.let { from ->
+        throw PatchException("$PATCH: the post menu's Copy link case branches from instruction $from straight to its row call at instruction $rowAt, past where the Save row goes")
+    }
     val rowCall = when (val call = body[rowAt]) {
         is RegisterRangeInstruction ->
             "invoke-static/range { v${call.startRegister} .. v${call.startRegister + call.registerCount - 1} }, ${row.signature()}"
@@ -369,9 +376,10 @@ internal fun BytecodePatchContext.saveRowSite(): SaveRowSite {
  * merged lambda compares with each case's literal, or switches on.
  */
 private fun BytecodePatchContext.clickCase(click: String, intField: String, objectField: String, which: Int): Pair<String, MethodReference> {
-    val invoke = classDefBy(click).methods.singleOrNull {
+    val invokes = classDefBy(click).methods.filter {
         it.name == "invoke" && it.parameterTypes.isEmpty() && it.returnType == OBJECT && it.implementation != null
-    } ?: throw PatchException("$PATCH: Copy link's click $click has no invoke()")
+    }
+    val invoke = invokes.singleOrNull() ?: throw PatchException("$PATCH: Copy link's click $click has ${invokes.size} invoke() methods, not one")
     val body = invoke.body()
     val address = addresses(body)
     val readAt = body.indexOfFirst { it.opcode == Opcode.IGET && it.getReference<FieldReference>()?.let { f -> f.definingClass == click && f.name == intField } == true }
@@ -500,6 +508,15 @@ private fun addresses(body: List<Instruction>): IntArray {
 
 private fun indexAt(address: IntArray, target: Int): Int = address.indexOfFirst { it == target }
     .takeIf { it >= 0 } ?: throw PatchException("$PATCH: a branch lands between instructions")
+
+/** Where the instruction at [at] branches, each of a switch's cases included, not counting falling through. */
+private fun branches(body: List<Instruction>, address: IntArray, at: Int): List<Int> {
+    val instruction = body[at] as? OffsetInstruction ?: return emptyList()
+    if (instruction.opcode == Opcode.FILL_ARRAY_DATA) return emptyList()
+    val target = indexAt(address, address[at] + instruction.codeOffset)
+    if (instruction.opcode != Opcode.PACKED_SWITCH && instruction.opcode != Opcode.SPARSE_SWITCH) return listOf(target)
+    return (body[target] as SwitchPayload).switchElements.map { indexAt(address, address[at] + it.offset) }
+}
 
 private fun MethodReference.signature(): String = "$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
 

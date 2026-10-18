@@ -2037,10 +2037,8 @@ public class DexDiff {
     private static final String SAVE_ACTIVITY_OF = SAVE_ROW + "->activity(Ljava/lang/Object;)Landroid/app/Activity;";
     private static final String SAVE_DISMISS = SAVE_ROW + "->dismiss(Ljava/lang/Object;)V";
     private static final String SAVE_CLICK = "Lapp/morphe/extension/hushthreads/download/SaveMediaRow$Click;";
+    /** The bridges to Instagram's post model: every static method it has, shipped as an empty stub only the Save patch writes. */
     private static final String INSTAGRAM_MEDIA = "Lapp/morphe/extension/hushthreads/download/InstagramMedia;";
-    /** The bridges InstagramMedia ships as empty stubs, which only the Save patch writes. */
-    private static final List<String> SAVE_BRIDGES = List.of("videoVersions", "dashManifest", "mediaId", "owner", "takenAt", "carouselMedia",
-            "username", "versionUrl", "versionWidth", "versionHeight", "imageVersions", "imageCandidates", "candidateUrl", "candidateWidth", "candidateHeight");
     /** Compose's note in the lambda that draws the rows of a post's menu. It names the source file, so it survives Redex. */
     private static final String MENU_NOTE = "com.instagram.barcelona.feed.post.actionmenu.PostActionMenuSheet.<anonymous> (PostActionMenuSheet.kt:";
     /** What the menu's Copy link item says it is. A Kotlin data object's toString keeps its source name. */
@@ -2169,11 +2167,25 @@ public class DexDiff {
     }
 
     /**
-     * A hook put in front of an original instruction that branches to that instruction skip, as
-     * code inserted with labels is: a branch, case or handler aimed at it lands past the hook, on
-     * the original, and only the path that falls into it runs the hook.
+     * A hook put in front of an original instruction whose branches skip the hook. Code inserted
+     * with labels leaves a branch, case or handler aimed at that instruction landing on the
+     * original, past the hook, so only the path that falls into it runs the hook.
      */
     private interface FeatureInsert extends FeatureBlock {}
+
+    /**
+     * Where a body that should match its stock one, with nothing declared added, first changed, given
+     * that the two agree up to original instruction [k]. Code added in front of instructions it
+     * repeats matches them, so the change can start before [k]: as early as the first instruction
+     * of the tail the two bodies still share.
+     */
+    private static int featureChangedAt(Layout old, Layout now, int k) {
+        int shared = 0;
+        while (shared < old.instructions.size() && shared < now.instructions.size()
+                && featureInstruction(old.instructions.get(old.instructions.size() - 1 - shared))
+                        .equals(featureInstruction(now.instructions.get(now.instructions.size() - 1 - shared)))) shared++;
+        return Math.min(k, old.instructions.size() - shared);
+    }
 
     private static void featureBody(Method stock, Method patched, int prefix,
             Map<Integer, Integer> insertions, String callee, FieldReference recordedRaw, Map<Integer, FeatureBlock> blocks) {
@@ -2217,9 +2229,10 @@ public class DexDiff {
                         && reference(store).equals(recordedRaw.toString()), "raw wrapper has a different constructor recorder");
                 at += 3;
             }
-            requireFeature(at < now.instructions.size()
-                    && featureInstruction(old.instructions.get(k)).equals(featureInstruction(now.instructions.get(at))),
-                    featureSig(stock) + " changed original instruction " + k);
+            if (at >= now.instructions.size() || !featureInstruction(old.instructions.get(k)).equals(featureInstruction(now.instructions.get(at)))) {
+                boolean declared = prefix != 0 || !insertions.isEmpty() || !blocks.isEmpty() || recordedRaw != null;
+                requireFeature(false, featureSig(stock) + " changed original instruction " + (declared ? k : featureChangedAt(old, now, k)));
+            }
             operations[k] = at++;
         }
         relocated.put(old.size, now.size);
@@ -5468,8 +5481,8 @@ public class DexDiff {
      * host method that calls add. showRow draws Threads' row the way Copy link's is drawn, each
      * argument read back to the calls and literals the patch found; media, activity and dismiss read
      * the menu's post, activity and controller fields and close it with Copy link's call; the click
-     * is a kotlin Function0; and each InstagramMedia bridge casts its argument to the model and
-     * returns what the getter the patch found answers.
+     * is a kotlin Function0; and every static method on InstagramMedia is a bridge the patch
+     * wrote, casting its argument to the model and returning what the getter the patch found answers.
      */
     private static void featureSaveMedia(Map<String, List<Method>> clean, Map<String, List<Method>> patched,
             File cleanApk, File patchedApk) throws Exception {
@@ -5506,7 +5519,10 @@ public class DexDiff {
         Method invoke = featureMethod(patched, SAVE_CLICK + "->invoke()Ljava/lang/Object;");
         requireFeature(AccessFlags.PUBLIC.isSet(invoke.getAccessFlags()) && !AccessFlags.STATIC.isSet(invoke.getAccessFlags()),
                 SAVE_CLICK + "'s invoke() isn't a public instance method");
-        for (SaveBridge bridge : bridges) featureSaveBridge(patched, bridge);
+        Set<String> written = new TreeSet<>();
+        for (SaveBridge bridge : bridges) written.add(featureSaveBridge(patched, bridge));
+        for (String stub : featureSaveBridgeSigs(patched)) requireFeature(written.contains(stub),
+                stub + " isn't one of the bridges the Save patch writes, so it would still answer as its stub does");
         System.out.println("[diff] threads-feature saveMedia: Copy link's row at " + sites.rowAt() + " of " + featureSig(sites.menu())
                 + ", closed by " + featureSig(sites.dismiss()));
     }
@@ -5565,7 +5581,8 @@ public class DexDiff {
      * Where the Save row goes, read the way the Save patch reads it and never by obfuscated name.
      * The menu is the one lambda holding the menu's note that checks for the Copy link item, which
      * it does once, skipping a case nothing outside branches into. That case makes one row call
-     * taking (composer, modifier, style, icon, String), which Copy link's own path falls into. Its
+     * taking (composer, modifier, style, icon, String), which Copy link's own path falls into and
+     * nothing else in the case branches to. Its
      * composer is the lambda's composer parameter, cast; its modifier a click call on a static base,
      * a role built from a literal, a new click and literals, perhaps under up to three more
      * modifiers; its style built from the composer alone; and its icon from the composer, one of
@@ -5609,14 +5626,32 @@ public class DexDiff {
 
         // The copy goes in just before the call, where only Copy link's own path runs: that path
         // falls into the call from the instruction before it, and nothing outside the case branches
-        // or throws into the case. Other items may still branch to the call itself.
-        boolean entered = rowAt - 1 < checkAt + 2 || rowAt + 1 >= body.size() || !flow.normal.get(rowAt - 1).contains(rowAt);
+        // or throws into the case. Other items may still branch to the call itself, but nothing in
+        // the case may: code inserted with labels leaves a branch, case or handler aimed at the call
+        // landing on the original, past the copy, so only falling into it runs the Save row.
+        requireFeature(rowAt - 1 >= checkAt + 2, "the post menu's Copy link case starts with its row call");
+        requireFeature(rowAt + 1 < body.size(), "the post menu ends on Copy link's row call");
+        requireFeature(flow.normal.get(rowAt - 1).contains(rowAt), "Copy link's own path doesn't fall into its row call");
+        boolean entered = false;
         for (int from = 0; from < body.size() && !entered; from++) {
             boolean outside = from < checkAt + 1 || from >= rowAt;
             for (int to : flow.normal.get(from)) if (outside && to >= checkAt + 2 && to < rowAt) entered = true;
             for (int to : flow.guarded.get(from)) if (to >= checkAt + 2 && to < rowAt) entered = true;
         }
         requireFeature(!entered, "the post menu branches into its Copy link case");
+        for (int from = checkAt + 1; from < rowAt; from++) {
+            List<Integer> aimed = new ArrayList<>(flow.guarded.get(from));
+            Instruction i = body.get(from);
+            if (i instanceof OffsetInstruction && i.getOpcode() != Opcode.FILL_ARRAY_DATA) {
+                int target = flow.layout.addresses.get(from) + ((OffsetInstruction) i).getCodeOffset();
+                if (i.getOpcode() == Opcode.PACKED_SWITCH || i.getOpcode() == Opcode.SPARSE_SWITCH) {
+                    for (SwitchElement e : ((SwitchPayload) flow.layout.byAddress.get(target)).getSwitchElements())
+                        aimed.add(featureSaveIndex(flow.layout, flow.layout.addresses.get(from) + e.getOffset()));
+                } else aimed.add(featureSaveIndex(flow.layout, target));
+            }
+            requireFeature(!aimed.contains(rowAt), "the post menu's Copy link case branches from instruction " + from
+                    + " straight to its row call at instruction " + rowAt + ", past where the Save row goes");
+        }
 
         // The hook passes the lambda and its composer parameter, so neither may change, and the row's
         // composer has to be that parameter, cast.
@@ -5785,7 +5820,7 @@ public class DexDiff {
         List<Method> invokes = new ArrayList<>();
         for (Method m : click.getMethods()) if (m.getName().equals("invoke") && m.getParameterTypes().isEmpty()
                 && m.getReturnType().equals(FEATURE_OBJECT) && m.getImplementation() != null) invokes.add(m);
-        requireFeature(invokes.size() == 1, "Copy link's click " + click.getType() + " has no invoke()");
+        requireFeature(invokes.size() == 1, "Copy link's click " + click.getType() + " has " + invokes.size() + " invoke() methods, not one");
         Layout layout = new Layout(invokes.get(0).getImplementation());
         List<Instruction> code = layout.instructions;
         int readAt = -1;
@@ -5941,14 +5976,23 @@ public class DexDiff {
         return patched.keySet().stream().filter(s -> s.startsWith(prefix)).sorted().toList();
     }
 
+    /** Every static method InstagramMedia has, each a bridge, whether written or still its stub. */
+    private static List<String> featureSaveBridgeSigs(Map<String, List<Method>> patched) {
+        return patched.entrySet().stream().filter(e -> e.getKey().startsWith(INSTAGRAM_MEDIA + "->")
+                && e.getValue().stream().anyMatch(m -> AccessFlags.STATIC.isSet(m.getAccessFlags()) && !m.getName().startsWith("<")))
+                .map(Map.Entry::getKey).sorted().toList();
+    }
+
     /**
      * One bridge as the Save patch writes it, in front of the stub's own return: the argument cast
-     * to the model, the getter called on it, and its answer returned, an int's as an int.
+     * to the model, the getter called on it, and its answer returned, an int's as an int. Answers
+     * the stub's signature.
      */
-    private static void featureSaveBridge(Map<String, List<Method>> patched, SaveBridge bridge) {
+    private static String featureSaveBridge(Map<String, List<Method>> patched, SaveBridge bridge) {
         String signature = featureOne(featureSaveBridgeStubs(patched, bridge.name()), INSTAGRAM_MEDIA + "->" + bridge.name() + "(Object)");
         Method stub = featureMethod(patched, signature);
         List<Instruction> body = instructions(stub);
+        requireFeature(!featureSaveIsShipped(stub), signature + " is still the empty stub it ships as, so the Save patch didn't write it");
         requireFeature(AccessFlags.STATIC.isSet(stub.getAccessFlags()) && stub.getImplementation() != null
                 && stub.getImplementation().getTryBlocks().isEmpty() && body.size() >= 4, signature + " isn't a static bridge with an unprotected body");
         int p = stub.getImplementation().getRegisterCount() - 1;
@@ -5961,6 +6005,7 @@ public class DexDiff {
         requireFeature(body.get(2).getOpcode() == (primitive ? Opcode.MOVE_RESULT : Opcode.MOVE_RESULT_OBJECT) && registerA(body.get(2)) == p
                 && body.get(3).getOpcode() == (primitive ? Opcode.RETURN : Opcode.RETURN_OBJECT) && registerA(body.get(3)) == p,
                 signature + " doesn't return what " + bridge.getter() + " answers");
+        return signature;
     }
 
     /**
@@ -6065,23 +6110,28 @@ public class DexDiff {
         requireFeature(body.get(3).getOpcode() == Opcode.RETURN_VOID, SAVE_DISMISS + " doesn't return right after closing the menu");
     }
 
-    /** [signature], when the extension has it, still the empty stub it ships as: return-void, or a zero returned. */
-    private static void featureSaveShipped(Map<String, List<Method>> patched, String signature) {
-        if (!patched.containsKey(signature)) return;
-        Method stub = featureMethod(patched, signature);
+    /** Whether [stub] is still the empty stub it ships as: return-void, or a zero returned. */
+    private static boolean featureSaveIsShipped(Method stub) {
+        if (stub.getImplementation() == null) return false;
         List<Instruction> body = instructions(stub);
-        boolean shipped = stub.getReturnType().equals("V")
+        return stub.getReturnType().equals("V")
                 ? body.size() == 1 && body.get(0).getOpcode() == Opcode.RETURN_VOID
                 : body.size() == 2 && java.util.Objects.equals(featureSaveConstant(body.get(0)), 0) && body.get(0).getOpcode() == Opcode.CONST_4
                         && body.get(1).getOpcode() == (kindOf(stub.getReturnType()) == 'L' ? Opcode.RETURN_OBJECT : Opcode.RETURN)
                         && registerA(body.get(0)) == registerA(body.get(1));
-        requireFeature(shipped, "omitted Save wrote " + signature);
+    }
+
+    /** [signature], when the extension has it, still the empty stub it ships as. */
+    private static void featureSaveShipped(Map<String, List<Method>> patched, String signature) {
+        if (!patched.containsKey(signature)) return;
+        requireFeature(featureSaveIsShipped(featureMethod(patched, signature)), "omitted Save wrote " + signature);
     }
 
     /**
      * Left out, Save photos and videos makes no call to add, leaves the post menu lambdas that check
      * for Copy link as Threads wrote them, and leaves showRow, media, activity, dismiss and every
-     * InstagramMedia bridge, when the extension has them, the empty stubs they ship as.
+     * static method on InstagramMedia, its bridges, when the extension has them, the empty stubs
+     * they ship as.
      */
     private static void featureOmittedSaveMedia(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
         featureHostCalls(patched, ADD_SAVE_ROW, Map.of());
@@ -6089,7 +6139,7 @@ public class DexDiff {
         featurePreserveTargets(clean, patched, m -> !m.getDefiningClass().startsWith(OWN) && m.getImplementation() != null
                 && holdsNote(m, MENU_NOTE) && !featureSaveChecks(m, copyLink).isEmpty());
         for (String stub : List.of(SAVE_SHOW_ROW, SAVE_MEDIA_OF, SAVE_ACTIVITY_OF, SAVE_DISMISS)) featureSaveShipped(patched, stub);
-        for (String name : SAVE_BRIDGES) for (String stub : featureSaveBridgeStubs(patched, name)) featureSaveShipped(patched, stub);
+        for (String stub : featureSaveBridgeSigs(patched)) featureSaveShipped(patched, stub);
     }
 
     private static void featureOmitted(String feature, Map<String, List<Method>> clean, Map<String, List<Method>> patched,
