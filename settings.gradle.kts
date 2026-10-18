@@ -272,23 +272,25 @@ val buildClasspathGradleVersion = gradle.gradleVersion
 // the three classes GHSA-xxph-c9ww-hj94 names, without initialising them, and records the jar each
 // came from. Six lookups, nothing else loaded. Gradle keeps its own embedded Guava from plugin class
 // loaders, so a jar named here is the copy the plugins use, and the inventory task refuses one that
-// isn't the Guava the settings classpath resolved.
+// isn't the Guava the settings classpath resolved. A plugin or class that can't be found records no
+// jar rather than failing here, so every other task still configures and only the inventory refuses.
 fun buildClasspathGuavaLoads(): List<Map<String, Any?>> {
-    val morphe = plugins.findPlugin("app.morphe.patches")
-        ?: throw GradleException("The build classpath probe can't find the applied app.morphe.patches plugin.")
     val android = try {
-        Class.forName("com.android.build.gradle.LibraryPlugin", false, javaClass.classLoader)
+        Class.forName("com.android.build.gradle.LibraryPlugin", false, javaClass.classLoader).classLoader
     } catch (missing: ClassNotFoundException) {
-        throw GradleException("The build classpath probe can't find the Android Gradle plugin's LibraryPlugin.", missing)
+        null
     }
-    val loaders = linkedMapOf("app.morphe.patches plugin" to morphe.javaClass.classLoader, "Android Gradle plugin" to android.classLoader)
+    val loaders = linkedMapOf("app.morphe.patches plugin" to plugins.findPlugin("app.morphe.patches")?.javaClass?.classLoader,
+        "Android Gradle plugin" to android)
     val classes = listOf("com.google.common.collect.CompactHashMap", "com.google.common.collect.CompactHashSet",
         "com.google.common.collect.MapMakerInternalMap")
     return loaders.flatMap { (who, loader) ->
         classes.map { name ->
-            val jar = try {
+            val jar = if (loader == null) null else try {
                 Class.forName(name, false, loader).protectionDomain?.codeSource?.location?.path?.substringAfterLast('/')
             } catch (missing: ClassNotFoundException) {
+                null
+            } catch (missing: LinkageError) {
                 null
             }
             linkedMapOf("loader" to who, "class" to name, "jar" to jar)
@@ -297,10 +299,15 @@ fun buildClasspathGuavaLoads(): List<Map<String, Any?>> {
 }
 val buildClasspathLoads = buildClasspathGuavaLoads()
 
+fun buildClasspathProjectGraphName(path: String) =
+    if (path == ":") "root project buildscript classpath" else "$path buildscript classpath"
+
 gradle.allprojects {
-    val graphName = if (path == ":") "root project buildscript classpath" else "$path buildscript classpath"
+    val graphName = buildClasspathProjectGraphName(path)
     // After the project's script has run, when its own plugins block has resolved, and in its own
-    // context, which Gradle wants for resolving a project's configuration.
+    // context, which Gradle wants for resolving a project's configuration. A project this build
+    // doesn't evaluate (configure-on-demand, an isolated-projects run) never gets here, so the
+    // inventory task checks that every project's graph arrived.
     afterEvaluate {
         val graph = buildClasspathGraph(graphName, buildscript.configurations.getByName("classpath"))
         synchronized(buildClasspathGraphs) { buildClasspathGraphs[graphName] = graph }
@@ -329,6 +336,11 @@ gradle.rootProject {
                 "graphs" to graphs,
             )) + "\n"
         }
+        val expectedGraphs = listOf("settings classpath") + project.allprojects.map { buildClasspathProjectGraphName(it.path) }
+        val missingGraphs = provider {
+            val gathered = synchronized(buildClasspathGraphs) { buildClasspathGraphs.keys.toSet() }
+            expectedGraphs.filter { it !in gathered }
+        }
         // The Guava the plugins load has to be the one the settings classpath resolved.
         val resolvedGuava = provider {
             @Suppress("UNCHECKED_CAST")
@@ -340,6 +352,11 @@ gradle.rootProject {
         inputs.property("inventory", document)
         outputs.file(output)
         doLast {
+            val missing = missingGraphs.get()
+            if (missing.isNotEmpty()) {
+                throw GradleException("The build classpath inventory has no graph for " + missing.joinToString(", ") +
+                    ". Those projects weren't evaluated in this build; run it without configure-on-demand.")
+            }
             val expected = resolvedGuava.get()
             if (expected.size != 1) {
                 throw GradleException("The settings classpath resolved ${expected.size} Guava versions, not one: $expected")

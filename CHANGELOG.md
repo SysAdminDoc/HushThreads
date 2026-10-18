@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** The build classpath inventory refuses to write when a project's buildscript graph is missing, instead of quietly leaving it out. That happens when a build doesn't evaluate every project, as under configure-on-demand, and the refusal names each one. Its Guava probe also stopped failing every Gradle command when it can't find one of the two plugins. It records no jar for that plugin now, and only the inventory refuses.
+
 * **Tooling:** The same classpath now resolves commons-lang3 3.18.0 instead of the 3.16.0 the Morphe plugin asks for, which is inside GHSA-j288-q9x7-2f5v (CVE-2025-48924, 3.0 to 3.17.0). That was the last advisory OSV reported for the build's 114 plugin components, and the build advisory gate now finds none. It's a floor too, so it goes quiet once the plugin asks for 3.18.0 or later.
 
 * **Tooling:** The classpath the build plugins run from now resolves Guava 33.7.2-jre instead of 33.5.0-jre, which is inside GHSA-xxph-c9ww-hj94 (CVE-2026-102554, 4.0 to 33.7.1). It's a floor, so a plugin that later asks for a newer Guava still gets it. The build classpath inventory also records which jar the Morphe and Android Gradle plugins really load the advisory's three classes from, and it refuses to write when that isn't the Guava the classpath resolved. The bundle build and the focused registry tests pass with it.
