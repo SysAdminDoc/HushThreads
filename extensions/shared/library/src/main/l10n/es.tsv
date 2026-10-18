@@ -204,12 +204,12 @@ Takes the ghost post bubbles off profile pictures, on profiles and in the row at
 Turn features on or off	Activa o desactiva funciones
 # Guardar fotos y videos
 %1$d saved in lower quality than on Threads.	%1$d guardados con menor calidad que en Threads.
-%1$d saves stopped. Reopen the post and save again.	Se detuvieron %1$d guardados. Vuelve a abrir la publicación y guárdala otra vez.
+%1$d saves stopped. Reopen the post and save again.	Se detuvieron %1$d guardados. Reabre la publicación y guárdala.
 %1$d saves were interrupted	Se interrumpieron %1$d guardados
 %1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.	%1$s se convierte en la fecha y la hora del guardado, %2$s en el número del video en Threads, %3$s en quien lo publicó y %4$s en el día en que se publicó. Lo que el guardado no sabe se omite, y a un nombre sin ninguno de ellos se le añade la fecha. Si el nombre ya está en la carpeta, se le añade al final la hora del guardado. Los caracteres no válidos se convierten en guiones bajos. Déjalo vacío para usar el nombre predeterminado, %5$s.
 %1$s of %2$s	%1$s de %2$s
 %1$s so far	%1$s hasta ahora
-A save stopped. Reopen the post and save again.	Se detuvo un guardado. Vuelve a abrir la publicación y guárdala otra vez.
+A save stopped. Reopen the post and save again.	Se detuvo un guardado. Reabre la publicación y guárdala.
 A save was interrupted	Se interrumpió un guardado
 Adds Save to a post's menu. A post with several photos or videos saves them all. Off or paused, you get Threads' normal menu.	Añade Guardar al menú de una publicación. Si tiene varias fotos o videos, se guardan todos. Si está desactivado o en pausa, verás el menú normal de Threads.
 Best	La mejor
@@ -236,7 +236,7 @@ How far a photo or video you're saving has got, with a button to cancel it	El pr
 HushThreads saves	Descargas de HushThreads
 Joining the picture and sound	Uniendo la imagen y el sonido
 Last carousel save	Último carrusel guardado
-Link expired. Reopen the post and try again	El enlace expiró. Vuelve a abrir la publicación e inténtalo de nuevo
+Link expired. Reopen the post and try again	El enlace expiró. Vuelve a abrir la publicación y reinténtalo
 Not saved: a carousel can have at most %1$d pages	No se guardó: un carrusel puede tener como máximo %1$d páginas
 Not saved: that isn't a Threads photo or video	No se guardó: no es una foto ni un video de Threads
 Not saved: the file is over 512 MB	No se guardó: el archivo supera los 512 MB
@@ -260,7 +260,7 @@ Saving a carousel	Guardando un carrusel
 Saving a photo	Guardando una foto
 Saving a video	Guardando un video
 Saving...	Guardando...
-Saving... To cancel, open Downloads in HushThreads settings.	Guardando... Para cancelar, abre Descargas en los ajustes de HushThreads.
+Saving... To cancel, open Downloads in HushThreads settings.	Guardando... Para cancelar, ve a Descargas en HushThreads.
 Smallest	La más pequeña
 Video file name	Nombre de archivo de los videos
 Videos are named %1$s. Photos are always named %2$s followed by the date and time.	Los videos se llaman %1$s. Las fotos siempre se llaman %2$s seguido de la fecha y la hora.
@@ -325,11 +325,11 @@ Quick setups hidden. Bring it back from Pause, backup and diagnostics.	Configura
 # Android 9 only, a save without Threads' Storage permission: the toast, then the same advice as the line under a carousel's counts. Storage and Permissions are the names Android's app info screen shows in this language.
 Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	No se guardó: en Android 9, Threads necesita el permiso de Almacenamiento para guardar. Actívalo en la información de la app de Threads, en Permisos, y vuelve a guardar.
 Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	En Android 9, Threads necesita el permiso de Almacenamiento para guardar. Actívalo en la información de la app de Threads, en Permisos, y vuelve a guardar.
-# A save whose download took longer than its time limit (ten minutes for one file): the toast. The connection is the phone's internet connection.
-Not saved: the download was too slow to finish. Try again on a faster connection.	No se guardó: la descarga iba demasiado lenta para terminar. Vuelve a intentarlo con una conexión más rápida.
+# A save whose download took longer than its time limit (ten minutes for one file): the toast. The connection is the phone's internet connection. Android 12 and later cut a toast after two lines, so it stays short.
+Not saved: the download was too slow. Try a faster connection.	No se guardó: descarga muy lenta. Prueba una conexión más rápida.
 Hide follow suggestions in Search	Ocultar sugerencias para seguir en Buscar
 Takes the Follow suggestions row off the Search screen. Your searches and topics stay.	Quita la fila de sugerencias de cuentas para seguir de la pantalla de búsqueda. Tus búsquedas y temas se quedan.
-# A save stopped because a proxy server on the phone's network (Wi-Fi or global proxy setting) asked for a user name and password: the toast. HushThreads never sends one for a download.
-Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.	No se guardó: el proxy de esta red pide una contraseña, y al guardar nunca se envía ninguna. Vuelve a intentarlo en otra red.
-# The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary.
-This network's proxy asks for a password, and saves never send one. Try again on another network.	El proxy de esta red pide una contraseña, y al guardar nunca se envía ninguna. Vuelve a intentarlo en otra red.
+# A save stopped because a proxy server on the phone's network (Wi-Fi or global proxy setting) asked for a user name and password: the toast. HushThreads never sends one for a download. Android 12 and later cut a toast after two lines, so it stays short.
+Not saved: the proxy wants a password. Try another network.	No se guardó: el proxy pide una contraseña. Prueba otra red.
+# The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary. Android 12 and later cut a toast after two lines, so it stays short.
+The proxy wants a password. Try another network.	El proxy pide una contraseña. Prueba otra red.

@@ -204,19 +204,19 @@ Takes the ghost post bubbles off profile pictures, on profiles and in the row at
 Turn features on or off	Funktionen ein- oder ausschalten
 # Fotos und Videos speichern
 %1$d saved in lower quality than on Threads.	%1$d in niedrigerer Qualität als auf Threads gespeichert.
-%1$d saves stopped. Reopen the post and save again.	%1$d Speichervorgänge wurden gestoppt. Öffne den Beitrag erneut und speichere noch einmal.
+%1$d saves stopped. Reopen the post and save again.	%1$d Speichervorgänge unterbrochen. Beitrag neu öffnen und speichern.
 %1$d saves were interrupted	%1$d Speichervorgänge wurden unterbrochen
 %1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.	%1$s wird zu Datum und Uhrzeit des Speicherns, %2$s zur Nummer des Videos auf Threads, %3$s zum Namen dessen, der es gepostet hat, und %4$s zum Tag der Veröffentlichung. Was beim Speichern nicht bekannt ist, wird weggelassen, und ein Name ohne eines davon bekommt das Datum angehängt. Gibt es den Namen im Ordner schon, wird die Uhrzeit des Speicherns angehängt. Ungültige Zeichen werden zu Unterstrichen. Lass das Feld leer, um den Standardnamen %5$s zu verwenden.
 %1$s of %2$s	%1$s von %2$s
 %1$s so far	Bisher %1$s
-A save stopped. Reopen the post and save again.	Ein Speichervorgang wurde gestoppt. Öffne den Beitrag erneut und speichere noch einmal.
+A save stopped. Reopen the post and save again.	Speichern unterbrochen. Beitrag neu öffnen und speichern.
 A save was interrupted	Ein Speichervorgang wurde unterbrochen
 Adds Save to a post's menu. A post with several photos or videos saves them all. Off or paused, you get Threads' normal menu.	Fügt dem Beitragsmenü Speichern hinzu. Ein Beitrag mit mehreren Fotos oder Videos speichert sie alle. Aus oder pausiert, siehst du das normale Menü von Threads.
 Best	Beste
 Cancel saving this carousel	Speichern dieses Karussells abbrechen
 Cancel saving this photo	Speichern dieses Fotos abbrechen
 Cancel saving this video	Speichern dieses Videos abbrechen
-Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.	Karussell abgebrochen. Gespeichert %1$d. Fehlgeschlagen %2$d. Übersprungen %3$d.
+Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.	Abgebrochen. Gespeichert %1$d. Fehler %2$d. Übersprungen %3$d.
 Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.	Wähle einen Ordnernamen unter Movies und Pictures. Ungültige Zeichen werden zu Unterstrichen. Lass das Feld leer, um den Standardordner %1$s zu verwenden.
 Copying to the gallery	Wird in die Galerie kopiert
 Download failed. Try again in a moment.	Download fehlgeschlagen. Versuche es gleich noch einmal.
@@ -253,14 +253,14 @@ Save video	Video speichern
 Save videos other apps can open	Videos speichern, die andere Apps öffnen können
 Saved %1$d. Failed %2$d. Skipped %3$d.	Gespeichert %1$d. Fehlgeschlagen %2$d. Übersprungen %3$d.
 Saved to %1$s	Gespeichert unter %1$s
-Saved to %1$s in lower quality than on Threads	Gespeichert unter %1$s, in geringerer Qualität als auf Threads
+Saved to %1$s in lower quality than on Threads	In %1$s gespeichert. Qualität geringer als auf Threads
 Saved to the gallery	In der Galerie gespeichert
-Saved to the gallery in lower quality than on Threads	In der Galerie gespeichert, in geringerer Qualität als auf Threads
+Saved to the gallery in lower quality than on Threads	In der Galerie gespeichert. Qualität geringer als auf Threads
 Saving a carousel	Karussell wird gespeichert
 Saving a photo	Foto wird gespeichert
 Saving a video	Video wird gespeichert
 Saving...	Wird gespeichert …
-Saving... To cancel, open Downloads in HushThreads settings.	Speichern ... Zum Abbrechen öffne Downloads in den HushThreads-Einstellungen.
+Saving... To cancel, open Downloads in HushThreads settings.	Speichern ... Zum Abbrechen: Downloads in HushThreads.
 Smallest	Kleinste
 Video file name	Dateiname für Videos
 Videos are named %1$s. Photos are always named %2$s followed by the date and time.	Videos heißen %1$s. Fotos heißen immer %2$s, gefolgt von Datum und Uhrzeit.
@@ -325,11 +325,11 @@ Quick setups hidden. Bring it back from Pause, backup and diagnostics.	Schnellei
 # Android 9 only, a save without Threads' Storage permission: the toast, then the same advice as the line under a carousel's counts. Storage and Permissions are the names Android's app info screen shows in this language.
 Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Nicht gespeichert: Threads braucht unter Android 9 die Speicher-Berechtigung, um zu speichern. Schalte sie in den App-Infos von Threads unter Berechtigungen ein und speichere dann noch einmal.
 Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Threads braucht unter Android 9 die Speicher-Berechtigung, um zu speichern. Schalte sie in den App-Infos von Threads unter Berechtigungen ein und speichere dann noch einmal.
-# A save whose download took longer than its time limit (ten minutes for one file): the toast. The connection is the phone's internet connection.
-Not saved: the download was too slow to finish. Try again on a faster connection.	Nicht gespeichert: Der Download war zu langsam, um fertig zu werden. Versuche es mit einer schnelleren Verbindung noch einmal.
+# A save whose download took longer than its time limit (ten minutes for one file): the toast. The connection is the phone's internet connection. Android 12 and later cut a toast after two lines, so it stays short.
+Not saved: the download was too slow. Try a faster connection.	Nicht gespeichert: zu langsam. Versuche ein schnelleres Netz.
 Hide follow suggestions in Search	Vorschläge zum Folgen in der Suche ausblenden
 Takes the Follow suggestions row off the Search screen. Your searches and topics stay.	Entfernt die Reihe „Vorschläge zum Folgen“ aus der Suche. Deine Suchen und Themen bleiben.
-# A save stopped because a proxy server on the phone's network (Wi-Fi or global proxy setting) asked for a user name and password: the toast. HushThreads never sends one for a download.
-Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.	Nicht gespeichert: Der Proxy dieses Netzwerks verlangt ein Passwort, und beim Speichern wird nie eins gesendet. Versuche es in einem anderen Netzwerk noch einmal.
-# The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary.
-This network's proxy asks for a password, and saves never send one. Try again on another network.	Der Proxy dieses Netzwerks verlangt ein Passwort, und beim Speichern wird nie eins gesendet. Versuche es in einem anderen Netzwerk noch einmal.
+# A save stopped because a proxy server on the phone's network (Wi-Fi or global proxy setting) asked for a user name and password: the toast. HushThreads never sends one for a download. Android 12 and later cut a toast after two lines, so it stays short.
+Not saved: the proxy wants a password. Try another network.	Nicht gespeichert: Der Proxy will ein Passwort. Wechsle das Netz.
+# The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary. Android 12 and later cut a toast after two lines, so it stays short.
+The proxy wants a password. Try another network.	Der Proxy will ein Passwort. Wechsle das Netz.

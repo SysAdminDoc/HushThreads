@@ -466,8 +466,8 @@ public class SaveProgressTest {
             finish(save("/whole.mp4", refused));
 
             assertEquals(Downloader.Status.PROXY_AUTH, refused.get(5, TimeUnit.SECONDS).status);
-            assertEquals("Not saved: this network's proxy asks for a password, and saves never send one. "
-                    + "Try again on another network.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Not saved: the proxy wants a password. Try another network.",
+                    ShadowToast.getTextOfLatestToast());
             assertEquals(1, proxy.requests().size());
             assertFalse(proxy.requests().get(0), proxy.requests().get(0).toLowerCase(java.util.Locale.US)
                     .contains("proxy-authorization"));
@@ -777,7 +777,7 @@ public class SaveProgressTest {
             Downloader.budgetMs = Downloader.BUDGET_MS;
         }
 
-        assertEquals("Not saved: the download was too slow to finish. Try again on a faster connection.",
+        assertEquals("Not saved: the download was too slow. Try a faster connection.",
                 ShadowToast.getTextOfLatestToast());
         assertNull("the notification outlived the save", saveNotification());
         assertEquals(0, gallery.inserts.size());

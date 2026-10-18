@@ -237,7 +237,7 @@ HushThreads saves	Penyimpanan HushThreads
 Joining the picture and sound	Menggabungkan gambar dan suara
 Last carousel save	Penyimpanan carousel terakhir
 Link expired. Reopen the post and try again	Tautan kedaluwarsa. Buka ulang postingan lalu coba lagi
-Not saved: a carousel can have at most %1$d pages	Tidak disimpan: carousel hanya boleh memiliki paling banyak %1$d halaman
+Not saved: a carousel can have at most %1$d pages	Tidak disimpan: carousel maksimal %1$d halaman
 Not saved: that isn't a Threads photo or video	Tidak disimpan: itu bukan foto atau video Threads
 Not saved: the file is over 512 MB	Tidak disimpan: file lebih dari 512 MB
 Page %1$d of %2$d	Halaman %1$d dari %2$d
@@ -253,14 +253,14 @@ Save video	Simpan video
 Save videos other apps can open	Simpan video yang bisa dibuka aplikasi lain
 Saved %1$d. Failed %2$d. Skipped %3$d.	Disimpan %1$d. Gagal %2$d. Dilewati %3$d.
 Saved to %1$s	Disimpan ke %1$s
-Saved to %1$s in lower quality than on Threads	Disimpan ke %1$s dengan kualitas lebih rendah daripada di Threads
+Saved to %1$s in lower quality than on Threads	Disimpan ke %1$s, kualitas lebih rendah dari Threads
 Saved to the gallery	Disimpan ke galeri
 Saved to the gallery in lower quality than on Threads	Disimpan ke galeri dengan kualitas lebih rendah daripada di Threads
 Saving a carousel	Menyimpan carousel
 Saving a photo	Menyimpan foto
 Saving a video	Menyimpan video
 Saving...	Menyimpan...
-Saving... To cancel, open Downloads in HushThreads settings.	Menyimpan... Untuk membatalkan, buka Unduhan di pengaturan HushThreads.
+Saving... To cancel, open Downloads in HushThreads settings.	Menyimpan... Untuk membatalkan, buka Unduhan di HushThreads.
 Smallest	Terkecil
 Video file name	Nama file video
 Videos are named %1$s. Photos are always named %2$s followed by the date and time.	Video diberi nama %1$s. Foto selalu diberi nama %2$s diikuti tanggal dan waktu.
@@ -325,11 +325,11 @@ Quick setups hidden. Bring it back from Pause, backup and diagnostics.	Penyiapan
 # Android 9 only, a save without Threads' Storage permission: the toast, then the same advice as the line under a carousel's counts. Storage and Permissions are the names Android's app info screen shows in this language.
 Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Tidak disimpan: di Android 9, Threads memerlukan izin Penyimpanan untuk menyimpan. Aktifkan di info aplikasi Threads pada bagian Izin, lalu simpan lagi.
 Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	Di Android 9, Threads memerlukan izin Penyimpanan untuk menyimpan. Aktifkan di info aplikasi Threads pada bagian Izin, lalu simpan lagi.
-# A save whose download took longer than its time limit (ten minutes for one file): the toast. The connection is the phone's internet connection.
-Not saved: the download was too slow to finish. Try again on a faster connection.	Tidak disimpan: unduhan terlalu lambat untuk selesai. Coba lagi dengan koneksi yang lebih cepat.
+# A save whose download took longer than its time limit (ten minutes for one file): the toast. The connection is the phone's internet connection. Android 12 and later cut a toast after two lines, so it stays short.
+Not saved: the download was too slow. Try a faster connection.	Tidak disimpan: unduhan terlalu lambat. Coba koneksi lebih cepat.
 Hide follow suggestions in Search	Sembunyikan saran ikuti di Pencarian
 Takes the Follow suggestions row off the Search screen. Your searches and topics stay.	Menghapus baris Saran ikuti dari layar Pencarian. Pencarian dan topik Anda tetap ada.
-# A save stopped because a proxy server on the phone's network (Wi-Fi or global proxy setting) asked for a user name and password: the toast. HushThreads never sends one for a download.
-Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.	Tidak disimpan: proxy jaringan ini meminta kata sandi, dan penyimpanan tidak pernah mengirimkannya. Coba lagi di jaringan lain.
-# The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary.
-This network's proxy asks for a password, and saves never send one. Try again on another network.	Proxy jaringan ini meminta kata sandi, dan penyimpanan tidak pernah mengirimkannya. Coba lagi di jaringan lain.
+# A save stopped because a proxy server on the phone's network (Wi-Fi or global proxy setting) asked for a user name and password: the toast. HushThreads never sends one for a download. Android 12 and later cut a toast after two lines, so it stays short.
+Not saved: the proxy wants a password. Try another network.	Tidak disimpan: proxy butuh kata sandi. Coba jaringan lain.
+# The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary. Android 12 and later cut a toast after two lines, so it stays short.
+The proxy wants a password. Try another network.	Proxy butuh kata sandi. Coba jaringan lain.

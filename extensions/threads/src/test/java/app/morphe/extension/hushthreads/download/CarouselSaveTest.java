@@ -475,7 +475,9 @@ public class CarouselSaveTest {
         assertEquals(0, server.hits("/second.mp4"));
         assertEquals(0, server.hits("/third.jpg"));
         String told = "Saved 1. Failed 1. Skipped 1.\n" + NO_PERMISSION_LINE;
-        assertEquals(told, ShadowToast.getTextOfLatestToast());
+        // One toast a line: Android 12 and newer cut a toast at two lines, which lost the second one.
+        assertTrue(ShadowToast.showedToast("Saved 1. Failed 1. Skipped 1."));
+        assertEquals(NO_PERMISSION_LINE, ShadowToast.getTextOfLatestToast());
         assertEquals(told, SaveControl.batchOutcome());
         assertEquals(1, legacyFolder(android.os.Environment.DIRECTORY_PICTURES).length);
         assertEquals(0, legacyFolder(android.os.Environment.DIRECTORY_MOVIES).length);
@@ -516,10 +518,10 @@ public class CarouselSaveTest {
             assertEquals(0, server.hits("/second.jpg"));
             assertEquals(0, server.hits("/third.jpg"));
             assertEquals("the proxy was asked more than once", 1, proxy.requests().size());
-            String told = "Saved 1. Failed 1. Skipped 1.\n"
-                    + "This network's proxy asks for a password, and saves never send one. Try again on another network.";
-            assertEquals(told, ShadowToast.getTextOfLatestToast());
-            assertEquals(told, SaveControl.batchOutcome());
+            String proxyLine = "The proxy wants a password. Try another network.";
+            assertTrue(ShadowToast.showedToast("Saved 1. Failed 1. Skipped 1."));
+            assertEquals(proxyLine, ShadowToast.getTextOfLatestToast());
+            assertEquals("Saved 1. Failed 1. Skipped 1.\n" + proxyLine, SaveControl.batchOutcome());
             assertClean();
         } finally {
             java.net.ProxySelector.setDefault(saved);
@@ -552,7 +554,8 @@ public class CarouselSaveTest {
         assertTrue(result.noPermission);
         assertEquals(1, server.hits("/second.mp4"));
         assertEquals("a page after the permission went was fetched", 0, server.hits("/third.jpg"));
-        assertEquals("Saved 1. Failed 1. Skipped 1.\n" + NO_PERMISSION_LINE, ShadowToast.getTextOfLatestToast());
+        assertTrue(ShadowToast.showedToast("Saved 1. Failed 1. Skipped 1."));
+        assertEquals(NO_PERMISSION_LINE, ShadowToast.getTextOfLatestToast());
         assertEquals(0, legacyFolder(android.os.Environment.DIRECTORY_MOVIES).length);
         assertClean();
     }

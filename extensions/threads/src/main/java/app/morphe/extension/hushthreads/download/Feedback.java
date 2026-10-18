@@ -39,6 +39,11 @@ final class Feedback {
     /** The source a message that couldn't be shown carries in the diagnostic report. */
     private static final String SOURCE = "Feedback";
 
+    /**
+     * Shows [text], a toast for each of its lines. Android 12 and newer cut a toast at two lines,
+     * so a carousel's result with a line under its counts (lower quality, a proxy's password)
+     * would lose it. Toasts queue, so the lines follow each other.
+     */
     static void show(Context applicationContext, String text, boolean longToast) {
         if (applicationContext == null || text == null) return;
 
@@ -48,11 +53,14 @@ final class Feedback {
                 // so it carries its own guard. An exception from here reaches the
                 // looper and stops the app.
                 try {
-                    Toast.makeText(
-                        applicationContext,
-                        text,
-                        longToast ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT
-                    ).show();
+                    for (String line : text.split("\n")) {
+                        if (line.trim().isEmpty()) continue;
+                        Toast.makeText(
+                            applicationContext,
+                            line,
+                            longToast ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT
+                        ).show();
+                    }
                 } catch (Throwable t) {
                     Logger.diagnosticError(DiagnosticCategory.DOWNLOADS, SOURCE, () -> "could not show a message", t);
                 }

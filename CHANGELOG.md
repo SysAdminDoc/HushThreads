@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** Save's messages are short enough to read whole on Android 12 and later, which cut a message after two lines. On an S22 the proxy message stopped mid-word, and the slow-download one was just as long. A carousel's result now shows each line as its own message, so a line under the counts, like a proxy asking for a password, isn't lost. The German, Spanish, Indonesian, Portuguese and Turkish wording was shortened to fit too.
+
 * **Tooling:** The final APK check now holds Save photos and videos to its own contract. The post menu's Copy link path has to carry exactly one Save row, drawn with the calls Copy link's own row is built from and handed the menu and its composer, while every other menu item still reaches Copy link as before. The row's readers, its click and all fifteen media bridges have to point where the patch found them. A build without Save has to leave the menu and every stub as they shipped, and a bundle from before Save had a status reads as leaving it out.
 
 * **Tooling:** The build classpath inventory refuses to write when a project's buildscript graph is missing, instead of quietly leaving it out. That happens when a build doesn't evaluate every project, as under configure-on-demand, and the refusal names each one. Its Guava probe also stopped failing every Gradle command when it can't find one of the two plugins. It records no jar for that plugin now, and only the inventory refuses. A refused run also deletes the previous inventory, so nothing reads an old one as this run's.

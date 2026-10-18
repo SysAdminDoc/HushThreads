@@ -141,8 +141,9 @@ public final class MediaSave {
                         + "Turn it on in Threads' app info under Permissions, then save again.");
             }
             if (proxyRefused) {
-                text += "\n" + L10n.t(application, "This network's proxy asks for a password, and saves never send one. "
-                        + "Try again on another network.");
+                // Feedback shows each line as its own toast, and Android 12 and later cut one after
+                // two lines, so this stays short.
+                text += "\n" + L10n.t(application, "The proxy wants a password. Try another network.");
             }
             return text;
         }
@@ -1080,14 +1081,12 @@ public final class MediaSave {
             case TOO_LARGE:
                 return L10n.t(application, "Not saved: the file is over 512 MB");
             case TIMED_OUT:
-                return L10n.t(application, "Not saved: the download was too slow to finish. "
-                    + "Try again on a faster connection.");
+                return L10n.t(application, "Not saved: the download was too slow. Try a faster connection.");
             case NO_PERMISSION:
                 return L10n.t(application, "Not saved: Threads needs the Storage permission to save on Android 9. "
                     + "Turn it on in Threads' app info under Permissions, then save again.");
             case PROXY_AUTH:
-                return L10n.t(application, "Not saved: this network's proxy asks for a password, and saves never "
-                    + "send one. Try again on another network.");
+                return L10n.t(application, "Not saved: the proxy wants a password. Try another network.");
             case CANCELLED:
                 return L10n.t(application, "Save cancelled");
             default:

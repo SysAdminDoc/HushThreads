@@ -69,7 +69,7 @@ public final class L10nTranslations {
         table.put("%1$d saved in lower quality than on Threads.",
                 "%1$d in niedrigerer Qualit\u00e4t als auf Threads gespeichert.");
         table.put("%1$d saves stopped. Reopen the post and save again.",
-                "%1$d Speichervorg\u00e4nge wurden gestoppt. \u00d6ffne den Beitrag erneut und speichere noch einmal.");
+                "%1$d Speichervorg\u00e4nge unterbrochen. Beitrag neu \u00f6ffnen und speichern.");
         table.put("%1$d saves were interrupted",
                 "%1$d Speichervorg\u00e4nge wurden unterbrochen");
         table.put("%1$d setting found",
@@ -97,7 +97,7 @@ public final class L10nTranslations {
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "Eine Datei namens %1$s in %2$s hat HushThreads pausiert.");
         table.put("A save stopped. Reopen the post and save again.",
-                "Ein Speichervorgang wurde gestoppt. \u00d6ffne den Beitrag erneut und speichere noch einmal.");
+                "Speichern unterbrochen. Beitrag neu \u00f6ffnen und speichern.");
         table.put("A save was interrupted",
                 "Ein Speichervorgang wurde unterbrochen");
         table.put("About",
@@ -145,7 +145,7 @@ public final class L10nTranslations {
         table.put("Cancel saving this video",
                 "Speichern dieses Videos abbrechen");
         table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
-                "Karussell abgebrochen. Gespeichert %1$d. Fehlgeschlagen %2$d. \u00dcbersprungen %3$d.");
+                "Abgebrochen. Gespeichert %1$d. Fehler %2$d. \u00dcbersprungen %3$d.");
         table.put("Changed %1$d setting",
                 "%1$d Einstellung ge\u00e4ndert");
         table.put("Changed %1$d settings",
@@ -352,12 +352,12 @@ public final class L10nTranslations {
                 "Nicht gespeichert: Ein Karussell darf h\u00f6chstens %1$d Seiten haben");
         table.put("Not saved: that isn't a Threads photo or video",
                 "Nicht gespeichert: Das ist kein Foto oder Video von Threads");
-        table.put("Not saved: the download was too slow to finish. Try again on a faster connection.",
-                "Nicht gespeichert: Der Download war zu langsam, um fertig zu werden. Versuche es mit einer schnelleren Verbindung noch einmal.");
+        table.put("Not saved: the download was too slow. Try a faster connection.",
+                "Nicht gespeichert: zu langsam. Versuche ein schnelleres Netz.");
         table.put("Not saved: the file is over 512 MB",
                 "Nicht gespeichert: Die Datei ist \u00fcber 512 MB gro\u00df");
-        table.put("Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.",
-                "Nicht gespeichert: Der Proxy dieses Netzwerks verlangt ein Passwort, und beim Speichern wird nie eins gesendet. Versuche es in einem anderen Netzwerk noch einmal.");
+        table.put("Not saved: the proxy wants a password. Try another network.",
+                "Nicht gespeichert: Der Proxy will ein Passwort. Wechsle das Netz.");
         table.put("OK",
                 "OK");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
@@ -458,11 +458,11 @@ public final class L10nTranslations {
         table.put("Saved to %1$s",
                 "Gespeichert unter %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
-                "Gespeichert unter %1$s, in geringerer Qualit\u00e4t als auf Threads");
+                "In %1$s gespeichert. Qualit\u00e4t geringer als auf Threads");
         table.put("Saved to the gallery",
                 "In der Galerie gespeichert");
         table.put("Saved to the gallery in lower quality than on Threads",
-                "In der Galerie gespeichert, in geringerer Qualit\u00e4t als auf Threads");
+                "In der Galerie gespeichert. Qualit\u00e4t geringer als auf Threads");
         table.put("Saved. Restart Threads to apply this change.",
                 "Gespeichert. Starte Threads neu, um diese \u00c4nderung zu \u00fcbernehmen.");
         table.put("Saves",
@@ -478,7 +478,7 @@ public final class L10nTranslations {
         table.put("Saving...",
                 "Wird gespeichert \u2026");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
-                "Speichern ... Zum Abbrechen \u00f6ffne Downloads in den HushThreads-Einstellungen.");
+                "Speichern ... Zum Abbrechen: Downloads in HushThreads.");
         table.put("Search settings",
                 "Einstellungen suchen");
         table.put("Selecting links by hand",
@@ -576,6 +576,8 @@ public final class L10nTranslations {
                 "Die Datei %1$s lie\u00df sich nicht entfernen. L\u00f6sche sie aus %2$s und tippe dann noch einmal auf Fortsetzen.");
         table.put("The newest HushThreads release is %1$s.",
                 "Die neueste Version von HushThreads ist %1$s.");
+        table.put("The proxy wants a password. Try another network.",
+                "Der Proxy will ein Passwort. Wechsle das Netz.");
         table.put("The setting couldn't finish updating. Its saved value is shown.",
                 "Die Einstellung lie\u00df sich nicht vollst\u00e4ndig aktualisieren. Der gespeicherte Wert wird angezeigt.");
         table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
@@ -590,8 +592,6 @@ public final class L10nTranslations {
                 "Diese werden beim Patchen in Morphe Manager ausgew\u00e4hlt, und die Pause schaltet sie nicht aus. Patche erneut, um sie zu \u00e4ndern.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Dieser Build hat nicht festgehalten, welche Berichtsarten er abdeckt. Patche erneut, um sie zu sehen.");
-        table.put("This network's proxy asks for a password, and saves never send one. Try again on another network.",
-                "Der Proxy dieses Netzwerks verlangt ein Passwort, und beim Speichern wird nie eins gesendet. Versuche es in einem anderen Netzwerk noch einmal.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Dieses Handy hat keine Dateiauswahl, hier l\u00e4sst sich also keine Datei w\u00e4hlen.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
@@ -702,7 +702,7 @@ public final class L10nTranslations {
         table.put("%1$d saved in lower quality than on Threads.",
                 "%1$d guardados con menor calidad que en Threads.");
         table.put("%1$d saves stopped. Reopen the post and save again.",
-                "Se detuvieron %1$d guardados. Vuelve a abrir la publicaci\u00f3n y gu\u00e1rdala otra vez.");
+                "Se detuvieron %1$d guardados. Reabre la publicaci\u00f3n y gu\u00e1rdala.");
         table.put("%1$d saves were interrupted",
                 "Se interrumpieron %1$d guardados");
         table.put("%1$d setting found",
@@ -730,7 +730,7 @@ public final class L10nTranslations {
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "Un archivo llamado %1$s en %2$s paus\u00f3 HushThreads.");
         table.put("A save stopped. Reopen the post and save again.",
-                "Se detuvo un guardado. Vuelve a abrir la publicaci\u00f3n y gu\u00e1rdala otra vez.");
+                "Se detuvo un guardado. Reabre la publicaci\u00f3n y gu\u00e1rdala.");
         table.put("A save was interrupted",
                 "Se interrumpi\u00f3 un guardado");
         table.put("About",
@@ -958,7 +958,7 @@ public final class L10nTranslations {
         table.put("Licenses",
                 "Licencias");
         table.put("Link expired. Reopen the post and try again",
-                "El enlace expir\u00f3. Vuelve a abrir la publicaci\u00f3n e int\u00e9ntalo de nuevo");
+                "El enlace expir\u00f3. Vuelve a abrir la publicaci\u00f3n y reint\u00e9ntalo");
         table.put("Links",
                 "Enlaces");
         table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
@@ -985,12 +985,12 @@ public final class L10nTranslations {
                 "No se guard\u00f3: un carrusel puede tener como m\u00e1ximo %1$d p\u00e1ginas");
         table.put("Not saved: that isn't a Threads photo or video",
                 "No se guard\u00f3: no es una foto ni un video de Threads");
-        table.put("Not saved: the download was too slow to finish. Try again on a faster connection.",
-                "No se guard\u00f3: la descarga iba demasiado lenta para terminar. Vuelve a intentarlo con una conexi\u00f3n m\u00e1s r\u00e1pida.");
+        table.put("Not saved: the download was too slow. Try a faster connection.",
+                "No se guard\u00f3: descarga muy lenta. Prueba una conexi\u00f3n m\u00e1s r\u00e1pida.");
         table.put("Not saved: the file is over 512 MB",
                 "No se guard\u00f3: el archivo supera los 512 MB");
-        table.put("Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.",
-                "No se guard\u00f3: el proxy de esta red pide una contrase\u00f1a, y al guardar nunca se env\u00eda ninguna. Vuelve a intentarlo en otra red.");
+        table.put("Not saved: the proxy wants a password. Try another network.",
+                "No se guard\u00f3: el proxy pide una contrase\u00f1a. Prueba otra red.");
         table.put("OK",
                 "Aceptar");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
@@ -1111,7 +1111,7 @@ public final class L10nTranslations {
         table.put("Saving...",
                 "Guardando...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
-                "Guardando... Para cancelar, abre Descargas en los ajustes de HushThreads.");
+                "Guardando... Para cancelar, ve a Descargas en HushThreads.");
         table.put("Search settings",
                 "Buscar ajustes");
         table.put("Selecting links by hand",
@@ -1209,6 +1209,8 @@ public final class L10nTranslations {
                 "No se pudo eliminar el archivo %1$s. B\u00f3rralo de %2$s y luego vuelve a tocar Reanudar.");
         table.put("The newest HushThreads release is %1$s.",
                 "La versi\u00f3n m\u00e1s reciente de HushThreads es la %1$s.");
+        table.put("The proxy wants a password. Try another network.",
+                "El proxy pide una contrase\u00f1a. Prueba otra red.");
         table.put("The setting couldn't finish updating. Its saved value is shown.",
                 "No se pudo terminar de actualizar el ajuste. Se muestra su valor guardado.");
         table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
@@ -1223,8 +1225,6 @@ public final class L10nTranslations {
                 "Se eligen en Morphe Manager al parchear, y Pausar no los desactiva. Vuelve a parchear para cambiarlos.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Esta versi\u00f3n no registr\u00f3 qu\u00e9 tipos de informe cubre. Vuelve a parchear para verlos.");
-        table.put("This network's proxy asks for a password, and saves never send one. Try again on another network.",
-                "El proxy de esta red pide una contrase\u00f1a, y al guardar nunca se env\u00eda ninguna. Vuelve a intentarlo en otra red.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que aqu\u00ed no hay forma de elegir un archivo.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
@@ -1615,15 +1615,15 @@ public final class L10nTranslations {
         table.put("Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
                 "Tidak disimpan: di Android 9, Threads memerlukan izin Penyimpanan untuk menyimpan. Aktifkan di info aplikasi Threads pada bagian Izin, lalu simpan lagi.");
         table.put("Not saved: a carousel can have at most %1$d pages",
-                "Tidak disimpan: carousel hanya boleh memiliki paling banyak %1$d halaman");
+                "Tidak disimpan: carousel maksimal %1$d halaman");
         table.put("Not saved: that isn't a Threads photo or video",
                 "Tidak disimpan: itu bukan foto atau video Threads");
-        table.put("Not saved: the download was too slow to finish. Try again on a faster connection.",
-                "Tidak disimpan: unduhan terlalu lambat untuk selesai. Coba lagi dengan koneksi yang lebih cepat.");
+        table.put("Not saved: the download was too slow. Try a faster connection.",
+                "Tidak disimpan: unduhan terlalu lambat. Coba koneksi lebih cepat.");
         table.put("Not saved: the file is over 512 MB",
                 "Tidak disimpan: file lebih dari 512 MB");
-        table.put("Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.",
-                "Tidak disimpan: proxy jaringan ini meminta kata sandi, dan penyimpanan tidak pernah mengirimkannya. Coba lagi di jaringan lain.");
+        table.put("Not saved: the proxy wants a password. Try another network.",
+                "Tidak disimpan: proxy butuh kata sandi. Coba jaringan lain.");
         table.put("OK",
                 "Oke");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
@@ -1724,7 +1724,7 @@ public final class L10nTranslations {
         table.put("Saved to %1$s",
                 "Disimpan ke %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
-                "Disimpan ke %1$s dengan kualitas lebih rendah daripada di Threads");
+                "Disimpan ke %1$s, kualitas lebih rendah dari Threads");
         table.put("Saved to the gallery",
                 "Disimpan ke galeri");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -1744,7 +1744,7 @@ public final class L10nTranslations {
         table.put("Saving...",
                 "Menyimpan...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
-                "Menyimpan... Untuk membatalkan, buka Unduhan di pengaturan HushThreads.");
+                "Menyimpan... Untuk membatalkan, buka Unduhan di HushThreads.");
         table.put("Search settings",
                 "Cari pengaturan");
         table.put("Selecting links by hand",
@@ -1842,6 +1842,8 @@ public final class L10nTranslations {
                 "File %1$s tidak dapat dihapus. Hapus file itu dari %2$s, lalu ketuk Lanjutkan lagi.");
         table.put("The newest HushThreads release is %1$s.",
                 "Rilis HushThreads terbaru adalah %1$s.");
+        table.put("The proxy wants a password. Try another network.",
+                "Proxy butuh kata sandi. Coba jaringan lain.");
         table.put("The setting couldn't finish updating. Its saved value is shown.",
                 "Pengaturan ini tidak dapat selesai diperbarui. Nilai yang tersimpan ditampilkan.");
         table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
@@ -1856,8 +1858,6 @@ public final class L10nTranslations {
                 "Semua ini dipilih di Morphe Manager saat Anda menambal, dan Jeda tidak mematikannya. Tambal ulang untuk mengubahnya.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Build ini tidak mencatat jenis laporan apa yang dicakup. Tambal ulang untuk melihatnya.");
-        table.put("This network's proxy asks for a password, and saves never send one. Try again on another network.",
-                "Proxy jaringan ini meminta kata sandi, dan penyimpanan tidak pernah mengirimkannya. Coba lagi di jaringan lain.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Ponsel ini tidak memiliki pemilih file, jadi file tidak dapat dipilih di sini.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
@@ -1968,7 +1968,7 @@ public final class L10nTranslations {
         table.put("%1$d saved in lower quality than on Threads.",
                 "%1$d salvos com qualidade menor que no Threads.");
         table.put("%1$d saves stopped. Reopen the post and save again.",
-                "%1$d salvamentos pararam. Abra a publica\u00e7\u00e3o novamente e salve outra vez.");
+                "%1$d salvamentos pararam. Reabra a publica\u00e7\u00e3o e salve de novo.");
         table.put("%1$d saves were interrupted",
                 "%1$d salvamentos foram interrompidos");
         table.put("%1$d setting found",
@@ -1996,7 +1996,7 @@ public final class L10nTranslations {
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "Um arquivo chamado %1$s em %2$s pausou o HushThreads.");
         table.put("A save stopped. Reopen the post and save again.",
-                "Um salvamento parou. Abra a publica\u00e7\u00e3o novamente e salve outra vez.");
+                "Um salvamento parou. Reabra a publica\u00e7\u00e3o e salve de novo.");
         table.put("A save was interrupted",
                 "Um salvamento foi interrompido");
         table.put("About",
@@ -2251,12 +2251,12 @@ public final class L10nTranslations {
                 "N\u00e3o foi salvo: um carrossel pode ter no m\u00e1ximo %1$d p\u00e1ginas");
         table.put("Not saved: that isn't a Threads photo or video",
                 "N\u00e3o salvo: isso n\u00e3o \u00e9 uma foto nem um v\u00eddeo do Threads");
-        table.put("Not saved: the download was too slow to finish. Try again on a faster connection.",
-                "N\u00e3o foi salvo: o download estava lento demais para terminar. Tente de novo com uma conex\u00e3o mais r\u00e1pida.");
+        table.put("Not saved: the download was too slow. Try a faster connection.",
+                "N\u00e3o foi salvo: muito lento. Tente uma conex\u00e3o mais r\u00e1pida.");
         table.put("Not saved: the file is over 512 MB",
                 "N\u00e3o foi salvo: o arquivo tem mais de 512 MB");
-        table.put("Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.",
-                "N\u00e3o foi salvo: o proxy desta rede pede uma senha, e os salvamentos nunca enviam uma. Tente de novo em outra rede.");
+        table.put("Not saved: the proxy wants a password. Try another network.",
+                "N\u00e3o foi salvo: o proxy pede uma senha. Tente outra rede.");
         table.put("OK",
                 "OK");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
@@ -2377,7 +2377,7 @@ public final class L10nTranslations {
         table.put("Saving...",
                 "Salvando...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
-                "Salvando... Para cancelar, abra Downloads nas configura\u00e7\u00f5es do HushThreads.");
+                "Salvando... Para cancelar, abra Downloads no HushThreads.");
         table.put("Search settings",
                 "Buscar configura\u00e7\u00f5es");
         table.put("Selecting links by hand",
@@ -2475,6 +2475,8 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel remover o arquivo %1$s. Exclua-o de %2$s e toque em Retomar de novo.");
         table.put("The newest HushThreads release is %1$s.",
                 "A vers\u00e3o mais nova do HushThreads \u00e9 %1$s.");
+        table.put("The proxy wants a password. Try another network.",
+                "O proxy pede uma senha. Tente outra rede.");
         table.put("The setting couldn't finish updating. Its saved value is shown.",
                 "N\u00e3o foi poss\u00edvel concluir a atualiza\u00e7\u00e3o da configura\u00e7\u00e3o. O valor salvo est\u00e1 sendo mostrado.");
         table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
@@ -2489,8 +2491,6 @@ public final class L10nTranslations {
                 "Eles s\u00e3o escolhidos no Morphe Manager quando voc\u00ea aplica os patches, e a pausa n\u00e3o os desativa. Aplique os patches novamente para alter\u00e1-los.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Esta vers\u00e3o n\u00e3o registrou quais tipos de relat\u00f3rio cobre. Aplique os patches de novo para ver.");
-        table.put("This network's proxy asks for a password, and saves never send one. Try again on another network.",
-                "O proxy desta rede pede uma senha, e os salvamentos nunca enviam uma. Tente de novo em outra rede.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este dispositivo n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel escolher um arquivo aqui.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
@@ -2601,7 +2601,7 @@ public final class L10nTranslations {
         table.put("%1$d saved in lower quality than on Threads.",
                 "%1$d \u00f6\u011fe Threads'tekinden daha d\u00fc\u015f\u00fck kalitede kaydedildi.");
         table.put("%1$d saves stopped. Reopen the post and save again.",
-                "%1$d kaydetme i\u015flemi durdu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
+                "%1$d kaydetme durdu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
         table.put("%1$d saves were interrupted",
                 "%1$d kaydetme i\u015flemi kesildi");
         table.put("%1$d setting found",
@@ -2629,7 +2629,7 @@ public final class L10nTranslations {
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "%2$s i\u00e7indeki %1$s adl\u0131 bir dosya HushThreads'u duraklatt\u0131.");
         table.put("A save stopped. Reopen the post and save again.",
-                "Bir kaydetme i\u015flemi durdu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
+                "Bir kaydetme durdu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
         table.put("A save was interrupted",
                 "Bir kaydetme i\u015flemi kesildi");
         table.put("About",
@@ -2677,7 +2677,7 @@ public final class L10nTranslations {
         table.put("Cancel saving this video",
                 "Bu videonun kaydedilmesini iptal et");
         table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
-                "\u00c7oklu g\u00f6nderi iptal edildi. Kaydedilen %1$d. Ba\u015far\u0131s\u0131z %2$d. Atlanan %3$d.");
+                "\u0130ptal edildi. Kaydedilen %1$d. Ba\u015far\u0131s\u0131z %2$d. Atlanan %3$d.");
         table.put("Changed %1$d setting",
                 "%1$d ayar de\u011fi\u015ftirildi");
         table.put("Changed %1$d settings",
@@ -2884,12 +2884,12 @@ public final class L10nTranslations {
                 "Kaydedilmedi: \u00e7oklu g\u00f6nderide en fazla %1$d sayfa olabilir");
         table.put("Not saved: that isn't a Threads photo or video",
                 "Kaydedilmedi: Bu bir Threads foto\u011fraf\u0131 veya videosu de\u011fil");
-        table.put("Not saved: the download was too slow to finish. Try again on a faster connection.",
-                "Kaydedilmedi: \u0130ndirme bitemeyecek kadar yava\u015ft\u0131. Daha h\u0131zl\u0131 bir ba\u011flant\u0131yla tekrar dene.");
+        table.put("Not saved: the download was too slow. Try a faster connection.",
+                "Kaydedilmedi: \u0130ndirme \u00e7ok yava\u015ft\u0131. Daha h\u0131zl\u0131 bir ba\u011flant\u0131 dene.");
         table.put("Not saved: the file is over 512 MB",
                 "Kaydedilmedi: Dosya 512 MB'tan b\u00fcy\u00fck");
-        table.put("Not saved: this network's proxy asks for a password, and saves never send one. Try again on another network.",
-                "Kaydedilmedi: Bu a\u011f\u0131n proxy sunucusu bir parola istiyor ve kaydetme i\u015flemleri hi\u00e7bir zaman parola g\u00f6ndermez. Ba\u015fka bir a\u011fda tekrar dene.");
+        table.put("Not saved: the proxy wants a password. Try another network.",
+                "Kaydedilmedi: Proxy parola istiyor. Ba\u015fka bir a\u011f dene.");
         table.put("OK",
                 "Tamam");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
@@ -2990,7 +2990,7 @@ public final class L10nTranslations {
         table.put("Saved to %1$s",
                 "\u015euraya kaydedildi: %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
-                "\u015euraya Threads'tekinden d\u00fc\u015f\u00fck kalitede kaydedildi: %1$s");
+                "Threads'tekinden d\u00fc\u015f\u00fck kalitede kaydedildi: %1$s");
         table.put("Saved to the gallery",
                 "Galeriye kaydedildi");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -3010,7 +3010,7 @@ public final class L10nTranslations {
         table.put("Saving...",
                 "Kaydediliyor...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
-                "Kaydediliyor... \u0130ptal etmek i\u00e7in HushThreads ayarlar\u0131nda \u0130ndirmeler'i a\u00e7.");
+                "Kaydediliyor... \u0130ptal i\u00e7in HushThreads'te \u0130ndirmeler'i a\u00e7.");
         table.put("Search settings",
                 "Ayarlarda ara");
         table.put("Selecting links by hand",
@@ -3108,6 +3108,8 @@ public final class L10nTranslations {
                 "%1$s dosyas\u0131 kald\u0131r\u0131lamad\u0131. Onu %2$s i\u00e7inden sil, sonra yeniden Devam et'e dokun.");
         table.put("The newest HushThreads release is %1$s.",
                 "En yeni HushThreads s\u00fcr\u00fcm\u00fc %1$s.");
+        table.put("The proxy wants a password. Try another network.",
+                "Proxy parola istiyor. Ba\u015fka bir a\u011f dene.");
         table.put("The setting couldn't finish updating. Its saved value is shown.",
                 "Ayar\u0131n g\u00fcncellenmesi tamamlanamad\u0131. Kay\u0131tl\u0131 de\u011feri g\u00f6steriliyor.");
         table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
@@ -3122,8 +3124,6 @@ public final class L10nTranslations {
                 "Bunlar yamalarken Morphe Manager'da se\u00e7ilir ve Duraklatma bunlar\u0131 kapatmaz. De\u011fi\u015ftirmek i\u00e7in yeniden yamala.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Bu s\u00fcr\u00fcm hangi rapor t\u00fcrlerini kapsad\u0131\u011f\u0131n\u0131 kaydetmedi. G\u00f6rmek i\u00e7in yeniden yamala.");
-        table.put("This network's proxy asks for a password, and saves never send one. Try again on another network.",
-                "Bu a\u011f\u0131n proxy sunucusu bir parola istiyor ve kaydetme i\u015flemleri hi\u00e7bir zaman parola g\u00f6ndermez. Ba\u015fka bir a\u011fda tekrar dene.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Bu telefonda dosya se\u00e7ici yok, bu y\u00fczden burada dosya se\u00e7menin bir yolu yok.");
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",

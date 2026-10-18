@@ -127,6 +127,66 @@ public class SaveTextL10nTest {
                 MediaSave.message(context, Downloader.Status.OK, null, false));
     }
 
+    /**
+     * Android 12 and later cut a text toast after two lines, so each toast a save shows there fits
+     * two lines of a narrow phone in every language the catalog carries. The Storage permission
+     * message is left out: it only shows on Android 9, which draws the whole toast.
+     */
+    @Test
+    public void everyToastFitsTwoLinesInEveryLanguage() {
+        List<String> tooLong = new ArrayList<>();
+        for (String language : new String[] { "en", "de", "es", "in", "pt-rBR", "tr" }) {
+            RuntimeEnvironment.setQualifiers(language);
+            List<String> toasts = new ArrayList<>();
+            for (Downloader.Status status : Downloader.Status.values()) {
+                if (status == Downloader.Status.NO_PERMISSION) continue;
+                for (boolean lower : new boolean[] { false, true }) {
+                    toasts.add(MediaSave.message(context, status, null, lower));
+                    toasts.add(MediaSave.message(context, status, "Pictures/Threads", lower));
+                }
+            }
+            toasts.add(new MediaSave.BatchResult(31, 1, 0, 0, false).message(context));
+            toasts.add(new MediaSave.BatchResult(1, 0, 31, 0, true).message(context));
+            // Two digits in every count, the widest a 32 page carousel can give.
+            toasts.add(new MediaSave.BatchResult(10, 10, 12, 0, false).message(context));
+            toasts.add(new MediaSave.BatchResult(10, 10, 12, 0, true).message(context));
+            toasts.add(new MediaSave.BatchResult(30, 1, 1, 30, false).message(context));
+            toasts.add(new MediaSave.BatchResult(1, 1, 30, 0, false, false, true).message(context));
+            toasts.add(L10n.t(context, "Saving... To cancel, open Downloads in HushThreads settings."));
+            toasts.add(L10n.f(context, "Not saved: a carousel can have at most %1$d pages", 32));
+            toasts.add(L10n.quantity(context, 1, "A save stopped. Reopen the post and save again.",
+                    "%1$d saves stopped. Reopen the post and save again."));
+            toasts.add(L10n.quantity(context, 12, "A save stopped. Reopen the post and save again.",
+                    "%1$d saves stopped. Reopen the post and save again."));
+            for (String text : toasts) {
+                // Feedback shows each line of a message as its own toast.
+                for (String toast : text.split("\n")) {
+                    if (toastLines(toast) > 2) tooLong.add(language + ": " + toast);
+                }
+            }
+        }
+        assertTrue("past two lines: " + tooLong, tooLong.isEmpty());
+    }
+
+    /**
+     * The lines a toast takes, wrapped by word at 34 characters. An S22 (384 dp wide, font scale 1)
+     * cut a toast's second line at "This network's proxy asks for a p…", 34 characters and the
+     * ellipsis. The marks that isolate a folder's name take no room.
+     */
+    private static int toastLines(String toast) {
+        int lines = 1;
+        int used = 0;
+        for (String word : toast.replace("⁨", "").replace("⁩", "").split(" ")) {
+            if (used > 0 && used + 1 + word.length() > 34) {
+                lines++;
+                used = word.length();
+            } else {
+                used += (used > 0 ? 1 : 0) + word.length();
+            }
+        }
+        return lines;
+    }
+
     /** A channel named in one language is renamed in the next, keeping what the person set. */
     @Test
     @Config(qualifiers = "de")
