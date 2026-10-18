@@ -544,7 +544,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
             '^https://morphe-patches\.software/data/bundles\.json$' { $answer = $a.directory; break }
             '^https://raw\.githubusercontent\.com/nvbangg/awesome-morphe/main/data/hashes\.json$' { $answer = $a.awesome; break }
             '^https://raw\.githubusercontent\.com/drnx64/morphe-track-patches/main/data/bundles\.json$' { $answer = $a.tracker; break }
-            '^https://raw\.githubusercontent\.com/Jman-Github/Patch-Bundle-Registry/main/config/sources\.json$' { $answer = $a.jmanConfig; break }
+            '^https://raw\.githubusercontent\.com/Jman-Github/Patch-Bundle-Registry/HEAD/config/sources\.json$' { $answer = $a.jmanConfig; break }
             '^https://patch-bundles\.api\.jmancentral\.com/apps/com\.instagram\.barcelona/bundles\?limit=100&offset=(\d+)$' { $answer = $a.jmanPages[$Matches[1]]; break }
             '^https://api\.github\.com/repos/rushiforai/morphe-archive/contents/examplepatches/SysAdminDoc/HushThreads/patches-list\.json$' { $answer = $a.archive; break }
             '^https://api\.github\.com/search/code\?q=([^&]+)&per_page=100&page=1$' {

@@ -459,9 +459,10 @@ Invoke-Source 'Jman''s bundle index' {
     # Jman's Patch Bundle Registry replaced the old ReVanced-Patch-Bundles files (their raw paths
     # answer 404). Registration is config/sources.json; what the registry serves for the package is
     # the paged /apps/<package>/bundles list ({data,total,limit,offset}). A short page is not the
-    # last page: the offset moves by the rows a page returned and stops when it reaches total.
+    # last page: the offset moves by the rows a page returned and stops when it reaches total. The
+    # registry has no main branch (its default is bundles), so registration is read at HEAD.
     $registryApi = 'https://patch-bundles.api.jmancentral.com'
-    $registration = Get-SourceJson -Uri 'https://raw.githubusercontent.com/Jman-Github/Patch-Bundle-Registry/main/config/sources.json' `
+    $registration = Get-SourceJson -Uri 'https://raw.githubusercontent.com/Jman-Github/Patch-Bundle-Registry/HEAD/config/sources.json' `
         -What 'the registry''s config/sources.json'
     $registered = @{}
     foreach ($property in $registration.PSObject.Properties) {
