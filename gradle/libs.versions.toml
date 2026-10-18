@@ -29,6 +29,8 @@ maven-artifact = "3.9.16"
 # Compile-only for the extension: see extensions/threads/build.gradle.kts. The settings
 # classpath forces every org.jetbrains.kotlin request to 2.4.20, so this matches it.
 kotlin-stdlib = "2.4.20"
+# Outside GHSA-xxph-c9ww-hj94 (4.0 to 33.7.1). settings.gradle.kts sets the same version as a floor
+# on the plugins' classpath, where the catalog doesn't reach; move both together.
 guava = "33.7.2-jre"
 # Every org.bouncycastle request in this build is rewritten to this, in :extensions:threads's
 # test graph and in :patches' build graph. It has to be a version that publishes all three

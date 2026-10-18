@@ -2145,11 +2145,12 @@ Write-Host "[scripts] $($rangeCases.Count) complete Maven range gate cases passe
 
     # The build classpath: what settings.gradle.kts resolved for the plugins, which the SBOM leaves
     # out, read from the inventory it writes and put to OSV by a gate of its own with its own list.
-    # GHSA-xxph-c9ww-hj94 (CVE-2026-102554) is a Guava deserialization advisory the plugin's
-    # Guava 33.5.0-jre is inside (4.0 to 33.7.1, fixed in 33.7.2). On 2026-10-14 it was a google/guava
+    # GHSA-xxph-c9ww-hj94 (CVE-2026-102554) is a Guava deserialization advisory the plugins'
+    # Guava 33.5.0-jre request is inside (4.0 to 33.7.1, fixed in 33.7.2). On 2026-10-14 it was a google/guava
     # repository advisory rated medium, and OSV had no entry for it (404), so this is a controlled
     # fixture in OSV's shape rather than a recording: the vulnerable and fixed builds, and the
     # request for the vulnerable one that resolved to the fixed one, which isn't on the classpath.
+    # settings.gradle.kts's floor has resolved 33.7.2-jre since 2026-10-17, with the reasons below.
     $guavaDeserialization = ('{"id":"GHSA-xxph-c9ww-hj94","summary":"CompactHashMap/CompactHashSet/MapMakerInternalMap ' +
         'deserialization triggers uncontrolled memory allocation","aliases":["CVE-2026-102554"],' +
         '"database_specific":{"severity":"MODERATE"},"affected":[{"package":{"ecosystem":"Maven","name":"com.google.guava:guava"},' +
@@ -2269,7 +2270,8 @@ Write-Host "[scripts] $($rangeCases.Count) complete Maven range gate cases passe
         # The fixed Guava: the request for 33.5.0-jre is printed as one and never put to OSV.
         $guavaRequest = [ordered]@{ requested = 'com.google.guava:guava:33.5.0-jre'; resolved = 'com.google.guava:guava:33.7.2-jre'
             requestedBy = @('app.morphe:morphe-patches-gradle-plugin:1.3.4'); requestedByCount = 1
-            reasons = @('CONFLICT_RESOLUTION: between versions 33.7.2-jre and 33.5.0-jre', 'REQUESTED: requested') }
+            reasons = @('CONFLICT_RESOLUTION: between versions 33.7.2-jre, 33.5.0-jre, 33.3.1-jre, 32.0.1-jre and 18.0',
+                'CONSTRAINT: GHSA-xxph-c9ww-hj94 affects Guava 4.0 to 33.7.1.', 'REQUESTED: requested') }
         New-TestBuildInventory -Purls @($guavaFixed) -Conflicts @($guavaRequest)
         $said = Invoke-BuildGate
         Assert-True ($said -like '*asked for com.google.guava:guava:33.5.0-jre and resolved com.google.guava:guava:33.7.2-jre*' -and
