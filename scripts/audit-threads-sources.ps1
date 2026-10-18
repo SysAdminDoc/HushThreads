@@ -8,8 +8,8 @@
 
     - the official Morphe patch bundle's patches-list.json, which has shipped no Threads patch so
       far;
-    - the Morphe community directory, Awesome Morphe, the Morphe Patch Tracker and Jman's bundle
-      index, for every bundle that targets com.instagram.barcelona, and for whether HushThreads is
+    - the Morphe community directory, Awesome Morphe, the Morphe Patch Tracker and Jman's Patch
+      Bundle Registry, for every bundle that targets com.instagram.barcelona, and for whether HushThreads is
       listed on each, plus the Morphe Archive for HushThreads' own listing;
     - GitHub code search for the Threads package name in patch lists, patch code and Xposed hooks,
       with the two archive mirrors mapped back to the repositories they copied, and GitLab code
@@ -61,7 +61,10 @@ param(
     # GitHub allows ten code searches a minute.
     [double]$SearchDelaySeconds = 7,
     # How long to wait out a rate limit before trying again.
-    [int]$RateLimitWaitSeconds = 61
+    [int]$RateLimitWaitSeconds = 61,
+    # How much of Jman's registry list one run reads before it reports the census incomplete.
+    [int]$RegistryMaxRequests = 10,
+    [int]$RegistryMaxRows = 1000
 )
 
 $ErrorActionPreference = 'Stop'
@@ -319,7 +322,7 @@ function Add-Candidate {
         Packages are what an index says a bundle targets. Code search only proves a file names the
         package, which an Instagram patch that opens Threads links does too, so its packages are Mentions.
     #>
-    param([string]$Key, [string]$Source, [string[]]$Packages, [string[]]$Mentions, [string]$Path, [string]$Blob, [string[]]$Features)
+    param([string]$Key, [string]$Source, [string[]]$Packages, [string[]]$Mentions, [string]$Path, [string]$Blob, [string[]]$Features, $Registry)
     if (-not $Key) { return }
     if (-not $candidates.ContainsKey($Key)) {
         $candidates[$Key] = [pscustomobject]@{
@@ -329,6 +332,7 @@ function Add-Candidate {
             Mentions = New-Object System.Collections.Generic.List[string]
             Hits = New-Object System.Collections.Generic.List[object]
             Features = New-Object System.Collections.Generic.List[string]
+            Registry = New-Object System.Collections.Generic.List[object]
         }
     }
     $candidate = $candidates[$Key]
@@ -336,6 +340,7 @@ function Add-Candidate {
     foreach ($package in @($Packages)) { if ($package -and -not $candidate.Packages.Contains($package)) { $candidate.Packages.Add($package) } }
     foreach ($package in @($Mentions)) { if ($package -and -not $candidate.Mentions.Contains($package)) { $candidate.Mentions.Add($package) } }
     foreach ($feature in @($Features)) { if ($feature -and -not $candidate.Features.Contains($feature)) { $candidate.Features.Add($feature) } }
+    if ($null -ne $Registry) { $candidate.Registry.Add($Registry) }
     if ($Path) { $candidate.Hits.Add([pscustomobject][ordered]@{ path = $Path; blob = $Blob }) }
 }
 
@@ -451,48 +456,130 @@ Invoke-Source 'Morphe Patch Tracker' {
 }
 
 Invoke-Source 'Jman''s bundle index' {
-    $bundleSources = Get-SourceJson -Uri 'https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/bundle-sources.json' `
-        -What 'Jman''s bundle-sources.json'
-    $byName = @{}
-    $listed['jman-bundles'] = $false
-    foreach ($property in $bundleSources.PSObject.Properties) {
-        $key = ConvertTo-SourceKey ([string](Get-SourceProperty $property.Value 'patches'))
-        if ($key -and $key -eq $selfKey) { $listed['jman-bundles'] = $true }
-        $name = ($property.Name -replace '-(stable|dev|latest)$', '').ToLowerInvariant()
-        if ($key -and -not $byName.ContainsKey($name)) { $byName[$name] = $key }
+    # Jman's Patch Bundle Registry replaced the old ReVanced-Patch-Bundles files (their raw paths
+    # answer 404). Registration is config/sources.json; what the registry serves for the package is
+    # the paged /apps/<package>/bundles list ({data,total,limit,offset}). A short page is not the
+    # last page: the offset moves by the rows a page returned and stops when it reaches total.
+    $registryApi = 'https://patch-bundles.api.jmancentral.com'
+    $registration = Get-SourceJson -Uri 'https://raw.githubusercontent.com/Jman-Github/Patch-Bundle-Registry/main/config/sources.json' `
+        -What 'the registry''s config/sources.json'
+    $registered = @{}
+    foreach ($property in $registration.PSObject.Properties) {
+        $registeredKey = ConvertTo-SourceKey ([string](Get-SourceProperty $property.Value 'patches'))
+        if ($registeredKey) { $registered[$registeredKey] = -not [bool](Get-SourceProperty $property.Value 'disabled') }
     }
-    $catalog = Invoke-SourceRequest -Uri 'https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/PATCH-LIST-CATALOG.md'
-    if ($catalog.Status -ne 200) { throw "Jman's patch list catalog answered HTTP $($catalog.Status)." }
-    $appPackages = @{ 'threads' = 'com.instagram.barcelona'; 'com.instagram.barcelona' = 'com.instagram.barcelona' }
-    $section = $null
-    $found = @{}
-    foreach ($line in ($catalog.Content -split "`r?`n")) {
-        if ($line.StartsWith('### ') -and $line -match 'Bundle Patch List:\s*$') {
-            $section = (($line -replace '^###\s+\S+\s+', '') -replace '\s+Bundle Patch List:\s*$', '').Trim()
-            continue
-        }
-        if ($null -eq $section -or -not $line.StartsWith('|')) { continue }
-        $cells = $line.Split('|')
-        if ($cells.Count -lt 5) { continue }
-        $name = $cells[1].Replace([string][char]96, '').Trim()
-        foreach ($app in ($cells[3].Replace([string][char]96, '').Trim() -split ',\s*')) {
-            $package = $appPackages[$app.Trim().ToLowerInvariant()]
-            if (-not $package) { continue }
-            if (-not $found.ContainsKey($section)) { $found[$section] = @{ Packages = @{}; Features = New-Object System.Collections.Generic.List[string] } }
-            $found[$section].Packages[$package] = $true
-            if ($name -and -not $found[$section].Features.Contains($name)) { $found[$section].Features.Add($name) }
+
+    $repositories = @{}
+    $renamed = @{}
+    $unreadable = New-Object System.Collections.Generic.List[string]
+    $seenBundles = @{}
+    $requests = 0
+    $rows = 0
+    $duplicates = 0
+    foreach ($package in $packages) {
+        $offset = 0
+        while ($true) {
+            if ($requests -ge $RegistryMaxRequests -or $rows -ge $RegistryMaxRows) {
+                throw ("the registry's $package list is incomplete: the budget of $RegistryMaxRequests requests and $RegistryMaxRows rows " +
+                    "ran out after $requests requests and $rows rows, at offset $offset")
+            }
+            $requests++
+            $answer = Invoke-SourceRequest -Uri ("$registryApi/apps/$([Uri]::EscapeDataString($package))/bundles?limit=100&offset=$offset")
+            if ($answer.Status -ne 200) { throw "the registry's $package list answered HTTP $($answer.Status) at offset $offset" }
+            $page = ConvertFrom-SourceJson -Text $answer.Content -What "the registry's $package list"
+            # Read off the property, not through Get-SourceProperty: an empty data array would not
+            # survive being returned from a function.
+            $dataProperty = $page.PSObject.Properties['data']
+            $total = 0
+            if ($null -eq $dataProperty -or $dataProperty.Value -isnot [array] -or
+                -not [int]::TryParse("$(Get-SourceProperty $page 'total')", [ref]$total) -or $total -lt 0) {
+                throw "the registry's $package list at offset $offset has no data array and numeric total"
+            }
+            $items = @(Get-JsonItems $dataProperty.Value)
+            $rows += $items.Count
+            for ($index = 0; $index -lt $items.Count; $index++) {
+                $item = $items[$index]
+                $id = [string](Get-SourceProperty $item 'id')
+                $source = Get-SourceProperty $item 'source'
+                $url = [string](Get-SourceProperty $source 'url')
+                $key = ConvertTo-SourceKey $url
+                $itemPackages = @(Get-JsonItems (Get-SourceProperty $item 'packages'))
+                if (-not $id -or -not $key -or $itemPackages.Count -eq 0) {
+                    $unreadable.Add($(if ($id) { $id } else { "row $($offset + $index) at offset $offset" }))
+                    continue
+                }
+                if ($seenBundles.ContainsKey($id)) { $duplicates++; continue }
+                $seenBundles[$id] = $true
+                # A renamed repository keeps its old address in source.url and its current name in the
+                # metadata; read it as the current one.
+                $metadata = Get-SourceProperty $source 'source_metadatum'
+                $owner = [string](Get-SourceProperty $metadata 'owner_name')
+                $name = [string](Get-SourceProperty $metadata 'repo_name')
+                $siteHost = $(if (Get-SourceProperty $source 'host') { [string](Get-SourceProperty $source 'host') } else { (Split-SourceKey $key).Host })
+                $current = if ($owner -and $name) { ConvertTo-SourceKey "https://$siteHost/$owner/$name" } else { $null }
+                $renamedFrom = $null
+                if ($current -and $current -ne $key) { $renamed[$key] = $current; $renamedFrom = $key; $key = $current }
+                if (-not $repositories.ContainsKey($key)) {
+                    $repositories[$key] = [pscustomobject]@{
+                        Packages = New-Object System.Collections.Generic.List[string]
+                        Latest = New-Object System.Collections.Generic.List[string]
+                        CurrentVerified = $false; Historical = 0; Unverified = 0; Bundles = 0; RenamedFrom = $renamedFrom
+                        Unavailable = [string](Get-SourceProperty $source 'unavailable_reason')
+                        Enabled = ((Get-SourceProperty $source 'enabled') -ne $false)
+                    }
+                }
+                $repository = $repositories[$key]
+                $repository.Bundles++
+                foreach ($itemPackage in $itemPackages) { if ($packages -contains "$itemPackage" -and -not $repository.Packages.Contains("$itemPackage")) { $repository.Packages.Add("$itemPackage") } }
+                $verified = (Get-SourceProperty $item 'metadata_status') -eq 'verified'
+                $latest = (Get-SourceProperty $item 'is_latest') -eq $true
+                if (-not $verified) { $repository.Unverified++ }
+                if (-not $latest) { $repository.Historical++ }
+                if ($latest) {
+                    $channels = @(Get-JsonItems (Get-SourceProperty $item 'channels') | ForEach-Object { "$_" })
+                    $kind = if ((Get-SourceProperty $item 'is_prerelease') -eq $true) { 'prerelease' } else { 'stable' }
+                    $repository.Latest.Add(("$(Get-SourceProperty $item 'version') $kind" + $(if ($channels.Count) { ' [' + ($channels -join ',') + ']' } else { '' }) +
+                        $(if (-not $verified) { ' unverified' } else { '' })))
+                    if ($verified) { $repository.CurrentVerified = $true }
+                }
+            }
+            if ($items.Count -eq 0 -and $offset -lt $total) {
+                throw "the registry's $package list ended at offset $offset of $total rows, with an empty page"
+            }
+            $offset += $items.Count
+            if ($offset -ge $total) { break }
         }
     }
-    foreach ($sectionName in $found.Keys) {
-        $key = $byName[$sectionName.ToLowerInvariant()]
-        if (-not $key) {
-            Add-Finding -Kind 'index-unresolved' -Repository $null `
-                -Detail "Jman's catalog lists Threads patches under '$sectionName', and bundle-sources.json names no repository for it" -Evidence $null
-            continue
-        }
-        Add-Candidate -Key $key -Source 'Jman''s bundle index' -Packages @($found[$sectionName].Packages.Keys) -Features @($found[$sectionName].Features)
+    if ($unreadable.Count -gt 0) {
+        Add-Finding -Kind 'index-unresolved' -Repository $null `
+            -Detail "Jman's registry returned $($unreadable.Count) Threads bundle row(s) with no id, repository address or package list, so they were not counted" `
+            -Evidence ([ordered]@{ rows = @($unreadable | Select-Object -First 10) })
     }
-    "$($found.Count) Threads bundles; HushThreads " + $(if ($listed['jman-bundles']) { 'listed' } else { 'not listed' })
+
+    # A repository counts as a Threads bundle only through a current, verified release of an enabled
+    # source. A repository the registry holds only as history, unverified metadata or an unavailable
+    # source is a mention, which an addition reports but a recorded source never acts on.
+    foreach ($key in @($repositories.Keys | Sort-Object)) {
+        $repository = $repositories[$key]
+        $promoted = $repository.CurrentVerified -and $repository.Enabled -and -not $repository.Unavailable
+        $evidence = [ordered]@{ bundles = $repository.Bundles; latest = @($repository.Latest); historical = $repository.Historical
+            unverified = $repository.Unverified; renamedFrom = $repository.RenamedFrom; unavailable = $repository.Unavailable }
+        Add-Candidate -Key $key -Source 'Jman''s bundle index' -Packages $(if ($promoted) { @($repository.Packages) } else { @() }) `
+            -Mentions $(if ($promoted) { @() } else { @($repository.Packages) }) -Registry $evidence
+    }
+    foreach ($old in $renamed.Keys) { $notes.Add("Jman's registry lists https://$old under its current name https://$($renamed[$old])") }
+    if ($duplicates -gt 0) { $notes.Add("Jman's registry returned $duplicates Threads bundle row(s) twice; each counted once") }
+
+    $selfRegistered = $registered.ContainsKey($selfKey) -and $registered[$selfKey]
+    foreach ($old in $renamed.Keys) { if ($renamed[$old] -eq $selfKey -and $registered.ContainsKey($old) -and $registered[$old]) { $selfRegistered = $true } }
+    $selfServed = $repositories.ContainsKey($selfKey)
+    $listed['jman-bundles'] = $selfRegistered -and $selfServed -and $repositories[$selfKey].CurrentVerified
+    if ($selfServed -and -not $listed['jman-bundles']) {
+        $notes.Add("Jman's registry holds HushThreads only as history, unverified metadata or without an enabled registration, which is no current listing")
+    } elseif ($selfRegistered -and -not $selfServed) {
+        $notes.Add("Jman's registry registers HushThreads but serves no Threads bundle for it yet")
+    }
+    "$($repositories.Count) Threads repositories in $rows rows over $requests request(s); HushThreads " + $(if ($listed['jman-bundles']) { 'listed' } else { 'not listed' })
 }
 
 Invoke-Source 'Morphe Archive' {
@@ -669,7 +756,7 @@ foreach ($candidate in @($candidates.Values | Sort-Object Key)) {
     Add-Finding -Kind 'addition' -Repository "https://$key" `
         -Detail ("found by " + ($candidate.Sources -join ', ') + " for " + (@(@($candidate.Packages) + @($candidate.Mentions) | Sort-Object -Unique) -join ', ') + ", and the ledger doesn't know it") `
         -Evidence ([ordered]@{ sources = @($candidate.Sources); packages = @($candidate.Packages); mentions = @($candidate.Mentions); features = @($candidate.Features)
-            hits = $candidate.Hits.ToArray(); unknownBlobs = $unknownBlobs; repository = $meta })
+            hits = $candidate.Hits.ToArray(); unknownBlobs = $unknownBlobs; registry = $candidate.Registry.ToArray(); repository = $meta })
 }
 foreach ($copy in $collapsed) {
     $notes.Add("$($copy.repository) is a byte-for-byte copy of files in the $($copy.lineage) lineage, so it counts as that lineage")

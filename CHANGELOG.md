@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** The source census reads Jman's Patch Bundle Registry now, through its registration file and the paged Threads list, because the old bundle files there answer 404. It follows the list's own total across short pages within a request and row budget, reads renamed repositories under their current names, and counts a repository as a Threads bundle only for a current release with verified metadata. History, unverified entries and a bare registration are reported but not promoted, and a list it can't finish reading fails the census.
+
 * **Threads:** Morphe Manager lists every change of the release your Threads was patched with, not just a short summary. For that one release Manager shows the patch bundle's description instead of the changelog, and the description was a paragraph while every older release listed its changes. It now goes on with the release's Threads bullets after the summary. You'll see it from the next release on.
 
 * **Threads:** Cancel and the download time limit now end a save even when the phone's proxy service stops answering. Waiting proxy calls share the fixed limit on background network checks, so repeated attempts can't keep creating threads.
