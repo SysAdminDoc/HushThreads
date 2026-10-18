@@ -2,7 +2,7 @@
 
 Changes in the source build, then released versions.
 
-## Unreleased
+## 0.0.15 (2026-10-18)
 
 * **Threads:** Don't want HushThreads settings in the menu you get by holding Threads' icon? Turn off the new `Settings shortcut on the app icon` switch on the Pause, backup and diagnostics page and it leaves that menu right away, while Threads' own shortcuts stay. A long press on the Threads logo and the HushThreads row in Threads' settings still open the settings, and Pause leaves the switch as you set it.
 * **Threads:** Pressing and holding the text of an opened post brings up Copy text again, the same as in your feed, so you get the whole post with its links. It had stopped doing anything on 451. A new `Copy text on long press` switch under Posts in HushThreads settings turns this on or off. It starts on and comes with every build.

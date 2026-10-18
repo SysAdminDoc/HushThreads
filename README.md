@@ -1,7 +1,7 @@
 ![HushThreads. Keep the thread. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.14-000000" alt="Version 0.0.14"></a>
+  <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.15-000000" alt="Version 0.0.15"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Threads-451.0.0.51.80-000000" alt="Threads 451.0.0.51.80">
@@ -24,7 +24,7 @@ HushThreads is a Morphe patch bundle for Android that takes the ads out of Threa
 
 Sponsored posts and suggested-account cards leave your feed before Threads shows them. Shared links lose their tracking tags, and a short `/share/` link becomes the post's own link. Web links open in your browser instead of Threads' own, with its click tracker skipped. You can also save photos and videos, keep your place in the feed, stop autoplay and make dark mode pure black.
 
-The latest release is [v0.0.14](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.14), with 19 patches. What changed in each version is in the [changelog](CHANGELOG.md).
+The latest release is [v0.0.15](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.15), with 19 patches. What changed in each version is in the [changelog](CHANGELOG.md).
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -38,7 +38,7 @@ The latest release is [v0.0.14](https://github.com/SysAdminDoc/HushThreads/relea
 
 To add one of those three, turn on **Settings → Advanced → Expert mode** in Manager before you pick the file. If you saved your own selection in Expert mode before, Manager may keep using it, so look over the list once.
 
-HushThreads v0.0.14 patches Threads 451 only. Each release moves to the newest stable Threads and drops the one before, so v0.0.13 is the last release for 450.0.0.51.78. If a patch can't find what it needs in your build, patching stops with a message naming it instead of handing you an app that quietly does nothing.
+HushThreads v0.0.15 patches Threads 451 only. Each release moves to the newest stable Threads and drops the one before, so v0.0.13 is the last release for 450.0.0.51.78. If a patch can't find what it needs in your build, patching stops with a message naming it instead of handing you an app that quietly does nothing.
 
 ### Supported Threads build
 
@@ -46,7 +46,7 @@ HushThreads v0.0.14 patches Threads 451 only. Each release moves to the newest s
 |---|---|---|
 | 451.0.0.51.80 | 512108444 (480dpi) | Android 9 |
 
-The release checks for v0.0.14 ran on this stock bundle:
+The release checks for v0.0.15 ran on this stock bundle:
 
 ```text
 93bdef4590000711d03f16e4f91f6a7687f665facd8aa3ec773222a1aac043e2  threads-451.0.0.51.80-512108444.apkm
@@ -62,7 +62,7 @@ On a new phone, import the key before you patch anything. Reinstalling Manager o
 
 ## Patches
 
-HushThreads v0.0.14 has 19 patches. Morphe Manager's default selection has all but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Those three change Threads when you patch and have no switch to undo them. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
+HushThreads v0.0.15 has 19 patches. Morphe Manager's default selection has all but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Those three change Threads when you patch and have no switch to undo them. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
 
 | Patch | What it does |
 |---|---|
