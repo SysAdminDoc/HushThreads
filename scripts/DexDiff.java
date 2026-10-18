@@ -4198,8 +4198,12 @@ public class DexDiff {
                 && Arrays.equals(invokeRegisters(body.get(at + 2)), new int[]{context.getRegisterA(), url.getRegisterA()}), "direct browser arguments or answer are wrong");
         FeatureFlow old = new FeatureFlow(site.stock());
         int locals = browserParameter(site.stock(), 0) - (AccessFlags.STATIC.isSet(site.stock().getAccessFlags()) ? 0 : 1);
-        for (int scratch : new int[]{context.getRegisterA(), url.getRegisterA()}) requireFeature(scratch < locals && old.readsFrom(at, scratch).isEmpty()
-                && old.readsFrom(site.done(), scratch).isEmpty(), "direct browser hook clobbers a live local");
+        String clobbers = "direct browser hook clobbers a live local";
+        for (int scratch : new int[]{context.getRegisterA(), url.getRegisterA()}) {
+            requireFeature(scratch < locals, clobbers + ": past the method's locals");
+            requireFeature(old.readsFrom(at, scratch).isEmpty(), clobbers + ": read at the hook site");
+            requireFeature(old.readsFrom(site.done(), scratch).isEmpty(), clobbers + ": read where it succeeds");
+        }
         Layout layout = new Layout(changed.getImplementation());
         requireFeature(browserDestination(layout, at + 4) == at + 6, "declined browser handoff bypasses stock code");
         if (!site.entry()) requireFeature(browserDestination(layout, at + 5) == site.done() + 6, "successful browser handoff opens twice or uses the wrong completion");

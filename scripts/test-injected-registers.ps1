@@ -750,10 +750,15 @@ try {
     # browser retain their stock code. Every corruption below remains structurally valid.
     $browserDirectFaults = @('lead-missing', 'lead-url', 'lead-double-open', 'lead-parameter', 'ad-missing', 'ad-url', 'ad-context', 'ad-double-open', 'ad-return', 'ad-bypass', 'ad-live',
         'media-missing', 'media-url', 'media-context', 'media-double-open', 'media-false', 'media-uninitialized', 'media-live', 'media-bypass', 'factory-hook', 'immersive-hook', 'omitted-body')
-    # Each scratch fault reaches one part of the liveness check: the media one both edges, the ad one
-    # the hook site only, the lead one the locals bound only. The completion edge alone takes a stock
-    # shape of its own, checked after these.
-    $browserScratchFaults = @('lead-parameter', 'ad-live', 'media-live')
+    # Each scratch fault reaches one part of the liveness check, and the check names the first edge it
+    # hits, in the order the locals bound, the hook site, then the completion: the lead one the locals
+    # bound only, the ad one the hook site only, the media one both of the read edges and so the hook
+    # site's, which comes first. The completion edge alone takes a stock shape of its own, checked after these.
+    $browserScratchFaults = @{
+        'lead-parameter' = "past the method's locals"
+        'ad-live' = 'read at the hook site'
+        'media-live' = 'read at the hook site'
+    }
     foreach ($fault in $browserDirectFaults) {
         $case = "features-bad-browser-direct-$fault"
         $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
@@ -762,9 +767,11 @@ try {
         $findings = Get-Findings $checked
         Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
             @($findings.Categories | Where-Object { $_ -cne 'contract' }).Count -eq 0) "$fault was not rejected solely by a browser contract."
-        if ($fault -cin $browserScratchFaults) {
-            Assert-True (@($findings.Fails | Where-Object { $_.Contains('direct browser hook clobbers a live local') }).Count -gt 0) `
-                "$fault was not refused as a clobbered live local: $($findings.Fails -join '; ')"
+        if ($browserScratchFaults.ContainsKey($fault)) {
+            $edge = "[diff] FAIL: contract: openLinksExternally: direct browser hook clobbers a live local: $($browserScratchFaults[$fault])"
+            Assert-True (@($findings.Fails | Where-Object { $_ -ceq $edge }).Count -gt 0 -and
+                @($findings.Fails | Where-Object { $_.Contains('direct browser hook clobbers a live local') -and $_ -cne $edge }).Count -eq 0) `
+                "$fault was not refused as a live local $($browserScratchFaults[$fault]): $($findings.Fails -join '; ')"
         }
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
@@ -780,7 +787,7 @@ try {
         -Name 'features-bad-browser-direct-media-completion-live' -Contracts $contracts -Features 'openLinksExternally'
     $browserCompletionFindings = Get-Findings $browserCompletion
     Assert-True ($browserCompletion.ExitCode -ne 0 -and $browserCompletionFindings.Fails.Count -gt 0 -and
-        @($browserCompletionFindings.Fails | Where-Object { -not $_.Contains('contract: openLinksExternally: direct browser hook clobbers a live local') }).Count -eq 0) `
+        @($browserCompletionFindings.Fails | Where-Object { $_ -cne '[diff] FAIL: contract: openLinksExternally: direct browser hook clobbers a live local: read where it succeeds' }).Count -eq 0) `
         ("media-completion-live was not rejected solely by the browser liveness check. " + ($browserCompletion.Output -join [Environment]::NewLine))
     $browserCompletionStructural = Invoke-DexDiff -Clean $browserCompletionClean -Patched $browserCompletionApk -Allowlist $emptyAllowlist `
         -Name 'features-bad-browser-direct-media-completion-live-structural'
