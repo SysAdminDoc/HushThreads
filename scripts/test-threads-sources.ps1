@@ -836,6 +836,30 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     Reset-FixtureLedger
     $fakeForge.Answers = New-FakeAnswers
 
+    # A registered, verified current release still isn't a listing when the registry serves it from an
+    # unavailable source, or from one a later row says is disabled.
+    $selfRegistration = '{"hushthreads":{"patches":"https://github.com/SysAdminDoc/HushThreads","disabled":false}}'
+    $selfUnavailable = New-RegistryRow -Id 'h-latest' -Url $selfUrl
+    $selfUnavailable.source.unavailable_reason = 'repository archived'
+    $selfOff = New-RegistryRow -Id 'h-latest' -Url $selfUrl
+    $selfOff.source.enabled = $false
+    foreach ($case in @(@{ Name = 'an unavailable source'; Rows = @($alphaRow, $gammaRow, $selfUnavailable) },
+            @{ Name = 'a source a later row disables'; Rows = @($alphaRow, $gammaRow, (New-RegistryRow -Id 'h-old' -Url $selfUrl -Latest $false -Channels @()), $selfOff) })) {
+        $fakeForge.Answers.jmanConfig.Content = $selfRegistration
+        Set-RegistryRows $case.Rows
+        $selfSource = Invoke-Audit
+        Assert-True ($selfSource.ExitCode -eq 0 -and @($selfSource.Report.notes | Where-Object { $_ -like "*holds HushThreads only as history*" }).Count -eq 1) `
+            "HushThreads served from $($case.Name) was read as a current listing: $($selfSource.Report.notes -join ' | ')"
+        Reset-FixtureLedger
+        $fakeForge.Answers = New-FakeAnswers
+    }
+
+    # Registered twice, once disabled and once not, is still registered, whichever comes last.
+    $fakeForge.Answers.jmanConfig.Content = '{"alpha":{"patches":"https://github.com/fixture-owner/alpha-patches","disabled":false},"gamma":{"patches":"https://gitlab.com/fixture-group/gamma-patches","disabled":false},"hushthreads":{"patches":"https://github.com/SysAdminDoc/HushThreads","disabled":false},"hushthreads-old":{"patches":"https://github.com/SysAdminDoc/HushThreads","disabled":true}}'
+    Set-RegistryRows @($alphaRow, $gammaRow, (New-RegistryRow -Id 'h-latest' -Url $selfUrl))
+    Assert-Drift 'listing-changed' "*Jman's ReVanced Patch Bundles lists HushThreads now*" 'HushThreads registered twice with one registration disabled'
+    $fakeForge.Answers = New-FakeAnswers
+
     # Rows the audit can't read are reported, and what it can't read of the list fails the source.
     $noSource = New-RegistryRow -Id 'broken' -Url 'https://github.com/x/y'
     $noSource.Remove('source')

@@ -466,7 +466,8 @@ Invoke-Source 'Jman''s bundle index' {
     $registered = @{}
     foreach ($property in $registration.PSObject.Properties) {
         $registeredKey = ConvertTo-SourceKey ([string](Get-SourceProperty $property.Value 'patches'))
-        if ($registeredKey) { $registered[$registeredKey] = -not [bool](Get-SourceProperty $property.Value 'disabled') }
+        # A repository registered twice counts as registered when either registration is enabled.
+        if ($registeredKey) { $registered[$registeredKey] = ($registered.ContainsKey($registeredKey) -and $registered[$registeredKey]) -or -not [bool](Get-SourceProperty $property.Value 'disabled') }
     }
 
     $repositories = @{}
@@ -524,12 +525,14 @@ Invoke-Source 'Jman''s bundle index' {
                         Packages = New-Object System.Collections.Generic.List[string]
                         Latest = New-Object System.Collections.Generic.List[string]
                         CurrentVerified = $false; Historical = 0; Unverified = 0; Bundles = 0; RenamedFrom = $renamedFrom
-                        Unavailable = [string](Get-SourceProperty $source 'unavailable_reason')
-                        Enabled = ((Get-SourceProperty $source 'enabled') -ne $false)
+                        Unavailable = ''; Enabled = $true
                     }
                 }
                 $repository = $repositories[$key]
                 $repository.Bundles++
+                # Every row carries its source's state, and one saying it's disabled or unavailable holds for the repository.
+                if ((Get-SourceProperty $source 'enabled') -eq $false) { $repository.Enabled = $false }
+                if (-not $repository.Unavailable) { $repository.Unavailable = [string](Get-SourceProperty $source 'unavailable_reason') }
                 foreach ($itemPackage in $itemPackages) { if ($packages -contains "$itemPackage" -and -not $repository.Packages.Contains("$itemPackage")) { $repository.Packages.Add("$itemPackage") } }
                 $verified = (Get-SourceProperty $item 'metadata_status') -eq 'verified'
                 $latest = (Get-SourceProperty $item 'is_latest') -eq $true
@@ -559,9 +562,11 @@ Invoke-Source 'Jman''s bundle index' {
     # A repository counts as a Threads bundle only through a current, verified release of an enabled
     # source. A repository the registry holds only as history, unverified metadata or an unavailable
     # source is a mention, which an addition reports but a recorded source never acts on.
+    $promotedKeys = @{}
     foreach ($key in @($repositories.Keys | Sort-Object)) {
         $repository = $repositories[$key]
         $promoted = $repository.CurrentVerified -and $repository.Enabled -and -not $repository.Unavailable
+        if ($promoted) { $promotedKeys[$key] = $true }
         $evidence = [ordered]@{ bundles = $repository.Bundles; latest = @($repository.Latest); historical = $repository.Historical
             unverified = $repository.Unverified; renamedFrom = $repository.RenamedFrom; unavailable = $repository.Unavailable }
         Add-Candidate -Key $key -Source 'Jman''s bundle index' -Packages $(if ($promoted) { @($repository.Packages) } else { @() }) `
@@ -573,9 +578,9 @@ Invoke-Source 'Jman''s bundle index' {
     $selfRegistered = $registered.ContainsKey($selfKey) -and $registered[$selfKey]
     foreach ($old in $renamed.Keys) { if ($renamed[$old] -eq $selfKey -and $registered.ContainsKey($old) -and $registered[$old]) { $selfRegistered = $true } }
     $selfServed = $repositories.ContainsKey($selfKey)
-    $listed['jman-bundles'] = $selfRegistered -and $selfServed -and $repositories[$selfKey].CurrentVerified
+    $listed['jman-bundles'] = $selfRegistered -and $promotedKeys.ContainsKey($selfKey)
     if ($selfServed -and -not $listed['jman-bundles']) {
-        $notes.Add("Jman's registry holds HushThreads only as history, unverified metadata or without an enabled registration, which is no current listing")
+        $notes.Add("Jman's registry holds HushThreads only as history, unverified metadata, a disabled or unavailable source or without an enabled registration, which is no current listing")
     } elseif ($selfRegistered -and -not $selfServed) {
         $notes.Add("Jman's registry registers HushThreads but serves no Threads bundle for it yet")
     }
