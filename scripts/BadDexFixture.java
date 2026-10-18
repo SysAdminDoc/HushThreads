@@ -2404,8 +2404,8 @@ public class BadDexFixture {
         screen.add(objectField(Opcode.IGET_OBJECT, 1, 3, "Lfixture/ProfileState;", "suggested", SHORTCUT_LIST));
         int copies = !carousel || fault.equals("profile-carousel-missing") || fault.equals("profile-carousel-moved") ? 0
                 : fault.equals("profile-carousel-double") ? 2 : 1;
-        // result-dropped leaves carousel()'s answer behind, cast-register and uncast leave the list's
-        // register as it was read.
+        // result-dropped leaves carousel()'s answer behind, cast-register casts another register and
+        // leaves the list's as it was read, and uncast puts a const-class where the cast goes.
         List<Instruction> carouselHook = List.of(
                 new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, fault.equals("profile-carousel-register") ? 0 : 1, 1, PROFILE_CAROUSEL),
                 fault.equals("profile-carousel-result-dropped") ? new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 1, 1)
