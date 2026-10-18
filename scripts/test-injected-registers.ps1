@@ -24,7 +24,7 @@
     in a host method. Each of the five ShortcutManager calls the settings patch sends to the
     extension is left in the app's code by a build of its own, which has to fail that call's
     no-call rule and no other. The contract file may hold no no-call rule without such a build,
-    and only the ten Threads feature rules with selection and corruption fixtures; a malformed
+    and only the eleven Threads feature rules with selection and corruption fixtures; a malformed
     line of every kind the grammar knows is refused.
     The good build carries the joins, copies and reads ART accepts, a zero tested against
     an object among them, so a check made stricter still has to pass them. Each bad build has to
@@ -563,8 +563,8 @@ try {
         "The verifier did not forward an empty selection to DexDiff as none.`n$($nothing.Text)"
     $allFamilies = Invoke-VerifierWithStandIns -Name 'selected-all-families' -DexDiffExit 0 -SelectedPatches @(
         'Hide ads', 'Hide suggested users', 'Sanitize sharing links', 'Open links in browser', 'Disable analytics', 'Restore screens on re-signed builds',
-        'Block background-return feed refresh', 'Disable video autoplay', 'Pure black dark mode', 'HushThreads settings')
-    Assert-True ($allFamilies.ExitCode -eq 0 -and $allFamilies.Text -match '(?m)^\[registers\] \[diff\] requested families: hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh,disableVideoAutoplay,pureBlack,settingsRow$') `
+        'Block background-return feed refresh', 'Disable video autoplay', 'Pure black dark mode', 'Save photos and videos', 'HushThreads settings')
+    Assert-True ($allFamilies.ExitCode -eq 0 -and $allFamilies.Text -match '(?m)^\[registers\] \[diff\] requested families: hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh,disableVideoAutoplay,pureBlack,saveMedia,settingsRow$') `
         "The verifier did not forward all independently selected families to DexDiff.`n$($allFamilies.Text)"
     # Change version code raises the patched code to Int.MAX_VALUE. Selected, that code is the one
     # the patched side has to carry; not selected, or selected without the raise, the pair differs.
@@ -679,15 +679,15 @@ try {
         $structural = Invoke-DexDiff -Clean $cleanApk -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
-    # Every rule must have bad builds of its own. The feature fixtures below cover ten families.
+    # Every rule must have bad builds of its own. The feature fixtures below cover eleven families.
     $otherRules = @(Get-Content -LiteralPath $contracts | ForEach-Object { $_.Trim() } |
         Where-Object { $_ -and -not $_.StartsWith('#') -and $_ -notmatch '^(no-call|sole-call)\s' })
-    Assert-True ((($otherRules | Sort-Object) -join ',') -ceq 'threads-feature disableAnalytics,threads-feature disableVideoAutoplay,threads-feature hideAds,threads-feature hideSuggestedUsers,threads-feature openLinksExternally,threads-feature pureBlack,threads-feature restoreTrust,threads-feature returnRefresh,threads-feature sanitizeSharingLinks,threads-feature settingsRow') `
+    Assert-True ((($otherRules | Sort-Object) -join ',') -ceq 'threads-feature disableAnalytics,threads-feature disableVideoAutoplay,threads-feature hideAds,threads-feature hideSuggestedUsers,threads-feature openLinksExternally,threads-feature pureBlack,threads-feature restoreTrust,threads-feature returnRefresh,threads-feature sanitizeSharingLinks,threads-feature saveMedia,threads-feature settingsRow') `
         ("The contract file holds rules this suite builds no bad fixtures for:`n$($otherRules -join "`n")")
 
     $featureClean = New-DexApk -Name 'features-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-clean') })
     $featureCases = [ordered]@{
-        'features-good' = 'hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh,disableVideoAutoplay,pureBlack,settingsRow'
+        'features-good' = 'hideAds,hideSuggestedUsers,sanitizeSharingLinks,openLinksExternally,disableAnalytics,restoreTrust,returnRefresh,disableVideoAutoplay,pureBlack,saveMedia,settingsRow'
         'features-omitted' = 'none'
         'features-only-hideAds' = 'hideAds'
         'features-only-hideSuggestedUsers' = 'hideSuggestedUsers'
@@ -698,6 +698,7 @@ try {
         'features-only-returnRefresh' = 'returnRefresh'
         'features-only-disableVideoAutoplay' = 'disableVideoAutoplay'
         'features-only-pureBlack' = 'pureBlack'
+        'features-only-saveMedia' = 'saveMedia'
         'features-only-settingsRow' = 'settingsRow'
     }
     foreach ($mask in 1..7) { $featureCases["features-mask-$mask"] = 'disableAnalytics' }
@@ -706,7 +707,7 @@ try {
         $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case.Key -Contracts $contracts -Features $case.Value
         Assert-True ($checked.ExitCode -eq 0 -and (Get-Findings $checked).Fails.Count -eq 0) ("Feature selection $($case.Key) failed. " + ($checked.Output -join [Environment]::NewLine))
         foreach ($feature in @('hideAds', 'hideSuggestedUsers', 'sanitizeSharingLinks', 'openLinksExternally', 'disableAnalytics', 'restoreTrust', 'returnRefresh',
-            'disableVideoAutoplay', 'pureBlack', 'settingsRow')) {
+            'disableVideoAutoplay', 'pureBlack', 'saveMedia', 'settingsRow')) {
             $state = if ($feature -cin ($case.Value -split ',')) { 'verified' } else { 'omitted' }
             Assert-True (($checked.Output -join [Environment]::NewLine) -match [regex]::Escape("threads-feature ${feature}: $state")) "Feature $feature did not report $state."
         }
@@ -1128,6 +1129,73 @@ try {
         $structural = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
+    # Save photos and videos, found from the clean post menu alone: Copy link's case, its row call
+    # and the calls and literals that row is built with, its click's dispatch to the controller, and
+    # the menu's post, activity and controller fields. The good build names the row and the close.
+    # Selected, one build per broken part: no SaveMediaRow.add, a header drawn in place of the row's
+    # copy, the lambda and composer one register low, a goto straight to the menu's return instead
+    # of to the goto past the original, a second add in the menu or in another lambda, Share's goto
+    # sent onto the copy, showRow left a stub or drawing the header, or passing another composer,
+    # role, style, icon flag or label, media reading the activity or casting to the controller,
+    # activity reading the post, dismiss casting to the controller, reading the post or calling
+    # track, a click that isn't a Function0 or whose invoke() is static, a bridge calling another
+    # getter, calling an interface's getter as a virtual, casting
+    # to Media or dropping its answer, and a false status. Left out: the copy and goto without the
+    # hook, showRow, media, dismiss or a bridge written anyway, and a true status.
+    $saveMediaGood = Invoke-DexDiff -Clean $featureClean -Patched (New-DexApk -Name 'features-save-good' -Entries ([ordered]@{
+        'classes.dex' = (Get-Dex 'features-only-saveMedia') })) -Allowlist $emptyAllowlist -Name 'features-save-good' -Contracts $contracts -Features 'saveMedia'
+    Assert-True ($saveMediaGood.ExitCode -eq 0 -and ($saveMediaGood.Output -join [Environment]::NewLine) -match [regex]::Escape(
+        "threads-feature saveMedia: Copy link's row at 46 of Lfixture/PostMenu;->invoke(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;, closed by Lfixture/MenuController;->dismiss()V")) `
+        ("The good build did not name Copy link's row and close. " + ($saveMediaGood.Output -join [Environment]::NewLine))
+    $saveMediaFaults = [ordered]@{
+        'missing' = "missing Lapp/morphe/extension/hushthreads/download/SaveMediaRow;->add(Ljava/lang/Object;Ljava/lang/Object;)V at instruction 47, after the copy of Copy link's row call"
+        'copy' = "Copy link's own path doesn't draw a copy of its row call"
+        'capture' = 'at instruction 47 passes [12, 13], not the menu and its composer, v13 and v14'
+        'goto' = "the Save hook doesn't go from instruction 48 to where Copy link's row call goes, past the original call"
+        'twice' = 'PostMenu;->invoke(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; changed original instruction 47'
+        'duplicate' = 'SaveMediaRow;->add(Ljava/lang/Object;Ljava/lang/Object;)V host calls differ'
+        'other-item' = 'PostMenu;->invoke(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; bypasses a hook or changes a branch target'
+        'show-stub' = 'showRow(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;I)V calls [], not ['
+        'show-row' = 'Lfixture/MenuRows;->header(Lfixture/MenuComposer;Lfixture/MenuModifier;Lfixture/MenuStyle;Lfixture/MenuIcon;Ljava/lang/String;)V], not ['
+        'show-composer' = "passes Copy link's row p0 as Lfixture/Composer; as its composer, not p0 as Lfixture/MenuComposer;"
+        'show-role' = "passes Copy link's row click(Lfixture/MenuModifier;->Companion:Lfixture/MenuModifier;, role(1), p1, 1) as its modifier, not click(Lfixture/MenuModifier;->Companion:Lfixture/MenuModifier;, role(0), p1, 1)"
+        'show-style' = "passes Copy link's row style(p0) as its style, not style(p0 as Lfixture/MenuComposer;)"
+        'show-icon' = "passes Copy link's row icon(p0 as Lfixture/MenuComposer;, p3, 2, 1) as its icon, not icon(p0 as Lfixture/MenuComposer;, p3, 2, 0)"
+        'show-label' = "passes Copy link's row p1 as its label, not p2"
+        'media-field' = "media(Ljava/lang/Object;)Ljava/lang/Object; reads Lfixture/PostMenu;->activity:Landroid/app/Activity;, not the menu's post"
+        'media-cast' = 'media(Ljava/lang/Object;)Ljava/lang/Object; casts its argument to Lfixture/MenuController;, not the post menu'
+        'activity-field' = "activity(Ljava/lang/Object;)Landroid/app/Activity; reads Lfixture/PostMenu;->post:Lcom/instagram/feed/media/Media;, not the menu's activity"
+        'dismiss-cast' = 'dismiss(Ljava/lang/Object;)V casts its argument to Lfixture/MenuController;, not the post menu'
+        'dismiss-field' = "dismiss(Ljava/lang/Object;)V reads Lfixture/PostMenu;->post:Lcom/instagram/feed/media/Media;, not the menu's controller"
+        'dismiss-call' = "dismiss(Ljava/lang/Object;)V calls Lfixture/MenuController;->track()V, not Copy link's close"
+        'click' = 'SaveMediaRow$Click; implements [], not Lkotlin/jvm/functions/Function0;'
+        'click-static' = "SaveMediaRow`$Click;'s invoke() isn't a public instance method"
+        'bridge-getter' = 'videoVersions(Ljava/lang/Object;)Ljava/util/List; calls invoke-virtual Lcom/instagram/feed/media/Media;->items()Ljava/util/List;, not invoke-virtual Lcom/instagram/feed/media/Media;->videos()Ljava/util/List;'
+        'bridge-call' = 'versionUrl(Ljava/lang/Object;)Ljava/lang/String; calls invoke-virtual Lcom/instagram/api/schemas/VideoVersionIntf;->A00()Ljava/lang/String;, not invoke-interface'
+        'bridge-cast' = 'username(Ljava/lang/Object;)Ljava/lang/String; casts its argument to Lcom/instagram/feed/media/Media;, not Lcom/instagram/user/model/User;'
+        'bridge-result' = "takenAt(Ljava/lang/Object;)Ljava/lang/Long; doesn't return what Lcom/instagram/feed/media/Media;->takenAt()Ljava/lang/Long; answers"
+        'status-false' = 'saveMedia status disagrees with the selected patches'
+        'omitted-menu' = 'PostMenu;->invoke(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; changed original instruction 48'
+        'omitted-show' = 'omitted Save wrote Lapp/morphe/extension/hushthreads/download/SaveMediaRow;->showRow('
+        'omitted-media' = 'omitted Save wrote Lapp/morphe/extension/hushthreads/download/SaveMediaRow;->media('
+        'omitted-dismiss' = 'omitted Save wrote Lapp/morphe/extension/hushthreads/download/SaveMediaRow;->dismiss('
+        'omitted-bridge' = 'omitted Save wrote Lapp/morphe/extension/hushthreads/download/InstagramMedia;->videoVersions('
+        'omitted-status' = 'saveMedia status disagrees with the selected patches'
+    }
+    foreach ($fault in $saveMediaFaults.Keys) {
+        $case = "features-bad-save-$fault"
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $selection = if ($fault.StartsWith('omitted-')) { 'none' } else { 'saveMedia' }
+        $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $selection
+        $findings = Get-Findings $checked
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+            @($findings.Fails | Where-Object { -not $_.Contains('contract: saveMedia: ') }).Count -eq 0) `
+            ("$fault was not rejected solely by the Save photos and videos contract. " + ($checked.Output -join [Environment]::NewLine))
+        Assert-True (@($findings.Fails | Where-Object { $_.Contains($saveMediaFaults[$fault]) }).Count -gt 0) `
+            "$fault was not refused as '$($saveMediaFaults[$fault])': $($findings.Fails -join '; ')"
+        $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
     # One build per share-link hook that writes a register its method still reads, selected alone:
     # the fetch's second hook taking the post's code into v2, the first link, which the fetch still
     # stores; the holder's hook taking its post into v3, the response it casts again; and Send's
@@ -1266,6 +1334,7 @@ try {
         'omitted-returnRefresh' = @('returnRefresh', 'hideSuggestedUsers')
         'omitted-disableVideoAutoplay' = @('disableVideoAutoplay', 'hideSuggestedUsers')
         'omitted-pureBlack' = @('pureBlack', 'hideSuggestedUsers')
+        'omitted-saveMedia' = @('saveMedia', 'hideSuggestedUsers')
         'omitted-settingsRow' = @('settingsRow', 'hideSuggestedUsers')
         'omitted-suggestion-predicate' = @('hideSuggestedUsers', 'hideAds')
         'omitted-suggestion-capture' = @('hideSuggestedUsers', 'hideAds')
@@ -1301,7 +1370,8 @@ try {
         $text = $checked.Output -join [Environment]::NewLine
         Assert-True ($checked.ExitCode -eq 0 -and $text -match 'threads-feature hideSuggestedUsers: omitted' -and $text -match 'threads-feature openLinksExternally: omitted' -and
             $text -match 'threads-feature returnRefresh: omitted' -and $text -match 'threads-feature disableVideoAutoplay: omitted' -and
-            $text -match 'threads-feature pureBlack: omitted' -and $text -match 'threads-feature settingsRow: omitted') `
+            $text -match 'threads-feature pureBlack: omitted' -and $text -match 'threads-feature saveMedia: omitted' -and
+            $text -match 'threads-feature settingsRow: omitted') `
             'A historical bundle missing only the new statuses was refused.'
     }
     $legacyMissingAd = New-DexApk -Name 'features-historical-missing-ad-status' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-historical-missing-ad-status') })
@@ -1328,6 +1398,10 @@ try {
         -Name 'historical-selected-pure-black' -Contracts $contracts -Features 'hideAds,sanitizeSharingLinks,disableAnalytics,restoreTrust,pureBlack'
     Assert-True ($selectedPureBlack.ExitCode -ne 0 -and ($selectedPureBlack.Output -join [Environment]::NewLine) -match 'contract: pureBlack:') `
         'Explicit Pure black selection accepted a historical bundle without its status.'
+    $selectedSave = Invoke-DexDiff -Clean $featureClean -Patched $historical -Allowlist $emptyAllowlist `
+        -Name 'historical-selected-save' -Contracts $contracts -Features 'hideAds,sanitizeSharingLinks,disableAnalytics,restoreTrust,saveMedia'
+    Assert-True ($selectedSave.ExitCode -ne 0 -and ($selectedSave.Output -join [Environment]::NewLine) -match 'contract: saveMedia:') `
+        'Explicit Save photos and videos selection accepted a historical bundle without its status.'
     $selectedSettingsRow = Invoke-DexDiff -Clean $featureClean -Patched $historical -Allowlist $emptyAllowlist `
         -Name 'historical-selected-settings-row' -Contracts $contracts -Features 'hideAds,sanitizeSharingLinks,disableAnalytics,restoreTrust,settingsRow'
     Assert-True ($selectedSettingsRow.ExitCode -ne 0 -and ($selectedSettingsRow.Output -join [Environment]::NewLine) -match 'contract: settingsRow:') `
@@ -1384,7 +1458,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 8) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $profileFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $copyTextFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 9) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $profileFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $copyTextFaults.Count + $saveMediaFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 12) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'

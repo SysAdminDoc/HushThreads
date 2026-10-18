@@ -50,6 +50,13 @@ sole-call Lapp/morphe/extension/hushthreads/settings/ThreadsLogo;->clickable(Lja
 # and the viewer stay as they were.
 # Pure black asks after each #101010 load in the theme and its color helpers, and about each of the
 # dark scheme's #101010 backgrounds right before its constructor, leaving the light scheme alone.
+# Save photos and videos gives Copy link's own path in the post menu a copy of its row call, then
+# SaveMediaRow.add with the lambda and its composer, then a goto past the original call, which other
+# items' branches still reach; the menu is the only host caller. showRow draws Threads' row from the
+# calls and literals Copy link's is built with, media, activity and dismiss read the menu's fields and
+# close it with Copy link's call, the click is a Function0, and each InstagramMedia bridge calls the
+# getter found by its Pando hash or kept name. Left out, the menu and every one of those stubs stay as
+# they shipped; bundles from before Save had a status are read as leaving it out.
 # The settings row asks once, right before the goto ending the More settings case, on its composer,
 # and showRow calls the Accounts Center row. Copy text on long press comes with it: each override
 # check the clean post row lambdas make gets the patch's hook in front of it, passing the override
@@ -66,4 +73,5 @@ threads-feature restoreTrust
 threads-feature returnRefresh
 threads-feature disableVideoAutoplay
 threads-feature pureBlack
+threads-feature saveMedia
 threads-feature settingsRow
