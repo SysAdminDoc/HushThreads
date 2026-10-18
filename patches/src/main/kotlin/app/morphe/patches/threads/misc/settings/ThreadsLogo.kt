@@ -11,6 +11,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.threads.misc.extension.patchLog
 import app.morphe.patches.threads.misc.extension.writeStub
 import app.morphe.patches.threads.misc.theme.holdsNote
 import app.morphe.util.findMutableMethodOf
@@ -21,6 +22,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
@@ -36,6 +38,18 @@ internal const val THREADS_LOGO_LONG_PRESS = "$EXTENSION_PACKAGE/settings/Thread
 internal const val LOGO_CLICKABLE = "$THREADS_LOGO->clickable(Ljava/lang/Object;Ljava/lang/Object;" +
     "Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;Z)Ljava/lang/Object;"
 internal const val LOGO_LONG_PRESS_FIELD = "$THREADS_LOGO->LONG_PRESS:$THREADS_LOGO_LONG_PRESS"
+internal const val THREADS_LOGO_DESCRIBE = "$EXTENSION_PACKAGE/settings/ThreadsLogo\$Describe;"
+internal const val LOGO_DESCRIBE_FIELD = "$THREADS_LOGO->DESCRIBE:$THREADS_LOGO_DESCRIBE"
+internal const val LOGO_DESCRIBE = "$THREADS_LOGO->describe(Ljava/lang/Object;Ljava/lang/String;)V"
+internal const val FUNCTION1 = "Lkotlin/jvm/functions/Function1;"
+
+/**
+ * The name Compose gives the semantics key a content description is kept under. The key carries
+ * its name for Compose's own tests and inspector, so Threads' build keeps the string.
+ */
+internal const val CONTENT_DESCRIPTION = "ContentDescription"
+
+private const val SINGLETON_LIST = "Ljava/util/Collections;->singletonList(Ljava/lang/Object;)Ljava/util/List;"
 
 /**
  * Compose's note in the main feed's lambdas, cut before the rest of the lambda's name. The feed
@@ -65,6 +79,18 @@ internal class LogoSite(
 )
 
 /**
+ * Compose's semantics as Threads' build keeps them: the [setter] that gives a semantics receiver
+ * of type [receiver] a content description, and [clearAndSet], Compose's clearAndSetSemantics,
+ * which appends to a modifier an element that drops the semantics of everything drawn inside it
+ * and sets its own.
+ */
+internal class LogoSemantics(
+    val setter: Method,
+    val receiver: String,
+    val clearAndSet: Method,
+)
+
+/**
  * Lets a long press on the Threads logo at the top of the home feed open the HushThreads screen.
  * Threads makes the logo clickable with Compose's clickable(interaction source, indication,
  * modifier, role, label, onClick, enabled), and Compose's combined clickable takes the same plus a
@@ -77,6 +103,13 @@ internal class LogoSite(
  * Compose note, and the shapes of the two clickable functions, and everything is checked before
  * anything is written. A build it doesn't fit throws, and the settings patch turns that into a
  * warning and keeps the rest.
+ *
+ * The logo also shows Threads' refresh spinner, and TalkBack used to stop on that spinner, say
+ * "Progress bar" and offer no long press. So the stand-in ends the logo's modifier with Compose's
+ * clearAndSetSemantics, naming the logo "Threads" and leaving out what's drawn inside it, and
+ * TalkBack lands on the clickable with its tap and long press. Compose reads a node's semantics
+ * from the innermost modifier out, so the clickable's actions and role still land on that node. A
+ * build without the semantics calls gets the long press and a warning ([logoSemantics]).
  */
 internal fun BytecodePatchContext.addLogoLongPress() {
     val site = logoSite()
@@ -87,9 +120,29 @@ internal fun BytecodePatchContext.addLogoLongPress() {
         body.getOrNull(site.call + 1)?.opcode != Opcode.MOVE_RESULT_OBJECT
     ) throw PatchException("$PATCH: ${site.method.signature()} changed before the logo's long press could go in")
     val result = (body[site.call + 1] as OneRegisterInstruction).registerA
+    val semantics = try {
+        logoSemantics(site.clickable.returnType).also { implementFunction1(THREADS_LOGO_DESCRIBE) }
+    } catch (e: PatchException) {
+        patchLog.warning("${e.message?.trimEnd('.')}. The logo's long press goes in, but TalkBack keeps stopping on its refresh spinner.")
+        null
+    }
 
     implementFunction0(THREADS_LOGO_LONG_PRESS)
     val types = site.combined.parameterTypes.map { it.toString() }
+    // The description goes innermost, after the clickable, so it clears what's drawn inside the
+    // logo and not the clickable's own tap, long press and role.
+    val describe = semantics?.let {
+        writeStub(THREADS_LOGO, "describe", 2, """
+            check-cast p0, ${it.receiver}
+            invoke-static { p0, p1 }, ${it.setter.signature()}
+            return-void
+        """)
+        """
+        sget-object v1, $LOGO_DESCRIBE_FIELD
+        invoke-static { v0, v1 }, ${it.clearAndSet.signature()}
+        move-result-object v0
+        """
+    }.orEmpty()
     // Threads' arguments in Compose's order, the translated long press label, its handler, no
     // double tap, and Threads' tap last, the way the combined clickable takes them.
     writeStub(THREADS_LOGO, "clickable", 17, """
@@ -111,6 +164,7 @@ internal fun BytecodePatchContext.addLogoLongPress() {
         move/from16 v9, p6
         invoke-static/range { v0 .. v9 }, ${site.combined.signature()}
         move-result-object v0
+        $describe
         return-object v0
     """)
     // The stand-in answers an Object, so the modifier is cast back before Threads uses it.
@@ -160,6 +214,167 @@ internal fun BytecodePatchContext.logoSite(): LogoSite {
             "and double tap, not 8, 6 and 7, so the long press could land on the tap")
     }
     return LogoSite(method, call, tap, clickable, combined)
+}
+
+/**
+ * Reads Compose's semantics calls and refuses a build where they differ from what was read on 451
+ * (2026-10-18): the static field a static initializer stores right after it loads
+ * [CONTENT_DESCRIPTION]; one static (receiver, String) method that reads that key, wraps its
+ * String with Collections.singletonList and hands both to the receiver's (key, Object) setter;
+ * and one static ([modifier], Function1) [modifier] that builds an element from the Function1 alone
+ * and chains it onto the modifier, where the element builds a node holding one Function1 and two
+ * flags, sets one flag on and the other off, and hands the Function1 the setter's receiver.
+ * clearAndSetSemantics is the only such element: the other semantics element takes a flag too.
+ */
+internal fun BytecodePatchContext.logoSemantics(modifier: String): LogoSemantics {
+    val keys = classDefByStrings(CONTENT_DESCRIPTION, StringComparisonType.EQUALS)
+        .filterNot { it.type.startsWith(EXTENSION_ROOT) }
+        .flatMap { holder -> holder.methods.filter { it.name == "<clinit>" } }
+        .mapNotNull { semanticsKey(it) }
+        .distinctBy { "${it.definingClass}->${it.name}" }
+    if (keys.isEmpty()) throw PatchException("$PATCH: Compose's \"$CONTENT_DESCRIPTION\" semantics key, a static field stored after that name")
+    val setters = mutableListOf<Method>()
+    val appenders = mutableListOf<Pair<Method, String>>()
+    classDefForEach { classDef ->
+        if (classDef.type.startsWith(EXTENSION_ROOT)) return@classDefForEach
+        for (method in classDef.methods) {
+            if (!AccessFlags.STATIC.isSet(method.accessFlags)) continue
+            if (isDescriptionSetter(method, keys)) setters += method
+            appendedElement(method, modifier)?.let { appenders += method to it }
+        }
+    }
+    val setter = setters.singleOrPatchException(
+        "$PATCH: Compose's contentDescription setter, a static (receiver, String) that hands the \"$CONTENT_DESCRIPTION\" key a singleton list",
+    )
+    val receiver = setter.parameterTypes[0].toString()
+    val clearAndSet = appenders.filter { (_, element) -> clearsSemantics(element, receiver) }
+        .map { it.first }
+        .singleOrPatchException("$PATCH: Compose's clearAndSetSemantics, a static ($modifier, Function1) that appends a clearing semantics element")
+    return LogoSemantics(setter, receiver, clearAndSet)
+}
+
+/** The field [initializer] stores first after it loads [CONTENT_DESCRIPTION], before any other string, or null. */
+private fun semanticsKey(initializer: Method): FieldReference? {
+    val body = initializer.body()
+    val named = body.indexOfFirst { it.getReference<StringReference>()?.string == CONTENT_DESCRIPTION }
+    if (named < 0) return null
+    val store = (named + 1 until body.size).firstOrNull { at ->
+        body[at].opcode == Opcode.SPUT_OBJECT || body[at].getReference<StringReference>() != null
+    } ?: return null
+    if (body[store].opcode != Opcode.SPUT_OBJECT) return null
+    return body[store].getReference<FieldReference>()?.takeIf { it.definingClass == initializer.definingClass }
+}
+
+/**
+ * Whether [method] is Compose's contentDescription setter as R8 leaves it: static (receiver,
+ * String) void reading one of [keys], wrapping the String in a singleton list and handing the key
+ * and the list to the receiver's (key, Object) setter, and nothing else.
+ */
+private fun isDescriptionSetter(method: Method, keys: List<FieldReference>): Boolean {
+    val params = method.parameterTypes.map { it.toString() }
+    if (params.size != 2 || params[1] != STRING || method.returnType != "V") return false
+    val body = method.body().filter { it.opcode != Opcode.NOP }
+    if (body.map { it.opcode } != listOf(
+            Opcode.SGET_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_INTERFACE, Opcode.RETURN_VOID,
+        )
+    ) return false
+    val first = method.implementation!!.registerCount - 2
+    val key = body[0].getReference<FieldReference>() ?: return false
+    if (keys.none { it.sameAs(key) }) return false
+    if (body[1].method()?.signature() != SINGLETON_LIST || body[1].registers() != listOf(first + 1)) return false
+    val set = body[3].method() ?: return false
+    if (set.definingClass != params[0] || set.returnType != "V" ||
+        set.parameterTypes.map { it.toString() } != listOf(key.type, "Ljava/lang/Object;")
+    ) return false
+    val keyRegister = (body[0] as OneRegisterInstruction).registerA
+    val list = (body[2] as OneRegisterInstruction).registerA
+    return body[3].registers() == listOf(first, keyRegister, list)
+}
+
+/**
+ * The element [method] builds when it's a static ([modifier], Function1) [modifier] that does
+ * nothing but build an element from its Function1 and chain it onto its modifier, or null.
+ */
+private fun appendedElement(method: Method, modifier: String): String? {
+    if (method.parameterTypes.map { it.toString() } != listOf(modifier, FUNCTION1) || method.returnType != modifier) return null
+    val body = method.body().filter { it.opcode != Opcode.NOP }
+    if (body.map { it.opcode } != listOf(
+            Opcode.NEW_INSTANCE, Opcode.INVOKE_DIRECT, Opcode.INVOKE_INTERFACE, Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT,
+        )
+    ) return null
+    val first = method.implementation!!.registerCount - 2
+    val element = body[0].getReference<TypeReference>()?.type ?: return null
+    val made = (body[0] as OneRegisterInstruction).registerA
+    val init = body[1].method() ?: return null
+    if (init.definingClass != element || init.name != "<init>" || init.parameterTypes.map { it.toString() } != listOf(FUNCTION1) ||
+        body[1].registers() != listOf(made, first + 1)
+    ) return null
+    val then = body[2].method() ?: return null
+    if (then.definingClass != modifier || then.returnType != modifier || then.parameterTypes.map { it.toString() } != listOf(modifier) ||
+        body[2].registers() != listOf(first, made)
+    ) return null
+    val result = (body[3] as OneRegisterInstruction).registerA
+    return element.takeIf { (body[4] as OneRegisterInstruction).registerA == result }
+}
+
+/**
+ * Whether [element] builds, in one place, a semantics node for [receiver]: a class holding one
+ * Function1 and two flags whose (receiver) method hands the receiver to that Function1, with one
+ * flag stored on and the other off. That's Compose's clearing element: the node's flags say
+ * whether it merges what's inside it and whether it clears it, and the merging element takes its
+ * merge flag from its caller.
+ */
+private fun BytecodePatchContext.clearsSemantics(element: String, receiver: String): Boolean {
+    val owner = classDefByOrNull(element) ?: return false
+    val built = owner.methods.flatMap { method ->
+        method.body().filter { it.opcode == Opcode.NEW_INSTANCE }.mapNotNull { made ->
+            val node = classDefByOrNull(made.getReference<TypeReference>()!!.type) ?: return@mapNotNull null
+            val fields = node.instanceFields.toList()
+            val flags = fields.filter { it.type == "Z" }
+            if (fields.count { it.type == FUNCTION1 } != 1 || flags.size != 2) return@mapNotNull null
+            // The Function1 gets the receiver itself (p1), not something built from it.
+            val applies = node.methods.any { apply ->
+                !AccessFlags.STATIC.isSet(apply.accessFlags) && apply.returnType == "V" &&
+                    apply.parameterTypes.map { it.toString() } == listOf(receiver) &&
+                    apply.body().any { it.opcode == Opcode.INVOKE_INTERFACE && it.method()?.let { invoke ->
+                        invoke.definingClass == FUNCTION1 && invoke.name == "invoke" } == true &&
+                        it.registers().getOrNull(1) == apply.implementation!!.registerCount - 1 }
+            }
+            if (applies) Triple(method, node.type, flags.map { it.name }) else null
+        }
+    }
+    val (create, node, flags) = built.singleOrNull() ?: return false
+    val stored = flags.map { flag -> literalStored(create.body(), node, flag) }
+    return stored.sortedBy { it ?: -1 } == listOf(0, 1)
+}
+
+/** The literal [body] stores into [owner]'s boolean [field], when it stores one exactly once, or null. */
+private fun literalStored(body: List<Instruction>, owner: String, field: String): Int? {
+    val stores = body.indices.filter { at ->
+        body[at].opcode == Opcode.IPUT_BOOLEAN && body[at].getReference<FieldReference>()?.let {
+            it.definingClass == owner && it.name == field } == true
+    }
+    val at = stores.singleOrNull() ?: return null
+    val value = (body[at] as TwoRegisterInstruction).registerA
+    val write = (at - 1 downTo 0).firstOrNull { body[it].writes(value) } ?: return null
+    return (body[write] as? NarrowLiteralInstruction)?.narrowLiteral
+}
+
+/** Makes the extension's [type] a Kotlin Function1, which it already answers with invoke(Object). */
+private fun BytecodePatchContext.implementFunction1(type: String) {
+    val function1 = classDefByOrNull(FUNCTION1)
+        ?: throw PatchException("$PATCH: Threads carries no $FUNCTION1")
+    fun Method.isInvoke() = name == "invoke" && returnType == "Ljava/lang/Object;" &&
+        parameterTypes.map { it.toString() } == listOf("Ljava/lang/Object;")
+    if (!AccessFlags.INTERFACE.isSet(function1.accessFlags) || function1.methods.none { it.isInvoke() }) {
+        throw PatchException("$PATCH: $FUNCTION1 isn't an interface with invoke(Object)")
+    }
+    val describe = mutableClassDefBy(type)
+    if (describe.methods.none {
+            it.isInvoke() && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
+        }
+    ) throw PatchException("$PATCH: $type has no public invoke(Object)")
+    if (FUNCTION1 !in describe.interfaces) describe.interfaces.add(FUNCTION1)
 }
 
 /**

@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Settings:** TalkBack now reads the Threads logo at the top of the feed as "Threads". Before, it stopped on the refresh spinner inside the logo and said "Progress bar". The README also says the logo ignores taps and holds while the feed loads or refreshes.
+
 * **Tooling:** The file picker behind Export settings and Import settings now has its own entry in the source ledger. Its two classes never had one, so the provenance test failed on every full run since they were added.
 
 * **Tooling:** When the final APK check catches the direct browser hook overwriting something Threads still needs, it now says which case it found. The register can be past the method's own locals, or Threads reads it right where the hook goes in, or Threads reads it once the link has opened. Each test build has to fail for its own reason, so one that trips the wrong part of the check doesn't pass anymore.

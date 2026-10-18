@@ -90,7 +90,7 @@ The switches on the Appearance page take effect after you restart Threads. A Res
 
 ## Settings
 
-In Threads, open your profile, tap the settings button at the top and tap HushThreads, just above More settings. You can also long-press the Threads icon on your home screen and tap HushThreads, or open Threads' App info page and tap Additional settings in the app (Samsung phones call it Configure in Threads). A long press on the Threads logo at the top of your feed opens it too, even while HushThreads is paused.
+In Threads, open your profile, tap the settings button at the top and tap HushThreads, just above More settings. You can also long-press the Threads icon on your home screen and tap HushThreads, or open Threads' App info page and tap Additional settings in the app (Samsung phones call it Configure in Threads). A long press on the Threads logo at the top of your feed opens it too, even while HushThreads is paused. The logo ignores taps and holds while the feed is loading or refreshing, so wait for it to settle. With TalkBack on, the logo reads as "Threads".
 
 **Pause** at the top of the home page turns every feature off at once and keeps your choices. Settings can be saved to a file and restored, and a diagnostic report can be exported for bug reports. Reports keep counts, not your posts or links, and they leave out file paths. Look one over before you share it anyway.
 

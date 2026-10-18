@@ -281,6 +281,15 @@ public class SettingsEntryTest {
                 .get("Open HushThreads settings"), ThreadsLogo.longClickLabel());
     }
 
+    /**
+     * TalkBack calls the logo by the app's name, which isn't translated, and Compose drops what
+     * the description answers. Unpatched, describe() is the extension's empty stub.
+     */
+    @Test public void theLogoIsDescribedByTheAppsName() {
+        org.junit.Assert.assertEquals("Threads", ThreadsLogo.LABEL);
+        assertNull(ThreadsLogo.DESCRIBE.invoke(new Object()));
+    }
+
     /** The screen is where HushThreads is resumed, so the logo opens it while HushThreads is paused. */
     @Test public void aLongPressOnTheThreadsLogoOpensTheScreenWhilePaused() {
         PauseForTests.pause(HushThreadsPause.Reason.SWITCH);

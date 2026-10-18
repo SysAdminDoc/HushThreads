@@ -19,6 +19,7 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -57,6 +58,87 @@ class ThreadsLogoFixtureTest {
         assertTrue(AccessFlags.PUBLIC.isSet(invoke.accessFlags) && !AccessFlags.STATIC.isSet(invoke.accessFlags))
         assertEquals("Ljava/lang/Object;", invoke.returnType)
         assertTrue(invoke.parameterTypes.isEmpty())
+
+        val describeStub = logo.methods.single { it.name == "describe" }
+        assertTrue(AccessFlags.STATIC.isSet(describeStub.accessFlags) && AccessFlags.PUBLIC.isSet(describeStub.accessFlags))
+        assertEquals(LOGO_DESCRIBE, describeStub.signature())
+        val describeField = logo.fields.single { it.name == "DESCRIBE" }
+        assertTrue(AccessFlags.STATIC.isSet(describeField.accessFlags) && AccessFlags.FINAL.isSet(describeField.accessFlags))
+        assertEquals(LOGO_DESCRIBE_FIELD, "${describeField.definingClass}->${describeField.name}:${describeField.type}")
+        val describe = ExtensionDex.classDef(THREADS_LOGO_DESCRIBE)
+        assertTrue(describe.interfaces.isEmpty())
+        val describeInvoke = describe.methods.single { it.name == "invoke" }
+        assertTrue(AccessFlags.PUBLIC.isSet(describeInvoke.accessFlags) && !AccessFlags.STATIC.isSet(describeInvoke.accessFlags))
+        assertEquals("Ljava/lang/Object;", describeInvoke.returnType)
+        assertEquals(listOf("Ljava/lang/Object;"), describeInvoke.parameterTypes.map { it.toString() })
+    }
+
+    /**
+     * Read apart from the patch, from Compose's semantics(modifier, mergeDescendants, properties):
+     * its element takes a flag and the properties and builds the semantics node, and the one other
+     * element that builds that node from the properties alone is clearAndSetSemantics'. The
+     * contentDescription setter is the one static method that reads the key stored after
+     * "ContentDescription" and wraps a String in a singleton list.
+     */
+    @Test
+    fun `each declared build has one contentDescription setter and one clearAndSetSemantics, and the patch finds them`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val where = build.name
+            val fixture = fixture(build)
+            val found = context(fixture).logoSemantics(fixture.clickableReturn)
+            assertEquals("$where: the setter", fixture.semantics.setter, found.setter.signature())
+            assertEquals("$where: the receiver", fixture.semantics.receiver, found.receiver)
+            assertEquals("$where: clearAndSetSemantics", fixture.semantics.clearAndSet, found.clearAndSet.signature())
+        }
+    }
+
+    /**
+     * A build where the semantics calls don't read as they did on 451 still gets the long press,
+     * with a warning, and the stand-in leaves the logo's semantics as Threads made them.
+     */
+    @Test
+    fun `a build whose semantics calls differ keeps the long press and warns`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val fixture = fixture(build)
+            val cases = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
+                "\"$CONTENT_DESCRIPTION\" semantics key" to { context ->
+                    val holder = context.mutableClassDefBy(fixture.semantics.key.substringBefore("->"))
+                    val init = holder.methods.single { it.name == "<clinit>" }
+                    val at = init.body().indexOfFirst { it.string() == CONTENT_DESCRIPTION }
+                    val register = (init.body()[at] as OneRegisterInstruction).registerA
+                    init.replaceInstruction(at, "const-string v$register, \"ContentDescriptions\"")
+                },
+                "clearAndSetSemantics" to { context ->
+                    // The clearing element's node gets its clearing flag off, like the merging element's.
+                    val element = context.mutableClassDefBy(fixture.semantics.clearing)
+                    val create = element.methods.single { method ->
+                        method.body().any { it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == fixture.semantics.node }
+                    }
+                    val at = create.body().indexOfFirst { (it as? NarrowLiteralInstruction)?.narrowLiteral == 1 && it.opcode == Opcode.CONST_4 }
+                    val register = (create.body()[at] as OneRegisterInstruction).registerA
+                    // The literal flipped has to be the one a node flag gets, or the case proves nothing.
+                    val use = create.body().drop(at + 1).firstOrNull { (it as? OneRegisterInstruction)?.registerA == register }
+                    assertTrue("${build.name}: v$register's 1 is stored into a flag of ${fixture.semantics.node}, not $use",
+                        use?.opcode == Opcode.IPUT_BOOLEAN && use.getReference<FieldReference>()?.definingClass == fixture.semantics.node)
+                    create.replaceInstruction(at, "const/4 v$register, 0x0")
+                },
+            )
+            for ((expected, mutate) in cases) {
+                val context = context(fixture)
+                mutate(context)
+                val warnings = PatchLogCapture.warnings { context.addLogoLongPress() }
+                assertEquals("${build.name}: $warnings", 1, warnings.size)
+                assertTrue("${build.name}: ${warnings.single()}", warnings.single().contains(expected) &&
+                    warnings.single().contains("TalkBack keeps stopping on its refresh spinner"))
+                val stub = context.mutableClassDefBy(THREADS_LOGO).methods.single { it.name == "clickable" }.body()
+                assertTrue("${build.name}: the long press still goes in",
+                    stub.any { it.method()?.toString() == fixture.combined })
+                assertTrue("${build.name}: no description", stub.none {
+                    it.method()?.toString() == fixture.semantics.clearAndSet || it.getReference<FieldReference>()?.toString() == LOGO_DESCRIBE_FIELD
+                })
+                assertTrue(context.mutableClassDefBy(THREADS_LOGO_DESCRIBE).interfaces.isEmpty())
+            }
+        }
     }
 
     /**
@@ -155,8 +237,34 @@ class ThreadsLogoFixtureTest {
             assertEquals(Opcode.MOVE_RESULT_OBJECT, stub[at + 1].opcode)
             assertEquals(Opcode.RETURN_OBJECT, stub.last().opcode)
 
+            // Then clearAndSetSemantics with the extension's description, innermost, and its answer returned.
+            val clickableResult = (stub[at + 1] as OneRegisterInstruction).registerA
+            val description = stub[at + 2]
+            assertEquals("$where: the description", Opcode.SGET_OBJECT, description.opcode)
+            assertEquals(LOGO_DESCRIBE_FIELD, description.getReference<FieldReference>().toString())
+            val clear = stub[at + 3]
+            assertEquals("$where: clearAndSetSemantics", Opcode.INVOKE_STATIC, clear.opcode)
+            assertEquals(fixture.semantics.clearAndSet, clear.method().toString())
+            assertEquals("$where: on the clickable's modifier", listOf(clickableResult, (description as OneRegisterInstruction).registerA),
+                clear.registers())
+            assertEquals(Opcode.MOVE_RESULT_OBJECT, stub[at + 4].opcode)
+            assertEquals("$where: its answer is returned", (stub[at + 4] as OneRegisterInstruction).registerA,
+                (stub[at + 5] as OneRegisterInstruction).registerA)
+            assertEquals(at + 6, stub.size)
+
             val press = context.mutableClassDefBy(THREADS_LOGO_LONG_PRESS)
             assertEquals("$where: the long press is a Function0", listOf(FUNCTION0), press.interfaces.toList())
+            val describe = context.mutableClassDefBy(THREADS_LOGO_DESCRIBE)
+            assertEquals("$where: the description is a Function1", listOf(FUNCTION1), describe.interfaces.toList())
+            val describeStub = context.mutableClassDefBy(THREADS_LOGO).methods.single { it.name == "describe" }
+            val describeBody = describeStub.body()
+            val receiver = describeStub.implementation!!.registerCount - 2
+            assertEquals("$where: the receiver cast to Compose's", fixture.semantics.receiver,
+                describeBody[0].takeIf { it.opcode == Opcode.CHECK_CAST && (it as OneRegisterInstruction).registerA == receiver }
+                    ?.getReference<TypeReference>()?.type)
+            assertEquals("$where: the setter", fixture.semantics.setter, describeBody[1].method().toString())
+            assertEquals(listOf(receiver, receiver + 1), describeBody[1].registers())
+            assertEquals(listOf(Opcode.CHECK_CAST, Opcode.INVOKE_STATIC, Opcode.RETURN_VOID), describeBody.map { it.opcode })
         }
     }
 
@@ -234,7 +342,90 @@ class ThreadsLogoFixtureTest {
         val clickableReturn: String,
         val combined: String,
         val reasons: String,
+        val semantics: Semantics,
     )
+
+    /**
+     * Compose's semantics calls as read from the build: the content description [key], its
+     * [setter] and the [receiver] it takes, [clearAndSet], the [clearing] element it builds and the
+     * [node] that element creates, and every class the patch's search could weigh against them.
+     */
+    private data class Semantics(
+        val classes: Collection<ClassDef>,
+        val key: String,
+        val setter: String,
+        val receiver: String,
+        val clearAndSet: String,
+        val clearing: String,
+        val node: String,
+    )
+
+    private fun semantics(build: File, modifier: String): Semantics {
+        val where = build.name
+        val static = { method: Method -> AccessFlags.STATIC.isSet(method.accessFlags) }
+        fun Method.types() = parameterTypes.map { it.toString() }
+        fun Method.made() = body().filter { it.opcode == Opcode.NEW_INSTANCE }.map { it.getReference<TypeReference>()!!.type }
+        fun FieldReference.name() = "$definingClass->$name:$type"
+
+        val holders = FixtureDex.classesWhere(build, { true }) { method ->
+            method.name == "<clinit>" && method.body().any { it.string() == CONTENT_DESCRIPTION }
+        }
+        val keys = holders.flatMap { it.methods }.filter { it.name == "<clinit>" }.mapNotNull { init ->
+            val body = init.body()
+            val at = body.indexOfFirst { it.string() == CONTENT_DESCRIPTION }
+            if (at < 0) null else body.drop(at + 1).firstOrNull { it.opcode == Opcode.SPUT_OBJECT }?.getReference<FieldReference>()?.name()
+        }.distinct()
+        assertEquals("$where: one field is stored after \"$CONTENT_DESCRIPTION\": $keys", 1, keys.size)
+        val key = keys.single()
+
+        // Every static (anything, String) void that wraps something in a singleton list.
+        val setterClasses = FixtureDex.classesWhere(build, { true }) { method ->
+            static(method) && method.returnType == "V" && method.types().size == 2 && method.types()[1] == STRING &&
+                method.body().any { it.method()?.toString() == SINGLETON_LIST }
+        }
+        val setters = setterClasses.flatMap { it.methods }.filter { method ->
+            static(method) && method.returnType == "V" && method.types().size == 2 && method.types()[1] == STRING &&
+                method.body().any { it.opcode == Opcode.SGET_OBJECT && it.getReference<FieldReference>()?.name() == key } &&
+                method.body().any { it.method()?.toString() == SINGLETON_LIST }
+        }
+        assertEquals("$where: one setter reads $key", 1, setters.size)
+        val setter = setters.single()
+
+        // Every static (modifier, properties) modifier and the elements they append. R8 inlined
+        // semantics(modifier, mergeDescendants, properties), so its element is found by the node it
+        // shares with clearAndSetSemantics' element instead of by a call.
+        val appenderClasses = FixtureDex.classesWhere(build, { true }) { method ->
+            static(method) && method.returnType == modifier && method.types() == listOf(modifier, FUNCTION1)
+        }
+        val appenders = appenderClasses.flatMap { it.methods }.filter { method ->
+            static(method) && method.returnType == modifier && method.types() == listOf(modifier, FUNCTION1)
+        }
+        val elements = FixtureDex.classes(build, appenders.flatMap { it.made() }.toSet())
+        val fromProperties = elements.values.filter { element ->
+            element.methods.any { it.name == "<init>" && it.types() == listOf(FUNCTION1) }
+        }
+        val nodes = FixtureDex.classes(build, fromProperties.flatMap { element -> element.methods.flatMap { it.made() } }.toSet())
+            .filterValues { node -> node.instanceFields.any { it.type == FUNCTION1 } }
+        // AppendedSemanticsElement: built from a flag and the properties, and builds one of those nodes.
+        val builders = FixtureDex.classesWhere(build, { true }) { method -> method.made().any { it in nodes } }
+        val merging = builders.filter { element ->
+            element.methods.any { it.name == "<init>" && it.types() == listOf("Z", FUNCTION1) }
+        }
+        assertEquals("$where: one element takes a flag and the properties and builds ${nodes.keys}: ${merging.map { it.type }}",
+            1, merging.size)
+        val node = merging.single().methods.flatMap { it.made() }.filter { it in nodes }.distinct()
+        assertEquals("$where: the merging element builds one node holding the properties: $node", 1, node.size)
+        val clearing = fromProperties.filter { element -> element.methods.any { node.single() in it.made() } }.map { it.type }
+        assertEquals("$where: one appended element builds ${node.single()} from the properties alone: $clearing", 1, clearing.size)
+        val clearAndSet = appenders.filter { clearing.single() in it.made() }
+        assertEquals("$where: one function appends ${clearing.single()}", 1, clearAndSet.size)
+
+        val classes = holders + setterClasses + appenderClasses + elements.values + nodes.values + merging +
+            FixtureDex.classes(build, setOf(FUNCTION1)).values
+        return Semantics(
+            classes, key, setter.signature(), setter.types()[0], clearAndSet.single().signature(), clearing.single(), node.single(),
+        )
+    }
 
     private fun fixture(build: File): Fixture = fixtures.getOrPut(build) {
         val where = build.name
@@ -272,9 +463,10 @@ class ThreadsLogoFixtureTest {
                 method.parameterTypes.map { it.toString() }.count { it == FUNCTION0 } == 3 && method.returnType == clickable.returnType
         }
         val read = FixtureDex.classes(build, setOf(tap, header.definingClass, FUNCTION0))
+        val semantics = semantics(build, clickable.returnType)
         Fixture(
-            (noted + owner + read.values).distinctBy { it.type }, header, call, tap, clickable.signature(),
-            clickable.returnType, combined.signature(), reason.definingClass,
+            (noted + owner + read.values + semantics.classes).distinctBy { it.type }, header, call, tap, clickable.signature(),
+            clickable.returnType, combined.signature(), reason.definingClass, semantics,
         )
     }
 
@@ -290,6 +482,12 @@ class ThreadsLogoFixtureTest {
 
     private fun Instruction.method(): MethodReference? = getReference<MethodReference>()
 
+    private fun Instruction.registers(): List<Int> = when (this) {
+        is RegisterRangeInstruction -> (startRegister until startRegister + registerCount).toList()
+        is FiveRegisterInstruction -> listOf(registerC, registerD, registerE, registerF, registerG).take(registerCount)
+        else -> emptyList()
+    }
+
     private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 
     private fun List<Instruction>.code() = filter { it.opcode != Opcode.NOP }
@@ -298,6 +496,7 @@ class ThreadsLogoFixtureTest {
 
     private companion object {
         const val STRING = "Ljava/lang/String;"
+        const val SINGLETON_LIST = "Ljava/util/Collections;->singletonList(Ljava/lang/Object;)Ljava/util/List;"
         val fixtures = HashMap<File, Fixture>()
     }
 }
