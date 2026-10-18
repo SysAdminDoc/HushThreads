@@ -1244,6 +1244,8 @@ try {
         'bridge-extra' = "InstagramMedia;->likeCount(Ljava/lang/Object;)Ljava/lang/Integer; isn't one of the bridges the Save patch writes"
         'status-false' = 'saveMedia status disagrees with the selected patches'
         'bypass' = "the post menu's Copy link case branches from instruction 46 straight to its row call at instruction 47, past where the Save row goes"
+        'switch-case' = "the post menu's Copy link case branches from instruction 46 straight to its row call at instruction 47, past where the Save row goes"
+        'handler-edge' = "the post menu's Copy link case branches from instruction 46 straight to its row call at instruction 47, past where the Save row goes"
         'omitted-menu' = 'PostMenu;->invoke(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; changed original instruction 46'
         'omitted-add' = 'SaveMediaRow;->add(Ljava/lang/Object;Ljava/lang/Object;)V host calls differ: expected {}, found {Lfixture/PostMenuHeader;->invoke(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;=1}'
         'omitted-show' = 'omitted Save wrote Lapp/morphe/extension/hushthreads/download/SaveMediaRow;->showRow('
@@ -1255,10 +1257,12 @@ try {
         'omitted-status' = 'saveMedia status disagrees with the selected patches'
     }
     $saveBypassClean = New-DexApk -Name 'features-save-bypass-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-save-bypass-clean') })
+    $saveSwitchClean = New-DexApk -Name 'features-save-switch-case-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-save-switch-case-clean') })
+    $saveHandlerClean = New-DexApk -Name 'features-save-handler-edge-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-save-handler-edge-clean') })
     foreach ($fault in $saveMediaFaults.Keys) {
         $case = "features-bad-save-$fault"
         $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
-        $stock = if ($fault -ceq 'bypass') { $saveBypassClean } else { $featureClean }
+        $stock = switch ($fault) { 'bypass' { $saveBypassClean } 'switch-case' { $saveSwitchClean } 'handler-edge' { $saveHandlerClean } default { $featureClean } }
         $selection = if ($fault.StartsWith('omitted-')) { 'none' } else { 'saveMedia' }
         $checked = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $selection
         $findings = Get-Findings $checked
@@ -1267,6 +1271,10 @@ try {
             ("$fault was not rejected solely by the Save photos and videos contract. " + ($checked.Output -join [Environment]::NewLine))
         Assert-True (@($findings.Fails | Where-Object { $_.Contains($saveMediaFaults[$fault]) }).Count -gt 0) `
             "$fault was not refused as '$($saveMediaFaults[$fault])': $($findings.Fails -join '; ')"
+        if ($fault -cin 'bypass', 'switch-case', 'handler-edge') {
+            Assert-True (@($findings.Fails | Where-Object { $_ -ceq ('[diff] FAIL: contract: saveMedia: ' + $saveMediaFaults[$fault]) }).Count -eq $findings.Fails.Count) `
+                "$fault was not refused by exactly '$($saveMediaFaults[$fault])': $($findings.Fails -join '; ')"
+        }
         $structural = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }

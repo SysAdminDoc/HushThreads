@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** Save's contract tests now cover the two other ways into Copy link's row call that would skip the Save row, a switch case and an exception handler aimed straight at it. The patch and the final APK check already refused both, but only a plain jump had a test, so losing either refusal would have gone unnoticed.
+
 * **Tooling:** The final APK check now holds Disable video autoplay's prefetch hold to its contract. Where Threads' prefetcher asks Instagram's autoplay-off question, the answer has to go through the extension right after it's read and come back in the same register, and every jump to the test that reads it has to pass through that call too. Nothing else may make the call. The question itself, its Olympus twin, Instagram's older autoplay checker and the prefetch dispatcher have to stay as Threads wrote them, and a build without the patch leaves every one of them alone. Each rule has a test build that only it refuses.
 
 * **Tooling:** The final APK check's browser guard has a test build only its completion half can catch: a link hook on a register that's free where the hook goes in but read again once the link has opened. No test build failed that half alone before, so losing it would have gone unnoticed.

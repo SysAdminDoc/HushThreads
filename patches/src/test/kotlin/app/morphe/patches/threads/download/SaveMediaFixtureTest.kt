@@ -22,6 +22,8 @@ import app.morphe.patches.threads.misc.theme.holdsNote
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction31t
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderPackedSwitchPayload
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -148,9 +150,10 @@ class SaveMediaFixtureTest {
 
     /**
      * Each way the menu could stop being what was read refuses the build: a second Copy link
-     * check, a branch into its case, a branch in its case straight to its row call, a composer that
-     * isn't the lambda's parameter, a parameter the lambda overwrites, a click that no longer closes
-     * the menu, a second post field, and a closing call the extension couldn't reach.
+     * check, a branch into its case, a branch, switch case or handler in its case straight to its
+     * row call, a composer that isn't the lambda's parameter, a parameter the lambda overwrites, a
+     * click that no longer closes the menu, a second post field, and a closing call the extension
+     * couldn't reach.
      */
     @Test
     fun `a post menu that differs from the one read is refused`() {
@@ -174,6 +177,26 @@ class SaveMediaFixtureTest {
                     val menu = context.menu(fixture)
                     val check = stock.indexOfFirst { it.isCopyLinkCheck(fixture.copyLink) }
                     menu.addInstructionsWithLabels(check + 2, "if-eqz v0, :row", ExternalLabel("row", menu.getInstruction(rowAt)))
+                },
+                // A case of a switch aimed at the call leaves the same way: the label stays on the original.
+                "straight to its row call" to { context ->
+                    val implementation = context.menu(fixture).implementation!!
+                    val check = stock.indexOfFirst { it.isCopyLinkCheck(fixture.copyLink) }
+                    val row = implementation.newLabelForIndex(rowAt)
+                    val payload = BuilderPackedSwitchPayload(0, listOf(row))
+                    implementation.addInstruction(payload)
+                    val table = payload.location.addNewLabel()
+                    implementation.addInstruction(check + 2, BuilderInstruction31t(Opcode.PACKED_SWITCH, 0, table))
+                },
+                // So does an exception handler: a throw from inside the case lands on the original call.
+                "straight to its row call" to { context ->
+                    val implementation = context.menu(fixture).implementation!!
+                    val check = stock.indexOfFirst { it.isCopyLinkCheck(fixture.copyLink) }
+                    val thrower = (check + 2 until rowAt).first { stock[it].opcode.canThrow() }
+                    implementation.addCatch(
+                        implementation.newLabelForIndex(thrower), implementation.newLabelForIndex(thrower + 1),
+                        implementation.newLabelForIndex(rowAt),
+                    )
                 },
                 "isn't passed the menu's composer parameter" to { context ->
                     context.menu(fixture).addInstructions(rowAt, "move-object/from16 v$composer, p0")

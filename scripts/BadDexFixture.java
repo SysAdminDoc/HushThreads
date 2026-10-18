@@ -2646,9 +2646,9 @@ public class BadDexFixture {
      * original. A second lambda holds the note without checking for Copy link, and the models the
      * bridges read come along. Faults: no hook, a copy of another call, the wrong registers passed,
      * a goto past the wrong place, a second add on the shared row call, a second host caller, Share's
-     * goto sent to the copy, a branch in Copy link's case straight to its row call (stock as well as
-     * hooked, so it takes a clean build of its own), and, left out, the copy and goto alone or an add
-     * in the second lambda.
+     * goto sent to the copy, a branch, a packed switch's case or an exception handler in Copy link's
+     * case straight to its row call (stock as well as hooked, so each takes a clean build of its
+     * own), and, left out, the copy and goto alone or an add in the second lambda.
      */
     private static List<ClassDef> saveMediaClasses(boolean patched, boolean hooked, String fault) {
         Instruction none = new ImmutableInstruction11n(Opcode.CONST_4, 0, 0);
@@ -2680,6 +2680,13 @@ public class BadDexFixture {
         // label on both of the row call's ways in, and only the branch skips the Save row.
         int bypass = fault.equals("save-bypass") ? menu.size() : -1;
         if (bypass >= 0) menu.add(ifEqz(2, 0));
+        // switch-case sends one case of a packed switch there instead, its payload after the method's
+        // last return; handler-edge loads the label a second time under a try block whose handler is the row call,
+        // so v7 holds it on the handler's way in too.
+        int switchAt = fault.equals("save-switch-case") ? menu.size() : -1;
+        if (switchAt >= 0) menu.add(new ImmutableInstruction31t(Opcode.PACKED_SWITCH, 2, 0));
+        if (fault.equals("save-handler-edge")) menu.add(string(7, "Copy link"));
+        int handlerCover = fault.equals("save-handler-edge") ? menu.size() - 1 : -1;
         Instruction row = invoke(MENU_ROW, 12, 3, 4, 5, 7);
         int copyAt = menu.size();
         boolean copied = hooked && !fault.equals("save-missing") || patched && fault.equals("save-omitted-menu");
@@ -2702,11 +2709,20 @@ public class BadDexFixture {
         if (copied) featureBranch(menu, rowAt - 1, hooked && fault.equals("save-goto") ? after : rowAt + 1, Opcode.GOTO, 0, 0);
         featureBranch(menu, rowGoto, after, Opcode.GOTO, 0, 0);
         if (bypass >= 0) featureBranch(menu, bypass, rowAt, Opcode.IF_EQZ, 2, 0);
+        List<ImmutableTryBlock> menuTries = null;
+        if (switchAt >= 0) {
+            if (units(menu, menu.size()) % 2 != 0) menu.add(op(Opcode.NOP));
+            int payloadAt = menu.size();
+            menu.add(new ImmutablePackedSwitchPayload(List.of(new ImmutableSwitchElement(0, units(menu, rowAt) - units(menu, switchAt)))));
+            menu.set(switchAt, new ImmutableInstruction31t(Opcode.PACKED_SWITCH, 2, units(menu, payloadAt) - units(menu, switchAt)));
+        }
+        if (handlerCover >= 0) menuTries = List.of(tryBlock(units(menu, handlerCover), menu.get(handlerCover).getCodeUnits(), units(menu, rowAt)));
 
         List<ClassDef> classes = new ArrayList<>();
         classes.add(featureClass(POST_MENU, OBJECT, List.of(featureField(POST_MENU, "post", FEATURE_MEDIA), featureField(POST_MENU, "activity", ACTIVITY),
                 featureField(POST_MENU, "controller", MENU_CONTROLLER), featureField(POST_MENU, "item", OBJECT)),
-                define(POST_MENU, "invoke", OBJECT, false, body(16, menu.toArray(new Instruction[0])), OBJECT, OBJECT)));
+                define(POST_MENU, "invoke", OBJECT, false, menuTries == null ? body(16, menu.toArray(new Instruction[0]))
+                        : body(16, menuTries, menu.toArray(new Instruction[0])), OBJECT, OBJECT)));
         List<Instruction> header = new ArrayList<>(List.of(string(0, MENU_NOTE + "88)")));
         if (hooked && fault.equals("save-duplicate") || patched && fault.equals("save-omitted-add"))
             header.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 1, 2, ADD_SAVE_ROW));
@@ -3460,6 +3476,11 @@ public class BadDexFixture {
             dexes.put("features-bad-save-" + fault, featureBuild(true, Set.of("saveMedia"), 0, "save-" + fault));
         }
         dexes.put("features-save-bypass-clean", featureBuild(false, Set.of(), 0, "save-bypass"));
+        // A case of a switch and an exception handler aimed at the row call are Threads' own too.
+        for (String fault : List.of("switch-case", "handler-edge")) {
+            dexes.put("features-bad-save-" + fault, featureBuild(true, Set.of("saveMedia"), 0, "save-" + fault));
+            dexes.put("features-save-" + fault + "-clean", featureBuild(false, Set.of(), 0, "save-" + fault));
+        }
         for (String fault : List.of("omitted-menu", "omitted-add", "omitted-show", "omitted-media", "omitted-activity", "omitted-dismiss",
                 "omitted-bridge", "omitted-bridge-int", "omitted-status")) {
             dexes.put("features-bad-save-" + fault, featureBuild(true, Set.of(), 0, "save-" + fault));
