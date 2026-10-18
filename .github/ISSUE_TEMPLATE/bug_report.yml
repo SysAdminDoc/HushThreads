@@ -18,7 +18,7 @@ body:
     attributes:
       label: HushThreads and Threads versions
       description: Long-press the Threads icon and tap HushThreads, or open Threads' App info page and tap Additional settings in the app. Copy the version line under the HushThreads title. If the screen opens on category pages, open About and copy the Version line.
-      placeholder: Version 0.0.14 for Threads 451.0.0.51.80
+      placeholder: Version 0.0.15 for Threads 451.0.0.51.80
     validations:
       required: true
   - type: input
