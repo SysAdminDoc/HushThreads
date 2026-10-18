@@ -751,7 +751,8 @@ try {
     $browserDirectFaults = @('lead-missing', 'lead-url', 'lead-double-open', 'lead-parameter', 'ad-missing', 'ad-url', 'ad-context', 'ad-double-open', 'ad-return', 'ad-bypass', 'ad-live',
         'media-missing', 'media-url', 'media-context', 'media-double-open', 'media-false', 'media-uninitialized', 'media-live', 'media-bypass', 'factory-hook', 'immersive-hook', 'omitted-body')
     # Each scratch fault reaches one part of the liveness check: the media one both edges, the ad one
-    # the hook site only, the lead one the locals bound only.
+    # the hook site only, the lead one the locals bound only. The completion edge alone takes a stock
+    # shape of its own, checked after these.
     $browserScratchFaults = @('lead-parameter', 'ad-live', 'media-live')
     foreach ($fault in $browserDirectFaults) {
         $case = "features-bad-browser-direct-$fault"
@@ -768,6 +769,22 @@ try {
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
+    # A media caller whose stock completion logs and answers the Intent it opened, v2, which the
+    # factory's answer writes after the hook site: v2 is dead where the hook goes in and live where its
+    # success goes. The hook taking v2 for its link is otherwise the good build's, so only the
+    # completion edge of the liveness check can refuse it, and every FAIL has to be that check's.
+    $browserCompletionClean = New-DexApk -Name 'features-browser-completion-live-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-browser-completion-live-clean') })
+    $browserCompletionApk = New-DexApk -Name 'features-bad-browser-direct-media-completion-live' -Entries ([ordered]@{
+        'classes.dex' = (Get-Dex 'features-bad-browser-direct-media-completion-live') })
+    $browserCompletion = Invoke-DexDiff -Clean $browserCompletionClean -Patched $browserCompletionApk -Allowlist $emptyAllowlist `
+        -Name 'features-bad-browser-direct-media-completion-live' -Contracts $contracts -Features 'openLinksExternally'
+    $browserCompletionFindings = Get-Findings $browserCompletion
+    Assert-True ($browserCompletion.ExitCode -ne 0 -and $browserCompletionFindings.Fails.Count -gt 0 -and
+        @($browserCompletionFindings.Fails | Where-Object { -not $_.Contains('contract: openLinksExternally: direct browser hook clobbers a live local') }).Count -eq 0) `
+        ("media-completion-live was not rejected solely by the browser liveness check. " + ($browserCompletion.Output -join [Environment]::NewLine))
+    $browserCompletionStructural = Invoke-DexDiff -Clean $browserCompletionClean -Patched $browserCompletionApk -Allowlist $emptyAllowlist `
+        -Name 'features-bad-browser-direct-media-completion-live-structural'
+    Assert-True ($browserCompletionStructural.ExitCode -eq 0 -and (Get-Findings $browserCompletionStructural).Fails.Count -eq 0) 'media-completion-live was not structurally valid.'
     # Search's Follow suggestions carousel, with Hide suggested users selected and then left out. Each
     # fault breaks one part of the contract and is refused by that part: the hook's call and answer,
     # its fail-open test, one call in all of Threads, the empty side it leaves by, a dead local, and
@@ -1471,7 +1488,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 9) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $profileFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $copyTextFaults.Count + $saveMediaFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 12) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 9) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $profileFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $copyTextFaults.Count + $saveMediaFaults.Count + $liveFaults.Count + 3 + $suggestionFaults.Count + $omittedFaults.Count + 12) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'

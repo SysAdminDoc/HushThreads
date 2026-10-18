@@ -2219,7 +2219,11 @@ public class BadDexFixture {
                 opened = code.size(); code.add(new ImmutableInstruction11n(Opcode.CONST_4, 0, 1));
                 code.add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, 1, 14));
                 code.add(invoke(method("Lfixture/State;", "set", "V", state, "Z"), 1, 0));
-                code.add(staticField(Opcode.SGET_OBJECT, 2, "Lfixture/Unit;", "INSTANCE", "Lfixture/Unit;")); code.add(op(Opcode.RETURN_OBJECT, 2));
+                // completion-live's stock completion logs the Intent it opened and answers it, so v2,
+                // which the factory's answer writes after the hook site, is live past the completion.
+                code.add(fault.equals("browser-direct-media-completion-live") ? invoke(method("Lfixture/BrowserView;", "opened", "V", intent), 2)
+                        : staticField(Opcode.SGET_OBJECT, 2, "Lfixture/Unit;", "INSTANCE", "Lfixture/Unit;"));
+                code.add(op(Opcode.RETURN_OBJECT, 2));
                 failed = code.size(); code.add(new ImmutableInstruction11n(Opcode.CONST_4, 0, 0));
                 int back = code.branch(new com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction20t(Opcode.GOTO_16, 1)); code.to(back, opened + 1);
                 done = opened;
@@ -2259,8 +2263,11 @@ public class BadDexFixture {
             // media-live reuses v14, read on both edges. ad-live reuses v5, which the factory's range
             // call reads and the ad's return-void completion doesn't, so only the hook-site check sees
             // it. lead-parameter takes v10, a parameter nothing reads, so only the locals bound does.
+            // media-completion-live takes v2, which the factory's answer writes before anything reads
+            // it, and which its own stock build's completion reads, so only the completion edge does.
             int start = size(), scratch = 0, link = fault.equals("browser-direct-media-live") && !entry ? 14
-                    : fault.equals("browser-direct-ad-live") && !entry ? 5 : fault.equals("browser-direct-lead-parameter") && entry ? 10 : entry ? 1 : 3;
+                    : fault.equals("browser-direct-ad-live") && !entry ? 5 : fault.equals("browser-direct-lead-parameter") && entry ? 10
+                    : fault.equals("browser-direct-media-completion-live") && !entry ? 2 : entry ? 1 : 3;
             add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, scratch, context));
             add(new ImmutableInstruction22x(Opcode.MOVE_OBJECT_FROM16, link, url)); add(invoke(LINK_OPENER, scratch, link)); add(op(Opcode.MOVE_RESULT, scratch));
             int declined = branch(ifEqz(scratch, 1));
@@ -3295,6 +3302,9 @@ public class BadDexFixture {
             dexes.put("features-bad-browser-direct-" + fault, featureBuild(true, Set.of("openLinksExternally"), 0, "browser-direct-" + fault));
         }
         dexes.put("features-bad-browser-direct-omitted-body", featureBuild(true, Set.of(), 0, "browser-direct-omitted-body"));
+        // The media caller whose completion reads what the hook site doesn't is Threads' own shape, so it has a clean build of its own.
+        dexes.put("features-browser-completion-live-clean", featureBuild(false, Set.of(), 0, "browser-direct-media-completion-live"));
+        dexes.put("features-bad-browser-direct-media-completion-live", featureBuild(true, Set.of("openLinksExternally"), 0, "browser-direct-media-completion-live"));
         // Search's Follow suggestions carousel, Hide suggested users alone, and then left out.
         for (String fault : List.of("missing", "inverted", "ignored", "target", "double", "stray", "live-start", "live-away", "parameter", "body")) {
             dexes.put("features-bad-search-carousel-" + fault, featureBuild(true, Set.of("hideSuggestedUsers"), 0, "search-carousel-" + fault));

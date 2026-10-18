@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** The final APK check's browser guard has a test build only its completion half can catch: a link hook on a register that's free where the hook goes in but read again once the link has opened. No test build failed that half alone before, so losing it would have gone unnoticed.
+
 * **Tooling:** Save's final APK contract got stricter. A branch inside the post menu's Copy link case that jumps straight to the row call would skip the Save row, so the patch and the check both refuse one now. Share's jump onto Copy link's row still works. Every static method on the media bridge class has to be a bridge the patch writes, and written, so one left empty or one the patch doesn't know fails. A build without Save has every bridge and the activity reader checked as shipped, and a changed menu is reported at the first instruction that differs.
 
 * **Threads:** Disable video autoplay now also tells Threads' video prefetcher to hold off. The switch only held a feed video at its cover frame, so Threads could still start downloading a held video ahead of time. The patch now answers the prefetcher's autoplay-off question itself, only where the prefetcher asks it, so Instagram's older autoplay checker is left alone. With the switch off, paused or in safe mode, Threads' own answer goes back as before.
