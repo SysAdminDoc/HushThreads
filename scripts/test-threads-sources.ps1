@@ -527,7 +527,8 @@ function New-FakeAnswers {
     }
     return $answers
 }
-$fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Collections.Generic.List[object]) }
+$fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Collections.Generic.List[object])
+    Sleeps = (New-Object System.Collections.Generic.List[double]) }
 
 & {
     # Stands in for every request the audit makes, so no case needs the network. A request it
@@ -578,18 +579,32 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
         }
         if ($null -eq $answer) { throw "The audit made a request no stand-in answers: $url" }
         if ($answer.ContainsKey('Unreachable')) { throw 'The remote name could not be resolved' }
-        if ($answer.Status -ne 200) {
-            $failure = New-Object System.Exception "Response status code does not indicate success: $($answer.Status)."
-            Add-Member -InputObject $failure -NotePropertyName Response -NotePropertyValue ([pscustomobject]@{ StatusCode = $answer.Status })
+        # A queue of rate limits to answer first, each with the headers it carries.
+        $status = $answer.Status
+        $headers = @{}
+        if ($answer.ContainsKey('LimitedFirst') -and $answer.LimitedFirst.Count -gt 0) {
+            $status = 429
+            $headers = $answer.LimitedFirst.Dequeue()
+        }
+        if ($status -ne 200) {
+            $failure = New-Object System.Exception "Response status code does not indicate success: $status."
+            Add-Member -InputObject $failure -NotePropertyName Response -NotePropertyValue ([pscustomobject]@{ StatusCode = $status; Headers = $headers })
             throw $failure
         }
         return [pscustomobject]@{ StatusCode = 200; Content = [string]$answer.Content }
+    }
+
+    # Records each wait instead of sleeping.
+    function Start-Sleep {
+        param([double]$Seconds, [int]$Milliseconds)
+        $fakeForge.Sleeps.Add($(if ($PSBoundParameters.ContainsKey('Seconds')) { $Seconds } else { $Milliseconds / 1000 }))
     }
 
     function Invoke-Audit {
         param([hashtable]$Extra = @{})
         $report = Join-Path $caseRoot ('report-' + [guid]::NewGuid().ToString('N') + '.json')
         $fakeForge.Requests.Clear()
+        $fakeForge.Sleeps.Clear()
         $arguments = @{ Root = $fixtureRoot; GitHubToken = $fakeToken; SkipGitLabCodeSearch = $true; SearchDelaySeconds = 0
             RateLimitWaitSeconds = 0; Today = '2026-09-25'; ReportPath = $report }
         foreach ($key in $Extra.Keys) { $arguments[$key] = $Extra[$key] }
@@ -656,13 +671,18 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
 
     # -SkipGitLabCodeSearch holds with GITLAB_TOKEN set, as the audit's help tells a maintainer to
     # set it: no GitLab search goes out and the census keeps recording the skip.
-    $env:GITLAB_TOKEN = 'fixture-gitlab-' + [guid]::NewGuid().ToString('N')
+    $fakeGitLabToken = 'fixture-gitlab-' + [guid]::NewGuid().ToString('N')
+    $env:GITLAB_TOKEN = $fakeGitLabToken
     try { $withToken = Invoke-Audit } finally { $env:GITLAB_TOKEN = $null }
     Assert-True ($withToken.ExitCode -eq 0) "The audit refused a clean fixture once GITLAB_TOKEN was set with -SkipGitLabCodeSearch: $($withToken.Said)"
     Assert-True (@($fakeForge.Requests | Where-Object { $_.Uri -like 'https://gitlab.com/api/v4/search*' }).Count -eq 0) `
         'GitLab code search ran although -SkipGitLabCodeSearch was passed.'
     Assert-True (@(([IO.File]::ReadAllText($fixtureLedgerPath) | ConvertFrom-Json).census.skipped) -contains 'gitlab-code-search') `
         'The census stopped recording the GitLab skip because a token was set.'
+    # The run log says whether GitLab was read with a token, without printing it.
+    Assert-True ($withToken.Said -like '*GitLab reads: with a GitLab token*' -and $withToken.Said.IndexOf($fakeGitLabToken) -lt 0) `
+        "The run log did not say GitLab was read with a token, or it printed the token: $($withToken.Said)"
+    Assert-True ($clean.Said -like '*GitLab reads: without a token*') "The run log did not say GitLab was read without a token: $($clean.Said)"
     Reset-FixtureLedger
 
     # -ValidateOnly and an invalid ledger never reach the network.
@@ -928,6 +948,43 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
 
     $fakeForge.Answers.awesome = @{ Status = 500; Content = $null }
     Assert-Drift 'source-failed' '*Awesome Morphe could not be read*' 'An index that could not be read'
+    $fakeForge.Answers = New-FakeAnswers
+
+    # A rate limit is waited out until the reset the answer names: Retry-After in seconds or as a
+    # date, or GitLab's RateLimit-Reset in seconds since 1970, one second past it and never past the
+    # cap. An answer naming no reset waits RateLimitWaitSeconds, and a fourth limit is a failure.
+    function Set-LimitedForks {
+        param([object[]]$Headers)
+        $queue = New-Object 'System.Collections.Generic.Queue[object]'
+        foreach ($set in $Headers) { $queue.Enqueue($set) }
+        $fakeForge.Answers.gammaForks.LimitedFirst = $queue
+    }
+    $limitCases = @(
+        @{ Case = 'A Retry-After in seconds'; Headers = { @{ 'Retry-After' = '7' } }; Low = 8; High = 8; Named = $true }
+        @{ Case = 'A Retry-After date'; Headers = { @{ 'Retry-After' = [DateTimeOffset]::UtcNow.AddSeconds(30).ToString('r') } }
+            Low = 29; High = 32; Named = $true }
+        @{ Case = "GitLab's RateLimit-Reset"; Headers = { @{ 'RateLimit-Reset' = [string]([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 20) } }
+            Low = 19; High = 22; Named = $true }
+        @{ Case = 'An answer naming no reset'; Headers = { @{} }; Low = 5; High = 5; Named = $false; Extra = @{ RateLimitWaitSeconds = 5 } }
+        @{ Case = 'A reset past the cap'; Headers = { @{ 'Retry-After' = '100000' } }; Low = 900; High = 900; Named = $true }
+    )
+    foreach ($limit in $limitCases) {
+        Set-LimitedForks @(& $limit.Headers)
+        $limitArguments = if ($limit.Extra) { $limit.Extra } else { @{} }
+        $result = Invoke-Audit $limitArguments
+        $waits = @($fakeForge.Sleeps | Where-Object { $_ -gt 0 })
+        Assert-True ($result.ExitCode -eq 0) "$($limit.Case) was not waited out: $($result.Said)"
+        Assert-True ($waits.Count -eq 1 -and $waits[0] -ge $limit.Low -and $waits[0] -le $limit.High) `
+            "$($limit.Case) waited $($waits -join ', ') s, not $($limit.Low) to $($limit.High) s."
+        Assert-True (($result.Said -like '*rate limited on gitlab.com*for the reset it names*') -eq $limit.Named) `
+            "$($limit.Case) did not say whether it waited for a named reset: $($result.Said)"
+        Reset-FixtureLedger
+        $fakeForge.Answers = New-FakeAnswers
+    }
+    Set-LimitedForks @(@{ 'Retry-After' = '3' }, @{ 'Retry-After' = '3' }, @{ 'Retry-After' = '3' }, @{ 'Retry-After' = '3' })
+    Assert-Drift 'source-failed' '*forks of fixture-group/gamma-patches answered HTTP 429*' 'A rate limit that outlasts three waits'
+    Assert-True (@($fakeForge.Sleeps | Where-Object { $_ -gt 0 }).Count -eq 3) `
+        "A rate limit that outlasts three waits was waited out $(@($fakeForge.Sleeps | Where-Object { $_ -gt 0 }).Count) time(s), not 3."
     $fakeForge.Answers = New-FakeAnswers
 
     # GitLab code search needs a token, or an explicit skip the census records.

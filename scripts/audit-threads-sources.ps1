@@ -60,8 +60,10 @@ param(
     [string]$Today,
     # GitHub allows ten code searches a minute.
     [double]$SearchDelaySeconds = 7,
-    # How long to wait out a rate limit before trying again.
+    # How long to wait out a rate limit before trying again, when the answer doesn't say when it resets.
     [int]$RateLimitWaitSeconds = 61,
+    # The longest wait for a reset the answer names.
+    [int]$MaxRateLimitWaitSeconds = 900,
     # How much of Jman's registry list one run reads before it reports the census incomplete.
     [int]$RegistryMaxRequests = 10,
     [int]$RegistryMaxRows = 1000
@@ -173,6 +175,8 @@ if (-not $GitLabToken -and -not $SkipGitLabCodeSearch) {
 }
 # The switch wins over a token in the environment, which still authenticates the ledger's GitLab reads.
 $searchGitLab = [bool]$GitLabToken -and -not $SkipGitLabCodeSearch
+# gitlab.com rate limits reads without a token much sooner, so a run log says which kind it made.
+Write-Step $(if ($GitLabToken) { 'GitLab reads: with a GitLab token' } else { 'GitLab reads: without a token, which gitlab.com rate limits sooner' })
 
 # --- requests --------------------------------------------------------------------------------
 
@@ -180,7 +184,8 @@ function Invoke-SourceRequest {
     <#
         One GET, answering Status and Content. A 4xx or 5xx answer comes back as its status with no
         content, since a repository that's gone is a finding and not a crash; only a request that
-        never got an answer throws. A rate limit is waited out, three times at most.
+        never got an answer throws. A rate limit is waited out, three times at most, until the reset
+        the answer names or, when it names none, for RateLimitWaitSeconds.
     #>
     param([Parameter(Mandatory = $true)][string]$Uri, [string]$Auth = 'plain')
 
@@ -211,13 +216,66 @@ function Invoke-SourceRequest {
             $said = "$($_.ErrorDetails.Message) $($_.Exception.Message)"
             $limited = $status -eq 429 -or ($status -eq 403 -and $said -match '(?i)rate limit')
             if ($limited -and $attempt -lt 4) {
-                Write-Step "rate limited on $([Uri]$Uri | ForEach-Object { $_.Host }), waiting $RateLimitWaitSeconds s"
-                Start-Sleep -Seconds $RateLimitWaitSeconds
+                $reset = Get-RateLimitReset $answer.Value
+                $wait = if ($null -eq $reset) { $RateLimitWaitSeconds } else { [Math]::Min($reset, $MaxRateLimitWaitSeconds) }
+                $named = if ($null -eq $reset) { '' } else { " for the reset it names" }
+                Write-Step "rate limited on $([Uri]$Uri | ForEach-Object { $_.Host }), waiting $wait s$named"
+                Start-Sleep -Seconds $wait
                 continue
             }
             return [pscustomobject]@{ Status = $status; Content = $null }
         }
     }
+}
+
+function Get-AnswerHeader {
+    <#
+        The first value of the header [Name] on a failed answer, or $null: a WebHeaderCollection
+        under Windows PowerShell, HttpResponseHeaders under PowerShell 7, or a plain dictionary.
+    #>
+    param($Response, [string]$Name)
+    $headers = $Response.PSObject.Properties['Headers']
+    if ($null -eq $headers -or $null -eq $headers.Value) { return $null }
+    $all = $headers.Value
+    if ($all -is [System.Collections.IDictionary] -or $all -is [System.Collections.Specialized.NameValueCollection]) {
+        $value = $all[$Name]
+        return $(if ($null -eq $value) { $null } else { [string](@($value)[0]) })
+    }
+    $values = $null
+    if ($all.PSObject.Methods['TryGetValues'] -and $all.TryGetValues($Name, [ref]$values)) { return [string](@($values)[0]) }
+    return $null
+}
+
+function Get-RateLimitReset {
+    <#
+        How many seconds until a rate-limited answer says its limit resets, or $null when it
+        doesn't say. Retry-After is seconds or a date. RateLimit-Reset and X-RateLimit-Reset are
+        seconds since 1970 on GitLab and GitHub, and seconds from now in the IETF draft, told
+        apart by size. One second more than named, so the retry lands after the reset.
+    #>
+    param($Response)
+    $now = [DateTimeOffset]::UtcNow
+    $retry = Get-AnswerHeader $Response 'Retry-After'
+    $seconds = $null
+    if ($retry) {
+        $number = 0L
+        $date = [DateTimeOffset]::MinValue
+        if ([long]::TryParse($retry.Trim(), [ref]$number)) { $seconds = $number }
+        elseif ([DateTimeOffset]::TryParse($retry, [Globalization.CultureInfo]::InvariantCulture,
+            [Globalization.DateTimeStyles]::AssumeUniversal, [ref]$date)) { $seconds = [long][Math]::Ceiling(($date - $now).TotalSeconds) }
+    }
+    if ($null -eq $seconds) {
+        foreach ($name in @('RateLimit-Reset', 'X-RateLimit-Reset')) {
+            $reset = Get-AnswerHeader $Response $name
+            $number = 0L
+            if ($reset -and [long]::TryParse($reset.Trim(), [ref]$number)) {
+                $seconds = if ($number -gt 1000000000) { $number - $now.ToUnixTimeSeconds() } else { $number }
+                break
+            }
+        }
+    }
+    if ($null -eq $seconds) { return $null }
+    return [long][Math]::Max(1L, $seconds + 1)
 }
 
 function ConvertFrom-SourceJson {

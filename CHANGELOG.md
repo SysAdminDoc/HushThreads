@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** The source census now waits out a rate limit for as long as the answer says. GitLab throttles unauthenticated reads and answers 429 with the time its limit resets, and the census used to wait a flat 61 seconds, so a long reset used up its three tries and failed the run. It waits until the reset that Retry-After (seconds or a date), RateLimit-Reset or X-RateLimit-Reset names, plus a second, capped at 15 minutes by `-MaxRateLimitWaitSeconds`. An answer that names no reset still waits `-RateLimitWaitSeconds`, and a fourth limit in a row still fails the source. The run log also says whether GitLab was read with a token, since a token raises the limit.
+
 * **Tooling:** The source census reads the Morphe Patch Tracker again. Its list now carries a couple of bundles twice under keys that differ only in case (immortalzeus:dev and ImmortalZeus:dev), and the census refused the whole file as unreadable JSON. It reads those keys as they are now and counts each repository once, in PowerShell 7 and Windows PowerShell 5.1 alike.
 
 * **Tooling:** The final APK check now holds Hide suggested users on profiles to its own contract. It finds both places from the clean DEX alone: the profile screen's suggested accounts carousel, which has to hand its list to the extension right before Threads' own null check and cast the answer back, and the header row, which has to ask first thing on its path and leave by its check's other side through a local nothing reads. A build without the patch has to leave both as Threads wrote them, with no call to the extension anywhere.
