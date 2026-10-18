@@ -1983,6 +1983,11 @@ public class DexDiff {
     private static final String RESET_TO_HOME_FEED = "reset_to_home_feed";
     private static final String BADGE_DECISION = "badge_decision";
     private static final String HOLD_VIDEO = "Lapp/morphe/extension/hushthreads/feed/VideoAutoplay;->play(Z)Z";
+    private static final String SKIP_PREFETCH = "Lapp/morphe/extension/hushthreads/feed/VideoAutoplay;->skipPrefetch(Z)Z";
+    /** The two flag names Instagram's autoplay-off check holds, and the string the video prefetch dispatcher queues under. */
+    private static final String AUTOPLAY_OFF = "ig_disable_video_autoplay";
+    private static final String AUTOPLAY_OFF_OLYMPUS = "ig_olympus_disable_video_autoplay";
+    private static final String PREFETCH_DISPATCHER = "VideoPrefetchDispatcher.queue";
     /** Compose's notes naming Threads' video in a post and the effect that starts its player. They name the source file, so they survive Redex. */
     private static final String POST_VIDEO_NOTE = "com.instagram.barcelona.feed.post.video.PostVideo (PostVideo.kt:";
     private static final String PLAYBACK_EFFECT_NOTE = "com.instagram.video.player.compose.VideoPlaybackEffect (VideoPlaybackEffect.kt:";
@@ -4479,6 +4484,90 @@ public class DexDiff {
             calls.put(featureSig(caller), e.getValue().size());
         }
         featureHostCalls(patched, HOLD_VIDEO, calls);
+        featureVideoPrefetch(clean, patched);
+    }
+
+    /**
+     * Where the video prefetcher asks Instagram's autoplay-off check: the static one-object boolean
+     * [check] holding both flag names, the [dispatcher] holding "VideoPrefetchDispatcher.queue", the
+     * [skip] test it calls that calls the check, the check's call at [call] followed by its
+     * move-result and the if-nez at [test] reading it from [register], the [siblings] holding the
+     * Olympus name without the check's, and the check's [others] callers, Instagram's legacy checker.
+     */
+    private record PrefetchSites(Method check, Method dispatcher, Method skip, int call, int test, int register,
+            List<Method> siblings, List<Method> others) {}
+
+    private static PrefetchSites featurePrefetchSites(Map<String, List<Method>> clean) {
+        Method check = featureTarget(clean, m -> AccessFlags.STATIC.isSet(m.getAccessFlags()) && m.getReturnType().equals("Z")
+                && m.getParameterTypes().size() == 1 && m.getParameterTypes().get(0).toString().startsWith("L")
+                && holds(m, AUTOPLAY_OFF, AUTOPLAY_OFF_OLYMPUS), "Instagram's autoplay-off check");
+        String checkSig = featureSig(check);
+        Method dispatcher = featureTarget(clean, m -> holds(m, PREFETCH_DISPATCHER), "video prefetch dispatcher");
+        Set<String> callees = new TreeSet<>();
+        for (Instruction i : instructions(dispatcher)) {
+            if (!isStaticInvoke(i.getOpcode()) || !(((ReferenceInstruction) i).getReference() instanceof MethodReference)) continue;
+            MethodReference callee = (MethodReference) ((ReferenceInstruction) i).getReference();
+            List<Method> found = clean.get(featureSig(callee));
+            if (callee.getReturnType().equals("Z") && found != null && found.size() == 1
+                    && !callSites(instructions(found.get(0)), checkSig).isEmpty()) callees.add(featureSig(callee));
+        }
+        Method skip = featureMethod(clean, featureOne(new ArrayList<>(callees), "the prefetch skip test"));
+        List<Instruction> body = instructions(skip);
+        int call = featureOne(callSites(body, checkSig), "the skip test's call to the autoplay-off check");
+        requireFeature(call + 2 < body.size() && body.get(call + 1).getOpcode() == Opcode.MOVE_RESULT
+                && body.get(call + 2).getOpcode() == Opcode.IF_NEZ && registerA(body.get(call + 2)) == registerA(body.get(call + 1)),
+                featureSig(skip) + " doesn't test the autoplay-off check's answer straight away");
+        List<Method> siblings = new ArrayList<>(), others = new ArrayList<>();
+        for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+            if (m == skip || m == check) continue;
+            if (holds(m, AUTOPLAY_OFF_OLYMPUS)) siblings.add(m);
+            if (!callSites(instructions(m), checkSig).isEmpty()) others.add(m);
+        }
+        requireFeature(!others.isEmpty(), "no method but the skip test calls the autoplay-off check");
+        return new PrefetchSites(check, dispatcher, skip, call, call + 2, registerA(body.get(call + 1)), siblings, others);
+    }
+
+    /**
+     * Disable video autoplay also holds the video prefetcher: the skip test, the one place the
+     * dispatcher's prefetch asks Instagram's autoplay-off check, hands the check's answer to the
+     * extension right before its if-nez, in the register that if-nez reads and the answer comes
+     * back in, with every branch to the if-nez landing on the call. The if-nez, its target, the
+     * check, its Olympus sibling, Instagram's legacy checker and the dispatcher stay as Threads
+     * wrote them, and nothing but the skip test calls skipPrefetch, once.
+     */
+    private static void featureVideoPrefetch(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        PrefetchSites sites = featurePrefetchSites(clean);
+        String skipSig = featureSig(sites.skip());
+        Map<String, Integer> found = new TreeMap<>();
+        for (List<Method> definitions : patched.values()) for (Method m : definitions) {
+            if (m.getDefiningClass().startsWith(OWN)) continue;
+            int count = callSites(instructions(m), SKIP_PREFETCH).size();
+            if (count > 0) found.merge(featureSig(m), count, Integer::sum);
+        }
+        for (String caller : found.keySet()) requireFeature(caller.equals(skipSig), "skipPrefetch is called from " + caller + ", not only from the prefetch skip test " + skipSig);
+        int calls = found.getOrDefault(skipSig, 0);
+        requireFeature(calls > 0, "the prefetch skip test " + skipSig + " never calls skipPrefetch");
+        requireFeature(calls == 1, "the prefetch skip test " + skipSig + " calls skipPrefetch " + calls + " times");
+        Method actual = featureMethod(patched, skipSig);
+        List<Instruction> now = instructions(actual);
+        int at = callSites(now, SKIP_PREFETCH).get(0), register = sites.register();
+        List<Integer> asks = callSites(now, featureSig(sites.check()));
+        requireFeature(asks.size() == 1 && at == asks.get(0) + 2 && now.get(asks.get(0) + 1).getOpcode() == Opcode.MOVE_RESULT,
+                "skipPrefetch isn't right after the autoplay-off check's move-result in " + skipSig);
+        requireFeature(isStaticInvoke(now.get(at).getOpcode()) && Arrays.equals(invokeRegisters(now.get(at)), new int[]{register}),
+                "skipPrefetch is passed " + Arrays.toString(invokeRegisters(now.get(at))) + ", not the check's answer in v" + register);
+        requireFeature(now.get(at + 1).getOpcode() == Opcode.MOVE_RESULT && registerA(now.get(at + 1)) == register,
+                "skipPrefetch's answer doesn't go back into v" + register);
+        featureBody(sites.skip(), actual, 0, Map.of(sites.test(), register), SKIP_PREFETCH);
+        featurePrefetchKept(clean, patched, sites);
+    }
+
+    /** The check, its Olympus siblings, Instagram's other callers of the check and the dispatcher, as Threads wrote them. */
+    private static void featurePrefetchKept(Map<String, List<Method>> clean, Map<String, List<Method>> patched, PrefetchSites sites) {
+        List<Method> kept = new ArrayList<>(List.of(sites.check(), sites.dispatcher()));
+        kept.addAll(sites.siblings());
+        kept.addAll(sites.others());
+        for (Method m : kept) featureBody(m, featureMethod(patched, featureSig(m)), 0, Map.of(), SKIP_PREFETCH);
     }
 
     /** A defaulted call's hook: [mask] in its mask's register, [value] in the flag's, then the question on the flag. */
@@ -5420,12 +5509,18 @@ public class DexDiff {
 
     /**
      * Left out, Disable video autoplay makes no call and leaves PostVideo, its effect, the viewer
-     * and the feed posts, Instagram posts, trend previews and ad cards that call it as Threads wrote them.
+     * and the feed posts, Instagram posts, trend previews and ad cards that call it, and the
+     * prefetch skip test with the check and the methods around it, as Threads wrote them.
      */
     private static void featureOmittedVideoAutoplay(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
         featureHostCalls(patched, HOLD_VIDEO, Map.of());
+        featureHostCalls(patched, SKIP_PREFETCH, Map.of());
         VideoSites sites = featureVideoSites(clean);
-        Set<String> hooked = new HashSet<>(List.of(featureSig(sites.postVideo()), featureSig(sites.effect())));
+        PrefetchSites prefetch = featurePrefetchSites(clean);
+        Set<String> hooked = new HashSet<>(List.of(featureSig(sites.postVideo()), featureSig(sites.effect()), featureSig(prefetch.skip())));
+        for (Method kept : List.of(prefetch.check(), prefetch.dispatcher())) hooked.add(featureSig(kept));
+        for (Method kept : prefetch.siblings()) hooked.add(featureSig(kept));
+        for (Method kept : prefetch.others()) hooked.add(featureSig(kept));
         for (Method forwarder : sites.forwarders()) hooked.add(featureSig(forwarder));
         for (Method caller : sites.calls().keySet()) hooked.add(featureSig(caller));
         for (Method viewer : sites.viewers()) hooked.add(featureSig(viewer));

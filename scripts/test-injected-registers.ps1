@@ -1023,6 +1023,50 @@ try {
         ("autoplay-ad-live was not rejected solely by the video autoplay check of what its hook writes. " + ($autoplayLive.Output -join [Environment]::NewLine))
     $autoplayLiveStructural = Invoke-DexDiff -Clean $autoplayLiveClean -Patched $autoplayLiveApk -Allowlist $emptyAllowlist -Name 'features-bad-autoplay-ad-live-structural'
     Assert-True ($autoplayLiveStructural.ExitCode -eq 0 -and (Get-Findings $autoplayLiveStructural).Fails.Count -eq 0) 'autoplay-ad-live was not structurally valid.'
+    # The video prefetcher's skip test, selected alone: one build per way the hook can be wrong, each
+    # refused by its own check with its own message and nothing else. The call missing, the 0 in v1
+    # passed instead of the check's answer in v0, the answer dropped or moved into v1, the call put
+    # after the if-nez, a second call, the call in Instagram's legacy checker as well, and the skip
+    # test's branch back to the if-nez landing past the call; then one body changed with the hook
+    # right: the skip test's skip answer, the check's or its Olympus sibling's answer, the legacy
+    # checker's answer overwritten, or the dispatcher's call to the skip test dropped. Then the
+    # feature left out, with the call written anyway or one of those bodies changed. All are
+    # structurally valid.
+    $prefetchSkip = 'Lfixture/Prefetch;->skip(Ljava/lang/Object;)Z'
+    $prefetchBodies = [ordered]@{
+        'skip' = "$prefetchSkip changed original instruction 7"
+        'check' = 'Lfixture/Prefetch;->check(Ljava/lang/Object;)Z changed original instruction 2'
+        'sibling' = 'Lfixture/Prefetch;->sibling(Ljava/lang/Object;Ljava/lang/Object;)Z changed original instruction 1'
+        'legacy' = 'Lfixture/Prefetch;->legacy(Ljava/lang/Object;)Z changed original instruction 2'
+        'dispatch' = 'Lfixture/Prefetch;->dispatch(Ljava/lang/Object;)V changed original instruction 1'
+    }
+    $prefetchFaults = [ordered]@{
+        'prefetch-missing' = "the prefetch skip test $prefetchSkip never calls skipPrefetch"
+        'prefetch-register' = "skipPrefetch is passed [1], not the check's answer in v0"
+        'prefetch-dropped' = "skipPrefetch's answer doesn't go back into v0"
+        'prefetch-answer-moved' = "skipPrefetch's answer doesn't go back into v0"
+        'prefetch-after-test' = "skipPrefetch isn't right after the autoplay-off check's move-result in $prefetchSkip"
+        'prefetch-twice' = "the prefetch skip test $prefetchSkip calls skipPrefetch 2 times"
+        'prefetch-legacy' = "skipPrefetch is called from Lfixture/Prefetch;->legacy(Ljava/lang/Object;)Z, not only from the prefetch skip test $prefetchSkip"
+        'prefetch-branch-past' = "$prefetchSkip bypasses a hook or changes a branch target"
+        'prefetch-omitted-call' = "Lapp/morphe/extension/hushthreads/feed/VideoAutoplay;->skipPrefetch(Z)Z host calls differ: expected {}, found {$prefetchSkip=1}"
+    }
+    foreach ($body in $prefetchBodies.Keys) {
+        $prefetchFaults["prefetch-changed-$body"] = $prefetchBodies[$body]
+        $prefetchFaults["prefetch-omitted-$body"] = $prefetchBodies[$body]
+    }
+    foreach ($fault in $prefetchFaults.Keys) {
+        $case = "features-bad-$fault"
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $selected = if ($fault.StartsWith('prefetch-omitted-')) { 'none' } else { 'disableVideoAutoplay' }
+        $checked = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $selected
+        $findings = Get-Findings $checked
+        $expected = "[diff] FAIL: contract: disableVideoAutoplay: $($prefetchFaults[$fault])"
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -eq 1 -and $findings.Fails[0] -ceq $expected) `
+            ("$fault was not refused solely by its own prefetch check, as '$expected'. " + ($checked.Output -join [Environment]::NewLine))
+        $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
     # One build per misplaced Pure black hook, selected alone: the helper's #101010 load not asked
     # about, the theme's hook on the gray loaded before its #101010, the dark scheme's second
     # background not asked about or the hook on its third color instead, and the background hooks
@@ -1488,7 +1532,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 9) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $profileFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $copyTextFaults.Count + $saveMediaFaults.Count + $liveFaults.Count + 3 + $suggestionFaults.Count + $omittedFaults.Count + 12) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 9) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $profileFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $prefetchFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $copyTextFaults.Count + $saveMediaFaults.Count + $liveFaults.Count + 3 + $suggestionFaults.Count + $omittedFaults.Count + 12) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'

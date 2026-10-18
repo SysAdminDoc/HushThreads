@@ -1516,6 +1516,11 @@ public class BadDexFixture {
         return units;
     }
 
+    /** The code-unit address of instruction [index] in [code]. */
+    private static int units(List<Instruction> code, int index) {
+        return codeUnits(code.subList(0, index));
+    }
+
     /**
      * Threads' four return checks, each hooked where Block background-return feed refresh hooks it
      * on 450 when [hooked]. The warm-start check sets its answer true past the threshold, logs a
@@ -1645,6 +1650,71 @@ public class BadDexFixture {
                 videoCaller("viewer", "com.instagram.barcelona.feed.mediaviewer.ui.MediaViewerVideo (MediaViewerVideo.kt:90)", PLAY_DEFAULT | 0x80,
                         callers && fault.equals("autoplay-viewer") ? List.of(new ImmutableInstruction31i(Opcode.CONST, 3, 0x80)) : List.of(), false, false, false)));
         return classes;
+    }
+
+    private static final String FEATURE_PREFETCH = "Lfixture/Prefetch;";
+    private static final ImmutableMethodReference PREFETCH_CHECK = method(FEATURE_PREFETCH, "check", "Z", OBJECT);
+    private static final ImmutableMethodReference PREFETCH_SKIP = method(FEATURE_PREFETCH, "skip", "Z", OBJECT);
+    private static final ImmutableMethodReference SKIP_PREFETCH = method(FEATURE_AUTOPLAY, "skipPrefetch", "Z", "Z");
+
+    /**
+     * The video prefetcher's side of Disable video autoplay: Instagram's autoplay-off check, which
+     * holds both flag names and answers false; a sibling holding only the Olympus name; the legacy
+     * checker, which calls the check and returns its answer; the skip test, which calls the check
+     * and skips the prefetch on a true answer, and the dispatcher that holds the queue's name and
+     * calls the skip test. The skip test keeps a 0 in v1 and the check's answer in v0, and its
+     * no-skip path holds an if-nez on v1, never taken, back to the if-nez on the answer; its hook,
+     * when [hooked], asks the extension about v0 between the answer and that if-nez, and the branch
+     * back lands on the hook. Faults: no call, the 0 in v1 passed instead of the answer, the answer
+     * dropped or moved into v1, the call after the if-nez, a second call, the call in the legacy
+     * checker as well, the branch back landing on the if-nez past the call, and, with the feature
+     * left out, the call written anyway. The changed-body faults rewrite one method, with the
+     * feature selected or left out: the skip test's answer for a skip, the check's or the sibling's
+     * answer, the legacy checker's answer overwritten before it returns, or the dispatcher's call
+     * to the skip test dropped.
+     */
+    private static List<ClassDef> prefetchClasses(boolean hooked, String fault) {
+        boolean written = hooked || fault.equals("prefetch-omitted-call");
+        String changed = fault.matches("prefetch-(changed|omitted)-(skip|check|sibling|legacy|dispatch)") ? fault.substring(fault.lastIndexOf('-') + 1) : "";
+        List<Instruction> hook = new ArrayList<>();
+        if (written && !fault.equals("prefetch-missing")) {
+            int in = fault.equals("prefetch-register") ? 1 : 0;
+            hook.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, in, 1, SKIP_PREFETCH));
+            if (!fault.equals("prefetch-dropped")) hook.add(op(Opcode.MOVE_RESULT, fault.equals("prefetch-answer-moved") ? 1 : 0));
+            if (fault.equals("prefetch-twice")) hook.addAll(List.copyOf(hook));
+        }
+        boolean after = fault.equals("prefetch-after-test");
+        List<Instruction> skip = new ArrayList<>(List.of(new ImmutableInstruction11n(Opcode.CONST_4, 1, 0), invoke(PREFETCH_CHECK, 2), op(Opcode.MOVE_RESULT, 0)));
+        if (!after) skip.addAll(hook);
+        int test = skip.size();
+        skip.add(new ImmutableInstruction21t(Opcode.IF_NEZ, 0, 0));
+        if (after) skip.addAll(hook);
+        int back = skip.size();
+        skip.addAll(List.of(new ImmutableInstruction21t(Opcode.IF_NEZ, 1, 0), new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0)));
+        int yes = skip.size();
+        skip.addAll(List.of(new ImmutableInstruction11n(Opcode.CONST_4, 0, changed.equals("skip") ? 0 : 1), op(Opcode.RETURN, 0)));
+        // The branch back reaches the hook in front of the if-nez, or the if-nez itself with nothing in front of it.
+        int land = after || fault.equals("prefetch-branch-past") ? test : test - hook.size();
+        skip.set(test, new ImmutableInstruction21t(Opcode.IF_NEZ, 0, units(skip, yes) - units(skip, test)));
+        skip.set(back, new ImmutableInstruction21t(Opcode.IF_NEZ, 1, units(skip, land) - units(skip, back)));
+        List<Instruction> legacy = new ArrayList<>(List.of(invoke(PREFETCH_CHECK, 1), op(Opcode.MOVE_RESULT, 0)));
+        if (hooked && fault.equals("prefetch-legacy")) {
+            legacy.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 0, 1, SKIP_PREFETCH));
+            legacy.add(op(Opcode.MOVE_RESULT, 0));
+        }
+        if (changed.equals("legacy")) legacy.add(new ImmutableInstruction11n(Opcode.CONST_4, 0, 1));
+        legacy.add(op(Opcode.RETURN, 0));
+        List<Instruction> dispatch = new ArrayList<>(List.of(string(0, "VideoPrefetchDispatcher.queue")));
+        if (!changed.equals("dispatch")) dispatch.addAll(List.of(invoke(PREFETCH_SKIP, 2), op(Opcode.MOVE_RESULT, 1)));
+        dispatch.add(op(Opcode.RETURN_VOID));
+        return List.of(featureClass(FEATURE_PREFETCH, OBJECT, List.of(),
+                define(FEATURE_PREFETCH, "check", "Z", true, body(3, string(0, "ig_disable_video_autoplay"), string(1, "ig_olympus_disable_video_autoplay"),
+                        new ImmutableInstruction11n(Opcode.CONST_4, 0, changed.equals("check") ? 1 : 0), op(Opcode.RETURN, 0)), OBJECT),
+                define(FEATURE_PREFETCH, "sibling", "Z", true, body(4, string(0, "ig_olympus_disable_video_autoplay"),
+                        new ImmutableInstruction11n(Opcode.CONST_4, 0, changed.equals("sibling") ? 1 : 0), op(Opcode.RETURN, 0)), OBJECT, OBJECT),
+                define(FEATURE_PREFETCH, "legacy", "Z", true, body(2, legacy.toArray(new Instruction[0])), OBJECT),
+                define(FEATURE_PREFETCH, "skip", "Z", true, body(3, skip.toArray(new Instruction[0])), OBJECT),
+                define(FEATURE_PREFETCH, "dispatch", "V", true, body(3, dispatch.toArray(new Instruction[0])), OBJECT)));
     }
 
     /** A separate shortened overload shape. Its play and mask positions differ from PostVideo. */
@@ -3039,6 +3109,7 @@ public class BadDexFixture {
                 body(4, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), SHORTCUT_LIST, "Z", "Z")));
         classes.addAll(returnRefreshClasses(patched && selected.contains("returnRefresh"), fault));
         classes.addAll(videoAutoplayClasses(patched && selected.contains("disableVideoAutoplay"), fault));
+        classes.addAll(prefetchClasses(patched && selected.contains("disableVideoAutoplay"), patched ? fault : ""));
         classes.addAll(fault.startsWith("pure-black-fields") ? pureBlackFieldClasses(patched && selected.contains("pureBlack"), fault)
                 : pureBlackClasses(patched && selected.contains("pureBlack"), fault));
         classes.addAll(saveMediaClasses(patched, patched && selected.contains("saveMedia"), fault));
@@ -3102,7 +3173,8 @@ public class BadDexFixture {
                 define(FEATURE_RETURN, "resetToFeed", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z"),
                 define(FEATURE_RETURN, "warmStart", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z"),
                 define(FEATURE_RETURN, "cachedPosts", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z")));
-        classes.add(featureClass(FEATURE_AUTOPLAY, OBJECT, List.of(), define(FEATURE_AUTOPLAY, "play", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z")));
+        classes.add(featureClass(FEATURE_AUTOPLAY, OBJECT, List.of(), define(FEATURE_AUTOPLAY, "play", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z"),
+                define(FEATURE_AUTOPLAY, "skipPrefetch", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z")));
         classes.add(featureClass(FEATURE_PURE_BLACK, OBJECT, List.of(),
                 define(FEATURE_PURE_BLACK, "argb", "J", true, body(2, op(Opcode.RETURN_WIDE, 0)), "J"),
                 define(FEATURE_PURE_BLACK, "color", "J", true, body(2, op(Opcode.RETURN_WIDE, 0)), "J")));
@@ -3338,6 +3410,17 @@ public class BadDexFixture {
         for (String fault : List.of("autoplay-missing", "autoplay-register", "autoplay-inside", "autoplay-bypass",
                 "autoplay-inline-missing", "autoplay-default-ignored", "autoplay-ad-literal", "autoplay-viewer", "autoplay-ad-live")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("disableVideoAutoplay"), 0, fault));
+        }
+        // And the prefetch skip test's hook: one bad build for each thing its contract checks, then, with the
+        // feature left out, the call written anyway or one of the bodies the hook leaves alone changed.
+        for (String fault : List.of("prefetch-missing", "prefetch-register", "prefetch-dropped", "prefetch-answer-moved",
+                "prefetch-after-test", "prefetch-legacy", "prefetch-twice", "prefetch-branch-past", "prefetch-changed-skip",
+                "prefetch-changed-check", "prefetch-changed-sibling", "prefetch-changed-legacy", "prefetch-changed-dispatch")) {
+            dexes.put("features-bad-" + fault, featureBuild(true, Set.of("disableVideoAutoplay"), 0, fault));
+        }
+        for (String fault : List.of("prefetch-omitted-call", "prefetch-omitted-skip", "prefetch-omitted-check", "prefetch-omitted-sibling",
+                "prefetch-omitted-legacy", "prefetch-omitted-dispatch")) {
+            dexes.put("features-bad-" + fault, featureBuild(true, Set.of(), 0, fault));
         }
         dexes.put("features-autoplay-forward-clean", videoAutoplayForwardBuild(false, Set.of(), ""));
         dexes.put("features-autoplay-forward-good", videoAutoplayForwardBuild(true, Set.of("disableVideoAutoplay"), ""));
