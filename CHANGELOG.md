@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** The file picker behind Export settings and Import settings now has its own entry in the source ledger. Its two classes never had one, so the provenance test failed on every full run since they were added.
+
 * **Tooling:** When the final APK check catches the direct browser hook overwriting something Threads still needs, it now says which case it found. The register can be past the method's own locals, or Threads reads it right where the hook goes in, or Threads reads it once the link has opened. Each test build has to fail for its own reason, so one that trips the wrong part of the check doesn't pass anymore.
 
 * **Tooling:** Save's contract tests now cover the two other ways into Copy link's row call that would skip the Save row, a switch case and an exception handler aimed straight at it. The patch and the final APK check already refused both, but only a plain jump had a test, so losing either refusal would have gone unnoticed.

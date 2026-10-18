@@ -332,6 +332,17 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsFileGrants.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsFilePicker.java"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "An activity of HushThreads' own that opens Android's file picker for Export settings and Import settings and survives Threads rebuilding the screen, plus a written list of the lasting file grants it takes so each start lets go of any an ended process left behind, with no outside code."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/ReturnRefresh.java"
       ],
       "origin": "ported",
