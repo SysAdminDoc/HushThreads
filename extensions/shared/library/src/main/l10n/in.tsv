@@ -333,3 +333,6 @@ Takes the Follow suggestions row off the Search screen. Your searches and topics
 Not saved: the proxy wants a password. Try another network.	Tidak disimpan: proxy butuh kata sandi. Coba jaringan lain.
 # The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary. Android 12 and later cut a toast after two lines, so it stays short.
 The proxy wants a password. Try another network.	Proxy butuh kata sandi. Coba jaringan lain.
+# The switch on the Pause, backup and diagnostics page that adds or takes away the HushThreads settings shortcut in the menu a long press on Threads' launcher icon shows.
+Settings shortcut on the app icon	Pintasan pengaturan di ikon aplikasi
+Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.	Menaruh pengaturan HushThreads di menu yang muncul saat ikon Threads ditekan lama. Jika dimatikan, pintasan itu hilang dari menu tersebut, dan Anda tetap bisa membuka pengaturan ini dari baris HushThreads di pengaturan Threads atau dengan menekan lama logo Threads.

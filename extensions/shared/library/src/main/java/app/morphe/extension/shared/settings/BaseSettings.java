@@ -71,11 +71,20 @@ public class BaseSettings {
     public static final BooleanSetting HIDE_QUICK_SETUPS =
             new BooleanSetting("hushthreads_hide_quick_setups", FALSE, false, false, null, null);
 
+    /**
+     * Whether the HushThreads settings shortcut is in the menu Threads' launcher icon shows on a
+     * long press (HushFacebook#146). It's one of the ways back into the settings, so a pause leaves
+     * it as it's set, and it stays out of settings files and Quick setups.
+     */
+    public static final BooleanSetting SETTINGS_SHORTCUT =
+            new BooleanSetting("hushthreads_settings_shortcut", TRUE, false, false, null, null);
+
     static {
         // HushThreads's own state and its diagnostics, which keep working while it is paused.
         Setting.keepWhenPaused(DEBUG, DEBUG_LOG_FILTERS, CAPTURE_JAVA_CRASHES, DEBUG_STACKTRACE,
                 DEBUG_TOAST_ON_ERROR, CHECK_ENVIRONMENT_WARNINGS_ISSUED, MORPHE_LANGUAGE, SHOW_MENU_ICONS,
-                FIRST_TIME_APP_LAUNCHED, EXPERIMENTAL_APP_CONFIRMED, PAUSED, SAFE_MODE, HIDE_QUICK_SETUPS);
+                FIRST_TIME_APP_LAUNCHED, EXPERIMENTAL_APP_CONFIRMED, PAUSED, SAFE_MODE, HIDE_QUICK_SETUPS,
+                SETTINGS_SHORTCUT);
 
         final long now = System.currentTimeMillis();
 

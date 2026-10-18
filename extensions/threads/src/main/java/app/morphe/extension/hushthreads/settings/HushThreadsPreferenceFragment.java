@@ -477,6 +477,18 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 L10n.t("Turns off every HushThreads switch except Debug logging the next time Threads starts. What "
                     + "you chose when you patched stays, and your choices are saved.")), SettingsIcons.PAUSE));
         hushthreads.addPreference(mark(quickSetupsHomeRow(context), SettingsIcons.BUILD));
+        // The settings entry's own, so every build has it, and a pause leaves it as it is (HushFacebook#146).
+        SwitchPreference settingsShortcut = toggle(context, BaseSettings.SETTINGS_SHORTCUT,
+                L10n.t("Settings shortcut on the app icon"),
+                L10n.t("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that "
+                        + "menu, and you can still open these settings from the HushThreads row in Threads' settings "
+                        + "or with a long press on the Threads logo."));
+        settingsShortcut.setOnPreferenceChangeListener((preference, value) -> {
+            BaseSettings.SETTINGS_SHORTCUT.save((Boolean) value);
+            SettingsEntry.shortcutSwitchChanged(context);
+            return true;
+        });
+        hushthreads.addPreference(mark(settingsShortcut, SettingsIcons.OPENING));
         String stays = PatchFamily.staysWhilePausedSummary(build);
         // Morphe Manager can export the patch choices and the signing key, not these switches.
         hushthreads.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.EXPORT,

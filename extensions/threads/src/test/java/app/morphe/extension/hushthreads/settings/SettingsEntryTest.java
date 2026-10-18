@@ -19,6 +19,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import app.morphe.extension.shared.SettingsContextRule;
+import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.HushThreadsPause;
 import app.morphe.extension.shared.settings.PauseForTests;
 import app.morphe.extension.shared.settings.preference.ReopenSettingsAfterRestart;
@@ -178,6 +179,79 @@ public class SettingsEntryTest {
 
         org.junit.Assert.assertEquals(german, longLabel(manager));
         org.junit.Assert.assertEquals(0, shortcut(manager, SettingsEntry.SHORTCUT_ID).getRank());
+    }
+
+    /**
+     * Someone who opens the screen from the Threads logo didn't want it in the icon's long-press
+     * menu too (HushFacebook#146). Off takes it out at once and leaves Threads' own; Threads' next
+     * calls and the next start don't bring it back; on puts it back in front.
+     */
+    @Test public void theSettingsShortcutSwitchTakesTheShortcutOutAndPutsItBack() throws Exception {
+        android.content.Context context = RuntimeEnvironment.getApplication();
+        android.content.pm.ShortcutManager manager = context.getSystemService(android.content.pm.ShortcutManager.class);
+        assertTrue("on by default", BaseSettings.SETTINGS_SHORTCUT.savedValue());
+        SettingsEntry.publishShortcutNow(context);
+        manager.pushDynamicShortcut(threadsShortcut(context, "compose"));
+        assertNotNull(shortcut(manager, SettingsEntry.SHORTCUT_ID));
+
+        BaseSettings.SETTINGS_SHORTCUT.save(false);
+        SettingsEntry.shortcutSwitchChanged(context);
+        app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
+        assertNull("the shortcut stayed in the launcher's menu", shortcut(manager, SettingsEntry.SHORTCUT_ID));
+        assertNotNull("Threads' own shortcut went too", shortcut(manager, "compose"));
+
+        SettingsEntry.pushDynamicShortcut(manager, threadsShortcut(context, "search"));
+        SettingsEntry.setDynamicShortcuts(manager, java.util.Collections.singletonList(threadsShortcut(context, "activity")));
+        app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
+        SettingsEntry.publishShortcutNow(context);
+        SettingsEntry.keepFirstNow(context);
+        assertNull("Threads' calls or a start brought it back", shortcut(manager, SettingsEntry.SHORTCUT_ID));
+        assertNotNull(shortcut(manager, "activity"));
+
+        BaseSettings.SETTINGS_SHORTCUT.save(true);
+        SettingsEntry.shortcutSwitchChanged(context);
+        app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
+        android.content.pm.ShortcutInfo ours = shortcut(manager, SettingsEntry.SHORTCUT_ID);
+        assertNotNull("on didn't put it back", ours);
+        org.junit.Assert.assertEquals(0, ours.getRank());
+        assertNotNull(shortcut(manager, "activity"));
+    }
+
+    /** The switch is kept while paused: a pause neither brings the shortcut back nor takes it away. */
+    @Test public void aPauseLeavesTheSettingsShortcutAsItsSwitchSays() {
+        android.content.Context context = RuntimeEnvironment.getApplication();
+        android.content.pm.ShortcutManager manager = context.getSystemService(android.content.pm.ShortcutManager.class);
+        try {
+            PauseForTests.pause(HushThreadsPause.Reason.SWITCH);
+            SettingsEntry.publishShortcutNow(context);
+            assertNotNull("a paused start dropped the way back to settings", shortcut(manager, SettingsEntry.SHORTCUT_ID));
+            BaseSettings.SETTINGS_SHORTCUT.save(false);
+            SettingsEntry.publishShortcutNow(context);
+            assertNull("a pause brought the shortcut back", shortcut(manager, SettingsEntry.SHORTCUT_ID));
+        } finally {
+            PauseForTests.resume();
+        }
+    }
+
+    /** The row on the Pause, backup and diagnostics page saves the switch and takes the shortcut out. */
+    @Test public void theRowOnThePausePageTakesTheShortcutOut() throws Exception {
+        android.content.Context context = RuntimeEnvironment.getApplication();
+        android.content.pm.ShortcutManager manager = context.getSystemService(android.content.pm.ShortcutManager.class);
+        SettingsEntry.publishShortcutNow(context);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushThreadsPreferenceFragment page = new HushThreadsPreferenceFragment();
+            controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
+            android.preference.SwitchPreference row =
+                    (android.preference.SwitchPreference) page.findPreference(BaseSettings.SETTINGS_SHORTCUT.key);
+            assertNotNull("no settings shortcut row", row);
+            assertTrue(row.isChecked());
+            org.junit.Assert.assertEquals("Settings shortcut on the app icon", String.valueOf(row.getTitle()));
+
+            assertTrue(row.getOnPreferenceChangeListener().onPreferenceChange(row, false));
+            app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
+            org.junit.Assert.assertFalse(BaseSettings.SETTINGS_SHORTCUT.savedValue());
+            assertNull("the row left the shortcut in the menu", shortcut(manager, SettingsEntry.SHORTCUT_ID));
+        }
     }
 
     /** What the platform leaves after Threads' pushes rank ahead of the HushThreads shortcut. */

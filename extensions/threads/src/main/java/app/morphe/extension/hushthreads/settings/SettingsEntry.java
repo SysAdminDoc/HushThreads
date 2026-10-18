@@ -38,6 +38,7 @@ import app.morphe.extension.hushthreads.feed.ReturnRefresh;
 import app.morphe.extension.shared.L10n;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.preference.ReopenSettingsAfterRestart;
 
 /**
@@ -50,7 +51,8 @@ import app.morphe.extension.shared.settings.preference.ReopenSettingsAfterRestar
  * Threads activity reports its intent here from {@code onCreate} and {@code onNewIntent}, and the
  * next Threads activity to resume shows the screen as a full screen dialog. The shortcut is kept
  * first among Threads' own, because a launcher shows only the first few, and some launchers have no
- * shortcut menu at all. Inside Threads, a HushThreads row above More settings in Threads' own
+ * shortcut menu at all. A switch on the Pause, backup and diagnostics page takes it out of that menu
+ * and keeps it out ({@link BaseSettings#SETTINGS_SHORTCUT}). Inside Threads, a HushThreads row above More settings in Threads' own
  * settings opens it over the screen in front ({@link ThreadsSettingsRow}), and so does a long press
  * on the Threads logo at the top of the home feed ({@link ThreadsLogo}).
  */
@@ -163,11 +165,17 @@ public final class SettingsEntry {
      */
     static void publishShortcutNow(Context app) {
         try {
+            // Nothing to go by until the settings are read: the shortcut stays as the last start left it.
+            if (!Utils.settingsReady()) return;
             ShortcutManager manager = app.getSystemService(ShortcutManager.class);
             if (manager == null) return;
             String longLabel = L10n.t(app, "HushThreads settings");
             // Set before the attempt, so a shortcut that can't be pushed isn't tried on every screen.
             publishedLabel = longLabel;
+            if (!BaseSettings.SETTINGS_SHORTCUT.get()) {
+                removeShortcut(manager);
+                return;
+            }
             ShortcutInfo existing = ours(manager);
             // One labelled in another language, or behind Threads' own, is pushed again below.
             if (existing != null && existing.getRank() == 0
@@ -187,8 +195,14 @@ public final class SettingsEntry {
      */
     static void keepFirstNow(Context app) {
         try {
+            if (!Utils.settingsReady()) return;
             ShortcutManager manager = app.getSystemService(ShortcutManager.class);
             if (manager == null) return;
+            // Switched off, Threads' calls neither bring it back nor rank it.
+            if (!BaseSettings.SETTINGS_SHORTCUT.get()) {
+                removeShortcut(manager);
+                return;
+            }
             ShortcutInfo existing = ours(manager);
             if (existing == null) {
                 publishShortcutNow(app);
@@ -226,6 +240,22 @@ public final class SettingsEntry {
             }
         }
         manager.addDynamicShortcuts(Collections.singletonList(shortcut));
+    }
+
+    /**
+     * The settings shortcut switch changed: off takes the shortcut out of the launcher's menu now,
+     * on puts it back in front, both on a background thread. Threads' own shortcuts stay.
+     */
+    static void shortcutSwitchChanged(Context context) {
+        final Context app = context.getApplicationContext() != null ? context.getApplicationContext() : context;
+        Utils.runOnBackgroundThread(() -> publishShortcutNow(app));
+    }
+
+    /** Takes the HushThreads shortcut out of the launcher's menu, if it's there. */
+    private static void removeShortcut(ShortcutManager manager) {
+        if (ours(manager) == null) return;
+        manager.removeDynamicShortcuts(Collections.singletonList(SHORTCUT_ID));
+        Logger.printInfo(() -> "Settings entry: launcher shortcut removed, its switch is off");
     }
 
     /** The HushThreads shortcut among the dynamic ones, or null. */

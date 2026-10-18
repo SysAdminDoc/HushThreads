@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** Don't want HushThreads settings in the menu you get by holding Threads' icon? Turn off the new `Settings shortcut on the app icon` switch on the Pause, backup and diagnostics page and it leaves that menu right away, while Threads' own shortcuts stay. A long press on the Threads logo and the HushThreads row in Threads' settings still open the settings, and Pause leaves the switch as you set it.
+
 * **Tooling:** A GitHub description that names no release, patch count or Threads build now passes the release facts check and stays as written when a release publishes. Both used to refuse it, though a description like that has nothing a release can leave out of date. One that names any of those is still held to this release's and rewritten as before.
 
 * **Settings:** When Threads rebuilds its screen with the settings open (after a text size change, say, or when Android closed Threads in the background), a settings page that fails to come back now gives way to a fresh page. Before, that failure would have crashed Threads, since it happens where the settings' own Retry and Back can't catch it.

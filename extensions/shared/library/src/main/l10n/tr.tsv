@@ -333,3 +333,6 @@ Takes the Follow suggestions row off the Search screen. Your searches and topics
 Not saved: the proxy wants a password. Try another network.	Kaydedilmedi: Proxy parola istiyor. Başka bir ağ dene.
 # The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary. Android 12 and later cut a toast after two lines, so it stays short.
 The proxy wants a password. Try another network.	Proxy parola istiyor. Başka bir ağ dene.
+# The switch on the Pause, backup and diagnostics page that adds or takes away the HushThreads settings shortcut in the menu a long press on Threads' launcher icon shows.
+Settings shortcut on the app icon	Uygulama simgesinde ayarlar kısayolu
+Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.	Threads simgesine basılı tutunca açılan menüye HushThreads ayarlarını koyar. Kapalıyken bu menüden çıkar. Bu ayarları yine Threads ayarlarındaki HushThreads satırından ya da Threads logosuna basılı tutarak açabilirsin.
