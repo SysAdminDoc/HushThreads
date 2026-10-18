@@ -413,7 +413,7 @@ $fixtureLedger = [ordered]@{
             hushthreads = [ordered]@{ status = 'submitted'; url = 'https://github.com/nvbangg/awesome-morphe/issues/1'; submitted = '2026-09-01' } }
         [ordered]@{ id = 'morphe-patch-tracker'; name = 'Morphe Patch Tracker'; url = 'https://drnx64.github.io/morphe-track-patches/'
             hushthreads = [ordered]@{ status = 'listed'; url = 'https://drnx64.github.io/morphe-track-patches/#/bundle/sysadmindoc'; checked = '2026-09-01' } }
-        [ordered]@{ id = 'jman-bundles'; name = 'Jman''s ReVanced Patch Bundles'; url = 'https://github.com/Jman-Github/ReVanced-Patch-Bundles'
+        [ordered]@{ id = 'jman-bundles'; name = 'Jman''s Patch Bundle Registry'; url = 'https://github.com/Jman-Github/Patch-Bundle-Registry'
             hushthreads = [ordered]@{ status = 'not-listed'; checked = '2026-09-01' } }
         [ordered]@{ id = 'morphe-archive'; name = 'Morphe Archive'; url = 'https://rushiforai.github.io/morphe-archive/'
             hushthreads = [ordered]@{ status = 'listed'; url = 'https://github.com/rushiforai/morphe-archive'; checked = '2026-09-01' } }
@@ -817,7 +817,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     # HushThreads' own listing needs registration and a current, verified release.
     $fakeForge.Answers.jmanConfig.Content = '{"alpha":{"patches":"https://github.com/fixture-owner/alpha-patches","disabled":false},"gamma":{"patches":"https://gitlab.com/fixture-group/gamma-patches","disabled":false},"hushthreads":{"patches":"https://github.com/SysAdminDoc/HushThreads","disabled":false}}'
     Set-RegistryRows @($alphaRow, $gammaRow, (New-RegistryRow -Id 'h-latest' -Url $selfUrl))
-    Assert-Drift 'listing-changed' "*Jman's ReVanced Patch Bundles lists HushThreads now*" 'HushThreads registered and served as a current release'
+    Assert-Drift 'listing-changed' "*Jman's Patch Bundle Registry lists HushThreads now*" 'HushThreads registered and served as a current release'
     $fakeForge.Answers = New-FakeAnswers
 
     $fakeForge.Answers.jmanConfig.Content = '{"alpha":{"patches":"https://github.com/fixture-owner/alpha-patches","disabled":false},"gamma":{"patches":"https://gitlab.com/fixture-group/gamma-patches","disabled":false},"hushthreads":{"patches":"https://github.com/SysAdminDoc/HushThreads","disabled":false}}'
@@ -857,7 +857,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     # Registered twice, once disabled and once not, is still registered, whichever comes last.
     $fakeForge.Answers.jmanConfig.Content = '{"alpha":{"patches":"https://github.com/fixture-owner/alpha-patches","disabled":false},"gamma":{"patches":"https://gitlab.com/fixture-group/gamma-patches","disabled":false},"hushthreads":{"patches":"https://github.com/SysAdminDoc/HushThreads","disabled":false},"hushthreads-old":{"patches":"https://github.com/SysAdminDoc/HushThreads","disabled":true}}'
     Set-RegistryRows @($alphaRow, $gammaRow, (New-RegistryRow -Id 'h-latest' -Url $selfUrl))
-    Assert-Drift 'listing-changed' "*Jman's ReVanced Patch Bundles lists HushThreads now*" 'HushThreads registered twice with one registration disabled'
+    Assert-Drift 'listing-changed' "*Jman's Patch Bundle Registry lists HushThreads now*" 'HushThreads registered twice with one registration disabled'
     $fakeForge.Answers = New-FakeAnswers
 
     # Rows the audit can't read are reported, and what it can't read of the list fails the source.

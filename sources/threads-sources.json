@@ -66,17 +66,17 @@
     },
     {
       "id": "jman-bundles",
-      "name": "Jman's ReVanced Patch Bundles",
-      "url": "https://github.com/Jman-Github/ReVanced-Patch-Bundles",
+      "name": "Jman's Patch Bundle Registry",
+      "url": "https://github.com/Jman-Github/Patch-Bundle-Registry",
       "hushthreads": {
         "status": "listed",
-        "url": "https://github.com/Jman-Github/ReVanced-Patch-Bundles/blob/bundles/patch-bundles/bundle-sources.json",
-        "checked": "2026-10-07",
+        "url": "https://github.com/Jman-Github/Patch-Bundle-Registry/blob/bundles/config/sources.json",
+        "checked": "2026-10-17",
         "evidence": {
-          "url": "https://github.com/Jman-Github/ReVanced-Patch-Bundles/blob/b43b8e84f6618b8b4510d37ddc35137f48a20fd2/patch-bundles/bundle-sources.json",
-          "sha256": "bb278a5c769a0bc3b348dd19831833723ac08209183c5db31e8c472bd0433124",
+          "url": "https://github.com/Jman-Github/Patch-Bundle-Registry/blob/d51a430ba4db2c2ff832964839ad3f121c8e6451/config/sources.json",
+          "sha256": "42e9f24eb6b47c616bd0661f9a5282449ac70f21ca0646a003a34aeedc465782",
           "repository": "SysAdminDoc/HushThreads",
-          "blob": "c76436628ebf5d1bd667e62990f5787dfeb047e5"
+          "blob": "5e770be3cd0e32e115faf88555fbc90b8d4a351b"
         }
       }
     },

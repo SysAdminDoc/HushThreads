@@ -311,7 +311,8 @@ foreach ($item in @(Get-SourceProperty $ledgerDocument 'outOfScope' | Where-Obje
 # The indexes' own data repositories, read below as indexes. A code search hit in one is a copy of
 # a bundle's patch list, never a source of its own.
 $indexRepositories = @('github.com/nvbangg/awesome-morphe', 'github.com/drnx64/morphe-track-patches',
-    'github.com/jman-github/revanced-patch-bundles', 'github.com/rushiforai/morphe-archive', 'github.com/rushiforai/revanced-archive')
+    'github.com/jman-github/revanced-patch-bundles', 'github.com/jman-github/patch-bundle-registry',
+    'github.com/rushiforai/morphe-archive', 'github.com/rushiforai/revanced-archive')
 # The two archives keep examplepatches/<owner>/<name>/patches-list.json for every bundle they
 # found, which is a pointer back to that repository.
 $archiveRepositories = @('github.com/rushiforai/morphe-archive', 'github.com/rushiforai/revanced-archive')
