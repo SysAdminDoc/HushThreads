@@ -244,8 +244,17 @@ class ReleaseTextTest(unittest.TestCase):
         self.run_command(release_text.description, version="0.0.13", current=str(self.root / "current.txt"), out=str(out))
         self.assertEqual(out.read_text(encoding="utf-8"),
                          "HushThreads v0.0.13: ads out of Threads, 2 patches for Threads 450.0.0.51.78.\n")
-        self.write("current.txt", "A patch bundle for Threads.\n")
+        self.write("current.txt", "A patch bundle with 17 patches for Threads.\n")
         self.refused(release_text.description, "in this shape", version="0.0.13",
+                     current=str(self.root / "current.txt"), out=str(out))
+
+    def test_description_that_names_no_facts_stays_as_written(self):
+        out = self.root / "description.txt"
+        self.write("current.txt", "HushThreads patches that take the ads out of your Threads feed.\n")
+        self.run_command(release_text.description, version="0.0.13", current=str(self.root / "current.txt"), out=str(out))
+        self.assertEqual(out.read_text(encoding="utf-8"), "HushThreads patches that take the ads out of your Threads feed.\n")
+        self.write("current.txt", "HushThreads patches — no ads.\n")
+        self.refused(release_text.description, "dash", version="0.0.13",
                      current=str(self.root / "current.txt"), out=str(out))
 
 

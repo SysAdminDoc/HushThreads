@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** A GitHub description that names no release, patch count or Threads build now passes the release facts check and stays as written when a release publishes. Both used to refuse it, though a description like that has nothing a release can leave out of date. One that names any of those is still held to this release's and rewritten as before.
+
 * **Settings:** When Threads rebuilds its screen with the settings open (after a text size change, say, or when Android closed Threads in the background), a settings page that fails to come back now gives way to a fresh page. Before, that failure would have crashed Threads, since it happens where the settings' own Retry and Back can't catch it.
 
 * **Settings:** TalkBack now reads the Threads logo at the top of the feed as "Threads". Before, it stopped on the refresh spinner inside the logo and said "Progress bar". The README also says the logo ignores taps and holds while the feed loads or refreshes.

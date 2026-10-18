@@ -370,12 +370,25 @@ def index(args) -> None:
           f"{runtime} runtime and {patch} patch tests")
 
 
+def names_release_facts(text: str) -> bool:
+    """Whether a repository description names a release version, a patch count or a Threads build.
+    One that names none of them has nothing a release can leave stale."""
+    return any(re.search(pattern, text) for pattern in (
+        r"\bv\d+\.\d+\.\d+\b", r"(?<![\d.])\d+ patches\b", r"\bThreads\s+\d+(?:\.\d+)+(?!\d)"))
+
+
 def description(args) -> None:
     version = args.version
     check_version(version)
     info = catalog()
     count, target = info["count"], info["targets"][0]
     current = read(Path(args.current)).strip()
+    if not names_release_facts(current):
+        if any(dash in current for dash in DASHES):
+            fail("the repository description has an em or en dash")
+        write(Path(args.out), current + "\n")
+        print(f"[release] the repository description names no version, count or build, so it stays: {current}")
+        return
     new = re.sub(r"\bHushThreads v\d+\.\d+\.\d+", f"HushThreads v{version}", current)
     new = re.sub(r"(?<![\d.])\d+ patches\b", f"{count} patches", new)
     new = re.sub(r"\bThreads\s+\d+(?:\.\d+)+(?!\d)", f"Threads {target}", new)

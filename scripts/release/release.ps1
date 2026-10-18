@@ -30,8 +30,9 @@
                changing no file.
     publish    The GitHub release, its notes carrying every bullet of the CHANGELOG section with
                -Intro above them and -Update after, and the four assets, each downloaded back and
-               compared. Then the repository description names the release, its patch count and
-               Threads build.
+               compared. Then a repository description that names a release, a patch count or a
+               Threads build is moved to this release's. One that names none of them stays as
+               written.
     index      patches-bundle.json and the bug report form's version placeholder, the release facts
                against the published assets, then the commit "chore(release): point the index at
                vX.Y.Z", pushed through the gate's index check.

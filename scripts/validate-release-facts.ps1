@@ -343,20 +343,28 @@ if ($SkipUrlCheck) {
     }
     $description = $description.Trim()
 
-    # Its count and build are read the way the index description's are, all of them at once.
-    $githubFacts = Get-DescriptionFacts -Text $description -Source "The GitHub description of $slug"
-    $missing = @()
-    if ($description -notmatch "\b$([regex]::Escape($descriptionVersion))\b") { $missing += $descriptionVersion }
-    if ($githubFacts.PatchCount -ne $descriptionPatchCount) { $missing += "$descriptionPatchCount patches" }
-    if ($githubFacts.TargetVersion -ne $descriptionTargetVersion) { $missing += "Threads $descriptionTargetVersion" }
-    if ($missing.Count -gt 0) {
-        throw ("The GitHub description of $slug does not say " + ($missing -join ', ') + '. It reads: ' +
-            $description + [Environment]::NewLine +
-            'Set it with: gh repo edit ' + $slug + ' --description "HushThreads ' + $descriptionVersion +
-            ': ... ' + $descriptionPatchCount + ' patches for Threads ' + $descriptionTargetVersion + '."')
+    # A description written with no version, count or build in it can't go stale, and the publish
+    # stage leaves it as it is (2026-10-18, after the Hush repos dropped theirs). The same three
+    # patterns as release_text.py's names_release_facts.
+    if (-not ($description -match '\bv\d+\.\d+\.\d+\b' -or $description -match '(?<![\d.])\d+ patches\b' -or
+            $description -match '\bThreads\s+\d+(?:\.\d+)+(?!\d)')) {
+        Write-Host "[release] the GitHub description of $slug names no version, patch count or Threads build"
+    } else {
+        # Its count and build are read the way the index description's are, all of them at once.
+        $githubFacts = Get-DescriptionFacts -Text $description -Source "The GitHub description of $slug"
+        $missing = @()
+        if ($description -notmatch "\b$([regex]::Escape($descriptionVersion))\b") { $missing += $descriptionVersion }
+        if ($githubFacts.PatchCount -ne $descriptionPatchCount) { $missing += "$descriptionPatchCount patches" }
+        if ($githubFacts.TargetVersion -ne $descriptionTargetVersion) { $missing += "Threads $descriptionTargetVersion" }
+        if ($missing.Count -gt 0) {
+            throw ("The GitHub description of $slug does not say " + ($missing -join ', ') + '. It reads: ' +
+                $description + [Environment]::NewLine +
+                'Set it with: gh repo edit ' + $slug + ' --description "HushThreads ' + $descriptionVersion +
+                ': ... ' + $descriptionPatchCount + ' patches for Threads ' + $descriptionTargetVersion + '."')
+        }
+        Write-Host ("[release] the GitHub description of " + $slug + " names " + $descriptionVersion +
+            ", " + $descriptionPatchCount + " patches and Threads " + $descriptionTargetVersion)
     }
-    Write-Host ("[release] the GitHub description of " + $slug + " names " + $descriptionVersion +
-        ", " + $descriptionPatchCount + " patches and Threads " + $descriptionTargetVersion)
 }
 
 $testRoot = Join-Path $rootPath 'extensions/threads/build/test-results/testDebugUnitTest'
