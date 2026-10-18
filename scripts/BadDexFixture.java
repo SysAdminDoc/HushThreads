@@ -1979,7 +1979,141 @@ public class BadDexFixture {
         classes.add(new ImmutableClassDef(FEATURE_ROW_CLICK, AccessFlags.PUBLIC.getValue() | AccessFlags.FINAL.getValue(), OBJECT, interfaces,
                 null, null, List.of(), List.of(define(FEATURE_ROW_CLICK, "invoke", OBJECT, false,
                         body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0))))));
+        // Copy text comes with the settings patch, so its extension class rides along.
+        classes.add(featureClass(FEATURE_COPY_TEXT, OBJECT, List.of(),
+                define(FEATURE_COPY_TEXT, "longPress", OBJECT, true, body(2, op(Opcode.RETURN_OBJECT, 0)), OBJECT, OBJECT),
+                define(FEATURE_COPY_TEXT, "selection", "Z", true, body(1, op(Opcode.RETURN, 0)), "Z")));
         return classes;
+    }
+
+    private static final String FEATURE_COPY_TEXT = "Lapp/morphe/extension/hushthreads/feed/CopyText;";
+    private static final ImmutableMethodReference COPY_LONG_PRESS = method(FEATURE_COPY_TEXT, "longPress", OBJECT, OBJECT, OBJECT);
+    private static final ImmutableMethodReference COPY_SELECTION = method(FEATURE_COPY_TEXT, "selection", "Z", "Z");
+    private static final String PRESS_OVERRIDE = "Lfixture/PressOverride;";
+    private static final String POST_ROW = "Lfixture/PostRow;";
+    private static final String POST_ROW_TEXT = "Lfixture/PostRowText;";
+    private static final String POST_TEXT = "Lfixture/PostText;";
+    private static final ImmutableMethodReference POST_ROW_PLAIN = method(POST_ROW, "plain", "V", "Ljava/lang/String;");
+    private static final ImmutableMethodReference POST_ROW_PRESS = method(POST_ROW, "press", "V", "Ljava/lang/String;", FUNCTION0);
+
+    /**
+     * Copy text's host shapes. Two post row lambdas, text and link preview, each read their long
+     * press override into v1 and check it for null straight after: a null one takes the row's plain
+     * press, and any other is read for its Function0 action, which the row presses when it's set.
+     * v0 holds the row's note and is read on both sides, v2 to v4 are locals, v4 one nothing reads,
+     * this is v5 and the lambda's argument v6. PostText(state, selectable, modifier, flags) copies
+     * its boolean into v1 after its selection note and tests that. PostRow's plain press and
+     * PostText's Preview are methods a stray call can go into.
+     *
+     * When [hooked], each override check gets the patch's five instructions in front of it, taking
+     * v4, and when [asks], PostText asks selection() about its boolean first thing. The faults break
+     * one part each: the hook missing from the link lambda, after the check instead of in front of
+     * it, sending a null override past the check, reading another action, taking v0 or the argument,
+     * swapping longPress's arguments, dropping its answer, casting it to Function0, put in twice,
+     * a stray call, an added instruction in Threads' own code, and the same for the selection hook.
+     * shared, selection-written, selection-constant and selection-default are stock faults, on both
+     * sides: a second way into the text lambda's check, a selection check that tests a negated copy
+     * of the boolean, one that tests a constant instead of it, and one whose left-out default is a
+     * call's answer rather than Compose's 0 or 1.
+     */
+    private static List<ClassDef> copyTextClasses(boolean patched, boolean hooked, boolean asks, String fault) {
+        List<ClassDef> classes = new ArrayList<>();
+        classes.add(featureClass(PRESS_OVERRIDE, OBJECT, List.of(featureField(PRESS_OVERRIDE, "action", FUNCTION0), featureField(PRESS_OVERRIDE, "other", FUNCTION0))));
+        boolean stray = patched && (fault.equals("copy-text-stray"));
+        List<Instruction> plain = new ArrayList<>();
+        if (stray) plain.addAll(List.of(invoke(COPY_LONG_PRESS, 0, 0), op(Opcode.MOVE_RESULT_OBJECT, 0)));
+        plain.add(op(Opcode.RETURN_VOID));
+        classes.add(featureClass(POST_ROW, OBJECT, List.of(),
+                define(POST_ROW, "plain", "V", true, body(1, plain.toArray(new Instruction[0])), "Ljava/lang/String;"),
+                define(POST_ROW, "press", "V", true, body(2, op(Opcode.RETURN_VOID)), "Ljava/lang/String;", FUNCTION0)));
+        for (String owner : List.of(POST_ROW_TEXT, "Lfixture/PostRowLink;")) {
+            boolean text = owner.equals(POST_ROW_TEXT);
+            String own = text ? fault : "";
+            BrowserCode code = new BrowserCode();
+            code.add(string(0, "com.instagram.barcelona.feed.post.ui.FeedPostRow.<anonymous>.<anonymous> (FeedPostRow.kt:" + (text ? 812 : 845) + ")"));
+            code.add(objectField(Opcode.IGET_OBJECT, 1, 5, owner, "override", PRESS_OVERRIDE));
+            boolean front = hooked && !own.equals("copy-text-moved") && !(fault.equals("copy-text-missing") && !text);
+            List<Integer> skips = new ArrayList<>();
+            int entry = code.size();
+            for (int n = front ? own.equals("copy-text-double") ? 2 : 1 : 0; n > 0; n--) skips.add(copyTextHook(code, own));
+            int guard = code.branch(new ImmutableInstruction21t(Opcode.IF_NEZ, 1, 1));
+            code.add(invoke(POST_ROW_PLAIN, 0));
+            if (patched && (own.equals("copy-text-body") || own.equals("copy-text-omitted-body"))) code.add(op(Opcode.NOP));
+            code.add(new ImmutableInstruction11n(Opcode.CONST_4, 2, 0));
+            code.add(op(Opcode.RETURN_OBJECT, 2));
+            int has = code.size();
+            if (hooked && own.equals("copy-text-moved")) skips.add(copyTextHook(code, own));
+            code.add(objectField(Opcode.IGET_OBJECT, 3, 1, PRESS_OVERRIDE, "action", FUNCTION0));
+            int none = code.branch(new ImmutableInstruction21t(Opcode.IF_NEZ, 3, 1));
+            code.add(op(Opcode.RETURN_OBJECT, 1));
+            int act = code.size();
+            code.add(invoke(POST_ROW_PRESS, 0, 3));
+            code.add(op(Opcode.RETURN_OBJECT, 1));
+            // shared reaches the check from a goto past the end too, which lands on its hook.
+            if (fault.equals("copy-text-shared") && text) code.to(code.branch(new com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction20t(Opcode.GOTO_16, 1)), entry);
+            code.to(guard, has);
+            code.to(none, act);
+            // Each hook's null side goes to what follows it, or for target past the check to the plain press.
+            for (int skip : skips) code.to(skip, own.equals("copy-text-target") ? guard + 1 : skip + 5);
+            classes.add(featureClass(owner, OBJECT, List.of(featureField(owner, "override", PRESS_OVERRIDE)),
+                    define(owner, "invoke", OBJECT, false, body(7, code.finish()), OBJECT)));
+        }
+
+        // PostText(state, selectable, modifier, flags): v0..v2 locals, the arguments in v3 to v6. As in
+        // 451, a caller that leaves the boolean out gets Compose's 0 from code at the end, which jumps
+        // back to the check.
+        BrowserCode post = new BrowserCode();
+        if (asks && !fault.equals("copy-text-selection-missing")) {
+            int flag = fault.equals("copy-text-selection-register") ? 6 : 4;
+            post.add(new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, flag, 1, COPY_SELECTION));
+            post.add(op(Opcode.MOVE_RESULT, fault.equals("copy-text-selection-result") ? 2 : flag));
+        }
+        post.add(string(0, "com.instagram.barcelona.feed.post.ui.rememberPostTextSelectionState (PostTextSelectionMode.kt:44)"));
+        post.add(new ImmutableInstruction22b(Opcode.AND_INT_LIT8, 2, 6, 1));
+        int defaults = post.branch(new ImmutableInstruction21t(Opcode.IF_NEZ, 2, 0));
+        post.add(fault.equals("copy-text-selection-written") ? new ImmutableInstruction22b(Opcode.XOR_INT_LIT8, 1, 4, 1)
+                : fault.equals("copy-text-selection-constant") ? new ImmutableInstruction11n(Opcode.CONST_4, 1, 1)
+                : new ImmutableInstruction12x(Opcode.MOVE, 1, 4));
+        int check = post.branch(ifEqz(1, 0));
+        post.add(invoke(method(POST_TEXT, "select", "V", OBJECT), 3));
+        int end = post.size();
+        if (patched && fault.equals("copy-text-selection-body")) post.add(op(Opcode.NOP));
+        post.add(op(Opcode.RETURN_VOID));
+        int fallback = post.size();
+        if (fault.equals("copy-text-selection-default")) {
+            post.add(invoke(method(POST_TEXT, "selectable", "Z")));
+            post.add(op(Opcode.MOVE_RESULT, 1));
+        } else {
+            post.add(new ImmutableInstruction11n(Opcode.CONST_4, 1, 0));
+        }
+        int back = post.branch(new com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction20t(Opcode.GOTO_16, 0));
+        post.to(defaults, fallback);
+        post.to(check, end);
+        post.to(back, check);
+        List<Instruction> preview = new ArrayList<>();
+        if (patched && fault.equals("copy-text-selection-stray")) preview.addAll(List.of(invoke(COPY_SELECTION, 0), op(Opcode.MOVE_RESULT, 0)));
+        preview.add(op(Opcode.RETURN_VOID));
+        classes.add(featureClass(POST_TEXT, OBJECT, List.of(),
+                define(POST_TEXT, "PostText", "V", true, body(7, post.finish()), OBJECT, "Z", OBJECT, "I"),
+                define(POST_TEXT, "Preview", "V", true, body(1, preview.toArray(new Instruction[0])), "Z"),
+                define(POST_TEXT, "select", "V", true, body(1, op(Opcode.RETURN_VOID)), OBJECT),
+                define(POST_TEXT, "selectable", "Z", true, body(1, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0)))));
+        return classes;
+    }
+
+    /**
+     * The patch's hook in front of an override check on v1, as [fault] bends it: if-eqz v1, the
+     * override's action into v4, longPress(v1, v4), its answer back into v1, cast to the override's
+     * type. Answers where the if-eqz is, for the caller to aim.
+     */
+    private static int copyTextHook(BrowserCode code, String fault) {
+        int free = fault.equals("copy-text-live") ? 0 : fault.equals("copy-text-parameter") ? 6 : 4;
+        int skip = code.branch(ifEqz(1, 1));
+        code.add(objectField(Opcode.IGET_OBJECT, free, 1, PRESS_OVERRIDE, fault.equals("copy-text-action") ? "other" : "action", FUNCTION0));
+        code.add(fault.equals("copy-text-swapped") ? invoke(COPY_LONG_PRESS, free, 1) : invoke(COPY_LONG_PRESS, 1, free));
+        code.add(op(Opcode.MOVE_RESULT_OBJECT, fault.equals("copy-text-result") ? free : 1));
+        code.add(type(Opcode.CHECK_CAST, 1, fault.equals("copy-text-cast") ? FUNCTION0 : PRESS_OVERRIDE));
+        return skip;
     }
 
     /** Three direct 451 browser boundaries, plus the shared factory and already-routed immersive screen. */
@@ -2426,6 +2560,8 @@ public class BadDexFixture {
         classes.addAll(fault.startsWith("pure-black-fields") ? pureBlackFieldClasses(patched && selected.contains("pureBlack"), fault)
                 : pureBlackClasses(patched && selected.contains("pureBlack"), fault));
         classes.addAll(settingsRowClasses(patched && selected.contains("settingsRow"), fault));
+        classes.addAll(copyTextClasses(patched, patched && (selected.contains("settingsRow") || fault.equals("copy-text-omitted-hook")),
+                patched && (selected.contains("settingsRow") || fault.equals("copy-text-omitted-selection")), fault));
         if (fault.startsWith("ambiguous-suggestion-") || fault.startsWith("proven-suggestion-")) corruptSuggestionStock(classes, fault);
         if (!patched) return classes;
 
@@ -2722,6 +2858,19 @@ public class BadDexFixture {
         // And the HushThreads settings row.
         for (String fault : List.of("settings-row-missing", "settings-row-outside", "settings-row-register", "settings-row-stub", "settings-row-click")) {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("settingsRow"), 0, fault));
+        }
+        // And Copy text, which comes with the settings row: hook faults with it selected, then left out,
+        // then the four stock faults, which need a clean build of their own.
+        for (String fault : List.of("moved", "target", "action", "live", "parameter", "swapped", "result", "cast", "body", "missing", "double", "stray",
+                "selection-register", "selection-result", "selection-body", "selection-missing", "selection-stray")) {
+            dexes.put("features-bad-copy-text-" + fault, featureBuild(true, Set.of("settingsRow"), 0, "copy-text-" + fault));
+        }
+        for (String fault : List.of("omitted-hook", "omitted-selection", "omitted-body")) {
+            dexes.put("features-bad-copy-text-" + fault, featureBuild(true, Set.of(), 0, "copy-text-" + fault));
+        }
+        for (String fault : List.of("shared", "selection-written", "selection-constant", "selection-default")) {
+            dexes.put("features-copy-text-" + fault + "-clean", featureBuild(false, Set.of(), 0, "copy-text-" + fault));
+            dexes.put("features-bad-copy-text-" + fault, featureBuild(true, Set.of("settingsRow"), 0, "copy-text-" + fault));
         }
         // Keep the old direct-this sharing fixtures and add 451's low alias of high-register this.
         dexes.put("features-sharing-alias-clean", featureSharingAliasBuild(false, ""));

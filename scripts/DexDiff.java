@@ -2019,6 +2019,16 @@ public class DexDiff {
     private static final String SETTINGS_LIST_NOTE = "com.instagram.barcelona.settings.SettingsScreen.<anonymous>";
     /** The settings entry the HushThreads row goes above. Redex keeps an enum constant's name. */
     private static final String MORE_ENTRY = "MORE";
+    /** Copy text on long press, which the settings patch depends on and brings into every build it's in. */
+    private static final String COPY_TEXT = "Lapp/morphe/extension/hushthreads/feed/CopyText;";
+    private static final String COPY_LONG_PRESS = COPY_TEXT + "->longPress(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;";
+    private static final String COPY_SELECTION = COPY_TEXT + "->selection(Z)Z";
+    /**
+     * Compose's notes on the post row's lambdas that lay out a post's text and its link preview, and
+     * on PostText remembering its text selection, inlined into PostText. They name the source file.
+     */
+    private static final String POST_ROW_NOTE = "com.instagram.barcelona.feed.post.ui.FeedPostRow.<anonymous>.<anonymous> (FeedPostRow.kt:";
+    private static final String SELECTION_NOTE = "com.instagram.barcelona.feed.post.ui.rememberPostTextSelectionState (PostTextSelectionMode.kt:";
 
     /** Keep duplicate definitions visible: choosing whichever dex was visited last hides corruption. */
     private static Map<String, List<Method>> featureMethods(File apk, Map<String, String> parents) throws Exception {
@@ -4531,7 +4541,8 @@ public class DexDiff {
      * showRow calls Threads' Accounts Center row with that composer, the modifier the case's run
      * passes Threads' own row, the title, subtitle, click and icon, and three zeros, and nothing else.
      * The click is a kotlin Function0, which Threads' row takes. Both of Threads' rows stay stock,
-     * and the list is the only host method that calls add.
+     * and the list is the only host method that calls add. Copy text on long press, which the
+     * settings patch depends on, comes with the row and is held to its own contract.
      */
     private static void featureSettingsRow(Map<String, List<Method>> clean, Map<String, List<Method>> patched, File patchedApk) throws Exception {
         SettingsRowSites sites = featureSettingsRowSites(clean);
@@ -4556,6 +4567,182 @@ public class DexDiff {
         Method invoke = featureMethod(patched, ROW_CLICK + "->invoke()Ljava/lang/Object;");
         requireFeature(AccessFlags.PUBLIC.isSet(invoke.getAccessFlags()) && !AccessFlags.STATIC.isSet(invoke.getAccessFlags()),
                 ROW_CLICK + "'s invoke() isn't a public instance method");
+        featureCopyText(clean, patched);
+    }
+
+    /**
+     * A post row lambda's long press override as Threads shipped it: [stock] reads it at [read] into
+     * [register] and checks it for null right after, and [action] is the override's own long press.
+     */
+    private record CopyTextSite(Method stock, int read, int register, FieldReference action) {}
+
+    /** PostText [stock], and its boolean [parameter], held in [flag], that its selection check reads as it came in. */
+    private record CopyTextSelection(Method stock, int parameter, int flag) {}
+
+    /**
+     * Copy text on long press. Every override check the clean post row lambdas make gets the patch's
+     * five instructions in front of it, and nothing else in those lambdas changes: a null override
+     * goes straight to Threads' own check, and any other is read for its own action, handed to
+     * longPress as (override, action) in a local nothing reads from the check on, and taken back
+     * into the override's register cast to its type. Each lambda calls longPress once per check and
+     * no other host method calls it. PostText asks selection() about the boolean parameter its
+     * selection check reads, first thing and into that same register, and is the one host method
+     * that asks. Every refusal names Copy text.
+     */
+    private static void featureCopyText(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        try {
+            Map<String, List<CopyTextSite>> lambdas = new TreeMap<>();
+            for (CopyTextSite site : featureCopyTextSites(clean)) lambdas.computeIfAbsent(featureSig(site.stock()), k -> new ArrayList<>()).add(site);
+            Map<String, Integer> calls = new TreeMap<>();
+            for (Map.Entry<String, List<CopyTextSite>> lambda : lambdas.entrySet()) calls.put(lambda.getKey(), lambda.getValue().size());
+            featureHostCalls(patched, COPY_LONG_PRESS, calls);
+            for (Map.Entry<String, List<CopyTextSite>> lambda : lambdas.entrySet()) {
+                Method stock = lambda.getValue().get(0).stock();
+                Method changed = featureMethod(patched, lambda.getKey());
+                Layout now = new Layout(changed.getImplementation());
+                FeatureFlow old = new FeatureFlow(stock);
+                int locals = stock.getImplementation().getRegisterCount() - stock.getParameterTypes().stream().mapToInt(DexDiff::slots).sum()
+                        - (AccessFlags.STATIC.isSet(stock.getAccessFlags()) ? 0 : 1);
+                Map<Integer, FeatureBlock> blocks = new HashMap<>();
+                for (CopyTextSite site : lambda.getValue()) blocks.put(site.read() + 1, (body, at) -> featureCopyTextHook(body, now, at, site, old, locals));
+                featureBody(stock, changed, 0, Map.of(), COPY_LONG_PRESS, null, blocks);
+            }
+            CopyTextSelection selection = featureCopyTextSelection(clean);
+            featureHostCalls(patched, COPY_SELECTION, Map.of(featureSig(selection.stock()), 1));
+            Method changed = featureMethod(patched, featureSig(selection.stock()));
+            featureCall(instructions(changed), 0, COPY_SELECTION, selection.flag(), selection.flag());
+            featureBody(selection.stock(), changed, 2, Map.of(), COPY_SELECTION);
+            System.out.println("[diff] threads-feature settingsRow: Copy text hooks " + calls + " and parameter " + selection.parameter()
+                    + " of " + featureSig(selection.stock()));
+        } catch (IllegalArgumentException | ClassCastException | IndexOutOfBoundsException ex) {
+            throw new IllegalArgumentException("Copy text: " + ex.getMessage(), ex);
+        }
+    }
+
+    /** The hook the patch puts in front of [site]'s override check, at [at] of the patched lambda [body], laid out as [now]. Answers its length. */
+    private static int featureCopyTextHook(List<Instruction> body, Layout now, int at, CopyTextSite site, FeatureFlow old, int locals) {
+        int guard = site.read() + 1, held = site.register();
+        String where = " in front of the override check at " + guard + " in " + featureSig(site.stock());
+        requireFeature(at + 5 <= body.size() && body.get(at).getOpcode() == Opcode.IF_EQZ && registerA(body.get(at)) == held,
+                "no hook" + where + " that tests the override in v" + held + " for null first");
+        int skip = now.addresses.indexOf(now.addresses.get(at) + ((OffsetInstruction) body.get(at)).getCodeOffset());
+        requireFeature(skip == at + 5, "the hook" + where + " sends a null override to instruction " + skip + ", not straight to Threads' own check");
+        Instruction get = body.get(at + 1), call = body.get(at + 2), result = body.get(at + 3), cast = body.get(at + 4);
+        requireFeature(get.getOpcode() == Opcode.IGET_OBJECT && ((TwoRegisterInstruction) get).getRegisterB() == held
+                && reference(get).equals(site.action().toString()), "the hook" + where + " doesn't read the override's own action, " + site.action());
+        int free = registerA(get);
+        requireFeature(free != held && free < locals && free <= 15 && old.readsFrom(guard, free).isEmpty(),
+                "the hook" + where + " clobbers v" + free + ", which isn't a local nothing reads from the check on");
+        requireFeature(isStaticInvoke(call.getOpcode()) && reference(call).equals(COPY_LONG_PRESS) && Arrays.equals(invokeRegisters(call), new int[]{held, free}),
+                "the hook" + where + " doesn't pass " + COPY_LONG_PRESS + " the override and then its action, v" + held + " and v" + free);
+        requireFeature(result.getOpcode() == Opcode.MOVE_RESULT_OBJECT && registerA(result) == held,
+                "the hook" + where + " doesn't take longPress's answer back into the override's register, v" + held);
+        requireFeature(cast.getOpcode() == Opcode.CHECK_CAST && registerA(cast) == held && reference(cast).equals(site.action().getDefiningClass()),
+                "the hook" + where + " doesn't cast longPress's answer back to the override's type, " + site.action().getDefiningClass());
+        return 5;
+    }
+
+    /**
+     * Every long press override check in the clean post row lambdas, found the way the patch finds
+     * them: an iget-object of a field of the lambda's own class, an if-nez on it straight after, and
+     * where that jumps, within four instructions, a read of a Function0 field of the override's type
+     * from the override, with an if-nez on that. There has to be at least one, they all read the same
+     * action, each check is reached only from its read, and the override sits where a call can name it.
+     */
+    private static List<CopyTextSite> featureCopyTextSites(Map<String, List<Method>> clean) {
+        List<CopyTextSite> sites = new ArrayList<>();
+        for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+            if (m.getDefiningClass().startsWith(OWN) || m.getImplementation() == null || !holdsNote(m, POST_ROW_NOTE)) continue;
+            FeatureFlow flow = new FeatureFlow(m);
+            List<Instruction> body = flow.layout.instructions;
+            for (int read = 0; read < body.size(); read++) {
+                FieldReference action = featureCopyTextAction(flow, read);
+                if (action == null) continue;
+                int guard = read + 1;
+                List<Integer> into = new ArrayList<>();
+                for (int n = 0; n < body.size(); n++) if (flow.normal.get(n).contains(guard) || flow.exceptional.get(n).contains(guard)) into.add(n);
+                requireFeature(into.equals(List.of(read)), featureSig(m) + " reaches its override check at " + guard + " from " + into + ", not only from the read at " + read);
+                int register = registerA(body.get(read));
+                requireFeature(register <= 15, featureSig(m) + " holds its override in v" + register + ", which the hook's call can't name");
+                sites.add(new CopyTextSite(m, read, register, action));
+            }
+        }
+        requireFeature(!sites.isEmpty(), "no post row lambda reads and checks a long press override");
+        Set<String> actions = new TreeSet<>();
+        for (CopyTextSite site : sites) actions.add(site.action().toString());
+        requireFeature(actions.size() == 1, "the post row's override checks read different actions, " + actions);
+        return sites;
+    }
+
+    /** The override's own long press when [read] in [flow]'s lambda is a read of the lambda's override followed by its check, or null. */
+    private static FieldReference featureCopyTextAction(FeatureFlow flow, int read) {
+        List<Instruction> body = flow.layout.instructions;
+        if (read + 1 >= body.size() || body.get(read).getOpcode() != Opcode.IGET_OBJECT || body.get(read + 1).getOpcode() != Opcode.IF_NEZ) return null;
+        FieldReference field = (FieldReference) ((ReferenceInstruction) body.get(read)).getReference();
+        int register = registerA(body.get(read));
+        if (!field.getDefiningClass().equals(flow.method.getDefiningClass()) || registerA(body.get(read + 1)) != register) return null;
+        List<Integer> jumps = flow.normal.get(read + 1).stream().filter(n -> n != read + 2).toList();
+        if (jumps.size() != 1) return null;
+        int target = jumps.get(0);
+        for (int at = target; at < Math.min(target + 4, body.size() - 1); at++) {
+            Instruction i = body.get(at);
+            if (i.getOpcode() != Opcode.IGET_OBJECT) continue;
+            FieldReference action = (FieldReference) ((ReferenceInstruction) i).getReference();
+            if (((TwoRegisterInstruction) i).getRegisterB() != register || !action.getDefiningClass().equals(field.getType())
+                    || !action.getType().equals(FUNCTION0)) continue;
+            Instruction next = body.get(at + 1);
+            return next.getOpcode() == Opcode.IF_NEZ && registerA(next) == registerA(i) ? action : null;
+        }
+        return null;
+    }
+
+    /**
+     * PostText, the one host method holding the selection note, and the parameter its selection
+     * check reads: the first if-eqz after the note has to test one boolean parameter as it came in,
+     * directly or through narrow copies, on every path but those where Compose writes the 0 or 1 a
+     * caller that leaves it out gets, so a hook first thing decides what it reads. 451 copies the
+     * parameter into a local and fills that local with 0 in code at the end that jumps back.
+     */
+    private static CopyTextSelection featureCopyTextSelection(Map<String, List<Method>> clean) {
+        Method stock = featureTarget(clean, m -> !m.getDefiningClass().startsWith(OWN) && m.getImplementation() != null && holdsNote(m, SELECTION_NOTE),
+                "PostText, the method holding the selection note,");
+        FeatureFlow flow = new FeatureFlow(stock);
+        List<Instruction> body = flow.layout.instructions;
+        int note = 0;
+        while (!(body.get(note) instanceof ReferenceInstruction r && r.getReference() instanceof StringReference s && s.getString().startsWith(SELECTION_NOTE))) note++;
+        int check = note + 1;
+        while (check < body.size() && body.get(check).getOpcode() != Opcode.IF_EQZ) check++;
+        requireFeature(check < body.size(), featureSig(stock) + " checks nothing after its selection note");
+        // The registers that arrive at the check as they came in, read directly or through narrow copies.
+        int read = registerA(body.get(check));
+        Set<Integer> sources = new TreeSet<>();
+        for (int write : flow.reaching(check, read)) {
+            Opcode op = write < 0 ? null : body.get(write).getOpcode();
+            int[] origin = write < 0 ? new int[]{-1, read} : op == Opcode.MOVE || op == Opcode.MOVE_FROM16 || op == Opcode.MOVE_16
+                    ? flow.origin(write, ((TwoRegisterInstruction) body.get(write)).getRegisterB()) : null;
+            if (origin != null && origin[0] == -1) sources.add(origin[1]);
+        }
+        List<? extends CharSequence> params = stock.getParameterTypes();
+        int parameter = -1, register = stock.getImplementation().getRegisterCount() - params.stream().mapToInt(DexDiff::slots).sum();
+        for (int p = 0; p < params.size(); p++) {
+            if (sources.size() == 1 && register == sources.iterator().next()) parameter = p;
+            register += slots(params.get(p));
+        }
+        requireFeature(parameter >= 0 && params.get(parameter).toString().equals("Z") && flow.booleanOnEveryPath(check, read, sources.iterator().next()),
+                "the selection check at " + check + " in " + featureSig(stock) + " doesn't read one boolean parameter as it came in on every path");
+        return new CopyTextSelection(stock, parameter, sources.iterator().next());
+    }
+
+    /** Left out with the settings patch, Copy text makes no call and leaves the post row lambdas and PostText as Threads wrote them. */
+    private static void featureOmittedCopyText(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        try {
+            featureHostCalls(patched, COPY_LONG_PRESS, Map.of());
+            featureHostCalls(patched, COPY_SELECTION, Map.of());
+            featurePreserveTargets(clean, patched, m -> !m.getDefiningClass().startsWith(OWN)
+                    && (holdsNote(m, POST_ROW_NOTE) || holdsNote(m, SELECTION_NOTE)));
+        } catch (IllegalArgumentException | ClassCastException | IndexOutOfBoundsException ex) {
+            throw new IllegalArgumentException("Copy text: " + ex.getMessage(), ex);
+        }
     }
 
     /**
@@ -4842,6 +5029,7 @@ public class DexDiff {
     /**
      * Left out, the settings row makes no call, leaves Threads' settings list and both its rows as
      * Threads wrote them, and leaves showRow, when the extension has it, the empty stub it ships as.
+     * Copy text, which comes only with the settings patch, is left out along with it.
      */
     private static void featureOmittedSettingsRow(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
         featureHostCalls(patched, ADD_ROW, Map.of());
@@ -4850,6 +5038,7 @@ public class DexDiff {
         featurePreserveTargets(clean, patched, m -> hooked.contains(featureSig(m)));
         if (patched.containsKey(SHOW_ROW)) requireFeature(instructions(featureMethod(patched, SHOW_ROW)).stream().map(Instruction::getOpcode)
                 .toList().equals(List.of(Opcode.RETURN_VOID)), "omitted settings row wrote " + SHOW_ROW);
+        featureOmittedCopyText(clean, patched);
     }
 
     private static void featureOmitted(String feature, Map<String, List<Method>> clean, Map<String, List<Method>> patched,

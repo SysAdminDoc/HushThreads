@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** The final APK check now holds Copy text on long press to its own contract whenever Settings is selected. Every override check in the post row has to carry the patch's hook, which hands the override and its own action to the extension in a free local and casts the answer back, and PostText has to ask about its selection switch first thing. A build without Settings has to leave both exactly as Threads wrote them.
+
 * **Tooling:** The build classpath inventory now records a SHA-256 of settings.gradle.kts, patches/build.gradle.kts, gradle/libs.versions.toml and gradle/verification-metadata.xml, and the release receipt refuses an inventory whose hash for any of them differs from the checkout, naming the file. Before, only the settings script was checked, so a changed plugin version or dependency pin could leave an old inventory standing for the new build. Each hash is the lowercase hex SHA-256 of the file's raw bytes.
 
 * **Tooling:** The source census reads Jman's Patch Bundle Registry now, through its registration file and the paged Threads list, because the old bundle files there answer 404. It follows the list's own total across short pages within a request and row budget, reads renamed repositories under their current names, and counts a repository as a Threads bundle only for a current release with verified metadata. History, unverified entries and a bare registration are reported but not promoted, and a list it can't finish reading fails the census.

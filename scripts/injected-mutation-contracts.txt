@@ -48,7 +48,12 @@ sole-call Lapp/morphe/extension/hushthreads/settings/ThreadsLogo;->clickable(Lja
 # Pure black asks after each #101010 load in the theme and its color helpers, and about each of the
 # dark scheme's #101010 backgrounds right before its constructor, leaving the light scheme alone.
 # The settings row asks once, right before the goto ending the More settings case, on its composer,
-# and showRow calls the Accounts Center row. Every other patch depends on HushThreads settings.
+# and showRow calls the Accounts Center row. Copy text on long press comes with it: each override
+# check the clean post row lambdas make gets the patch's hook in front of it, passing the override
+# and its own action to longPress in a free local and casting the answer back, and PostText asks
+# selection() first thing about the boolean its selection check reads (a copy of one parameter, or
+# Compose's 0 or 1 when a caller leaves it out), with no such call elsewhere.
+# Every other patch depends on HushThreads settings.
 threads-feature hideAds
 threads-feature hideSuggestedUsers
 threads-feature sanitizeSharingLinks

@@ -987,6 +987,59 @@ try {
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
+    # Copy text comes with the settings row and has its own part of that contract. One build per
+    # broken hook, with Settings selected: after the override check instead of in front of it, a null
+    # override sent past the check, another action read, v0 (live on both sides) or the argument
+    # taken, longPress's arguments swapped, its answer dropped or cast to Function0, a nop added
+    # to Threads' own code, the link lambda's hook missing, the text lambda's twice, and a stray
+    # call; then PostText's hook on the int flags, answering into a local, an added nop, missing,
+    # and a stray call in Preview. The omitted ones leave Settings out and keep a hook, a selection
+    # hook or a changed lambda. shared and the last three selection faults are stock faults with their
+    # own clean build: a goto into the text lambda's check, then a check reading a negated copy of the
+    # boolean, a constant instead of it, and a call's answer where a left-out caller gets Compose's 0.
+    $copyTextFaults = [ordered]@{
+        'moved' = 'no hook in front of the override check at 2 in Lfixture/PostRowText;'
+        'target' = 'sends a null override to instruction 8, not straight to'
+        'action' = "doesn't read the override's own action, Lfixture/PressOverride;->action:Lkotlin/jvm/functions/Function0;"
+        'live' = 'clobbers v0, which'
+        'parameter' = 'clobbers v6, which'
+        'swapped' = 'the override and then its action, v1 and v4'
+        'result' = "doesn't take longPress's answer back into the override's register, v1"
+        'cast' = "doesn't cast longPress's answer back to the override's type, Lfixture/PressOverride;"
+        'body' = 'PostRowText;->invoke(Ljava/lang/Object;)Ljava/lang/Object; changed original instruction 4'
+        'missing' = 'CopyText;->longPress(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; host calls differ'
+        'double' = 'CopyText;->longPress(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; host calls differ'
+        'stray' = 'CopyText;->longPress(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; host calls differ'
+        'selection-register' = 'missing or miswired Lapp/morphe/extension/hushthreads/feed/CopyText;->selection(Z)Z at instruction 0'
+        'selection-result' = 'missing or miswired Lapp/morphe/extension/hushthreads/feed/CopyText;->selection(Z)Z at instruction 0'
+        'selection-body' = 'PostText(Ljava/lang/Object;ZLjava/lang/Object;I)V changed original instruction 6'
+        'selection-missing' = 'CopyText;->selection(Z)Z host calls differ'
+        'selection-stray' = 'CopyText;->selection(Z)Z host calls differ'
+        'omitted-hook' = 'CopyText;->longPress(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; host calls differ'
+        'omitted-selection' = 'CopyText;->selection(Z)Z host calls differ'
+        'omitted-body' = 'PostRowText;->invoke(Ljava/lang/Object;)Ljava/lang/Object; changed original instruction 4'
+        'shared' = 'reaches its override check at 2 from [1, 11], not only from the read at 1'
+        'selection-written' = "doesn't read one boolean parameter as it came in on every path"
+        'selection-constant' = "doesn't read one boolean parameter as it came in on every path"
+        'selection-default' = "doesn't read one boolean parameter as it came in on every path"
+    }
+    foreach ($fault in $copyTextFaults.Keys) {
+        $case = "features-bad-copy-text-$fault"
+        $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
+        $stock = if ($fault -in @('shared', 'selection-written', 'selection-constant', 'selection-default')) {
+            New-DexApk -Name "features-copy-text-$fault-clean" -Entries ([ordered]@{ 'classes.dex' = (Get-Dex "features-copy-text-$fault-clean") })
+        } else { $featureClean }
+        $selection = if ($fault.StartsWith('omitted-')) { 'none' } else { 'settingsRow' }
+        $checked = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $selection
+        $findings = Get-Findings $checked
+        Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
+            @($findings.Fails | Where-Object { -not $_.Contains('contract: settingsRow: Copy text: ') }).Count -eq 0) `
+            ("$fault was not rejected solely by the Copy text contract. " + ($checked.Output -join [Environment]::NewLine))
+        Assert-True (@($findings.Fails | Where-Object { $_.Contains($copyTextFaults[$fault]) }).Count -gt 0) `
+            "$fault was not refused as '$($copyTextFaults[$fault])': $($findings.Fails -join '; ')"
+        $structural = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+    }
     # One build per share-link hook that writes a register its method still reads, selected alone:
     # the fetch's second hook taking the post's code into v2, the first link, which the fetch still
     # stores; the holder's hook taking its post into v3, the response it casts again; and Send's
@@ -1243,7 +1296,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 6) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $copyTextFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'

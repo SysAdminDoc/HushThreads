@@ -22,7 +22,8 @@
     sends to SettingsEntry may be left anywhere outside the extension. Selected Threads features
     must retain their feed helpers, typed active-card guards and exact raw-wrapper recording,
     owned permalink hook, recorded analytics address mutations
-    and signature wrapper with its stock fallback. -SelectedPatches supplies the independent
+    and signature wrapper with its stock fallback; the settings row also holds Copy text's
+    override hooks in the post row lambdas and its selection hook in PostText. -SelectedPatches supplies the independent
     validated CLI selection, read with the catalog dependencies the CLI applies along with it; a
     standalone check uses the patched SettingsStatus flags.
 
