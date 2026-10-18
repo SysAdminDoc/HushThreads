@@ -1066,20 +1066,26 @@ try {
     }
     # Copy text comes with the settings row and has its own part of that contract. One build per
     # broken hook, with Settings selected: after the override check instead of in front of it, a null
-    # override sent past the check, another action read, v0 (live on both sides) or the argument
-    # taken, longPress's arguments swapped, its answer dropped or cast to Function0, a nop added
-    # to Threads' own code, the link lambda's hook missing, the text lambda's twice, and a stray
+    # override sent past the check, another register tested for null, another action read or the
+    # action read from the argument, v0 (live on both sides), the argument or the override's own
+    # register taken, longPress's arguments swapped, its answer dropped or cast to Function0, a nop
+    # added to Threads' own code, the link lambda's hook missing, the text lambda's twice, and a stray
     # call; then PostText's hook on the int flags, answering into a local, an added nop, missing,
     # and a stray call in Preview. The omitted ones leave Settings out and keep a hook, a selection
-    # hook or a changed lambda. shared and the last three selection faults are stock faults with their
-    # own clean build: a goto into the text lambda's check, then a check reading a negated copy of the
-    # boolean, a constant instead of it, and a call's answer where a left-out caller gets Compose's 0.
+    # hook, a changed lambda or a changed PostText. The stock faults have their own clean build: a
+    # goto into the text lambda's check, no override check in either lambda, the link lambda pressing
+    # another action, then a check reading a negated copy of the boolean, a constant instead of it, a
+    # call's answer where a left-out caller gets Compose's 0, no if-eqz after the selection note, and a
+    # second method holding that note.
     $copyTextFaults = [ordered]@{
         'moved' = 'no hook in front of the override check at 2 in Lfixture/PostRowText;'
         'target' = 'sends a null override to instruction 8, not straight to'
+        'null-register' = 'that tests the override in v1 for null first'
         'action' = "doesn't read the override's own action, Lfixture/PressOverride;->action:Lkotlin/jvm/functions/Function0;"
+        'action-register' = "doesn't read the override's own action, Lfixture/PressOverride;->action:Lkotlin/jvm/functions/Function0;"
         'live' = 'clobbers v0, which'
         'parameter' = 'clobbers v6, which'
+        'free-held' = 'clobbers v1, which'
         'swapped' = 'the override and then its action, v1 and v4'
         'result' = "doesn't take longPress's answer back into the override's register, v1"
         'cast' = "doesn't cast longPress's answer back to the override's type, Lfixture/PressOverride;"
@@ -1095,15 +1101,20 @@ try {
         'omitted-hook' = 'CopyText;->longPress(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; host calls differ'
         'omitted-selection' = 'CopyText;->selection(Z)Z host calls differ'
         'omitted-body' = 'PostRowText;->invoke(Ljava/lang/Object;)Ljava/lang/Object; changed original instruction 4'
+        'omitted-selection-body' = 'PostText(Ljava/lang/Object;ZLjava/lang/Object;I)V changed original instruction 6'
         'shared' = 'reaches its override check at 2 from [1, 11], not only from the read at 1'
+        'none' = 'no post row lambda reads and checks a long press override'
+        'actions' = "the post row's override checks read different actions, [Lfixture/PressOverride;->action"
         'selection-written' = "doesn't read one boolean parameter as it came in on every path"
         'selection-constant' = "doesn't read one boolean parameter as it came in on every path"
         'selection-default' = "doesn't read one boolean parameter as it came in on every path"
+        'selection-unchecked' = 'PostText(Ljava/lang/Object;ZLjava/lang/Object;I)V checks nothing after its selection note'
+        'selection-twice' = 'PostText, the method holding the selection note, has 2 stock candidates'
     }
     foreach ($fault in $copyTextFaults.Keys) {
         $case = "features-bad-copy-text-$fault"
         $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
-        $stock = if ($fault -in @('shared', 'selection-written', 'selection-constant', 'selection-default')) {
+        $stock = if ($fault -in @('shared', 'none', 'actions', 'selection-written', 'selection-constant', 'selection-default', 'selection-unchecked', 'selection-twice')) {
             New-DexApk -Name "features-copy-text-$fault-clean" -Entries ([ordered]@{ 'classes.dex' = (Get-Dex "features-copy-text-$fault-clean") })
         } else { $featureClean }
         $selection = if ($fault.StartsWith('omitted-')) { 'none' } else { 'settingsRow' }

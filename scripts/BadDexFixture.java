@@ -2008,13 +2008,16 @@ public class BadDexFixture {
      * When [hooked], each override check gets the patch's five instructions in front of it, taking
      * v4, and when [asks], PostText asks selection() about its boolean first thing. The faults break
      * one part each: the hook missing from the link lambda, after the check instead of in front of
-     * it, sending a null override past the check, reading another action, taking v0 or the argument,
-     * swapping longPress's arguments, dropping its answer, casting it to Function0, put in twice,
-     * a stray call, an added instruction in Threads' own code, and the same for the selection hook.
-     * shared, selection-written, selection-constant and selection-default are stock faults, on both
-     * sides: a second way into the text lambda's check, a selection check that tests a negated copy
-     * of the boolean, one that tests a constant instead of it, and one whose left-out default is a
-     * call's answer rather than Compose's 0 or 1.
+     * it, sending a null override past the check, testing another register for null, reading another
+     * action or reading it from another register, taking v0, the argument or the override's own
+     * register, swapping longPress's arguments, dropping its answer, casting it to Function0, put in
+     * twice, a stray call, an added instruction in Threads' own code, and the same for the selection
+     * hook. shared, none, actions, selection-written, selection-constant, selection-default,
+     * selection-unchecked and selection-twice are stock faults, on both sides: a second way into the
+     * text lambda's check, no override check in either lambda, the link lambda pressing another
+     * action, a selection check that tests a negated copy of the boolean, one that tests a constant
+     * instead of it, one whose left-out default is a call's answer rather than Compose's 0 or 1, no
+     * if-eqz after the selection note, and PostRow's plain press holding a selection note too.
      */
     private static List<ClassDef> copyTextClasses(boolean patched, boolean hooked, boolean asks, String fault) {
         List<ClassDef> classes = new ArrayList<>();
@@ -2022,13 +2025,16 @@ public class BadDexFixture {
         boolean stray = patched && (fault.equals("copy-text-stray"));
         List<Instruction> plain = new ArrayList<>();
         if (stray) plain.addAll(List.of(invoke(COPY_LONG_PRESS, 0, 0), op(Opcode.MOVE_RESULT_OBJECT, 0)));
+        // selection-twice gives the plain press a selection note too.
+        if (fault.equals("copy-text-selection-twice")) plain.add(string(0, "com.instagram.barcelona.feed.post.ui.rememberPostTextSelectionState (PostTextSelectionMode.kt:52)"));
         plain.add(op(Opcode.RETURN_VOID));
         classes.add(featureClass(POST_ROW, OBJECT, List.of(),
                 define(POST_ROW, "plain", "V", true, body(1, plain.toArray(new Instruction[0])), "Ljava/lang/String;"),
                 define(POST_ROW, "press", "V", true, body(2, op(Opcode.RETURN_VOID)), "Ljava/lang/String;", FUNCTION0)));
         for (String owner : List.of(POST_ROW_TEXT, "Lfixture/PostRowLink;")) {
             boolean text = owner.equals(POST_ROW_TEXT);
-            String own = text ? fault : "";
+            // actions has the link lambda press another action, and its hook read that one.
+            String own = text ? fault : fault.equals("copy-text-actions") ? "copy-text-actions-link" : "";
             BrowserCode code = new BrowserCode();
             code.add(string(0, "com.instagram.barcelona.feed.post.ui.FeedPostRow.<anonymous>.<anonymous> (FeedPostRow.kt:" + (text ? 812 : 845) + ")"));
             code.add(objectField(Opcode.IGET_OBJECT, 1, 5, owner, "override", PRESS_OVERRIDE));
@@ -2043,8 +2049,9 @@ public class BadDexFixture {
             code.add(op(Opcode.RETURN_OBJECT, 2));
             int has = code.size();
             if (hooked && own.equals("copy-text-moved")) skips.add(copyTextHook(code, own));
-            code.add(objectField(Opcode.IGET_OBJECT, 3, 1, PRESS_OVERRIDE, "action", FUNCTION0));
-            int none = code.branch(new ImmutableInstruction21t(Opcode.IF_NEZ, 3, 1));
+            code.add(objectField(Opcode.IGET_OBJECT, 3, 1, PRESS_OVERRIDE, own.equals("copy-text-actions-link") ? "other" : "action", FUNCTION0));
+            // none tests the action the other way round in both lambdas, so neither check is an override check.
+            int none = code.branch(new ImmutableInstruction21t(fault.equals("copy-text-none") ? Opcode.IF_EQZ : Opcode.IF_NEZ, 3, 1));
             code.add(op(Opcode.RETURN_OBJECT, 1));
             int act = code.size();
             code.add(invoke(POST_ROW_PRESS, 0, 3));
@@ -2074,10 +2081,10 @@ public class BadDexFixture {
         post.add(fault.equals("copy-text-selection-written") ? new ImmutableInstruction22b(Opcode.XOR_INT_LIT8, 1, 4, 1)
                 : fault.equals("copy-text-selection-constant") ? new ImmutableInstruction11n(Opcode.CONST_4, 1, 1)
                 : new ImmutableInstruction12x(Opcode.MOVE, 1, 4));
-        int check = post.branch(ifEqz(1, 0));
+        int check = post.branch(fault.equals("copy-text-selection-unchecked") ? new ImmutableInstruction21t(Opcode.IF_NEZ, 1, 0) : ifEqz(1, 0));
         post.add(invoke(method(POST_TEXT, "select", "V", OBJECT), 3));
         int end = post.size();
-        if (patched && fault.equals("copy-text-selection-body")) post.add(op(Opcode.NOP));
+        if (patched && (fault.equals("copy-text-selection-body") || fault.equals("copy-text-omitted-selection-body"))) post.add(op(Opcode.NOP));
         post.add(op(Opcode.RETURN_VOID));
         int fallback = post.size();
         if (fault.equals("copy-text-selection-default")) {
@@ -2107,9 +2114,10 @@ public class BadDexFixture {
      * type. Answers where the if-eqz is, for the caller to aim.
      */
     private static int copyTextHook(BrowserCode code, String fault) {
-        int free = fault.equals("copy-text-live") ? 0 : fault.equals("copy-text-parameter") ? 6 : 4;
-        int skip = code.branch(ifEqz(1, 1));
-        code.add(objectField(Opcode.IGET_OBJECT, free, 1, PRESS_OVERRIDE, fault.equals("copy-text-action") ? "other" : "action", FUNCTION0));
+        int free = fault.equals("copy-text-live") ? 0 : fault.equals("copy-text-parameter") ? 6 : fault.equals("copy-text-free-held") ? 1 : 4;
+        int skip = code.branch(ifEqz(fault.equals("copy-text-null-register") ? 2 : 1, 1));
+        code.add(objectField(Opcode.IGET_OBJECT, free, fault.equals("copy-text-action-register") ? 6 : 1, PRESS_OVERRIDE,
+                fault.equals("copy-text-action") || fault.equals("copy-text-actions-link") ? "other" : "action", FUNCTION0));
         code.add(fault.equals("copy-text-swapped") ? invoke(COPY_LONG_PRESS, free, 1) : invoke(COPY_LONG_PRESS, 1, free));
         code.add(op(Opcode.MOVE_RESULT_OBJECT, fault.equals("copy-text-result") ? free : 1));
         code.add(type(Opcode.CHECK_CAST, 1, fault.equals("copy-text-cast") ? FUNCTION0 : PRESS_OVERRIDE));
@@ -3036,15 +3044,17 @@ public class BadDexFixture {
             dexes.put("features-bad-" + fault, featureBuild(true, Set.of("settingsRow"), 0, fault));
         }
         // And Copy text, which comes with the settings row: hook faults with it selected, then left out,
-        // then the four stock faults, which need a clean build of their own.
-        for (String fault : List.of("moved", "target", "action", "live", "parameter", "swapped", "result", "cast", "body", "missing", "double", "stray",
+        // then the stock faults, which need a clean build of their own.
+        for (String fault : List.of("moved", "target", "null-register", "action", "action-register", "live", "parameter", "free-held", "swapped",
+                "result", "cast", "body", "missing", "double", "stray",
                 "selection-register", "selection-result", "selection-body", "selection-missing", "selection-stray")) {
             dexes.put("features-bad-copy-text-" + fault, featureBuild(true, Set.of("settingsRow"), 0, "copy-text-" + fault));
         }
-        for (String fault : List.of("omitted-hook", "omitted-selection", "omitted-body")) {
+        for (String fault : List.of("omitted-hook", "omitted-selection", "omitted-body", "omitted-selection-body")) {
             dexes.put("features-bad-copy-text-" + fault, featureBuild(true, Set.of(), 0, "copy-text-" + fault));
         }
-        for (String fault : List.of("shared", "selection-written", "selection-constant", "selection-default")) {
+        for (String fault : List.of("shared", "none", "actions", "selection-written", "selection-constant", "selection-default",
+                "selection-unchecked", "selection-twice")) {
             dexes.put("features-copy-text-" + fault + "-clean", featureBuild(false, Set.of(), 0, "copy-text-" + fault));
             dexes.put("features-bad-copy-text-" + fault, featureBuild(true, Set.of("settingsRow"), 0, "copy-text-" + fault));
         }
