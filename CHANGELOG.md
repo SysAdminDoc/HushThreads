@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** The source census reads the Morphe Patch Tracker again. Its list now carries a couple of bundles twice under keys that differ only in case (immortalzeus:dev and ImmortalZeus:dev), and the census refused the whole file as unreadable JSON. It reads those keys as they are now and counts each repository once, in PowerShell 7 and Windows PowerShell 5.1 alike.
+
 * **Tooling:** The final APK check now holds Hide suggested users on profiles to its own contract. It finds both places from the clean DEX alone: the profile screen's suggested accounts carousel, which has to hand its list to the extension right before Threads' own null check and cast the answer back, and the header row, which has to ask first thing on its path and leave by its check's other side through a local nothing reads. A build without the patch has to leave both as Threads wrote them, with no call to the extension anywhere.
 
 * **Tooling:** The final APK check now holds Copy text on long press to its own contract whenever Settings is selected. Every override check in the post row has to carry the patch's hook, which hands the override and its own action to the extension in a free local and casts the answer back, and PostText has to ask about its selection switch first thing. A build without Settings has to leave both exactly as Threads wrote them.

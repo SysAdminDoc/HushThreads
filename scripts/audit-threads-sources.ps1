@@ -229,6 +229,23 @@ function ConvertFrom-SourceJson {
     }
 }
 
+function ConvertFrom-SourceJsonTable {
+    # A JSON object whose keys may differ only in case, read as a case-sensitive dictionary. The
+    # tracker lists one owner under two casings (immortalzeus:dev and ImmortalZeus:dev), which
+    # ConvertFrom-Json refuses as an object. Windows PowerShell has no -AsHashtable, so it gets the
+    # serializer its ConvertFrom-Json is built on.
+    param([string]$Text, [string]$What)
+    try {
+        if ($PSVersionTable.PSVersion.Major -ge 6) { return , ($Text | ConvertFrom-Json -AsHashtable) }
+        Add-Type -AssemblyName System.Web.Extensions
+        $serializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+        $serializer.MaxJsonLength = [int]::MaxValue
+        return , $serializer.DeserializeObject($Text)
+    } catch {
+        throw "$What did not answer JSON: $($_.Exception.Message)"
+    }
+}
+
 function Get-JsonItems {
     # The elements of a parsed JSON array, one at a time, the same way in both editions: Windows
     # PowerShell hands a top-level array over as one object, PowerShell 7 one element at a time.
@@ -238,9 +255,10 @@ function Get-JsonItems {
 }
 
 function Get-SourceJson {
-    param([string]$Uri, [string]$Auth = 'plain', [string]$What = $Uri)
+    param([string]$Uri, [string]$Auth = 'plain', [string]$What = $Uri, [switch]$Table)
     $answer = Invoke-SourceRequest -Uri $Uri -Auth $Auth
     if ($answer.Status -ne 200) { throw "$What answered HTTP $($answer.Status)." }
+    if ($Table) { return , (ConvertFrom-SourceJsonTable -Text $answer.Content -What $What) }
     return , (ConvertFrom-SourceJson -Text $answer.Content -What $What)
 }
 
@@ -440,10 +458,10 @@ Invoke-Source 'Awesome Morphe' {
 }
 
 Invoke-Source 'Morphe Patch Tracker' {
-    $tracker = Get-SourceJson -Uri 'https://raw.githubusercontent.com/drnx64/morphe-track-patches/main/data/bundles.json' -What 'the Morphe Patch Tracker'
+    $tracker = Get-SourceJson -Uri 'https://raw.githubusercontent.com/drnx64/morphe-track-patches/main/data/bundles.json' -What 'the Morphe Patch Tracker' -Table
     $seen = @{}
     $listed['morphe-patch-tracker'] = $false
-    foreach ($property in $tracker.PSObject.Properties) {
+    foreach ($property in $tracker.GetEnumerator()) {
         $bundle = $property.Value
         $key = ConvertTo-SourceKey ([string]$bundle.repo_url)
         if ($key -and $key -eq $selfKey) { $listed['morphe-patch-tracker'] = $true }

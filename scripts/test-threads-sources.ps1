@@ -732,6 +732,19 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     Assert-Drift 'listing-changed' '*Morphe Patch Tracker no longer lists HushThreads*' 'A listing that disappeared'
     $fakeForge.Answers = New-FakeAnswers
 
+    # The tracker has listed one owner under keys that differ only in case (immortalzeus:dev and
+    # ImmortalZeus:dev). The audit reads both and counts the repository once.
+    $trackerApps = '"apps":[{"package":"com.instagram.barcelona","patches":[{"name":"Hide ads"}]}]'
+    $fakeForge.Answers.tracker.Content = '{"sysadmindoc:stable":{"repo_url":"https://github.com/SysAdminDoc/HushThreads",' + $trackerApps + '},' +
+        '"alpha:stable":{"repo_url":"https://github.com/fixture-owner/alpha-patches",' + $trackerApps + '},' +
+        '"Alpha:stable":{"repo_url":"https://github.com/fixture-owner/alpha-patches",' + $trackerApps + '}}'
+    $cased = Invoke-Audit
+    Assert-True ($cased.ExitCode -eq 0 -and $cased.Said -like '*Morphe Patch Tracker: 2 Threads bundles; HushThreads listed*') `
+        ("Tracker keys that differ only in case were not read: exit $($cased.ExitCode), " +
+            (@($cased.Report.findings | ForEach-Object { "$($_.kind): $($_.repository) $($_.detail)" }) -join ' | '))
+    Reset-FixtureLedger
+    $fakeForge.Answers = New-FakeAnswers
+
     $fakeForge.Answers.official.Content = '{"patches":[{"name":"Hide ads","compatiblePackages":[{"packageName":"com.instagram.barcelona"}]}]}'
     Assert-Drift 'official-bundle-changed' '*official bundle now patches*com.instagram.barcelona*' 'The official bundle taking on Threads'
     $fakeForge.Answers = New-FakeAnswers
