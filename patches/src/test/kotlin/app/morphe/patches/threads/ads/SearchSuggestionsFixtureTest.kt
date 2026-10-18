@@ -11,6 +11,7 @@ import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.removeInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -179,6 +180,47 @@ class SearchSuggestionsFixtureTest {
             val error = assertThrows(build.name, PatchException::class.java) { context.searchSuggestionTargets() }
             assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("not through one check"))
             assertFalse(build.name, method.body().any { it.calls(SHOW_SEARCH_CAROUSEL) })
+        }
+    }
+
+    @Test
+    fun `a check that jumps onto the carousel's path gets the same hook`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val where = build.name
+            val context = context(build)
+            val stock = context.searchSuggestionTargets()
+            val method = stock.method
+            // 451's check turned around, the other way D8 lays out the same test: an if-eqz that
+            // jumps onto the carousel's path for a list that isn't empty, and a goto to the empty
+            // side right below it.
+            val compared = (method.body()[stock.guard] as OneRegisterInstruction).registerA
+            method.addInstructionsWithLabels(stock.guard, """
+                if-eqz v$compared, :carousel
+                goto/32 :empty
+            """, ExternalLabel("carousel", method.getInstruction(stock.start)), ExternalLabel("empty", method.getInstruction(stock.away)))
+            method.removeInstruction(stock.guard + 2)
+            val turned = method.body()
+            val targets = context.searchSuggestionTargets()
+            assertEquals(where, stock.guard, targets.guard)
+            assertEquals(where, Opcode.IF_EQZ, turned[targets.guard].opcode)
+            assertEquals(where, stock.start + 1, targets.start)
+            assertEquals(where, targets.start, turned.jumpTarget(targets.guard))
+            assertEquals(where, stock.guard + 1, targets.away)
+            assertEquals(where, stock.away + 1, turned.jumpTarget(targets.away))
+
+            hookSearchSuggestions(targets)
+
+            // The check's jump lands on the hook, and a false answer leaves by the goto.
+            val patched = method.body()
+            assertEquals(where, turned.size + 3, patched.size)
+            assertEquals(where, targets.start, patched.jumpTarget(targets.guard))
+            assertTrue(where, patched[targets.start].calls(SHOW_SEARCH_CAROUSEL))
+            assertEquals(where, targets.free, (patched[targets.start + 1] as OneRegisterInstruction).registerA)
+            assertEquals(where, Opcode.IF_EQZ, patched[targets.start + 2].opcode)
+            assertEquals(where, targets.away, patched.jumpTarget(targets.start + 2))
+            assertEquals(where, stock.away + 4, patched.jumpTarget(targets.away))
+            assertEquals(where, turned.map { it.text(offsets = false) },
+                (patched.take(targets.start) + patched.drop(targets.start + 3)).map { it.text(offsets = false) })
         }
     }
 
