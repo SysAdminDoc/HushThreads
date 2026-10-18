@@ -2356,6 +2356,8 @@ public class BadDexFixture {
      * faults break one part each, and the omitted ones keep a hook, a call or a changed instruction
      * with the patch left out. shared and compared are stock faults, on both sides: a second way onto
      * the carousel, and a view model that reads what its check compared past the check's other side.
+     * gap, polarity, other-register and joined are stock faults of the carousel's null check, and
+     * flipped is a good layout on both sides whose row check jumps onto the row's path.
      */
     private static List<ClassDef> profileClasses(boolean carousel, boolean row, String fault) {
         List<ClassDef> classes = new ArrayList<>();
@@ -2394,12 +2396,21 @@ public class BadDexFixture {
         screen.add(objectField(Opcode.IGET_OBJECT, 1, 3, "Lfixture/ProfileState;", "suggested", SHORTCUT_LIST));
         int copies = !carousel || fault.equals("profile-carousel-missing") || fault.equals("profile-carousel-moved") ? 0
                 : fault.equals("profile-carousel-double") ? 2 : 1;
+        // result-dropped leaves carousel()'s answer behind, cast-register and uncast leave the list's
+        // register as it was read.
         List<Instruction> carouselHook = List.of(
                 new ImmutableInstruction3rc(Opcode.INVOKE_STATIC_RANGE, fault.equals("profile-carousel-register") ? 0 : 1, 1, PROFILE_CAROUSEL),
-                op(Opcode.MOVE_RESULT_OBJECT, fault.equals("profile-carousel-result") ? 0 : 1),
-                type(Opcode.CHECK_CAST, 1, fault.equals("profile-carousel-cast") ? "Ljava/util/Collection;" : SHORTCUT_LIST));
+                fault.equals("profile-carousel-result-dropped") ? new ImmutableInstruction12x(Opcode.MOVE_OBJECT, 1, 1)
+                        : op(Opcode.MOVE_RESULT_OBJECT, fault.equals("profile-carousel-result") ? 0 : 1),
+                fault.equals("profile-carousel-uncast") ? type(Opcode.CONST_CLASS, 1, SHORTCUT_LIST)
+                        : type(Opcode.CHECK_CAST, fault.equals("profile-carousel-cast-register") ? 0 : 1, fault.equals("profile-carousel-cast") ? "Ljava/util/Collection;" : SHORTCUT_LIST));
         for (int n = 0; n < copies; n++) carouselHook.forEach(screen::add);
-        int check = screen.branch(new ImmutableInstruction21t(Opcode.IF_NEZ, 1, 0));
+        // gap puts an instruction between the read and its check, polarity builds the carousel on a
+        // null list, other-register checks the modifier instead, and joined jumps back onto the
+        // check from the carousel's path.
+        if (fault.equals("profile-carousel-gap")) screen.add(new ImmutableInstruction11n(Opcode.CONST_4, 2, 0));
+        int check = screen.branch(new ImmutableInstruction21t(fault.equals("profile-carousel-polarity") ? Opcode.IF_EQZ : Opcode.IF_NEZ,
+                fault.equals("profile-carousel-other-register") ? 4 : 1, 0));
         int second = fault.equals("profile-carousel-shared") ? screen.branch(ifEqz(4, 0)) : -1;
         screen.add(op(Opcode.RETURN_VOID));
         int built = screen.size();
@@ -2408,10 +2419,12 @@ public class BadDexFixture {
         screen.add(type(Opcode.NEW_INSTANCE, 2, PROFILE_CAROUSEL_ROW));
         screen.add(direct(method(PROFILE_CAROUSEL_ROW, "<init>", "V", SHORTCUT_LIST), 2, 1));
         screen.add(invoke(method(PROFILE_SCREEN, "show", "V", OBJECT), 2));
+        int rejoin = fault.equals("profile-carousel-joined") ? screen.branch(ifEqz(4, 0)) : -1;
         if (fault.equals("profile-carousel-body") || fault.equals("profile-carousel-omitted-body")) screen.add(op(Opcode.NOP));
         screen.add(op(Opcode.RETURN_VOID));
         screen.to(check, built);
         if (second >= 0) screen.to(second, built);
+        if (rejoin >= 0) screen.to(rejoin, check);
         List<Instruction> refresh = new ArrayList<>();
         if (fault.equals("profile-carousel-stray")) refresh.addAll(List.of(invoke(PROFILE_CAROUSEL, 0), op(Opcode.MOVE_RESULT_OBJECT, 0)));
         refresh.add(op(Opcode.RETURN_VOID));
@@ -2427,7 +2440,12 @@ public class BadDexFixture {
         rows.add(new ImmutableInstruction35c(Opcode.INVOKE_INTERFACE, 1, 7, 0, 0, 0, 0, method(SHORTCUT_LIST, "size", "I")));
         rows.add(op(Opcode.MOVE_RESULT, 1));
         rows.add(new ImmutableInstruction11n(Opcode.CONST_4, 2, 0));
-        int guard = rows.branch(new ImmutableInstruction22t(Opcode.IF_EQ, 1, 2, 0));
+        // flipped is a good build whose check jumps onto the row's path and falls into a goto to the
+        // other side, so that side sits above the hook and keeps its place.
+        boolean flipped = fault.equals("profile-row-flipped");
+        int guard = rows.branch(new ImmutableInstruction22t(flipped ? Opcode.IF_NE : Opcode.IF_EQ, 1, 2, 0));
+        int skip = flipped ? rows.branch(new com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction20t(Opcode.GOTO_16, 0)) : -1;
+        int path = rows.size();
         List<Integer> leaves = new ArrayList<>();
         int rowCopies = !row || fault.equals("profile-row-missing") ? 0 : fault.equals("profile-row-double") ? 2 : 1;
         int scratch = fault.equals("profile-row-live-start") ? 0 : fault.equals("profile-row-live-away") ? 4
@@ -2436,7 +2454,9 @@ public class BadDexFixture {
             rows.add(invoke(SHOW_PROFILE_ROW));
             // ignored drops the answer and tests a constant, so the row always shows.
             rows.add(fault.equals("profile-row-ignored") ? new ImmutableInstruction11n(Opcode.CONST_4, scratch, 1) : op(Opcode.MOVE_RESULT, scratch));
-            leaves.add(rows.branch(new ImmutableInstruction21t(fault.equals("profile-row-inverted") ? Opcode.IF_NEZ : Opcode.IF_EQZ, scratch, 0)));
+            // tested branches on the list's size instead of the answer, so the row always shows.
+            leaves.add(rows.branch(new ImmutableInstruction21t(fault.equals("profile-row-inverted") ? Opcode.IF_NEZ : Opcode.IF_EQZ,
+                    fault.equals("profile-row-tested") ? 1 : scratch, 0)));
         }
         rows.add(type(Opcode.NEW_INSTANCE, 3, SUGGESTIONS_ROW));
         rows.add(direct(method(SUGGESTIONS_ROW, "<init>", "V", SHORTCUT_LIST), 3, 7));
@@ -2449,9 +2469,12 @@ public class BadDexFixture {
         if (fault.equals("profile-row-body") || fault.equals("profile-row-omitted-body")) rows.add(op(Opcode.NOP));
         int end = rows.size();
         rows.add(op(Opcode.RETURN_VOID));
-        rows.to(guard, away);
+        if (flipped) {
+            rows.to(guard, path);
+            rows.to(skip, away);
+        } else rows.to(guard, away);
         // target leaves for the return, past the other side's own work.
-        for (int leave : leaves) rows.to(leave, fault.equals("profile-row-target") ? end : away);
+        for (int leave : leaves) rows.to(leave, fault.equals("profile-row-target") ? end : flipped ? skip : away);
         List<Instruction> load = new ArrayList<>();
         if (fault.equals("profile-row-stray") || fault.equals("profile-row-omitted-call")) load.addAll(List.of(invoke(SHOW_PROFILE_ROW), op(Opcode.MOVE_RESULT, 0)));
         load.add(op(Opcode.RETURN_VOID));
@@ -2958,18 +2981,21 @@ public class BadDexFixture {
         }
         // The profile's carousel and header row the same way, then the two stock faults, which need a
         // clean build of their own.
-        for (String fault : List.of("carousel-missing", "carousel-register", "carousel-result", "carousel-cast", "carousel-moved", "carousel-double",
-                "carousel-stray", "carousel-body", "row-missing", "row-inverted", "row-ignored", "row-target", "row-double", "row-stray",
-                "row-live-start", "row-live-away", "row-parameter", "row-body")) {
+        for (String fault : List.of("carousel-missing", "carousel-register", "carousel-result", "carousel-result-dropped", "carousel-cast",
+                "carousel-cast-register", "carousel-uncast", "carousel-moved", "carousel-double", "carousel-stray", "carousel-body", "row-missing",
+                "row-inverted", "row-tested", "row-ignored", "row-target", "row-double", "row-stray", "row-live-start", "row-live-away", "row-parameter",
+                "row-body")) {
             dexes.put("features-bad-profile-" + fault, featureBuild(true, Set.of("hideSuggestedUsers"), 0, "profile-" + fault));
         }
         for (String fault : List.of("carousel-omitted-hook", "carousel-omitted-body", "row-omitted-hook", "row-omitted-call", "row-omitted-body")) {
             dexes.put("features-bad-profile-" + fault, featureBuild(true, Set.of(), 0, "profile-" + fault));
         }
-        for (String fault : List.of("carousel-shared", "row-compared")) {
+        for (String fault : List.of("carousel-shared", "carousel-gap", "carousel-polarity", "carousel-other-register", "carousel-joined", "row-compared")) {
             dexes.put("features-profile-" + fault + "-clean", featureBuild(false, Set.of(), 0, "profile-" + fault));
             dexes.put("features-bad-profile-" + fault, featureBuild(true, Set.of("hideSuggestedUsers"), 0, "profile-" + fault));
         }
+        dexes.put("features-profile-row-flipped-clean", featureBuild(false, Set.of(), 0, "profile-row-flipped"));
+        dexes.put("features-profile-row-flipped", featureBuild(true, Set.of("hideSuggestedUsers"), 0, "profile-row-flipped"));
         // Background-return refresh alone, so a failure can only be its own.
         for (String fault : List.of("hot-start-missing", "hot-start-inverted", "reset-missing", "reset-register",
                 "warm-start-missing", "warm-start-moved", "cached-posts-missing", "cached-posts-bypass")) {

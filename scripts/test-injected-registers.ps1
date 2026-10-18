@@ -811,23 +811,41 @@ try {
     # one call each in all of Threads, and the rest of both methods; left out, no call anywhere and
     # both methods as Threads shipped them. The scratch faults reach one part of the liveness check
     # each: live-start the row's path, live-away the check's other side, parameter the locals bound.
-    # Two stock builds have their own clean DEX: a carousel reached past its check from a second
-    # branch, and a row whose check's register is read again on its other side. The faults only one
-    # part refuses come first; missing, double and the omitted hooks break several parts at once.
+    # Six stock builds have their own clean DEX: a carousel reached past its check from a second
+    # branch; a null check with an instruction between it and the read, the wrong polarity, the
+    # wrong register or a second way onto it; and a row whose check's register is read again on its
+    # other side. The faults only one part refuses come first; missing, double and the omitted hooks
+    # break several parts at once.
     $profileGood = Invoke-DexDiff -Clean $featureClean -Patched (New-DexApk -Name 'features-profile-good' -Entries ([ordered]@{
         'classes.dex' = (Get-Dex 'features-only-hideSuggestedUsers') })) -Allowlist $emptyAllowlist -Name 'features-profile-good' -Contracts $contracts -Features 'hideSuggestedUsers'
     Assert-True ($profileGood.ExitCode -eq 0 -and ($profileGood.Output -join [Environment]::NewLine) -match
         [regex]::Escape('Profile suggestions hook the carousel at 2 of Lfixture/ProfileScreen;->Content(Ljava/lang/Object;Ljava/lang/Object;)V and the row at 6 of')) `
         ("The good build did not name both profile suggestion sites. " + ($profileGood.Output -join [Environment]::NewLine))
+    # A row check that jumps onto the row's path and falls into a goto to its other side: that side
+    # sits above the hook, so a false answer goes to the goto where it always was.
+    $flippedClean = New-DexApk -Name 'features-profile-row-flipped-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-profile-row-flipped-clean') })
+    $flippedApk = New-DexApk -Name 'features-profile-row-flipped' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-profile-row-flipped') })
+    $flipped = Invoke-DexDiff -Clean $flippedClean -Patched $flippedApk -Allowlist $emptyAllowlist -Name 'features-profile-row-flipped' -Contracts $contracts -Features 'hideSuggestedUsers'
+    Assert-True ($flipped.ExitCode -eq 0 -and ($flipped.Output -join [Environment]::NewLine) -match
+        [regex]::Escape('and the row at 7 of Lcom/instagram/barcelona/profile/viewmodel/ProfileViewModel;->rows(Ljava/util/List;Ljava/util/List;I)V')) `
+        ("A row check that jumps onto the row's path was refused. " + ($flipped.Output -join [Environment]::NewLine))
     $profileFaults = [ordered]@{
         'carousel-register' = "no hook at the carousel's null check at 2 in Lfixture/ProfileScreen;->Content(Ljava/lang/Object;Ljava/lang/Object;)V that hands carousel() the list in v1"
         'carousel-result' = "doesn't take carousel()'s answer back into the list's register, v1"
+        'carousel-result-dropped' = "doesn't take carousel()'s answer back into the list's register, v1"
         'carousel-cast' = "doesn't cast carousel()'s answer back to the list's type, Ljava/util/List;"
+        'carousel-cast-register' = "doesn't cast carousel()'s answer back to the list's type, Ljava/util/List;"
+        'carousel-uncast' = "doesn't cast carousel()'s answer back to the list's type, Ljava/util/List;"
         'carousel-moved' = "no hook at the carousel's null check at 2 in Lfixture/ProfileScreen;->Content(Ljava/lang/Object;Ljava/lang/Object;)V that hands carousel() the list in v1"
         'carousel-stray' = 'ProfileSuggestions;->carousel(Ljava/lang/Object;)Ljava/lang/Object; host calls differ'
         'carousel-body' = 'ProfileScreen;->Content(Ljava/lang/Object;Ljava/lang/Object;)V changed original instruction 7'
         'carousel-shared' = 'is reached from [2, 3] at instruction 5, not through one check'
+        'carousel-gap' = "doesn't build its carousel only past a null check of the list it reads at 1"
+        'carousel-polarity' = "doesn't build its carousel only past a null check of the list it reads at 1"
+        'carousel-other-register' = "doesn't build its carousel only past a null check of the list it reads at 1"
+        'carousel-joined' = "doesn't build its carousel only past a null check of the list it reads at 1"
         'row-inverted' = 'leaves on something other than a false answer'
+        'row-tested' = 'leaves on something other than a false answer'
         'row-ignored' = "no hook at the start of the row's path at 6 in Lcom/instagram/barcelona/profile/viewmodel/ProfileViewModel;->rows(Ljava/util/List;Ljava/util/List;I)V that takes showRow()'s answer"
         'row-target' = "sends a false answer to instruction 15, not the check's own other side at 14"
         'row-live-start' = "clobbers v0, which isn't a local nothing reads from there or from the check's other side"
@@ -849,7 +867,7 @@ try {
     foreach ($fault in $profileFaults.Keys) {
         $case = "features-bad-profile-$fault"
         $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
-        $stock = if ($fault -in @('carousel-shared', 'row-compared')) {
+        $stock = if ($fault -in @('carousel-shared', 'carousel-gap', 'carousel-polarity', 'carousel-other-register', 'carousel-joined', 'row-compared')) {
             New-DexApk -Name "features-profile-$fault-clean" -Entries ([ordered]@{ 'classes.dex' = (Get-Dex "features-profile-$fault-clean") })
         } else { $featureClean }
         $selection = if ($fault.Contains('omitted-')) { 'none' } else { 'hideSuggestedUsers' }
@@ -1355,7 +1373,7 @@ try {
     $missing = Invoke-DexDiff -Clean $featureClean -Patched $featureGood -Allowlist $emptyAllowlist -Name 'missing-suggestion-rule' -Contracts $missingSuggestionRule -Features $featureCases['features-good']
     Assert-True ($missing.ExitCode -ne 0 -and ($missing.Output -join [Environment]::NewLine) -match 'selected feature has no contract: hideSuggestedUsers') `
         'Selected Suggested Users without its contract was silently skipped.'
-    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 7) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $profileFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $copyTextFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
+    Write-Host "[scripts] selected feature contracts passed ($($featureCases.Count + $sourceProofs.Count + 8) good selections, $($featureFaults.Count + $browserDirectFaults.Count + $searchCarouselFaults.Count + $profileFaults.Count + $returnFaults.Count + $autoplayFaults.Count + $pureBlackFaults.Count + $settingsRowFaults.Count + $copyTextFaults.Count + $liveFaults.Count + 2 + $suggestionFaults.Count + $omittedFaults.Count + 11) structurally valid corruptions, duplicates and historical omissions checked)"
 
     $bad = [ordered]@{
         'bad-branch' = 'branch'

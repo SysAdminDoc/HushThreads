@@ -3207,10 +3207,10 @@ public class DexDiff {
     /**
      * The profile's two places as Threads shipped them: in [screen], the read at [read] that puts the
      * carousel's list, a [type], in [list], with the null check right after it the only way to the
-     * carousel; in [builder], the view model's check at [guard] that is the only way to the row's
-     * path from [start], and [away], where that check goes otherwise.
+     * carousel; in [builder], [start], the row's path past the view model's one check, and [away],
+     * where that check goes otherwise.
      */
-    private record ProfileSites(Method screen, int read, int list, String type, Method builder, int guard, int start, int away) {}
+    private record ProfileSites(Method screen, int read, int list, String type, Method builder, int start, int away) {}
 
     /** One call to the suggested accounts row, at [at] of [method], and the Compose note governing it, if any. */
     private record ProfileRowCall(Method method, int at, MethodReference callee, String note) {}
@@ -3293,9 +3293,10 @@ public class DexDiff {
     }
 
     /**
-     * {guard, start, away}: walks back from [target] while each instruction is reached only by falling
-     * from the one above, and answers the conditional that is then the single way in, and where it
-     * goes otherwise. Refuses a jump, a switch or a handler into the stretch, or more than one way in.
+     * {guard, start, away, before}: walks back from [target] while each instruction is reached only by
+     * falling from the one above, and answers the conditional that is then the single way in, where
+     * it goes otherwise, and the check's one way in, or -1 when it has more than one. Refuses a jump,
+     * a switch or a handler into the stretch, or more than one way in.
      */
     private static int[] featureSoleEntry(FeatureFlow flow, int target, String what) {
         List<Instruction> body = flow.layout.instructions;
@@ -3487,7 +3488,7 @@ public class DexDiff {
         for (int r : namedRegisters(makerBody.get(rowEntry[0]))) if (!makerFlow.readsFrom(rowEntry[2], r).isEmpty()) compared.add("v" + r);
         requireFeature(compared.isEmpty(), featureSig(maker) + " reads " + String.join(", ", compared) + " again past its check at " + rowEntry[0]
                 + ", so leaving the row's path there wouldn't match Threads' own");
-        return new ProfileSites(built, read, register, list, maker, rowEntry[0], rowEntry[1], rowEntry[2]);
+        return new ProfileSites(built, read, register, list, maker, rowEntry[1], rowEntry[2]);
     }
 
     /**
