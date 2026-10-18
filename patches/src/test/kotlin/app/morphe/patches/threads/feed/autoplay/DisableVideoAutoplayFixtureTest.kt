@@ -336,6 +336,107 @@ class DisableVideoAutoplayFixtureTest {
     }
 
     @Test
+    fun `the extension answers the prefetch skip with a boolean`() {
+        val method = ExtensionDex.classDef(VIDEO_AUTOPLAY).methods.single { it.name == "skipPrefetch" }
+        assertTrue(AccessFlags.STATIC.isSet(method.accessFlags) && AccessFlags.PUBLIC.isSet(method.accessFlags))
+        assertEquals(listOf("Z"), method.parameterTypes.map { it.toString() })
+        assertEquals("Z", method.returnType)
+    }
+
+    @Test
+    fun `the prefetch skip hands the check's answer to the extension and uses what comes back`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val prefetch = prefetch(build)
+            val context = context(fixture(build))
+            val before = prefetch.skip.body()
+            disableVideoAutoplayPatch.execute(context)
+            val after = context.method(prefetch.skip)
+
+            val call = before.indices.single { before[it].reference() == prefetch.check.reference() }
+            val register = (before[call + 1] as OneRegisterInstruction).registerA
+            assertEquals(build.name, Opcode.MOVE_RESULT, before[call + 1].opcode)
+            assertEquals(build.name, Opcode.IF_NEZ, before[call + 2].opcode)
+            assertEquals(build.name, register, (before[call + 2] as OneRegisterInstruction).registerA)
+            assertEquals(build.name, before.size + 2, after.size)
+            // Everything up to and including the check's own call and result is as it was.
+            assertEquals(build.name, before.take(call + 2).map { it.opcode to it.reference() }, after.take(call + 2).map { it.opcode to it.reference() })
+            val hook = after[call + 2] as RegisterRangeInstruction
+            assertEquals(build.name, Opcode.INVOKE_STATIC_RANGE, hook.opcode)
+            assertEquals(build.name, "$VIDEO_AUTOPLAY->skipPrefetch(Z)Z", (hook as ReferenceInstruction).reference.toString())
+            assertEquals(build.name, register, hook.startRegister)
+            assertEquals(build.name, 1, hook.registerCount)
+            assertEquals(build.name, Opcode.MOVE_RESULT, after[call + 3].opcode)
+            assertEquals(build.name, register, (after[call + 3] as OneRegisterInstruction).registerA)
+            // The test reads the register the extension wrote, and everything after it is as it was.
+            assertEquals(build.name, Opcode.IF_NEZ, after[call + 4].opcode)
+            assertEquals(build.name, register, (after[call + 4] as OneRegisterInstruction).registerA)
+            assertEquals(build.name, before.drop(call + 2).map { it.opcode to it.reference() }, after.drop(call + 4).map { it.opcode to it.reference() })
+            // Its branch still lands on the same instruction: the one that sat there before.
+            val ifBefore = before[call + 2] as OffsetInstruction
+            val ifAfter = after[call + 4] as OffsetInstruction
+            val landed = before.indices.first { before.addressOf(it) == before.addressOf(call + 2) + ifBefore.codeOffset }
+            val landedAfter = after.indices.first { after.addressOf(it) == after.addressOf(call + 4) + ifAfter.codeOffset }
+            assertEquals(build.name, landed + 2, landedAfter)
+            assertEquals(build.name, 1, status(context))
+        }
+    }
+
+    @Test
+    fun `the autoplay check and the legacy autoplay checker stay as they were`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val prefetch = prefetch(build)
+            val context = context(fixture(build))
+            disableVideoAutoplayPatch.execute(context)
+            for (untouched in listOf(prefetch.check, prefetch.legacy, prefetch.dispatcher)) {
+                assertEquals(build.name, untouched.body().map { it.opcode to it.reference() }, context.method(untouched).map { it.opcode to it.reference() })
+            }
+            // The new answer is asked from the skip test only.
+            for (classDef in prefetch.classes) for (method in context.mutableClassDefBy(classDef.type).methods) {
+                val asks = method.body().any { it.reference() == "$VIDEO_AUTOPLAY->skipPrefetch(Z)Z" }
+                assertEquals("${build.name} ${method.reference()}", method.reference() == prefetch.skip.reference(), asks)
+            }
+        }
+    }
+
+    @Test
+    fun `no dispatcher, no autoplay check, a second check or a skip that doesn't test straight away is refused`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val prefetch = prefetch(build)
+            fun rename(method: Method, note: String): BytecodePatchContext = context(fixture(build)).also { context ->
+                val mutable = context.mutableMethod(method)
+                mutable.body().indices.filter { mutable.body()[it].getReference<StringReference>()?.string == note }.forEach {
+                    mutable.replaceInstruction(it, "const-string v${(mutable.body()[it] as OneRegisterInstruction).registerA}, \"some other note\"")
+                }
+            }
+            val noDispatcher = assertThrows(build.name, PatchException::class.java) {
+                disableVideoAutoplayPatch.execute(rename(prefetch.dispatcher, PREFETCH_DISPATCHER))
+            }
+            assertTrue(noDispatcher.message.orEmpty(), noDispatcher.message.orEmpty().contains("the video prefetch dispatcher"))
+
+            val noCheck = assertThrows(build.name, PatchException::class.java) {
+                disableVideoAutoplayPatch.execute(rename(prefetch.check, AUTOPLAY_OFF))
+            }
+            assertTrue(noCheck.message.orEmpty(), noCheck.message.orEmpty().contains("Instagram's autoplay-off check: expected exactly one match, found 0"))
+
+            val twice = context(fixture(build))
+            twice.mutableClassDefBy(prefetch.check.definingClass).methods.add(MutableMethod(ImmutableMethod(
+                prefetch.check.definingClass, "copyOfCheck", prefetch.check.parameters, prefetch.check.returnType,
+                prefetch.check.accessFlags, null, null, ImmutableMethodImplementation.of(prefetch.check.implementation),
+            )))
+            val second = assertThrows(build.name, PatchException::class.java) { disableVideoAutoplayPatch.execute(twice) }
+            assertTrue(second.message.orEmpty(), second.message.orEmpty().contains("Instagram's autoplay-off check: expected exactly one match, found 2"))
+
+            val askedBefore = context(fixture(build))
+            val skip = askedBefore.mutableMethod(prefetch.skip)
+            val call = skip.body().indices.single { skip.body()[it].reference() == prefetch.check.reference() }
+            skip.replaceInstruction(call + 2, "nop")
+            val noTest = assertThrows(build.name, PatchException::class.java) { disableVideoAutoplayPatch.execute(askedBefore) }
+            assertTrue(noTest.message.orEmpty(), noTest.message.orEmpty().contains("doesn't test the autoplay-off check's answer straight away"))
+            assertEquals(build.name, 0, status(askedBefore))
+        }
+    }
+
+    @Test
     fun `before the patch runs, no feed post asks and the status says it isn't in`() {
         for (build in Fixtures.declaredBuilds()) {
             val fixture = fixture(build)
@@ -366,6 +467,7 @@ class DisableVideoAutoplayFixtureTest {
         val embeds: List<Site>,
         val viewer: List<Method>,
         val viewerCalls: List<Site>,
+        val prefetch: Prefetch,
     )
 
     private fun fixture(build: File): Fixture = fixtures.getOrPut(build) {
@@ -423,10 +525,37 @@ class DisableVideoAutoplayFixtureTest {
         val sites = methods.filter { it.holdsNote(POST_SINGLE_MEDIA) || it.holdsNote(POST_CAROUSEL) }.flatMap(::calls)
         val embeds = methods.filter { method -> EMBEDS.any { method.holdsNote(it) } }.flatMap(::calls)
         val viewer = methods.filter { it.holdsNote(MEDIA_VIEWER) }
-        Fixture(classes, postVideo, effect, forwarder, sites, embeds, viewer, viewer.flatMap(::calls))
+        Fixture(classes, postVideo, effect, forwarder, sites, embeds, viewer, viewer.flatMap(::calls), prefetch(build))
     }
 
-    private fun context(fixture: Fixture) = PatchContexts.of(ExtensionDex.classes() + fixture.classes)
+    /**
+     * Instagram's autoplay-off [check], read here by its own two strings, and its two callers: the
+     * prefetch [skip] the [dispatcher] calls directly, and the [legacy] autoplay checker.
+     */
+    private data class Prefetch(val classes: List<ClassDef>, val check: Method, val dispatcher: Method, val skip: Method, val legacy: Method)
+
+    private fun prefetch(build: File): Prefetch = prefetches.getOrPut(build) {
+        val holders = FixtureDex.classesWhere(build, { true }) { it.holdsString(AUTOPLAY_OFF) || it.holdsString(PREFETCH_DISPATCHER) }
+        val methods = holders.flatMap { it.methods }
+        val check = methods.filter { it.holdsString(AUTOPLAY_OFF) && it.holdsString(AUTOPLAY_OFF_OLYMPUS) }.single()
+        assertTrue(build.name, AccessFlags.STATIC.isSet(check.accessFlags))
+        assertEquals(build.name, "Z", check.returnType)
+        assertEquals(build.name, 1, check.parameterTypes.size)
+        val dispatcher = methods.single { it.holdsString(PREFETCH_DISPATCHER) }
+        val callers = FixtureDex.methodsWhere(build, { true }) { method ->
+            method.implementation?.instructions?.any { it.reference() == check.reference() } == true
+        }
+        assertEquals("${build.name}: the check's callers", 2, callers.size)
+        val skip = callers.single { caller -> dispatcher.body().any { it.reference() == caller.reference() } }
+        val legacy = callers.single { it.reference() != skip.reference() }
+        assertTrue(build.name, legacy.holdsNote("Video autoplay not allowed"))
+        assertFalse(build.name, skip.body().any { it.getReference<StringReference>() != null })
+        val types = setOf(skip.definingClass, legacy.definingClass)
+        val classes = (holders + FixtureDex.classes(build, types).values).distinctBy { it.type }
+        Prefetch(classes, check, dispatcher, skip, legacy)
+    }
+
+    private fun context(fixture: Fixture) = PatchContexts.of(ExtensionDex.classes() + fixture.classes + fixture.prefetch.classes)
 
     /** The last literal PostVideo writes as the effect's play argument before calling it. */
     private fun Method.playWrite(effect: Method): Int {
@@ -475,5 +604,6 @@ class DisableVideoAutoplayFixtureTest {
 
         /** One read of each build serves every test; each test patches its own copy. */
         val fixtures = mutableMapOf<File, Fixture>()
+        val prefetches = mutableMapOf<File, Prefetch>()
     }
 }

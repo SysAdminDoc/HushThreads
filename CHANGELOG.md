@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** Disable video autoplay now also tells Threads' video prefetcher to hold off. The switch only held a feed video at its cover frame, so Threads could still start downloading a held video ahead of time. The patch now answers the prefetcher's autoplay-off question itself, only where the prefetcher asks it, so Instagram's older autoplay checker is left alone. With the switch off, paused or in safe mode, Threads' own answer goes back as before.
+
 * **Threads:** Save's messages are short enough to read whole on Android 12 and later, which cut a message after two lines. On an S22 the proxy message stopped mid-word, and the slow-download one was just as long. A carousel's result now shows each line as its own message, so a line under the counts, like a proxy asking for a password, isn't lost. The German, Spanish, Indonesian, Portuguese and Turkish wording was shortened to fit too.
 
 * **Tooling:** The final APK check now holds Save photos and videos to its own contract. The post menu's Copy link path has to carry exactly one Save row, drawn with the calls Copy link's own row is built from and handed the menu and its composer, while every other menu item still reaches Copy link as before. The row's readers, its click and all fifteen media bridges have to point where the patch found them. A build without Save has to leave the menu and every stub as they shipped, and a bundle from before Save had a status reads as leaving it out.

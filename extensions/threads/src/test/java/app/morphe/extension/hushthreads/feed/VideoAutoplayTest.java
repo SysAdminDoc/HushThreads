@@ -81,6 +81,40 @@ public class VideoAutoplayTest {
         assertTrue(Settings.DISABLE_VIDEO_AUTOPLAY.savedValue());
     }
 
+    /** On, a prefetch that Threads would run is skipped, and it's counted. */
+    @Test public void prefetchIsSkippedWhenTheSwitchIsOn() {
+        assertTrue(VideoAutoplay.skipPrefetch(false));
+        String report = String.join("\n", HookStatus.report());
+        assertTrue(report, report.contains(FamilyNames.VIDEO_AUTOPLAY + ": invoked 1"));
+        assertTrue(report, report.contains(VideoAutoplay.PREFETCH_SKIPPED + " 1"));
+    }
+
+    /** Off, paused or in safe mode, Threads' own answer goes back whichever it is, and a skip stays a skip. */
+    @Test public void prefetchPassesThreadsAnswerThroughWhenTheSwitchIsOff() {
+        Settings.DISABLE_VIDEO_AUTOPLAY.save(false);
+        assertFalse(VideoAutoplay.skipPrefetch(false));
+        assertTrue(VideoAutoplay.skipPrefetch(true));
+        String report = String.join("\n", HookStatus.report());
+        assertTrue(report, report.contains(VideoAutoplay.PREFETCH_LEFT_TO_THREADS + "switch off 1"));
+
+        Settings.DISABLE_VIDEO_AUTOPLAY.save(true);
+        PauseForTests.pause(HushThreadsPause.Reason.SWITCH);
+        assertFalse(VideoAutoplay.skipPrefetch(false));
+        assertTrue(VideoAutoplay.skipPrefetch(true));
+        assertTrue(Settings.DISABLE_VIDEO_AUTOPLAY.savedValue());
+        report = String.join("\n", HookStatus.report());
+        assertTrue(report, report.contains(VideoAutoplay.PREFETCH_LEFT_TO_THREADS + "HushThreads paused 1"));
+    }
+
+    /** Threads already skipping the prefetch is no question: it stays a skip with the switch on, and counts nothing. */
+    @Test public void aPrefetchThreadsAlreadySkipsIsNotCounted() {
+        assertTrue(VideoAutoplay.skipPrefetch(true));
+        assertEquals(Collections.emptyList(), HookStatus.missing(FamilyNames.VIDEO_AUTOPLAY));
+        String report = String.join("\n", HookStatus.report());
+        assertFalse(report, report.contains(VideoAutoplay.PREFETCH_SKIPPED));
+        assertFalse(report, report.contains(VideoAutoplay.PREFETCH_LEFT_TO_THREADS));
+    }
+
     /** A video Threads didn't pick is never a question: it stays still and counts nothing. */
     @Test public void aVideoThreadsDidNotPickIsNotCounted() {
         assertFalse(VideoAutoplay.play(false));

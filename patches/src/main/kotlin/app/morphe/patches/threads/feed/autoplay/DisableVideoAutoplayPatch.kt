@@ -81,7 +81,10 @@ internal val VIDEO_CALLERS = listOf(POST_SINGLE_MEDIA, POST_CAROUSEL, INLINE_IG_
  *
  * Instagram's own autoplay check, which brosssh/morphe-patches turns off for Instagram, is still in
  * Threads but isn't on this path: a trace of 449 showed a feed video starting with it answering
- * that autoplay was off. Threads' video prefetcher still reads it.
+ * that autoplay was off. Threads' video prefetcher reads it, though, so a held video could still
+ * download ahead. The check has two readers, the prefetcher's skip test and Instagram's older
+ * autoplay checker, and only the first is wanted. So the hook goes on the check's answer inside the
+ * skip test, and the check itself stays as it was.
  */
 @Suppress("unused")
 val disableVideoAutoplayPatch = bytecodePatch(
@@ -101,6 +104,7 @@ val disableVideoAutoplayPatch = bytecodePatch(
         val shape = postVideo.playTest(effect)
         val default = postVideo.playDefault(shape)
         val targets = playTargets(postVideo, shape.parameter, default)
+        val skip = prefetchSkip()
         val sites = VIDEO_CALLERS.flatMap { note ->
             playSites(targets, note).ifEmpty { throw PatchException("$PATCH: no call to PostVideo holds \"$note\"") }
         }
@@ -120,8 +124,86 @@ val disableVideoAutoplayPatch = bytecodePatch(
                 """,
             )
         }
+        // The skip test's answer: true skips the prefetch, so a held video isn't downloaded ahead.
+        mutableClassDefBy(skip.method.definingClass).findMutableMethodOf(skip.method).addInstructionsAtControlFlowLabel(
+            skip.test,
+            """
+                invoke-static/range { v${skip.register} .. v${skip.register} }, $VIDEO_AUTOPLAY->skipPrefetch(Z)Z
+                move-result v${skip.register}
+            """,
+        )
         enableStatus("disableVideoAutoplay")
     }
+}
+
+/** The string the prefetch dispatcher queues under. It's in Threads' own logging, so Redex leaves it. */
+internal const val PREFETCH_DISPATCHER = "VideoPrefetchDispatcher.queue"
+
+/** The two names of the flag Instagram's autoplay-off check reads. */
+internal const val AUTOPLAY_OFF = "ig_disable_video_autoplay"
+internal const val AUTOPLAY_OFF_OLYMPUS = "ig_olympus_disable_video_autoplay"
+
+/**
+ * The prefetcher's skip test: the [method] that asks the [check] whether autoplay is off and skips
+ * the prefetch if so. [call] is the check's call, [test] the if-nez that reads its answer from
+ * [register], which only that call writes.
+ */
+internal data class PrefetchSkip(val method: Method, val check: Method, val call: Int, val test: Int, val register: Int)
+
+internal fun Method.holdsString(value: String): Boolean = implementation?.instructions?.any {
+    it.getReference<StringReference>()?.string == value
+} == true
+
+private fun Method.signature() = "$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
+
+/**
+ * Instagram's autoplay-off check is the one static method taking a single object and returning a
+ * boolean that holds both flag names. Its sibling takes a second parameter and holds only the
+ * Olympus name, so it never matches. The skip is the method the prefetch dispatcher, the one method
+ * holding "VideoPrefetchDispatcher.queue", calls directly that calls the check. Instagram's older
+ * autoplay checker calls the check too, but the dispatcher doesn't call it, so it's never the match.
+ */
+internal fun BytecodePatchContext.prefetchSkip(): PrefetchSkip {
+    val check = classDefByStrings(AUTOPLAY_OFF, StringComparisonType.EQUALS).flatMap { it.methods }
+        .filter {
+            AccessFlags.STATIC.isSet(it.accessFlags) && it.returnType == "Z" && it.parameterTypes.size == 1 &&
+                it.parameterTypes[0].startsWith("L") && it.holdsString(AUTOPLAY_OFF) && it.holdsString(AUTOPLAY_OFF_OLYMPUS)
+        }
+        .distinctBy { it.signature() }
+        .singleOrPatchException("$PATCH: Instagram's autoplay-off check")
+    val dispatcher = classDefByStrings(PREFETCH_DISPATCHER, StringComparisonType.EQUALS).flatMap { it.methods }
+        .filter { it.holdsString(PREFETCH_DISPATCHER) }
+        .distinctBy { it.signature() }
+        .singleOrPatchException("$PATCH: the video prefetch dispatcher, the method holding \"$PREFETCH_DISPATCHER\"")
+    val callees = dispatcher.implementation!!.instructions
+        .filter { it.opcode == Opcode.INVOKE_STATIC || it.opcode == Opcode.INVOKE_STATIC_RANGE }
+        .mapNotNull { it.getReference<MethodReference>() }
+        .filter { it.returnType == "Z" }
+        .distinctBy { "${it.definingClass}->${it.name}(${it.parameterTypes.joinToString("")})" }
+        .mapNotNull { reference ->
+            val owner = runCatching { classDefBy(reference.definingClass) }.getOrNull() ?: return@mapNotNull null
+            owner.methods.singleOrNull {
+                it.name == reference.name && it.returnType == reference.returnType &&
+                    it.parameterTypes.map(CharSequence::toString) == reference.parameterTypes.map(CharSequence::toString)
+            }
+        }
+        .filter { callee -> callee.implementation?.instructions?.any { it.calls(check) } == true }
+    val method = callees.singleOrPatchException("$PATCH: the prefetch skip, the dispatcher's call that asks the autoplay-off check")
+    val body = method.implementation!!.instructions.toList()
+    val call = body.indices.filter { body[it].calls(check) }
+        .singleOrPatchException("$PATCH: ${method.signature()}'s call to the autoplay-off check")
+    val result = body.getOrNull(call + 1)
+    val test = body.getOrNull(call + 2)
+    val register = (result as? OneRegisterInstruction)?.registerA
+    if (result?.opcode != Opcode.MOVE_RESULT || register == null || test?.opcode != Opcode.IF_NEZ ||
+        (test as OneRegisterInstruction).registerA != register
+    ) throw PatchException("$PATCH: ${method.signature()} doesn't test the autoplay-off check's answer straight away")
+    val arrived = method.reaching(call + 2, setOf(register))
+    if (arrived.fromEntry || arrived.writes != setOf(call + 1)) {
+        throw PatchException("$PATCH: ${method.signature()}'s test of v$register can be reached with another value")
+    }
+    if (register > 255) throw PatchException("$PATCH: ${method.signature()} holds the check's answer in v$register, past move-result's reach")
+    return PrefetchSkip(method, check, call, call + 2, register)
 }
 
 /**

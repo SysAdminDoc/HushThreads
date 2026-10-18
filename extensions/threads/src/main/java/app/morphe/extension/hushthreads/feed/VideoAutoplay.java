@@ -26,6 +26,9 @@ public final class VideoAutoplay {
     static final String LEFT_TO_THREADS = "left autoplay to Threads: ";
     /** The outcome last logged. Threads asks every time a feed post's video recomposes, so a log line marks a change. */
     private static volatile String lastLogged;
+    static final String PREFETCH_SKIPPED = "skipped a video's prefetch";
+    static final String PREFETCH_LEFT_TO_THREADS = "left prefetch to Threads: ";
+    private static volatile String lastLoggedPrefetch;
 
     private VideoAutoplay() { }
 
@@ -49,6 +52,30 @@ public final class VideoAutoplay {
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.VIDEO_AUTOPLAY, "feed post video", failure);
             return true;
+        }
+    }
+
+    /**
+     * Called with Instagram's autoplay-off answer inside Threads' video prefetch skip test, where
+     * true means skip the prefetch. With the switch on, the answer is true, so a held video isn't
+     * downloaded ahead. Threads already skipping stays skipping, uncounted. Off, paused or before
+     * the settings are ready, and on a failure, Threads' own answer goes back unchanged.
+     */
+    public static boolean skipPrefetch(boolean threads) {
+        if (threads) return true;
+        try {
+            HookStatus.invoked(FamilyNames.VIDEO_AUTOPLAY);
+            String off = offBecause();
+            HookStatus.counted(FamilyNames.VIDEO_AUTOPLAY, off == null ? PREFETCH_SKIPPED : PREFETCH_LEFT_TO_THREADS + off);
+            String outcome = off == null ? "video prefetch skipped while autoplay is held" : "Threads prefetches videos itself, " + off;
+            if (!outcome.equals(lastLoggedPrefetch)) {
+                lastLoggedPrefetch = outcome;
+                Logger.printDebug(() -> "Video autoplay: " + outcome);
+            }
+            return off == null;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.VIDEO_AUTOPLAY, "video prefetch", failure);
+            return threads;
         }
     }
 
