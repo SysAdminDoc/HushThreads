@@ -275,6 +275,8 @@ function Get-RateLimitReset {
         }
     }
     if ($null -eq $seconds) { return $null }
+    # A huge number would overflow the extra second; the caller caps the wait well below this anyway.
+    if ($seconds -gt [int]::MaxValue) { $seconds = [long][int]::MaxValue }
     return [long][Math]::Max(1L, $seconds + 1)
 }
 

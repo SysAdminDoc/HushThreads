@@ -965,9 +965,23 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
             Low = 29; High = 32; Named = $true }
         @{ Case = "GitLab's RateLimit-Reset"; Headers = { @{ 'RateLimit-Reset' = [string]([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 20) } }
             Low = 19; High = 22; Named = $true }
+        @{ Case = "GitHub's X-RateLimit-Reset"; Headers = { @{ 'X-RateLimit-Reset' = [string]([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 15) } }
+            Low = 14; High = 17; Named = $true }
+        @{ Case = 'A RateLimit-Reset in seconds from now'; Headers = { @{ 'RateLimit-Reset' = '12' } }; Low = 13; High = 13; Named = $true }
         @{ Case = 'An answer naming no reset'; Headers = { @{} }; Low = 5; High = 5; Named = $false; Extra = @{ RateLimitWaitSeconds = 5 } }
         @{ Case = 'A reset past the cap'; Headers = { @{ 'Retry-After' = '100000' } }; Low = 900; High = 900; Named = $true }
+        @{ Case = 'A Retry-After too big for a number of seconds'; Headers = { @{ 'Retry-After' = [string][long]::MaxValue } }; Low = 900; High = 900; Named = $true }
+        # The header collections the two shells really hand over: Windows PowerShell's
+        # WebHeaderCollection and PowerShell 7's HttpResponseHeaders. The comma keeps each whole.
+        @{ Case = 'A WebHeaderCollection'; Headers = { $web = New-Object System.Net.WebHeaderCollection; $web.Add('Retry-After', '9'); , $web }
+            Low = 10; High = 10; Named = $true }
+        @{ Case = 'HttpResponseHeaders'; Headers = {
+                # .NET Framework's HttpStatusCode has no 429, and the headers don't depend on the status.
+                $http = ([System.Net.Http.HttpResponseMessage]::new()).Headers
+                [void]$http.TryAddWithoutValidation('RateLimit-Reset', [string]([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 25)); , $http }
+            Low = 24; High = 27; Named = $true }
     )
+    Add-Type -AssemblyName System.Net.Http
     foreach ($limit in $limitCases) {
         Set-LimitedForks @(& $limit.Headers)
         $limitArguments = if ($limit.Extra) { $limit.Extra } else { @{} }
