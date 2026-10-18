@@ -279,6 +279,8 @@ fun buildClasspathGuavaLoads(): List<Map<String, Any?>> {
         Class.forName("com.android.build.gradle.LibraryPlugin", false, javaClass.classLoader).classLoader
     } catch (missing: ClassNotFoundException) {
         null
+    } catch (missing: LinkageError) {
+        null
     }
     val loaders = linkedMapOf("app.morphe.patches plugin" to plugins.findPlugin("app.morphe.patches")?.javaClass?.classLoader,
         "Android Gradle plugin" to android)
@@ -352,6 +354,9 @@ gradle.rootProject {
         inputs.property("inventory", document)
         outputs.file(output)
         doLast {
+            // A refusal below must not leave an earlier run's inventory looking like this one's.
+            val file = output.get().asFile
+            file.delete()
             val missing = missingGraphs.get()
             if (missing.isNotEmpty()) {
                 throw GradleException("The build classpath inventory has no graph for " + missing.joinToString(", ") +
@@ -367,7 +372,6 @@ gradle.rootProject {
                     "resolved: " + strays.joinToString("; ") { "${it["loader"]} ${it["class"]} from ${it["jar"] ?: "nowhere"}" })
             }
 
-            val file = output.get().asFile
             file.parentFile.mkdirs()
             file.writeText(document.get(), Charsets.UTF_8)
         }
