@@ -2792,6 +2792,25 @@ try {
         }
     }
 
+    # The release's CHANGELOG bullets follow the facts in the description, because Manager shows the
+    # description for the release a phone is on. A bullet there may name an older build or another
+    # count, so the facts are read up to the first ### line, in both modes.
+    Set-FactsFile 'patches-bundle.json' {
+        param($text) $text -replace '("description":\s*"(?:[^"\\]|\\.)*)"', '$1\n\n### Changes\n\n* **Threads:** Builds before Threads 9.9.9.9.9 kept 3 patches."'
+    }
+    try {
+        Assert-True ((Get-Content -LiteralPath (Join-Path $factsRoot 'patches-bundle.json') -Raw | ConvertFrom-Json).description -match
+            '(?m)^### Changes$') 'The description edit added no ### group, so the groups case would prove nothing.'
+        try {
+            Invoke-Facts
+            & $factsScript -Root $factsRoot -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipUrlCheck 6> $null
+        } catch {
+            throw "The release facts check read a CHANGELOG bullet under the description's facts as one: $($_.Exception.Message)"
+        }
+    } finally {
+        Reset-FactsFile 'patches-bundle.json'
+    }
+
     # The same number in the README, which is the other half of the same promise.
     Set-FactsFile 'README.md' {
         param($text) $text -replace '(?<!\d)\d+ patches\b', '3 patches'

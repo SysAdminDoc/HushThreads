@@ -306,6 +306,17 @@ def notes(args) -> None:
           f"patch tests, {len(text)} characters")
 
 
+def changelog_groups(version: str) -> str:
+    """The version's Threads bullets as one `### Changes` group, every bullet as the CHANGELOG writes it.
+
+    Morphe Manager shows the bundle description, not the CHANGELOG, for the release an app was
+    patched with, so the description carries the bullets Manager would list. Docs and Tooling
+    bullets reach nobody there and stay out. The facts readers stop at this heading.
+    """
+    lines = [f"* **{APP}:** {text}" for scope, text in dated_section(version) if scope == APP]
+    return "### Changes\n\n" + "\n".join(lines)
+
+
 def index(args) -> None:
     version = args.version
     check_version(version)
@@ -342,6 +353,9 @@ def index(args) -> None:
     )
     if any(dash in description for dash in DASHES):
         fail("the summary has an em or en dash")
+    # After the dash check, which the CHANGELOG bullets already passed. The facts checks read the
+    # description up to this first ### line, so a bullet may name an older build or count.
+    description += "\n\n" + changelog_groups(version)
     bundle_path = here("patches-bundle.json")
     bundle = json.loads(read(bundle_path))
     url = swap(str(bundle.get("download_url") or ""), r"/releases/download/v\d+\.\d+\.\d+/patches-\d+\.\d+\.\d+\.mpp$",

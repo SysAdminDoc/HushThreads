@@ -176,6 +176,7 @@ class ReleaseTextTest(unittest.TestCase):
         self.assertFalse((self.root / "notes.md").exists())
 
     def test_index_points_the_bundle_and_bug_form_at_the_release(self):
+        self.run_command(release_text.cut, version="0.0.13", date="2026-10-09")
         self.write("summary.txt", "One patch is new.\n")
         self.run_command(release_text.index, version="0.0.13", created="2026-10-09T17:03:42",
                          summary=str(self.root / "summary.txt"))
@@ -192,8 +193,32 @@ class ReleaseTextTest(unittest.TestCase):
         self.assertIn("Needs Morphe Manager 1.34.0 or newer. Patch the arm64-v8a bundle of Threads 450.0.0.51.78 "
                       "(version code 512008342).", description)
         self.assertIn("placeholder: Version 0.0.13 for Threads 450.0.0.51.78\n", self.read(".github/ISSUE_TEMPLATE/bug_report.yml"))
+        # Manager shows this description for the release an app was patched with, so it ends with the
+        # Threads bullets in the shape its changelog parser reads. Docs and Tooling reach nobody there.
+        self.assertTrue(description.endswith("\n\n### Changes\n\n* **Threads:** Hide the Instagram button is new (#7)."))
+        self.assertNotIn("README says which", description)
+        self.assertNotIn("fixture tests run", description)
+
+    def test_index_facts_come_from_the_prose_and_not_the_changelog_bullets(self):
+        self.write("CHANGELOG.md", CHANGELOG.replace(
+            "Hide the Instagram button is new (#7).",
+            "Hide the Instagram button is new, as on Threads 449.0.0.54.82 with 90 patches."))
+        self.run_command(release_text.cut, version="0.0.13", date="2026-10-09")
+        self.write("summary.txt", "One patch is new.\n")
+        self.run_command(release_text.index, version="0.0.13", created="2026-10-09T17:03:42",
+                         summary=str(self.root / "summary.txt"))
+        facts, groups = json.loads(self.read("patches-bundle.json"))["description"].split("\n\n### ", 1)
+        self.assertNotIn("90 patches", facts)
+        self.assertNotIn("449.0.0.54.82", facts)
+        self.assertIn("with 90 patches.", groups)
+
+    def test_index_refuses_a_release_the_changelog_has_not_cut(self):
+        self.write("summary.txt", "x.\n")
+        self.refused(release_text.index, "no dated 0.0.13 heading", version="0.0.13", created="2026-10-09T17:03:42",
+                     summary=str(self.root / "summary.txt"))
 
     def test_index_names_the_newest_build_after_every_threads(self):
+        self.run_command(release_text.cut, version="0.0.13", date="2026-10-09")
         self.write("patches-list.json", catalog("449.0.0.54.82", "450.0.0.51.78"))
         self.write("summary.txt", "x.\n")
         self.run_command(release_text.index, version="0.0.13", created="2026-10-09T17:03:42",
@@ -205,6 +230,7 @@ class ReleaseTextTest(unittest.TestCase):
         self.assertNotRegex(description, r"Threads 449")
 
     def test_index_refuses_a_zoned_time_and_a_stale_catalog(self):
+        self.run_command(release_text.cut, version="0.0.13", date="2026-10-09")
         self.write("summary.txt", "x.\n")
         self.refused(release_text.index, "yyyy-MM-ddTHH:mm:ss", version="0.0.13", created="2026-10-09T17:03:42Z",
                      summary=str(self.root / "summary.txt"))

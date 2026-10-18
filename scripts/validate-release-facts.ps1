@@ -112,10 +112,13 @@ function Get-DescriptionFacts {
         or it says two things and this throws. The lag check used to read the first of each and the
         equality check any of them, so a description quoting the catalog's count in one sentence and
         a stale one in another passed the equality check, whichever the lag check had read. Answers
-        @{ PatchCount; TargetVersion }, each $null when the description names none.
+        @{ PatchCount; TargetVersion }, each $null when the description names none. Only the text
+        before the first ### line counts: the bundle description goes on with the release's
+        CHANGELOG bullets, and one there may name an older build or count.
     #>
     param([string]$Text, [string]$Source)
 
+    $Text = ($Text -split '(?m)^### ', 2)[0]
     $counts = @([regex]::Matches($Text, '(?<![\d.])(\d+) patches\b') | ForEach-Object { $_.Groups[1].Value } |
         Select-Object -Unique)
     $builds = @([regex]::Matches($Text, 'Threads\s+(\d+(?:\.\d+)+)(?!\d)') | ForEach-Object { $_.Groups[1].Value } |

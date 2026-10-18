@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** Morphe Manager lists every change of the release your Threads was patched with, not just a short summary. For that one release Manager shows the patch bundle's description instead of the changelog, and the description was a paragraph while every older release listed its changes. It now goes on with the release's Threads bullets after the summary. You'll see it from the next release on.
+
 * **Threads:** Cancel and the download time limit now end a save even when the phone's proxy service stops answering. Waiting proxy calls share the fixed limit on background network checks, so repeated attempts can't keep creating threads.
 
 * **Threads:** Settings file access stays tracked when a disk write or Android's permission service fails. Cleanup retries after a restart, and retrying the same file can't keep lasting access without a saved cleanup record.
