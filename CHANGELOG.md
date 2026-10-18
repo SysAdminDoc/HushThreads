@@ -4,6 +4,8 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Tooling:** The same classpath now resolves commons-lang3 3.18.0 instead of the 3.16.0 the Morphe plugin asks for, which is inside GHSA-j288-q9x7-2f5v (CVE-2025-48924, 3.0 to 3.17.0). That was the last advisory OSV reported for the build's 114 plugin components, and the build advisory gate now finds none. It's a floor too, so it goes quiet once the plugin asks for 3.18.0 or later.
+
 * **Tooling:** The classpath the build plugins run from now resolves Guava 33.7.2-jre instead of 33.5.0-jre, which is inside GHSA-xxph-c9ww-hj94 (CVE-2026-102554, 4.0 to 33.7.1). It's a floor, so a plugin that later asks for a newer Guava still gets it. The build classpath inventory also records which jar the Morphe and Android Gradle plugins really load the advisory's three classes from, and it refuses to write when that isn't the Guava the classpath resolved. The bundle build and the focused registry tests pass with it.
 
 * **Tooling:** The source census now waits out a rate limit for as long as the answer says. GitLab throttles unauthenticated reads and answers 429 with the time its limit resets, and the census used to wait a flat 61 seconds, so a long reset used up its three tries and failed the run. It waits until the reset that Retry-After (seconds or a date), RateLimit-Reset or X-RateLimit-Reset names, plus a second, capped at 15 minutes by `-MaxRateLimitWaitSeconds`. An answer that names no reset still waits `-RateLimitWaitSeconds`, and a fourth limit in a row still fails the source. The run log also says whether GitLab was read with a token, since a token raises the limit.

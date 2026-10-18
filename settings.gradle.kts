@@ -72,11 +72,18 @@ pluginManagement {
 // gradle/libs.versions.toml; move both together, and take this out once the plugins ask for a fixed
 // version. Gradle keeps its own embedded Guava from plugin class loaders, so this changes only the
 // copy the plugins load, and :buildClasspathInventory records which jar that is (see below).
+//
+// The Morphe plugin asks for commons-lang3 3.16.0, inside GHSA-j288-q9x7-2f5v (CVE-2025-48924,
+// 3.0 to 3.17.0, fixed in 3.18.0): ClassUtils.getClass recurses without bound on a long name. It's
+// a floor for the same reason, so it stops mattering once the plugin asks for 3.18.0 or later.
 buildscript {
     dependencies {
         constraints {
             classpath("com.google.guava:guava:33.7.2-jre") {
                 because("GHSA-xxph-c9ww-hj94 affects Guava 4.0 to 33.7.1.")
+            }
+            classpath("org.apache.commons:commons-lang3:3.18.0") {
+                because("GHSA-j288-q9x7-2f5v affects commons-lang3 3.0 to 3.17.0.")
             }
         }
     }
