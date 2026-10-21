@@ -28,10 +28,12 @@
                go to build/release-assets/<version>. Last, the commit is tagged vX.Y.Z and the tag
                pushed: the gate already ran on that commit, and the hook reads a tag of it as
                changing no file.
-    publish    The GitHub release, its notes carrying every bullet of the CHANGELOG section with
-               -Intro above them and -Update after, and the four assets, each downloaded back and
-               compared. Then a repository description that names a release, a patch count or a
-               Threads build is moved to this release's. One that names none of them stays as
+    publish    First -Walk, the walk-receipt.json of a whole-app walk of the built bundle on a
+               release phone or an emulator (walk-receipt.ps1): nothing goes out without one.
+               Then the GitHub release, its notes carrying every bullet of the CHANGELOG section
+               with -Intro above them and -Update after, and the four assets, each downloaded back
+               and compared. Then a repository description that names a release, a patch count or
+               a Threads build is moved to this release's. One that names none of them stays as
                written.
     index      patches-bundle.json and the bug report form's version placeholder, the release facts
                against the published assets, then the commit "chore(release): point the index at
@@ -47,7 +49,7 @@
     scripts/release/release.ps1 -Stage prepare -Version 0.0.13
     scripts/release/release.ps1 -Stage preflight -Version 0.0.13
     scripts/release/release.ps1 -Stage build -Version 0.0.13
-    scripts/release/release.ps1 -Stage publish -Version 0.0.13 -Intro intro.md -Update update.md
+    scripts/release/release.ps1 -Stage publish -Version 0.0.13 -Intro intro.md -Update update.md -Walk <walk folder>/walk-receipt.json
     scripts/release/release.ps1 -Stage index -Version 0.0.13 -Summary summary.txt
 #>
 [CmdletBinding()]
@@ -61,6 +63,8 @@ param(
     # publish: files holding the notes' opening paragraphs and their Update steps.
     [string]$Intro,
     [string]$Update,
+    # publish: the walk-receipt.json a whole-app walk of this exact bundle left.
+    [string]$Walk,
     # index: a file holding what's new, for the description Morphe Manager shows.
     [string]$Summary
 )
@@ -69,6 +73,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 . (Join-Path $root 'scripts/common.ps1')
 . (Join-Path $root 'scripts/patch-target.ps1')
+. (Join-Path $root 'scripts/walk-receipt.ps1')
 
 $tag = "v$Version"
 $assets = Join-Path $root "build/release-assets/$Version"
@@ -530,6 +535,14 @@ try {
             Assert-AssetSums
             $receiptCommit = [string](Get-Content -LiteralPath (Join-Path $assets $receiptName) -Raw | ConvertFrom-Json).release.commit
             if ($receiptCommit -ne $head) { throw "The receipt in $assets names $receiptCommit, not $head. Run -Stage build again." }
+            # Nothing goes public until the whole app has been walked with this exact bundle.
+            if (-not $Walk) { throw '-Walk names the walk-receipt.json a whole-app walk of this bundle left on a release phone or an emulator.' }
+            $walked = Test-WalkReceipt -Path $Walk -BundlePath (Join-Path $assets $bundleName)
+            if (-not $walked.Valid) {
+                throw ("The whole-app walk doesn't back $bundleName, so nothing was published: $($walked.Reason). " +
+                    'Patch an APK from this bundle, walk the whole app on a release phone or an emulator, and pass its walk-receipt.json as -Walk.')
+            }
+            Step "walked on $($walked.Receipt.device): $($walked.Receipt.screens) screens, no crash"
             $repository = Get-RepositorySlug
 
             $existing = Invoke-Gh -What 'gh release view' -Arguments @('release', 'view', $tag, '-R', $repository, '--json', 'tagName', '--jq', '.tagName') -Probe

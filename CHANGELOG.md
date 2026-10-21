@@ -2,6 +2,10 @@
 
 Changes in the source build, then released versions.
 
+## Unreleased
+
+* **Tooling:** A release can't go public until the whole app has been walked with that exact bundle on a release phone or an emulator. The publish stage now takes the walk's receipt as `-Walk` and stops before the tag or GitHub if the walk wasn't a full pass, saw a Threads crash, ran on some other device, or patched with a different bundle.
+
 ## 0.0.15 (2026-10-18)
 
 * **Threads:** Don't want HushThreads settings in the menu you get by holding Threads' icon? Turn off the new `Settings shortcut on the app icon` switch on the Pause, backup and diagnostics page and it leaves that menu right away, while Threads' own shortcuts stay. A long press on the Threads logo and the HushThreads row in Threads' settings still open the settings, and Pause leaves the switch as you set it.

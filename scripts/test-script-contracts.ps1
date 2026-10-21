@@ -14,6 +14,7 @@ param([string]$Root)
 $ErrorActionPreference = 'Stop'
 if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 . (Join-Path $PSScriptRoot 'patch-target.ps1')
+. (Join-Path $PSScriptRoot 'walk-receipt.ps1')
 . (Join-Path $PSScriptRoot 'patch-report.ps1')
 . (Join-Path $PSScriptRoot 'device-install.ps1')
 . (Join-Path $PSScriptRoot 'Resolve-Java.ps1')
@@ -6673,7 +6674,7 @@ try {
     foreach ($folder in (Join-Path $flowRepo 'scripts/release'), (Join-Path $flowRepo '.github/ISSUE_TEMPLATE'), $flowHooks, $flowFixtures) {
         New-Item -ItemType Directory -Path $folder -Force | Out-Null
     }
-    foreach ($name in 'common.ps1', 'patch-target.ps1', 'release/release.ps1') {
+    foreach ($name in 'common.ps1', 'patch-target.ps1', 'walk-receipt.ps1', 'release/release.ps1') {
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination (Join-Path $flowRepo "scripts/$name")
     }
     $flowFiles = [ordered]@{
@@ -7098,8 +7099,39 @@ exit 0
     Assert-True ([IO.File]::ReadAllText((Join-Path $flowAssets 'SHA256SUMS.txt')) -eq $flowSums) 'Build run again made other assets.'
     Assert-Throws { Invoke-FlowStage -Stage prepare -Version 1.2.3 } '*already exists*' 'Prepare ran again after v1.2.3 was tagged.'
 
+    # publish wants a whole-app walk of the built bundle before it asks GitHub anything: a full
+    # PASS with no crash, on a release phone or an emulator, of these exact bytes.
+    Assert-Throws { Invoke-FlowStage -Stage publish -Version 1.2.3 } '*-Walk names the walk-receipt.json*' 'Publish ran without a walk receipt.'
+    Assert-True (@(Read-FlowLog).Count -eq 0) 'Publish ran a step before asking for the walk receipt.'
+    $flowWalk = Join-Path $releaseFlow 'walk-receipt.json'
+    function Write-FlowWalk([hashtable]$Change = @{}) {
+        $walk = New-WalkReceipt -Result PASS -Full $true -Serial 'TESTPHONE01' -Device 'SM-S908U1' -AppVersion '450.0.0.51.78' `
+            -BundleSha256 (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $flowAssets 'patches-1.2.3.mpp')).Hash `
+            -InstalledApkSha256 ('4' * 64) -Started '2026-10-21T16:00:00Z' -Finished '2026-10-21T16:30:00Z' -Screens 40 -Crashes 0
+        foreach ($key in $Change.Keys) { $walk[$key] = $Change[$key] }
+        [IO.File]::WriteAllText($flowWalk, ($walk | ConvertTo-Json -Depth 4))
+    }
+    foreach ($badWalk in @(
+            @(@{ result = 'FAIL' }, '*the walk ended FAIL, not PASS*'),
+            @(@{ result = 'PARTIAL'; full = $false }, '*the walk ended PARTIAL, not PASS*'),
+            @(@{ full = $false }, '*was not the whole app*'),
+            @(@{ screens = 0 }, "*doesn't say it opened any screen*"),
+            @(@{ crashes = 1 }, '*recorded a Threads crash*'),
+            @(@{ device = 'Pixel 9' }, "*Pixel 9 isn't one of the release walk phones*"),
+            @(@{ device = 'Pixel 9'; emulator = $true }, "*Pixel 9 isn't one of the release walk phones*"),
+            @(@{ bundleSha256 = ('5' * 64) }, '*patched with bundle*and this one is*'),
+            @(@{ schema = 2 }, "*isn't schema 1*"))) {
+        Write-FlowWalk $badWalk[0]
+        Assert-Throws { Invoke-FlowStage -Stage publish -Version 1.2.3 -Walk $flowWalk } $badWalk[1] "Publish took a walk it should refuse ($($badWalk[1]))."
+        Assert-True (@(Read-FlowLog).Count -eq 0) "Publish ran a step past a walk it refused ($($badWalk[1]))."
+    }
+    [IO.File]::WriteAllText($flowWalk, 'not json')
+    Assert-Throws { Invoke-FlowStage -Stage publish -Version 1.2.3 -Walk $flowWalk } "*walk receipt doesn't read as JSON*" 'Publish read a walk receipt that is not JSON.'
+    # An emulator walks for a release as well as either phone.
+    Write-FlowWalk @{ serial = 'emulator-5554'; device = 'sdk_gphone64_x86_64'; emulator = $true }
+
     # publish wants the notes' opening paragraphs and Update steps the first time.
-    Assert-Throws { Invoke-FlowStage -Stage publish -Version 1.2.3 } '*-Intro and -Update*' `
+    Assert-Throws { Invoke-FlowStage -Stage publish -Version 1.2.3 -Walk $flowWalk } '*-Intro and -Update*' `
         'Publish made a release without its opening paragraphs and Update steps.'
     Assert-True ((Get-FlowSteps @(Read-FlowLog)) -eq 'gh release view') 'Publish went past its missing notes.'
     $flowIntro = Join-Path $releaseFlow 'intro.md'
@@ -7110,7 +7142,7 @@ exit 0
     # A hosted asset that differs from the built one stops it, and the description stays on the
     # release that's out.
     Set-FlowFail 'corrupt'
-    Assert-Throws { Invoke-FlowStage -Stage publish -Version 1.2.3 -Intro $flowIntro -Update $flowUpdate } '*hosted patches-1.2.3.mpp differs*' `
+    Assert-Throws { Invoke-FlowStage -Stage publish -Version 1.2.3 -Intro $flowIntro -Update $flowUpdate -Walk $flowWalk } '*hosted patches-1.2.3.mpp differs*' `
         'Publish passed a hosted bundle that differs from the built one.'
     $flow = @(Read-FlowLog)
     Assert-True ((Get-FlowSteps $flow) -eq 'gh release view | python notes | gh release create | gh release download') `
@@ -7126,13 +7158,13 @@ exit 0
 
     # Run again, publish leaves the release it made, checks the assets and moves the description.
     # Once more, the description already names the release and isn't edited.
-    Invoke-FlowStage -Stage publish -Version 1.2.3
+    Invoke-FlowStage -Stage publish -Version 1.2.3 -Walk $flowWalk
     $flow = @(Read-FlowLog)
     Assert-True ((Get-FlowSteps $flow) -eq 'gh release view | gh release download | gh repo view | python description | gh repo edit') `
         "Publish run again did not check the assets, then move the description: $($flow -join ' | ')"
     Assert-True ([IO.File]::ReadAllText($flowDescription) -eq 'HushThreads v1.2.3: 2 patches for Threads 450.0.0.51.78.') `
         "Publish left the description at: $([IO.File]::ReadAllText($flowDescription))"
-    Invoke-FlowStage -Stage publish -Version 1.2.3
+    Invoke-FlowStage -Stage publish -Version 1.2.3 -Walk $flowWalk
     Assert-True ((Get-FlowSteps @(Read-FlowLog)) -eq 'gh release view | gh release download | gh repo view | python description') `
         'Publish run again edited a description that already names the release.'
 
