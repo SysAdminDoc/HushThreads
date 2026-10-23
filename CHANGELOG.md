@@ -2,6 +2,10 @@
 
 Changes in the source build, then released versions.
 
+## Unreleased
+
+* **Threads:** HushThreads now also patches the armeabi-v7a build of Threads 452.0.0.50.64 (version code 512207629), not just arm64-v8a. Every patch applies to both, including Save photos and videos, which now finds Copy link's menu close whether the case jumps to the shared run or returns straight away.
+
 ## 0.0.16 (2026-10-23)
 
 * **Threads:** HushThreads now patches Threads 452.0.0.50.64 only, the newest stable version, and drops 451.0.0.51.80. Update Threads to 452 before you patch. The bundle is built with Morphe's 2.0 patcher, so you'll need Morphe Manager 2.0.0 or newer.

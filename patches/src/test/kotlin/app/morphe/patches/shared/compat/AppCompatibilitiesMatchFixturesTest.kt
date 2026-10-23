@@ -60,7 +60,7 @@ class AppCompatibilitiesMatchFixturesTest {
     }
 
     @Test
-    fun `every declared target carries the version code and floor of its vendor build`() {
+    fun `every declared target carries the version codes and a floor its vendor builds run on`() {
         val targets = AppCompatibilities.threads().single().targets
         // Only the newest stable build is declared; a newer one replaces it in the same release.
         assertEquals("the declared version", listOf(AppCompatibilities.THREADS_TARGET_VERSION), targets.map { it.version })
@@ -68,7 +68,9 @@ class AppCompatibilitiesMatchFixturesTest {
         for (target in targets) {
             val version = checkNotNull(target.version)
             val codes = checkNotNull(target.versionCodes) { "the $version target declares no version codes" }
+            val floor = checkNotNull(target.minSdk) { "the $version target declares no Android floor" }
             val fixtures = Fixtures.files { it.isVendorContainer() && it.name.contains("-$version-") }
+            val seenCodes = mutableSetOf<Int>()
             for (fixture in fixtures) {
                 ZipFile(fixture).use { zip ->
                     // An .apkm names the base base.apk, an .xapk after the package.
@@ -82,15 +84,13 @@ class AppCompatibilitiesMatchFixturesTest {
                         val manifest = RandomAccessFile(copy, "r").use { file ->
                             ApkUtils.getAndroidManifest(DataSources.asDataSource(file))
                         }
-                        assertEquals(
-                            "${fixture.name} version code",
-                            codes.values.single(),
-                            ApkUtils.getVersionCodeFromBinaryAndroidManifest(manifest.duplicate()),
-                        )
-                        assertEquals(
-                            "${fixture.name} minSdk",
-                            target.minSdk,
-                            ApkUtils.getMinSdkVersionFromBinaryAndroidManifest(manifest.duplicate()),
+                        val code = ApkUtils.getVersionCodeFromBinaryAndroidManifest(manifest.duplicate())
+                        assertTrue("${fixture.name} version code $code is declared", code in codes.values)
+                        seenCodes += code
+                        val minSdk = ApkUtils.getMinSdkVersionFromBinaryAndroidManifest(manifest.duplicate())
+                        assertTrue(
+                            "${fixture.name} minSdk $minSdk is above the declared $floor",
+                            minSdk <= floor,
                         )
                         checked++
                     } finally {
@@ -98,8 +98,13 @@ class AppCompatibilitiesMatchFixturesTest {
                     }
                 }
             }
+            assertEquals("one retained fixture for each declared ABI of $version", codes.values.toSet(), seenCodes)
         }
-        assertEquals("one retained fixture for each declared target", targets.size, checked)
+        assertEquals(
+            "one retained fixture for each declared build",
+            targets.sumOf { it.versionCodes?.size ?: 1 },
+            checked,
+        )
     }
 
     /**

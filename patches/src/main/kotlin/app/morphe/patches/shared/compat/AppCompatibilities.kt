@@ -51,6 +51,12 @@ internal object AppCompatibilities {
      */
     const val THREADS_TARGET_VERSION_CODE = 512207626
 
+    /**
+     * The version code of the armeabi-v7a build of [THREADS_TARGET_VERSION], APKMirror's 480dpi
+     * ARM bundle. Other density variants have different codes.
+     */
+    const val THREADS_TARGET_ARMV7_VERSION_CODE = 512207629
+
     /** Threads' own floor on this build, Android 9. */
     const val THREADS_TARGET_MIN_SDK = 28
 
@@ -64,7 +70,10 @@ internal object AppCompatibilities {
             targets = listOf(
                 AppTarget(
                     version = THREADS_TARGET_VERSION,
-                    versionCodes = mapOf(SupportedAbi.ARM64_V8A to THREADS_TARGET_VERSION_CODE),
+                    versionCodes = mapOf(
+                        SupportedAbi.ARM64_V8A to THREADS_TARGET_VERSION_CODE,
+                        SupportedAbi.ARMEABI_V7A to THREADS_TARGET_ARMV7_VERSION_CODE,
+                    ),
                     minSdk = THREADS_TARGET_MIN_SDK,
                 ),
             ),

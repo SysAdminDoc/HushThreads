@@ -104,8 +104,8 @@ class ChangeVersionCodeFixtureTest {
                 assertTrue("${build.name}: ${refused?.message}", refused is PatchException && refused.message!!.startsWith("$PATCH: "))
             }
         }
-        val declaredVersions = AppCompatibilities.threads().single().targets.mapNotNull { it.version }.distinct().size
-        assertEquals("one build of each declared version", declaredVersions, builds.size)
+        val declaredBuilds = AppCompatibilities.threads().single().targets.sumOf { it.versionCodes?.size ?: 1 }
+        assertEquals("one build of each declared version and ABI", declaredBuilds, builds.size)
     }
 
     /**

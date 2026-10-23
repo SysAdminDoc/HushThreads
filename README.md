@@ -32,7 +32,7 @@ The latest release is [v0.0.16](https://github.com/SysAdminDoc/HushThreads/relea
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 2.0.0 or newer.
 2. Add HushThreads as a patch source: https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads
-3. Get Threads 452.0.0.50.64 (`com.instagram.barcelona`) for arm64-v8a, version code 512207626 (480dpi, Android 9+). If you're on an older Threads, update it to 452 before you patch.
+3. Get Threads 452.0.0.50.64 (`com.instagram.barcelona`) for arm64-v8a (version code 512207626) or armeabi-v7a (512207629), both 480dpi and Android 9+. If you're on an older Threads, update it to 452 before you patch.
 4. Uninstall the stock Threads. A patched Threads can't install over Meta's signed copy.
 5. In Morphe Manager, pick that file and patch. The default selection has every patch except the three the [Patches](#patches) section names, so you don't need Expert mode.
 
@@ -44,12 +44,14 @@ HushThreads patches Threads 452 only. Each release moves to the newest stable Th
 
 | Threads version | Version code | Android floor |
 |---|---|---|
-| 452.0.0.50.64 | 512207626 (480dpi) | Android 9 |
+| 452.0.0.50.64 | 512207626 (arm64-v8a, 480dpi) | Android 9 |
+| 452.0.0.50.64 | 512207629 (armeabi-v7a, 480dpi) | Android 9 |
 
-Release checks run on this stock bundle:
+Release checks run on these stock bundles:
 
 ```text
 21575cde2a455267838009e4885bc907a0c6ed2801485f657f453951df3f4bc1  threads-452.0.0.50.64-512207626.apkm
+688e6ba544e88bf7f1fe50fb892831b733e7ba4654d177f7be328b6d05f8a346  threads-452.0.0.50.64-512207629.apkm
 ```
 
 A copy from another site may be packed differently and have another hash. The version code is what has to match.
