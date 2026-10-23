@@ -4,8 +4,8 @@
   <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.15-000000" alt="Version 0.0.15"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
-  <img src="https://img.shields.io/badge/Threads-451.0.0.51.80-000000" alt="Threads 451.0.0.51.80">
-  <img src="https://img.shields.io/badge/for-Morphe%20Manager%201.34.0%2B-8A2BE2" alt="For Morphe Manager 1.34.0 or newer">
+  <img src="https://img.shields.io/badge/Threads-452.0.0.50.64-000000" alt="Threads 452.0.0.50.64">
+  <img src="https://img.shields.io/badge/for-Morphe%20Manager%202.0.0%2B-8A2BE2" alt="For Morphe Manager 2.0.0 or newer">
 </p>
 
 <p align="center">
@@ -32,26 +32,26 @@ The source on main has moved to Threads 452.0.0.50.64 and needs Morphe Manager 2
 
 ## Install
 
-1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.34.0 or newer.
+1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 2.0.0 or newer.
 2. Add HushThreads as a patch source: https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads
-3. Get Threads 451.0.0.51.80 (`com.instagram.barcelona`) for arm64-v8a, version code 512108444 (480dpi, Android 9+). If you're on an older Threads, update it to 451 before you patch.
+3. Get Threads 452.0.0.50.64 (`com.instagram.barcelona`) for arm64-v8a, version code 512207626 (480dpi, Android 9+). If you're on an older Threads, update it to 452 before you patch.
 4. Uninstall the stock Threads. A patched Threads can't install over Meta's signed copy.
 5. In Morphe Manager, pick that file and patch. The default selection has every patch except the three the [Patches](#patches) section names, so you don't need Expert mode.
 
 To add one of those three, turn on **Settings → Advanced → Expert mode** in Manager before you pick the file. If you saved your own selection in Expert mode before, Manager may keep using it, so look over the list once.
 
-HushThreads v0.0.15 patches Threads 451 only. Each release moves to the newest stable Threads and drops the one before, so v0.0.13 is the last release for 450.0.0.51.78. If a patch can't find what it needs in your build, patching stops with a message naming it instead of handing you an app that quietly does nothing.
+HushThreads patches Threads 452 only. Each release moves to the newest stable Threads and drops the one before, so v0.0.15 is the last release for 451.0.0.51.80. If a patch can't find what it needs in your build, patching stops with a message naming it instead of handing you an app that quietly does nothing.
 
 ### Supported Threads build
 
 | Threads version | Version code | Android floor |
 |---|---|---|
-| 451.0.0.51.80 | 512108444 (480dpi) | Android 9 |
+| 452.0.0.50.64 | 512207626 (480dpi) | Android 9 |
 
-The release checks for v0.0.15 ran on this stock bundle:
+Release checks run on this stock bundle:
 
 ```text
-93bdef4590000711d03f16e4f91f6a7687f665facd8aa3ec773222a1aac043e2  threads-451.0.0.51.80-512108444.apkm
+21575cde2a455267838009e4885bc907a0c6ed2801485f657f453951df3f4bc1  threads-452.0.0.50.64-512207626.apkm
 ```
 
 A copy from another site may be packed differently and have another hash. The version code is what has to match.
@@ -64,7 +64,7 @@ On a new phone, import the key before you patch anything. Reinstalling Manager o
 
 ## Patches
 
-HushThreads v0.0.15 has 19 patches. Morphe Manager's default selection has all but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Those three change Threads when you patch and have no switch to undo them. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
+HushThreads has 20 patches. Morphe Manager's default selection has all but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Those three change Threads when you patch and have no switch to undo them. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
 
 `Disable swipe to Search` is in the source but not in a release yet.
 
@@ -103,8 +103,6 @@ If Threads crashes within a minute of starting three times in a row, HushThreads
 
 <p><img src="assets/settings-overview.png" width="320" alt="HushThreads settings with search, Pause, Quick setups and the Feed, Privacy, Downloads and Posts pages"><img src="assets/settings-privacy.png" width="320" alt="Privacy with link tracking, browser, analytics and screenshot controls"></p>
 
-These screenshots show the redesigned settings from the source build. The redesign isn't in a release yet.
-
 ## Signing in
 
 Tap Log in with Instagram and enter your Instagram username and password. Threads can ask twice whether to save your login info. Tap Not now each time if you don't want it saved.
@@ -134,7 +132,7 @@ HushThreads doesn't collect anything and has no server. The patched app goes onl
 
 The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`, and Support HushThreads at the bottom of the settings home page links to `ko-fi.com`. Those open in your browser, and only when you tap one.
 
-`Disable analytics` points the analytics uploads it recognizes at `127.0.0.1`, on a port nothing listens on, so they fail on the phone. Other telemetry isn't covered. `Open links in browser` hands Android only the real address behind Threads' click tracker, with tags like `fbclid` removed. Links to Threads, Instagram, Facebook, Messenger and Meta stay in Threads, because sign-in and Accounts Center need its session. On 451 ads go through the same check, from the link button or a swipe up in the photo viewer, and so do the links on a lead form.
+`Disable analytics` points the analytics uploads it recognizes at `127.0.0.1`, on a port nothing listens on, so they fail on the phone. Other telemetry isn't covered. `Open links in browser` hands Android only the real address behind Threads' click tracker, with tags like `fbclid` removed. Links to Threads, Instagram, Facebook, Messenger and Meta stay in Threads, because sign-in and Accounts Center need its session. Ads go through the same check, from the link button or a swipe up in the photo viewer, and so do the links on a lead form.
 
 ## Verify a download
 
