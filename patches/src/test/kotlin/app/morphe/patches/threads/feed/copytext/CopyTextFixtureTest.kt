@@ -62,7 +62,7 @@ class CopyTextFixtureTest {
             val context = context(build)
             val overrides = context.longPressOverrides()
             val flag = context.selectionFlag()
-            // The post's text and its link preview, each in a lambda of its own on 451.
+            // The post's text and its link preview, each in a lambda of its own.
             assertEquals(where, 2, overrides.size)
             assertEquals(where, 2, overrides.map { it.method.definingClass }.distinct().size)
             val stock = overrides.map { it.method.body() }
@@ -71,20 +71,23 @@ class CopyTextFixtureTest {
 
             for ((i, override) in overrides.withIndex()) {
                 // Read apart from the patch: the lambda reads a field of its own and checks it for
-                // null, and where that jumps it reads the override's Function0 and checks that.
+                // null, and past that check it reads the override's Function0 and checks that.
                 val read = stock[i][override.read]
                 assertEquals(where, Opcode.IGET_OBJECT, read.opcode)
                 val field = read.getReference<FieldReference>()!!
                 assertEquals(where, override.method.definingClass, field.definingClass)
                 assertEquals(where, field.type, override.action.definingClass)
                 assertEquals(where, "Lkotlin/jvm/functions/Function0;", override.action.type)
-                assertEquals(where, Opcode.IF_NEZ, stock[i][override.guard].opcode)
+                assertTrue(where, stock[i][override.guard].opcode in setOf(Opcode.IF_NEZ, Opcode.IF_EQZ))
                 assertEquals(where, override.register, (stock[i][override.guard] as OneRegisterInstruction).registerA)
+                assertEquals(where, override.register, (read as TwoRegisterInstruction).registerA)
                 assertTrue(where, override.free != override.register)
             }
             assertEquals(where, 1, overrides.map { it.action.toString() }.distinct().size)
-            // The selection flag is PostText's thirteenth boolean on 451, copied once and then tested.
-            assertEquals(where, 65, flag.parameter)
+            // The selection flag is PostText's thirteenth boolean, copied once and then tested: 65 on 451,
+            // and 68 on 452, which adds two lambdas and an int ahead of the booleans and one boolean after it.
+            val booleans = flag.method.parameterTypes.indices.filter { flag.method.parameterTypes[it].toString() == "Z" }
+            assertEquals(where, booleans[12], flag.parameter)
             assertEquals(where, "Z", flag.method.parameterTypes[flag.parameter].toString())
             assertEquals(where, Opcode.IF_EQZ, textStock[flag.check].opcode)
             val noteAt = textStock.indexOfFirst { it.getReference<StringReference>()?.string?.startsWith(SELECTION_NOTE) == true }
@@ -117,7 +120,7 @@ class CopyTextFixtureTest {
                 assertEquals(where, Opcode.CHECK_CAST, body[at + 4].opcode)
                 assertEquals(where, override.action.definingClass, body[at + 4].getReference<TypeReference>()!!.type)
                 // Threads' check reads the answer.
-                assertEquals(where, Opcode.IF_NEZ, body[at + 5].opcode)
+                assertEquals(where, stock[i][at].opcode, body[at + 5].opcode)
                 assertEquals(where, override.register, (body[at + 5] as OneRegisterInstruction).registerA)
                 assertEquals(where, stock[i].map { it.opcode }, body.take(at).map { it.opcode } + body.drop(at + 5).map { it.opcode })
             }

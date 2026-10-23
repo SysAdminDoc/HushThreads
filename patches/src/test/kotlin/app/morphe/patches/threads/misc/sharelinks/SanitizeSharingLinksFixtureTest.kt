@@ -9,6 +9,7 @@ import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
@@ -33,6 +34,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -291,7 +293,7 @@ class SanitizeSharingLinksFixtureTest {
             val where = build.name
             val classes = parserClasses(build)
             // A build can resolve no link for WhatsApp quick sends, as 448 did.
-            val stock = quickSends(classes) ?: continue
+            val stock = quickSends(build, classes) ?: continue
             seen++
             val body = stock.instructions()
             val owner = stock.implementation!!.registerCount - 2
@@ -315,7 +317,8 @@ class SanitizeSharingLinksFixtureTest {
             assertEquals("$where: the post goes in right after its cast", REMEMBER_POST, patched[cast + 1].method().toString())
             assertEquals(listOf(self, post), (patched[cast + 1] as FiveRegisterInstruction).let { listOf(it.registerC, it.registerD) })
             for ((n, read) in stockReads.withIndex()) {
-                assertRecall("$where read $read", stock, read, patched, read + 3 + 15 * n, self)
+                // Through this, as 452 reuses the alias between the cast and the read.
+                assertRecall("$where read $read", stock, read, patched, read + 3 + 15 * n, owner)
             }
         }
         assertTrue("a declared build has quick sends", seen > 0)
@@ -344,11 +347,11 @@ class SanitizeSharingLinksFixtureTest {
                 clearMatches()
                 val context = PatchContexts.of(ExtensionDex.classes() + classes)
                 context.mutableClassDefBy(story.definingClass).methods.single { it.name == story.name && it.parameterTypes == story.parameterTypes }
-                    .addInstructions(copy, code)
+                    .addInstructionsWithLabels(copy, code)
                 val error = assertThrows(label, PatchException::class.java) { sanitizeSharingLinksPatch.execute(context) }.message.orEmpty()
                 assertTrue("$label: $error", error.contains("copies something other than its continuation"))
             }
-            val quick = quickSends(classes) ?: continue
+            val quick = quickSends(build, classes) ?: continue
             val quickBody = quick.instructions()
             val read = reads(quick).first()
             val cast = (0 until read).last { quickBody[it].opcode == Opcode.CHECK_CAST && quickBody[it].type() == MEDIA }
@@ -356,19 +359,17 @@ class SanitizeSharingLinksFixtureTest {
             val owner = quick.implementation!!.registerCount - 2
             val entryCopy = quickBody.indices.first { quickBody[it].isObjectMoveTo(self) && (quickBody[it] as TwoRegisterInstruction).registerB == owner }
             val result = quick.implementation!!.registerCount - 1
+            // The recall reads this, which the next test overwrites, so only the load is mutated here.
             for ((label, at, code) in listOf(
                 Triple("foreign field receiver", entryCopy, "move-object/from16 v$self, v$result"),
-                Triple("receiver overwritten before recall", read, "const/16 v$self, 0x0"),
-                Triple("wide receiver overwritten before recall", read, "const-wide/16 v${self - 1}, 0x0"),
                 Triple("mixed field receiver paths", cast - 1, "if-eqz v$self, :kept\nconst/16 v$self, 0x0\n:kept\nnop"),
             )) {
                 clearMatches()
                 val context = PatchContexts.of(ExtensionDex.classes() + classes)
                 val mutable = context.mutableClassDefBy(quick.definingClass).methods.single { it.name == quick.name }
-                if (label == "foreign field receiver") mutable.replaceInstruction(at, code) else mutable.addInstructions(at, code)
+                if (label == "foreign field receiver") mutable.replaceInstruction(at, code) else mutable.addInstructionsWithLabels(at, code)
                 val error = assertThrows(label, PatchException::class.java) { sanitizeSharingLinksPatch.execute(context) }.message.orEmpty()
-                val expected = if (at == read) "writes over its coroutine alias" else "without one cast of its own post field"
-                assertTrue("$label: $error", error.contains(expected))
+                assertTrue("$label: $error", error.contains("without one cast of its own post field"))
             }
         }
     }
@@ -384,7 +385,7 @@ class SanitizeSharingLinksFixtureTest {
             val call = sendBody.indices.single { sendBody[it].isPlainFetchCall() }
             val coroutine = (sendBody[call] as FiveRegisterInstruction).registerG
             val copy = sendBody.indexOfFirst { it.opcode == Opcode.MOVE_OBJECT && (it as TwoRegisterInstruction).registerA == coroutine }
-            val quick = quickSends(classes)
+            val quick = quickSends(build, classes)
             val cases = mutableListOf(
                 Triple("key overwritten", send, "writes something other than its continuation"),
                 Triple("key copied from the post", send, "copies something other than its continuation"),
@@ -431,13 +432,19 @@ class SanitizeSharingLinksFixtureTest {
     private fun assertRecall(where: String, stock: Method, read: Int, patched: List<Instruction>, at: Int, key: Int) {
         val link = (stock.instructions()[read + 1] as OneRegisterInstruction).registerA
         val block = patched.subList(at, at + 15)
+        // A key above v15, as this is in a coroutine body, is named by the range form.
+        val recall = if (key > 15) Opcode.INVOKE_STATIC_RANGE else Opcode.INVOKE_STATIC
         assertEquals("$where: hook shape",
-            listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.CHECK_CAST, Opcode.CONST_4, Opcode.CONST_4, Opcode.IF_EQZ,
+            listOf(recall, Opcode.MOVE_RESULT_OBJECT, Opcode.CHECK_CAST, Opcode.CONST_4, Opcode.CONST_4, Opcode.IF_EQZ,
                 Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ,
                 Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT),
             block.map { it.opcode })
         assertEquals("$where: the kept post comes back", REMEMBERED_POST, block[0].method().toString())
-        assertEquals("$where: for the coroutine", listOf(key), (block[0] as FiveRegisterInstruction).let { listOf(it.registerC).take(it.registerCount) })
+        val named = when (val call = block[0]) {
+            is RegisterRangeInstruction -> List(call.registerCount) { call.startRegister + it }
+            else -> (call as FiveRegisterInstruction).let { listOf(it.registerC).take(it.registerCount) }
+        }
+        assertEquals("$where: for the coroutine", listOf(key), named)
         val post = (block[1] as OneRegisterInstruction).registerA
         assertEquals("$where: cast to a post", listOf(post, MEDIA), listOf((block[2] as OneRegisterInstruction).registerA, block[2].type()))
         val code = (block[3] as OneRegisterInstruction).registerA
@@ -466,12 +473,39 @@ class SanitizeSharingLinksFixtureTest {
         }
     }
 
-    /** WhatsApp quick sends' coroutine body, the one that names its share source and reads the link. */
-    private fun quickSends(classes: List<ClassDef>): Method? {
+    /**
+     * WhatsApp quick sends' coroutine body, the one that names its share source and reads the link.
+     * 452 asks the build's shared-string pool for the name by a constant instead of loading it.
+     */
+    private fun quickSends(build: File, classes: List<ClassDef>): Method? {
         val reads = linkReader(classes)
-        return classes.flatMap { it.methods }.singleOrNull { method ->
-            method.name == "invokeSuspend" && reads(method).isNotEmpty() && method.instructions().any { it.string() == "quick_sends" }
+        val candidates = classes.flatMap { it.methods }.filter { method -> method.name == "invokeSuspend" && reads(method).isNotEmpty() }
+        val pools = candidates.flatMap { it.instructions() }.mapNotNull { it.method() }
+            .filter { it.parameterTypes.map(Any::toString) == listOf("I") && it.returnType == "Ljava/lang/String;" }
+            .map { it.definingClass }.toSet()
+        val loaded = FixtureDex.classes(build, pools).values
+        return candidates.singleOrNull { method ->
+            val body = method.instructions()
+            body.indices.any { at ->
+                body[at].string() == "quick_sends" || body[at].opcode == Opcode.INVOKE_STATIC && at > 0 &&
+                    body[at - 1] is NarrowLiteralInstruction && (body[at - 1] as OneRegisterInstruction).registerA ==
+                    (body[at] as FiveRegisterInstruction).registerC &&
+                    loaded.pooled(body[at].method()!!, (body[at - 1] as NarrowLiteralInstruction).narrowLiteral) == "quick_sends"
+            }
         }
+    }
+
+    /** The string the shared-string pool [call] answers for [key]: the string its switch case for the key returns. */
+    private fun Collection<ClassDef>.pooled(call: MethodReference, key: Int): String? {
+        val pool = singleOrNull { it.type == call.definingClass }?.methods?.singleOrNull { method ->
+            method.name == call.name && method.parameterTypes.map(Any::toString) == listOf("I") && method.returnType == call.returnType
+        } ?: return null
+        val body = pool.instructions()
+        val addresses = body.runningFold(0) { address, instruction -> address + instruction.codeUnits }
+        val switch = body.indices.singleOrNull { body[it].opcode == Opcode.PACKED_SWITCH || body[it].opcode == Opcode.SPARSE_SWITCH } ?: return null
+        val payload = body[addresses.indexOf(addresses[switch] + (body[switch] as OffsetInstruction).codeOffset)] as SwitchPayload
+        val case = payload.switchElements.singleOrNull { it.key == key } ?: return null
+        return body.getOrNull(addresses.indexOf(addresses[switch] + case.offset))?.string()
     }
 
     private fun Instruction.isPlainFetchCall(): Boolean = method()?.let {

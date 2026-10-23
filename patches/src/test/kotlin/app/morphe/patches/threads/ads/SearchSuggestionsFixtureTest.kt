@@ -93,30 +93,30 @@ class SearchSuggestionsFixtureTest {
             // Search calls the row twice, each under its own note. The carousel's call is the one in
             // the lambda the keyed item draws; the other draws suggestions mixed into the trends list.
             assertEquals(where, 2, targets.calls.size)
-            assertTrue(where, targets.row.note.orEmpty().endsWith("($DISCOVERY_FILE:354)"))
+            assertTrue(where, targets.row.note.orEmpty().endsWith("($DISCOVERY_FILE:357)"))
             assertEquals(where, targets.lambda, targets.row.method.definingClass)
             val trends = targets.calls.single { it !== targets.row && it.method.definingClass != targets.lambda }
-            assertTrue(where, trends.note.orEmpty().endsWith("($DISCOVERY_FILE:409)"))
+            assertTrue(where, trends.note.orEmpty().endsWith("($DISCOVERY_FILE:412)"))
 
-            // Read off 451 apart from the patch: Search's list builder reads the suggestions list at
-            // 158, asks whether it's empty at 159, checks the answer at 161, builds the carousel from
-            // 162 on, constructs it at 174 with that list, adds it under its key at 178 and 179, and
-            // goes to 180 for an empty list. What the check compared, and the hook's register, are
+            // Read off 452 apart from the patch: Search's list builder reads the suggestions list at
+            // 168, asks whether it's empty at 169, checks the answer at 171, builds the carousel from
+            // 172 on, constructs it at 184 with that list, adds it under its key at 188 and 189, and
+            // goes to 190 for an empty list. What the check compared, and the hook's register, are
             // dead there.
             val stock = classes.original(targets.method)
-            assertEquals(where, 158, targets.read)
-            assertEquals(where, 161, targets.guard)
-            assertEquals(where, 162, targets.start)
-            assertEquals(where, 174, targets.init)
-            assertEquals(where, 178, targets.key)
-            assertEquals(where, 180, targets.away)
+            assertEquals(where, 168, targets.read)
+            assertEquals(where, 171, targets.guard)
+            assertEquals(where, 172, targets.start)
+            assertEquals(where, 184, targets.init)
+            assertEquals(where, 188, targets.key)
+            assertEquals(where, 190, targets.away)
             assertEquals(where, Opcode.IGET_OBJECT, stock[targets.read].opcode)
             assertEquals(where, targets.list, (stock[targets.read] as OneRegisterInstruction).registerA)
             assertEquals(where, "isEmpty", stock[targets.read + 1].getReference<MethodReference>()?.name)
             assertEquals(where, Opcode.IF_NEZ, stock[targets.guard].opcode)
             assertEquals(where, targets.away, stock.jumpTarget(targets.guard))
             assertEquals(where, SEARCH_CAROUSEL_KEY, stock[targets.key].getReference<StringReference>()?.string)
-            assertTrue(where, stock[170].isNewInstanceOf(targets.lambda))
+            assertTrue(where, stock[180].isNewInstanceOf(targets.lambda))
             assertEquals(where, targets.list, stock[targets.init].argumentRegister(5))
             val live = RegisterLiveness.of(targets.method)
             assertFalse(where, targets.free in live.liveInto(targets.start))

@@ -158,8 +158,11 @@ function Test-PatchingReport {
     # read PatchingResult before relying on this. The step check below is the independent one,
     # and it is what catches the case these scripts exist for, a result file written from a
     # finally block after a failed compile, because the step that failed reports success false.
+    # morphe-desktop 1.19.0, the first CLI on patcher 2.0, writes the step list as stepResults and
+    # always writes success; 1.18.1 and older called the list patchingSteps.
     $success = $Report.PSObject.Properties['success']
-    $steps = @($Report.patchingSteps)
+    $stepList = if ($null -ne $Report.PSObject.Properties['stepResults']) { $Report.stepResults } else { $Report.patchingSteps }
+    $steps = @($stepList | Where-Object { $null -ne $_ })
     $stepsOk = $steps.Count -gt 0 -and @($steps | Where-Object {
         $property = $_.PSObject.Properties['success']
         $null -eq $property -or -not (Test-TrueBoolean $property.Value)

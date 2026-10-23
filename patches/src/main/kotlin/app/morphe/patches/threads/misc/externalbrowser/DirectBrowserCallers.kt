@@ -95,14 +95,14 @@ internal class DirectBrowserSite(
 }
 
 /**
- * The three places on 451 that make Threads' browser Intent themselves rather than through the
+ * The three places on 451 and 452 that make Threads' browser Intent themselves rather than through the
  * launcher: the lead form and privacy policy helper, the ad browser opened from a call to action,
  * and the media viewer's swipe up on an ad. Everything is read and proven before anything changes.
  *
- * Read from 451 (2026-10-13): the factory that builds the browser Intent has five callers. The
- * launcher calls it twice, once for each way it shows the browser. The immersive browser screen
- * calls it after the launcher already asked, so it's left alone, and so is the factory. A sixth
- * caller, or one of these gone, stops the patch.
+ * Read from 451 (2026-10-13) and 452 (2026-10-22): the factory that builds the browser Intent has
+ * five callers. The launcher calls it twice, once for each way it shows the browser. The immersive
+ * browser screen calls it after the launcher already asked, so it's left alone, and so is the
+ * factory. A sixth caller, or one of these gone, stops the patch.
  */
 internal fun BytecodePatchContext.directBrowserSites(launcher: Method, launcherLink: Int): List<DirectBrowserSite> {
     val factory = browserFactory()
@@ -149,7 +149,7 @@ internal fun BytecodePatchContext.directBrowserSites(launcher: Method, launcherL
         val matched = kinds.filterValues { it(method) }.keys
         if (matched.size != 1) {
             throw PatchException("$PATCH: ${method.describe()} makes Threads' browser Intent and is ${
-                if (matched.isEmpty()) "none of the callers 451 has" else matched.joinToString(" and ")
+                if (matched.isEmpty()) "none of the callers Threads has" else matched.joinToString(" and ")
             }")
         }
         val expected = if (matched.single() == "the launcher") 2 else 1

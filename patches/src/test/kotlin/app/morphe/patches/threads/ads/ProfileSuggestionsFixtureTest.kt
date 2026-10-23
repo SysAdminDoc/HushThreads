@@ -96,31 +96,31 @@ class ProfileSuggestionsFixtureTest {
             assertTrue(where, targets.screen.note.orEmpty().contains("($PROFILE_SCREEN_FILE:"))
             assertTrue(where, targets.infoRows.note.orEmpty().contains("($PROFILE_INFO_ROWS_FILE:"))
             assertEquals(where, targets.screen.callee.toString(), targets.infoRows.callee.toString())
-            assertTrue(where, targets.calls.any { it.note.orEmpty().endsWith("(DiscoveryContent.kt:354)") })
-            assertTrue(where, targets.calls.any { it.note.orEmpty().endsWith("(ActivityFeedContent.kt:888)") })
+            assertTrue(where, targets.calls.any { it.note.orEmpty().endsWith("(DiscoveryContent.kt:357)") })
+            assertTrue(where, targets.calls.any { it.note.orEmpty().endsWith("(ActivityFeedContent.kt:915)") })
 
-            // Read off 451 apart from the patch: the profile screen reads the profile's carousel
-            // list at 546, the only read of that field outside its own class, checks it at 547,
-            // and builds the carousel from 1017 on.
+            // Read off 452 apart from the patch: the profile screen reads the profile's carousel
+            // list at 554, the only read of that field outside its own class, checks it at 555,
+            // and builds the carousel from 1021 on.
             val carousel = targets.carousel
             val screenStock = classes.original(carousel.method)
-            assertEquals(where, 546, carousel.read)
-            assertEquals(where, 547, carousel.guard)
+            assertEquals(where, 554, carousel.read)
+            assertEquals(where, 555, carousel.guard)
             assertEquals(where, Opcode.IGET_OBJECT, screenStock[carousel.read].opcode)
             assertEquals(where, carousel.register, (screenStock[carousel.read] as OneRegisterInstruction).registerA)
             assertEquals(where, Opcode.IF_NEZ, screenStock[carousel.guard].opcode)
             assertEquals(where, carousel.register, (screenStock[carousel.guard] as OneRegisterInstruction).registerA)
             val landing = screenStock.jumpTarget(carousel.guard)
-            assertEquals(where, 1017, landing)
+            assertEquals(where, 1021, landing)
             assertTrue(where, screenStock[landing + 2].isNewInstanceOf(targets.screen.method.definingClass))
 
-            // The view model checks for Threads' suggestions at 314, makes the row from 315 on, and
-            // goes to 328 without them. What the check compared, and the hook's register, are dead there.
+            // The view model checks for Threads' suggestions at 213, makes the row from 214 on, and
+            // goes to 225 without them. What the check compared, and the hook's register, are dead there.
             val row = targets.headerRow
             val rowStock = classes.original(row.method)
-            assertEquals(where, 314, row.guard)
-            assertEquals(where, 315, row.start)
-            assertEquals(where, 328, row.away)
+            assertEquals(where, 213, row.guard)
+            assertEquals(where, 214, row.start)
+            assertEquals(where, 225, row.away)
             assertEquals(where, Opcode.IF_NE, rowStock[row.guard].opcode)
             assertEquals(where, row.away, rowStock.jumpTarget(row.guard))
             val live = RegisterLiveness.of(row.method)

@@ -24,13 +24,15 @@ import javax.xml.transform.stream.StreamResult
  * comes back as a DOM parsed like the patcher's, with `android:` attributes as plain names.
  *
  * The coder is internal to the patcher, so it's reached by its JVM names, pinned to morphe-patcher
- * 1.15.1 as [PatchContexts] is: a bump that renames one fails here, naming it.
+ * 2.0.0 as [PatchContexts] is: a bump that renames one fails here, naming it. Patcher 2.0 decodes on
+ * request, as Manager does, so a file is decoded the first time a test asks for it (getFile's last
+ * argument, as a patch's own get passes it).
  */
 internal class FixtureResources private constructor(private val work: File, private val coder: Closeable) : AutoCloseable {
     /** The decoded file at [path], as `res/xml/name.xml` or `AndroidManifest.xml`. */
     fun document(path: String): Document {
         val file = CODER.getMethod("getFile", String::class.java, String::class.java, Boolean::class.javaPrimitiveType)
-            .invoke(coder, path, null, false) as File
+            .invoke(coder, path, null, true) as File
         if (!file.isFile) throw AssertionError("the decoded build has no $path")
         return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
     }
@@ -58,7 +60,7 @@ internal class FixtureResources private constructor(private val work: File, priv
             }
             val coder = CODER.getConstructor(File::class.java, File::class.java, Set::class.java, Boolean::class.javaPrimitiveType)
                 .newInstance(File(work, "decoded"), apk, emptySet<Any>(), false) as Closeable
-            CODER.getMethod("decodeResources").invoke(coder)
+            CODER.getMethod("decodeResources", Boolean::class.javaPrimitiveType).invoke(coder, true)
             return FixtureResources(work, coder)
         }
 

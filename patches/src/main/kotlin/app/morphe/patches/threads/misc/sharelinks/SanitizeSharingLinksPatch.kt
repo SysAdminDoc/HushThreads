@@ -452,7 +452,7 @@ private fun BytecodePatchContext.rememberAtCast(method: MutableMethod, types: Se
     }.distinct()
     val self = posts.map { (body[it - 1] as TwoRegisterInstruction).registerB }.distinct().singleOrNull()
         ?: throw PatchException("$PATCH: $where loads its post through more than one coroutine alias")
-    for (at in posts.map { it + 1 } + reads.map { it + 2 }) {
+    for (at in posts.map { it + 1 }) {
         if (!isParameterAliasBefore(at, self, owner)) {
             throw PatchException("$PATCH: $where writes over its coroutine alias in v$self before instruction $at")
         }
@@ -464,7 +464,9 @@ private fun BytecodePatchContext.rememberAtCast(method: MutableMethod, types: Se
     for ((cast, post) in posts.zip(registers)) {
         edits += cast + 1 to { addInstructions(cast + 1, "invoke-static { v$self, v$post }, $REMEMBER_POST") }
     }
-    recallAfter(this, edits, where, body, reads, self)
+    // The read finds the post through this, which requireThisIntact keeps to every read. 452 reuses
+    // the alias for an instance-of between the cast and the read.
+    recallAfter(this, edits, where, body, reads, owner)
     edits.applyLastFirst()
     reads.size
 }
@@ -489,7 +491,7 @@ private fun BytecodePatchContext.recallAfter(
         val free = method.freeLocalsAt(PATCH, after, 3).let { if (key in it) method.freeLocalsAt(PATCH, after, 4) - key else it }
         val (post, postCode, name) = free
         val hook = """
-            invoke-static { v$key }, $REMEMBERED_POST
+            ${if (key > 15) "invoke-static/range { v$key .. v$key }" else "invoke-static { v$key }"}, $REMEMBERED_POST
             move-result-object v$post
             check-cast v$post, $MEDIA
         """ + postLinkHook(value, post, postCode, name)

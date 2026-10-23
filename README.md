@@ -26,6 +26,8 @@ Sponsored posts and suggested-account cards leave your feed before Threads shows
 
 The latest release is [v0.0.15](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.15), with 19 patches. What changed in each version is in the [changelog](CHANGELOG.md).
 
+The source on main has moved to Threads 452.0.0.50.64 and needs Morphe Manager 2.0.0 or newer. It isn't in a release yet, so Manager still downloads v0.0.15 for Threads 451.
+
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
 ## Install

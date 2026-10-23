@@ -1995,7 +1995,7 @@ public class DexDiff {
     private static final List<String> FEED_POST_NOTES = List.of("com.instagram.barcelona.feed.post.ui.PostSingleMedia",
             "com.instagram.barcelona.feed.post.ui.PostCarousel");
     /** The notes of the composables that show a video inside a post: an Instagram post shown in a thread, a trend's preview and an ad card. */
-    private static final List<String> EMBED_NOTES = List.of("com.instagram.barcelona.igmedia.InlineIgVideo (InlineIgVideo.kt:",
+    private static final List<String> EMBED_NOTES = List.of("com.instagram.barcelona.igmedia.InlineIgVideo",
             "com.instagram.barcelona.common.ui.mediahighlights.AutoplayingMediaHighlightVideo (TrendMediaHighlightsPreview.kt:",
             "com.instagram.barcelona.sponsored.ui.AdCard (AdCard.kt:");
     /** The note of the full-screen viewer's video composable, which plays by PostVideo's default and has to stay as Threads wrote it. */

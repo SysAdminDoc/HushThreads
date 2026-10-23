@@ -97,7 +97,7 @@ private fun generatePatchList(version: String, patches: Set<Patch<*>>) {
             it.name!!,
             it.description,
             it.category,
-            it.use,
+            it.default,
             // The patch's own name, not its Kotlin class. Every entry used to read
             // "BytecodePatch", which made the only machine-readable dependency record say
             // nothing at all. Internal patches with no name keep the class name.
@@ -111,7 +111,7 @@ private fun generatePatchList(version: String, patches: Set<Patch<*>>) {
                 .map { dependency -> dependency.name ?: dependency.javaClass.simpleName }
                 .distinct()
                 .sorted(),
-            it.compatiblePackages?.associate { (packageName, versions) -> packageName to versions },
+            it.compatibility?.mapNotNull { c -> c.legacyPackage() }?.toMap(),
             it.compatibility.orEmpty().map { c -> c.toJsonCompatibility() },
             it.options.values.map { option ->
                 JsonPatch.Option(
@@ -141,6 +141,18 @@ private fun generatePatchList(version: String, patches: Set<Patch<*>>) {
     listJson.writeText(
         gsonBuilder.toJson(jsonObject)
     )
+}
+
+// Patcher 2.0 hides compatiblePackages and keeps the mapping behind it internal, so this is that
+// mapping again: Manager 1.x still reads the field, and dropping it would empty every patch's
+// supported versions there. Stable targets only, unless a package declares nothing but
+// experimental ones; a null version anywhere means any version.
+private fun Compatibility.legacyPackage(): Pair<PackageName, Set<VersionName>?>? {
+    val pkg = packageName ?: return null
+    val onlyExperimental = targets.none { !it.isExperimental }
+    val counted = targets.filter { onlyExperimental || !it.isExperimental }
+    if (counted.any { it.version == null }) return pkg to null
+    return pkg to counted.mapNotNull { it.version }.toSet().ifEmpty { null }
 }
 
 private fun Compatibility.toJsonCompatibility() = JsonCompatibility(

@@ -89,13 +89,13 @@ internal fun BytecodePatchContext.searchSuggestionTargets(): SearchCarousel {
     val builder = classDefByStrings(SEARCH_CAROUSEL_KEY, StringComparisonType.EQUALS)
         .filterNot { it.type.startsWith(EXTENSION_ROOT) }
         .flatMap { it.methods }
-        .filter { method -> method.implementation?.instructions?.any { it.isKey() } == true }
+        .filter { method -> method.code().let { code -> code.indices.any { code.addsKeyAt(it) } } }
         .distinctBy { it.descriptor() }
         .singleOrPatchException("$PATCH: the method that adds Search's \"$SEARCH_CAROUSEL_KEY\" item")
     // Read through the mutable copy, so what's checked is what the hook goes into.
     val method = mutableClassDefBy(builder.definingClass).findMutableMethodOf(builder)
     val code = method.code()
-    val key = code.indices.filter { code[it].isKey() }
+    val key = code.indices.filter { code.addsKeyAt(it) }
         .singleOrPatchException("$PATCH: \"$SEARCH_CAROUSEL_KEY\" in ${method.descriptor()}")
     val entry = method.soleEntry(key, "Search's Follow suggestions carousel")
 
@@ -181,6 +181,18 @@ internal fun hookSearchSuggestions(carousel: SearchCarousel) {
 private fun Instruction.isKey() =
     (opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO) &&
         getReference<StringReference>()?.string == SEARCH_CAROUSEL_KEY
+
+/**
+ * Whether [at] loads the carousel's key and hands it straight to a call that adds an item under it.
+ * From 452 Search also compares each item's key with it, through `equals`, when it logs how far the
+ * list was scrolled, and that method adds nothing.
+ */
+private fun List<Instruction>.addsKeyAt(at: Int): Boolean {
+    if (!this[at].isKey()) return false
+    val next = getOrNull(at + 1)?.takeIf { it.opcode in INVOKES } ?: return false
+    val call = next.getReference<MethodReference>() ?: return false
+    return !(call.name == "equals" && call.returnType == "Z" && call.parameterTypes.size == 1)
+}
 
 /** A call of a list's own `isEmpty()`, on nothing but the list. */
 private fun Instruction.isEmptyCheck(): Boolean {

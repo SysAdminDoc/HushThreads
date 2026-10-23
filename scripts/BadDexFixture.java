@@ -104,9 +104,9 @@ public class BadDexFixture {
     private static final String SETTINGS_ENTRY = "Lapp/morphe/extension/hushthreads/settings/SettingsEntry;";
     private static final String LOGO_HEADER = "Lfixture/LogoHeader;";
     private static final String LOGO = "Lapp/morphe/extension/hushthreads/settings/ThreadsLogo;";
-    private static final String LOGO_NOTE = "com.instagram.barcelona.feed.ui.MainFeedScreen.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous> (MainFeedScreen.kt:2624)";
-    private static final ImmutableMethodReference LOGO_CLICKABLE = method("LX/02eC;", "A01", "LX/09hc;",
-            "LX/09xw;", "LX/00lS;", "LX/09hc;", "LX/01bY;", "Ljava/lang/String;", "Lkotlin/jvm/functions/Function0;", "Z");
+    private static final String LOGO_NOTE = "com.instagram.barcelona.feed.ui.MainFeedScreen.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous> (MainFeedScreen.kt:2641)";
+    private static final ImmutableMethodReference LOGO_CLICKABLE = method("LX/2dO;", "A01", "LX/9hi;",
+            "LX/9wj;", "LX/0mY;", "LX/9hi;", "LX/1Mz;", "Ljava/lang/String;", "Lkotlin/jvm/functions/Function0;", "Z");
     private static final ImmutableMethodReference LOGO_STAND_IN = method(LOGO, "clickable", OBJECT,
             OBJECT, OBJECT, OBJECT, OBJECT, "Ljava/lang/String;", OBJECT, "Z");
 

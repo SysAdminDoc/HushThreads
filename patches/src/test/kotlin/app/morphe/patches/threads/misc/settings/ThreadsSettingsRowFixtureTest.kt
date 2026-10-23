@@ -276,7 +276,14 @@ class ThreadsSettingsRowFixtureTest {
         }
         val casts = list.body().filter { it.opcode == Opcode.CHECK_CAST }.mapNotNull { it.getReference<TypeReference>()?.type }.toSet()
         val read = FixtureDex.classes(build, casts + FUNCTION0)
-        val entries = casts.single { type -> read[type]?.superclass == "Ljava/lang/Enum;" }
+        // The enum the list switches on: its last cast into the register it asks the ordinal of. 452
+        // casts to other enums further down the list.
+        val body = list.body()
+        val ordinalAt = body.indices.single { body[it].method()?.let { m -> m.name == "ordinal" && m.returnType == "I" } == true }
+        val receiver = (body[ordinalAt] as FiveRegisterInstruction).registerC
+        val entries = body[(0 until ordinalAt).last { body[it].opcode == Opcode.CHECK_CAST && (body[it] as OneRegisterInstruction).registerA == receiver }]
+            .getReference<TypeReference>()!!.type
+        assertEquals("${build.name}: the list switches on an enum", "Ljava/lang/Enum;", read[entries]?.superclass)
         Fixture((noted + read.values).distinctBy { it.type }, list, rowSignature, accountsRow.signature(),
             accountsRow.parameterTypes[0].toString(), entries)
     }

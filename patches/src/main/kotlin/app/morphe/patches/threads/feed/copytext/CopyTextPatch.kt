@@ -15,6 +15,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.patches.threads.ads.sourceOrNull
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.threads.misc.extension.freeLocalsAt
 import app.morphe.patches.threads.misc.extension.localRegisterCount
@@ -59,9 +60,9 @@ private val MOVES = EnumSet.of(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16)
 
 /**
  * The post row's long press override: in [method], the read at [read] of the override the row
- * was handed into [register], the null check at [guard] straight after it, the override's own
- * long press [action] the row reads when there is one, and a register [free] the hook may write
- * in front of [guard].
+ * was handed into [register], the null check at [guard] that decides the long press from it, the
+ * override's own long press [action] the row reads when there is one, and a register [free] the
+ * hook may write in front of [guard].
  */
 internal class LongPressOverride(
     val method: MutableMethod,
@@ -149,64 +150,92 @@ private fun BytecodePatchContext.noted(note: String): List<MutableMethod> =
         .map { mutableClassDefBy(it.definingClass).findMutableMethodOf(it) }
 
 /**
- * Every read and null check of a long press override in the post row's lambdas: on 451 the
- * post's text and its link preview each have one. Throws unless there's at least one, they all
- * read the same override's same action, and each check is reached only from its read.
+ * Every null check of a long press override in the post row's lambdas: on 451 and 452 the post's
+ * text and its link preview each have one. Throws unless there's at least one, they all read the
+ * same override's same action, and each check is reached only by falling into it, holding nothing
+ * but the lambda's own override.
  */
 internal fun BytecodePatchContext.longPressOverrides(): List<LongPressOverride> {
     val sites = noted(POST_ROW_NOTE).flatMap { method ->
         val flow = ControlFlow.of(method)
-        flow.instructions.indices.filter { read -> method.overrideAction(flow, read) != null }.map { method to it }
+        flow.instructions.indices.filter { guard -> method.overrideAction(flow, guard) != null }.map { method to it }
     }
     if (sites.isEmpty()) throw PatchException("$PATCH: no lambda of the post row reads and checks a long press override")
-    val found = sites.map { (method, read) -> method.overrideAt(read) }
+    val found = sites.map { (method, guard) -> method.overrideAt(guard) }
     val actions = found.map { it.action.toString() }.distinct()
     if (actions.size != 1) throw PatchException("$PATCH: the post row's override checks read different actions, $actions")
     return found
 }
 
-/** The override read at [read] and its check. Throws unless the read is the only way to the check. */
-private fun MutableMethod.overrideAt(read: Int): LongPressOverride {
+/**
+ * The override checked at [guard], and the read it came from. Throws unless the check is reached
+ * only by falling into it, so no jump skips the hook, and what it checks can only be the override
+ * the lambda read from its own field.
+ */
+private fun MutableMethod.overrideAt(guard: Int): LongPressOverride {
     val method = this
     val flow = ControlFlow.of(method)
-    val guard = read + 1
-    val register = (flow.instructions[read] as TwoRegisterInstruction).registerA
+    val register = (flow.instructions[guard] as OneRegisterInstruction).registerA
     val into = flow.instructions.indices.filter { from -> guard in flow.normal[from] || guard in flow.exceptional[from] }
-    if (into != listOf(read)) {
+    if (into != listOf(guard - 1)) {
         throw PatchException("$PATCH: ${method.signature()} reaches its override check at $guard from $into, not only " +
-            "from the read at $read")
+            "from the read before it")
     }
+    val read = method.sourceOrNull(guard, register)?.at?.takeIf { at ->
+        at >= 0 && flow.instructions[at].opcode == Opcode.IGET_OBJECT &&
+            flow.instructions[at].getReference<FieldReference>()?.definingClass == method.definingClass
+    } ?: throw PatchException("$PATCH: the override check at $guard in ${method.signature()} doesn't read only the " +
+        "lambda's own override")
     if (register > 15) {
         throw PatchException("$PATCH: ${method.signature()} holds its override in v$register, which the call can't name")
     }
-    val action = method.overrideAction(flow, read)!!
+    val action = method.overrideAction(flow, guard)!!
+    if (action.definingClass != flow.instructions[read].getReference<FieldReference>()!!.type) {
+        throw PatchException("$PATCH: the override check at $guard in ${method.signature()} reads $action from " +
+            "another type than the override it read at $read")
+    }
     val free = method.freeLocalsAt(PATCH, guard, 1).single()
     return LongPressOverride(method, read, guard, register, action, free)
 }
 
 /**
- * The override's long press, when [read] is the row's read of an override of its own: an
- * `iget-object` of a field of the row's class, an `if-nez` on it straight after, and where that
- * jumps, within a few instructions, a read of the override's `Function0` field and an `if-nez` on
- * that. Null for anything else.
+ * The override's long press, when [guard] is the row's null check of an override of its own: an
+ * `if-nez` or `if-eqz` on a register, and on its not-null side, within a few instructions, a read
+ * of that register's `Function0` field, of a type the lambda keeps a field of, tested at most one
+ * other test later. 451 reads the override just before the check and its action where the check
+ * jumps. 452 reads the override earlier, falls into the action and tests a boolean of the
+ * override's first. Null for anything else.
  */
-private fun Method.overrideAction(flow: ControlFlow, read: Int): FieldReference? {
+private fun Method.overrideAction(flow: ControlFlow, guard: Int): FieldReference? {
     val body = flow.instructions
-    if (read + 1 >= body.size || body[read].opcode != Opcode.IGET_OBJECT || body[read + 1].opcode != Opcode.IF_NEZ) return null
-    val field = body[read].getReference<FieldReference>() ?: return null
-    val register = (body[read] as TwoRegisterInstruction).registerA
-    if (field.definingClass != definingClass || (body[read + 1] as OneRegisterInstruction).registerA != register) return null
-    val target = flow.normal[read + 1].singleOrNull { it != read + 2 } ?: return null
-    for (at in target until minOf(target + 4, body.size - 1)) {
+    val check = body[guard]
+    if (check.opcode != Opcode.IF_NEZ && check.opcode != Opcode.IF_EQZ) return null
+    val register = (check as OneRegisterInstruction).registerA
+    val held = if (check.opcode == Opcode.IF_NEZ) {
+        flow.normal[guard].singleOrNull { it != guard + 1 } ?: return null
+    } else {
+        guard + 1
+    }
+    for (at in held until minOf(held + 4, body.size)) {
         val instruction = body[at]
         if (instruction.opcode != Opcode.IGET_OBJECT) continue
         val action = instruction.getReference<FieldReference>() ?: continue
         val get = instruction as TwoRegisterInstruction
-        if (get.registerB != register || action.definingClass != field.type || action.type != FUNCTION0) continue
-        val next = body[at + 1]
-        return action.takeIf { next.opcode == Opcode.IF_NEZ && (next as OneRegisterInstruction).registerA == get.registerA }
+        if (get.registerB != register || action.type != FUNCTION0) continue
+        if (implementation == null || !ownsFieldOf(action.definingClass)) return null
+        val tested = (at + 1 until minOf(at + 3, body.size)).firstOrNull { (body[it] as? OneRegisterInstruction)?.registerA == get.registerA }
+            ?: return null
+        val between = (at + 1 until tested).all { body[it].opcode == Opcode.IF_NEZ || body[it].opcode == Opcode.IF_EQZ }
+        val test = body[tested].opcode
+        return action.takeIf { between && (test == Opcode.IF_NEZ || test == Opcode.IF_EQZ) }
     }
     return null
+}
+
+/** Whether the lambda's class reads a field of its own of [type] anywhere in this method. */
+private fun Method.ownsFieldOf(type: String): Boolean = implementation!!.instructions.any { instruction ->
+    instruction.opcode == Opcode.IGET_OBJECT &&
+        instruction.getReference<FieldReference>()?.let { it.definingClass == definingClass && it.type == type } == true
 }
 
 /**

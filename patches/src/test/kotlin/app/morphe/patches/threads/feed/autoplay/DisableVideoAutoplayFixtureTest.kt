@@ -42,10 +42,10 @@ import java.io.File
 
 /**
  * Disable video autoplay on each declared build: PostVideo plays its video by its fourth boolean
- * on 450 and 451, each feed post's call to PostVideo hands that flag to the extension first, and so do the
+ * on 450, 451 and 452, each feed post's call to PostVideo hands that flag to the extension first, and so do the
  * Instagram post, trend preview and ad card calls. The two of those that leave the flag to
  * PostVideo's default get that default's bit cleared and ask about the default's 1 instead.
- * 451 sends those embeds through a shortened forwarder. PostVideo, that forwarder, its playback
+ * 451 and 452 send those embeds through a shortened forwarder. PostVideo, that forwarder, its playback
  * effect and the full-screen viewer are left as they were.
  */
 class DisableVideoAutoplayFixtureTest {
@@ -470,6 +470,9 @@ class DisableVideoAutoplayFixtureTest {
         val prefetch: Prefetch,
     )
 
+    /** A forwarder's parameter count, the parameter carrying PostVideo's play flag, and its mask, the last int. */
+    private data class Forwarder(val size: Int, val play: Int, val mask: Int)
+
     private fun fixture(build: File): Fixture = fixtures.getOrPut(build) {
         val notes = listOf(POST_VIDEO, PLAYBACK_EFFECT, MEDIA_VIEWER) + VIDEO_CALLERS
         val classes = FixtureDex.classesWhere(build, { true }) { method -> notes.any { method.holdsNote(it) } }
@@ -479,25 +482,29 @@ class DisableVideoAutoplayFixtureTest {
         val parameter = postVideo.playParameter(effect)
         // The default mask is PostVideo's last int on 450.
         val maskParameter = postVideo.parameterTypes.map { it.toString() }.lastIndexOf("I")
-        // Read independently: 451's shorter overload calls PostVideo once and returns. Its third
-        // boolean (parameter 18) goes to PostVideo's fourth, and its last int (15) is the same mask.
+        // Read independently: the shorter overload calls PostVideo once and returns. On 451 its 21
+        // parameters end on four ints and five booleans, the third boolean (18) goes to PostVideo's
+        // fourth and the last int (15) is the same mask. 452's has 17, ending on four ints and three
+        // booleans, so the play flag is its second boolean (15) and the mask its last int (13).
+        val shape = FORWARDERS.entries.singleOrNull { build.name.startsWith(it.key) }?.value
         val forwarders = methods.filter { method ->
             method.definingClass == postVideo.definingClass && method.reference() != postVideo.reference() &&
                 method.body().any { it.reference() == postVideo.reference() }
         }
         assertTrue("${build.name}: one shortened PostVideo overload", forwarders.size <= 1)
         val forwarder = forwarders.singleOrNull()
-        if (build.name.startsWith("threads-451.")) assertTrue("${build.name}: the shortened overload", forwarder != null)
+        assertEquals("${build.name}: the shortened overload", shape != null, forwarder != null)
         if (forwarder != null) {
-            assertEquals(build.name, 21, forwarder.parameterTypes.size)
-            assertEquals(build.name, List(5) { "Z" }, forwarder.parameterTypes.drop(16).map { it.toString() })
-            assertEquals(build.name, "I", forwarder.parameterTypes[15].toString())
+            shape!!
+            assertEquals(build.name, shape.size, forwarder.parameterTypes.size)
+            assertEquals(build.name, List(shape.size - shape.mask - 1) { "Z" }, forwarder.parameterTypes.drop(shape.mask + 1).map { it.toString() })
+            assertEquals(build.name, "I", forwarder.parameterTypes[shape.mask].toString())
             val body = forwarder.body()
             val call = body.indices.single { body[it].reference() == postVideo.reference() }
             assertEquals(build.name, body.lastIndex - 1, call)
             assertEquals(build.name, Opcode.RETURN_VOID, body.last().opcode)
-            val first = forwarder.implementation!!.registerCount - 21
-            for ((into, from) in listOf(parameter to 18, maskParameter to 15)) {
+            val first = forwarder.implementation!!.registerCount - shape.size
+            for ((into, from) in listOf(parameter to shape.play, maskParameter to shape.mask)) {
                 val argument = body[call].argumentRegister(postVideo.argumentOffset(into))!!
                 val copy = body.take(call).last { it.opcode.setsRegister() && (it as? OneRegisterInstruction)?.registerA == argument }
                 assertEquals(build.name, Opcode.MOVE_FROM16, copy.opcode)
@@ -512,8 +519,8 @@ class DisableVideoAutoplayFixtureTest {
                     forwarder?.reference() -> forwarder ?: return@mapNotNull null
                     else -> return@mapNotNull null
                 }
-                val passedPlay = if (target == postVideo) parameter else 18
-                val passedMask = if (target == postVideo) maskParameter else 15
+                val passedPlay = if (target == postVideo) parameter else shape!!.play
+                val passedMask = if (target == postVideo) maskParameter else shape!!.mask
                 val maskRegister = body[at].argumentRegister(target.argumentOffset(passedMask))!!
                 // On 450 every caller loads its mask as a constant, last written just before the call.
                 val write = (at - 1 downTo 0).first { body[it].opcode.setsRegister() && (body[it] as? OneRegisterInstruction)?.registerA == maskRegister }
@@ -598,6 +605,12 @@ class DisableVideoAutoplayFixtureTest {
 
         /** The composables that show a video inside a post rather than as its own media. */
         val EMBEDS = listOf(INLINE_IG_VIDEO, TREND_PREVIEW_VIDEO, AD_CARD)
+
+        /** The shortened PostVideo forwarder of each build that has one: its parameter count, play flag and mask. */
+        val FORWARDERS = mapOf(
+            "threads-451." to Forwarder(size = 21, play = 18, mask = 15),
+            "threads-452." to Forwarder(size = 17, play = 15, mask = 13),
+        )
 
         /** The bit of PostVideo's default mask that hands its play flag to the default, on 450. */
         const val PLAY_BIT = 0x4000

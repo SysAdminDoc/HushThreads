@@ -269,6 +269,24 @@ try {
         -ExpectedPackageName $target.PackageName -ExpectedPackageVersion $target.PackageVersion
     Assert-True $reportValidation.Valid `
         "A complete result with a declared dependency was rejected: $($reportValidation.Reason)"
+    # morphe-desktop 1.19.0 writes its steps as stepResults and 1.18.1 as patchingSteps. Both read,
+    # and a result with no step list, or with a step that failed, is invalid rather than an error.
+    function Test-StepReport([object[]]$Steps, [string]$Name = 'stepResults') {
+        $report = [pscustomobject]@{ success = $true; appliedPatches = @($allNames + $allDependencies | ForEach-Object {
+                [pscustomobject]@{ name = $_ } }); failedPatches = @()
+            packageName = $target.PackageName; packageVersion = $target.PackageVersion }
+        if ($null -ne $Steps) { $report | Add-Member -NotePropertyName $Name -NotePropertyValue $Steps }
+        Test-PatchingReport -Report $report -ExpectedNames $allNames -AllowedDependencyNames $allDependencies `
+            -OutputPath $reportApk -ExpectedPackageName $target.PackageName -ExpectedPackageVersion $target.PackageVersion
+    }
+    $passedStep = [pscustomobject]@{ step = 'PATCHING'; success = $true }
+    Assert-True (Test-StepReport @($passedStep, [pscustomobject]@{ step = 'REBUILDING'; success = $true })).Valid `
+        'A morphe-desktop 1.19.0 result was rejected.'
+    Assert-True (Test-StepReport @([pscustomobject]@{ success = $true }) -Name 'patchingSteps').Valid `
+        'A morphe-desktop 1.18.1 result was rejected.'
+    Assert-True (-not (Test-StepReport $null).Valid) 'A result with no step list passed.'
+    Assert-True (-not (Test-StepReport @($passedStep, [pscustomobject]@{ step = 'REBUILDING'; success = $false })).Valid) `
+        'A result whose rebuild step failed passed.'
 
     $fakeAdb = Join-Path $caseRoot 'adb.cmd'
     $log = Join-Path $caseRoot 'adb.log'

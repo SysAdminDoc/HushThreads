@@ -43,13 +43,13 @@ internal object AppCompatibilities {
      * stable release. A newer stable build replaces it in the same release, and the one before
      * goes.
      */
-    const val THREADS_TARGET_VERSION = "451.0.0.51.80"
+    const val THREADS_TARGET_VERSION = "452.0.0.50.64"
 
     /**
      * The version code of the arm64-v8a build of [THREADS_TARGET_VERSION] the fixtures were read
      * from: APKMirror's 480dpi ARM64 bundle. Other density variants have different codes.
      */
-    const val THREADS_TARGET_VERSION_CODE = 512108444
+    const val THREADS_TARGET_VERSION_CODE = 512207626
 
     /** Threads' own floor on this build, Android 9. */
     const val THREADS_TARGET_MIN_SDK = 28

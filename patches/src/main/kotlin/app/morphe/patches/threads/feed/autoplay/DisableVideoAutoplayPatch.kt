@@ -53,9 +53,10 @@ internal const val POST_CAROUSEL = "com.instagram.barcelona.feed.post.ui.PostCar
 
 /**
  * Notes in the composables that show a video inside a post rather than as its own media: an
- * Instagram post shown in a thread, a trend's preview and an ad card.
+ * Instagram post shown in a thread, a trend's preview and an ad card. 452 moved the Instagram post's
+ * PostVideo call into a lambda of its composable, so its note covers the lambdas too.
  */
-internal const val INLINE_IG_VIDEO = "com.instagram.barcelona.igmedia.InlineIgVideo (InlineIgVideo.kt:"
+internal const val INLINE_IG_VIDEO = "com.instagram.barcelona.igmedia.InlineIgVideo"
 internal const val TREND_PREVIEW_VIDEO =
     "com.instagram.barcelona.common.ui.mediahighlights.AutoplayingMediaHighlightVideo (TrendMediaHighlightsPreview.kt:"
 internal const val AD_CARD = "com.instagram.barcelona.sponsored.ui.AdCard (AdCard.kt:"
@@ -222,7 +223,7 @@ internal data class PlayDefault(val mask: Int, val bit: Int, val value: Int)
 private data class PlayTarget(val method: Method, val parameter: Int, val default: PlayDefault?)
 
 /**
- * 451's embeds call a shortened overload beside PostVideo. It only fills omitted arguments and
+ * 451 and 452 embeds call a shortened overload beside PostVideo. It only fills omitted arguments and
  * copies the others before its one call to PostVideo, then returns. Follow the play flag and mask
  * back to their unchanged parameters, so the hook stays at each embed rather than in shared code.
  */

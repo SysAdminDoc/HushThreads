@@ -27,7 +27,7 @@ no-call Landroid/content/pm/ShortcutManager;->removeAllDynamicShortcuts()V outsi
 
 # The main-feed logo keeps all seven original clickable arguments in their original order.
 # A second hook, a leftover stock call or a hook on another argument bank is refused.
-sole-call Lapp/morphe/extension/hushthreads/settings/ThreadsLogo;->clickable(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;Z)Ljava/lang/Object; replacing LX/02eC;->A01(LX/09xw;LX/00lS;LX/09hc;LX/01bY;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Z)LX/09hc; in instance (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; holding "com.instagram.barcelona.feed.ui.MainFeedScreen.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous> (MainFeedScreen.kt:2624)"
+sole-call Lapp/morphe/extension/hushthreads/settings/ThreadsLogo;->clickable(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;Z)Ljava/lang/Object; replacing LX/2dO;->A01(LX/9wj;LX/0mY;LX/9hi;LX/1Mz;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Z)LX/9hi; in instance (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; holding "com.instagram.barcelona.feed.ui.MainFeedScreen.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous> (MainFeedScreen.kt:2641)"
 
 # These compare the final host operations and branch graph against the stock fixture. A selected
 # feature's status must agree with the CLI selection when supplied. Omitted families must retain
