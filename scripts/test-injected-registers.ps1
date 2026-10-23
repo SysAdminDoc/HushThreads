@@ -908,7 +908,8 @@ try {
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
     # 451's network-only fetch shares the label, and its quick coroutine copies high-register
-    # this into v13. Keep the direct-this fixtures above and verify both forms independently.
+    # this into v13, which 452 reuses before the read, so the recall goes through this in v26.
+    # Keep the direct-this fixtures above and verify both forms independently.
     $sharingAliasClean = New-DexApk -Name 'features-sharing-alias-clean' -Entries ([ordered]@{
         'classes.dex' = (Get-Dex 'features-sharing-alias-clean') })
     $sharingAliasGood = New-DexApk -Name 'features-sharing-alias-good' -Entries ([ordered]@{
@@ -922,8 +923,8 @@ try {
         'fetch-two-resumes' = 'post link fetch'
         'foreign-alias' = 'own post cast completed on every path'
         'mixed-alias' = 'own post cast completed on every path'
-        'recall-clobber' = 'loses its coroutine alias before recalling the post'
-        'wide-recall-clobber' = 'loses its coroutine alias before recalling the post'
+        'recall-clobber' = 'lets go of this before recalling the post'
+        'wide-recall-clobber' = 'lets go of this before recalling the post'
         'load-bypass' = 'own post cast completed on every path'
         'cast-bypass' = 'own post cast completed on every path'
         'cast-duplicate' = 'own post cast completed on every path'
@@ -1172,7 +1173,7 @@ try {
         'omitted-selection' = 'CopyText;->selection(Z)Z host calls differ'
         'omitted-body' = 'PostRowText;->invoke(Ljava/lang/Object;)Ljava/lang/Object; changed original instruction 4'
         'omitted-selection-body' = 'PostText(Ljava/lang/Object;ZLjava/lang/Object;I)V changed original instruction 6'
-        'shared' = 'reaches its override check at 2 from [1, 11], not only from the read at 1'
+        'shared' = 'reaches its override check at 2 from [1, 11], not only by falling in from 1'
         'none' = 'no post row lambda reads and checks a long press override'
         'actions' = "the post row's override checks read different actions, [Lfixture/PressOverride;->action"
         'selection-written' = "doesn't read one boolean parameter as it came in on every path"
