@@ -47,6 +47,8 @@ public enum PatchFamily {
             Settings.DISABLE_VIDEO_AUTOPLAY),
     MAX_IMAGE_QUALITY(FamilyNames.MAX_IMAGE_QUALITY, "maxImageQuality", null,
             Settings.MAX_IMAGE_QUALITY),
+    SWIPE_TO_SEARCH(FamilyNames.SWIPE_TO_SEARCH, "disableSwipeToSearch", null,
+            Settings.DISABLE_SWIPE_TO_SEARCH),
     SANITIZE_SHARING_LINKS(FamilyNames.SANITIZE_SHARING_LINKS, "sanitizeSharingLinks", null,
             Settings.SANITIZE_SHARING_LINKS),
     EXTERNAL_BROWSER(FamilyNames.EXTERNAL_BROWSER, "openLinksExternally", null,

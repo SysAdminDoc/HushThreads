@@ -80,6 +80,7 @@ public final class SettingsBackup {
             Settings.RETURN_REFRESH_NO_LIMIT,
             Settings.DISABLE_VIDEO_AUTOPLAY,
             Settings.MAX_IMAGE_QUALITY,
+            Settings.DISABLE_SWIPE_TO_SEARCH,
             Settings.SANITIZE_SHARING_LINKS,
             Settings.OPEN_LINKS_EXTERNALLY,
             Settings.DISABLE_ANALYTICS,

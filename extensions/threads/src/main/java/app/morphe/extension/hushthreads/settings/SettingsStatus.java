@@ -41,6 +41,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean disableSwipeToSearch() {
+        return false;
+    }
+
     public static boolean saveMedia() {
         return false;
     }

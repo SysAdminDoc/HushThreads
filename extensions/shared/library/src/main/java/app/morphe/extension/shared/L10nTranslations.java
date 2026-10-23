@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(608);
+        Map<String, String> table = new HashMap<>(612);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -100,6 +100,8 @@ public final class L10nTranslations {
                 "Speichern unterbrochen. Beitrag neu \u00f6ffnen und speichern.");
         table.put("A save was interrupted",
                 "Ein Speichervorgang wurde unterbrochen");
+        table.put("A sideways swipe on your feed no longer slides into Search. The Search button still opens it. Restart Threads to see the change.",
+                "Ein Wischen zur Seite in deinem Feed f\u00fchrt nicht mehr in die Suche. Der Such-Button \u00f6ffnet sie weiterhin. Starte Threads neu, damit die \u00c4nderung greift.");
         table.put("About",
                 "Info");
         table.put("Adds Save to a post's menu. A post with several photos or videos saves them all. Off or paused, you get Threads' normal menu.",
@@ -176,11 +178,11 @@ public final class L10nTranslations {
                 "Kurzen Bericht in die Zwischenablage kopieren.");
         table.put("Copy quick report",
                 "Kurzbericht kopieren");
-        table.put("Copy text on long press",
-                "Text kopieren per langem Dr\u00fccken");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Copy text on long press",
+                "Text kopieren per langem Dr\u00fccken");
         table.put("Copy text when you hold a post",
                 "Text kopieren, wenn du einen Beitrag gedr\u00fcckt h\u00e4ltst");
         table.put("Copying to the gallery",
@@ -299,11 +301,11 @@ public final class L10nTranslations {
                 "HushThreads-Einstellungen");
         table.put("HushThreads settings couldn't open",
                 "HushThreads-Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
-        table.put("HushThreads turns back on when Threads restarts.",
-                "HushThreads ist wieder aktiv, sobald Threads neu startet.");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("HushThreads turns back on when Threads restarts.",
+                "HushThreads ist wieder aktiv, sobald Threads neu startet.");
         table.put("Import",
                 "Importieren");
         table.put("Import settings",
@@ -338,6 +340,8 @@ public final class L10nTranslations {
                 "Keine passenden Einstellungen");
         table.put("No saves in progress.",
                 "Keine Speichervorg\u00e4nge aktiv.");
+        table.put("No swipe into Search",
+                "Kein Wischen in die Suche");
         table.put("No time limit",
                 "Kein Zeitlimit");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
@@ -420,13 +424,13 @@ public final class L10nTranslations {
                 "Starte Threads neu, um %1$d \u00c4nderungen zu \u00fcbernehmen");
         table.put("Restart Threads to apply this change",
                 "Starte Threads neu, um diese \u00c4nderung zu \u00fcbernehmen");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Restore diagnostic data",
                 "Diagnosedaten wiederherstellen");
         table.put("Resume",
                 "Fortsetzen");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Retry",
                 "Erneut versuchen");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
@@ -543,13 +547,13 @@ public final class L10nTranslations {
                 "Entfernt Tracking-Tags wie xmt und slof aus den Beitragslinks, die du kopierst oder teilst. Ein kurzer Teilen-Link wird zum eigenen Link des Beitrags.");
         table.put("Tap to play videos",
                 "Videos per Tippen abspielen");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Tap to see which.",
                 "Tippe, um sie zu sehen.");
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Diese Datei ist zu gro\u00df f\u00fcr eine Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -666,13 +670,13 @@ public final class L10nTranslations {
                 "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("none",
                 "keine");
         table.put("the raised version code",
                 "der erh\u00f6hte Versionscode");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("the re-signed build fix",
                 "der Fix f\u00fcr neu signierte Builds");
         table.put("the removed advertising ID permission",
@@ -684,7 +688,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(608);
+        Map<String, String> table = new HashMap<>(612);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -737,6 +741,8 @@ public final class L10nTranslations {
                 "Se detuvo un guardado. Reabre la publicaci\u00f3n y gu\u00e1rdala.");
         table.put("A save was interrupted",
                 "Se interrumpi\u00f3 un guardado");
+        table.put("A sideways swipe on your feed no longer slides into Search. The Search button still opens it. Restart Threads to see the change.",
+                "Deslizar de lado en tu feed ya no te lleva a Buscar. El bot\u00f3n de b\u00fasqueda sigue abri\u00e9ndolo. Reinicia Threads para ver el cambio.");
         table.put("About",
                 "Acerca de");
         table.put("Adds Save to a post's menu. A post with several photos or videos saves them all. Off or paused, you get Threads' normal menu.",
@@ -813,11 +819,11 @@ public final class L10nTranslations {
                 "Copia un informe breve en el portapapeles.");
         table.put("Copy quick report",
                 "Copiar informe r\u00e1pido");
-        table.put("Copy text on long press",
-                "Copiar texto al mantener pulsado");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("Copy text on long press",
+                "Copiar texto al mantener pulsado");
         table.put("Copy text when you hold a post",
                 "Copiar texto al mantener pulsada una publicaci\u00f3n");
         table.put("Copying to the gallery",
@@ -936,11 +942,11 @@ public final class L10nTranslations {
                 "Configuraci\u00f3n de HushThreads");
         table.put("HushThreads settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n de HushThreads");
-        table.put("HushThreads turns back on when Threads restarts.",
-                "HushThreads vuelve a activarse cuando Threads se reinicie.");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("HushThreads turns back on when Threads restarts.",
+                "HushThreads vuelve a activarse cuando Threads se reinicie.");
         table.put("Import",
                 "Importar");
         table.put("Import settings",
@@ -975,6 +981,8 @@ public final class L10nTranslations {
                 "No hay ajustes coincidentes");
         table.put("No saves in progress.",
                 "No hay guardados en curso.");
+        table.put("No swipe into Search",
+                "Sin deslizar a Buscar");
         table.put("No time limit",
                 "Sin l\u00edmite de tiempo");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
@@ -1057,13 +1065,13 @@ public final class L10nTranslations {
                 "Reinicia Threads para aplicar %1$d cambios");
         table.put("Restart Threads to apply this change",
                 "Reinicia Threads para aplicar este cambio");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Restore diagnostic data",
                 "Restaurar datos de diagn\u00f3stico");
         table.put("Resume",
                 "Reanudar");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Retry",
                 "Reintentar");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
@@ -1180,13 +1188,13 @@ public final class L10nTranslations {
                 "Quita las etiquetas de seguimiento, como xmt y slof, de los enlaces de publicaciones que copias o compartes. Un enlace corto para compartir pasa a ser el enlace propio de la publicaci\u00f3n.");
         table.put("Tap to play videos",
                 "Tocar para reproducir videos");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Tap to see which.",
                 "Toca para ver cu\u00e1les.");
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Ese archivo es demasiado grande para ser un archivo de configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -1303,13 +1311,13 @@ public final class L10nTranslations {
                 "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("none",
                 "ninguna");
         table.put("the raised version code",
                 "el c\u00f3digo de versi\u00f3n aumentado");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("the re-signed build fix",
                 "el arreglo para la nueva firma");
         table.put("the removed advertising ID permission",
@@ -1321,7 +1329,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(608);
+        Map<String, String> table = new HashMap<>(612);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1374,6 +1382,8 @@ public final class L10nTranslations {
                 "Penyimpanan terhenti. Buka kembali postingan dan simpan lagi.");
         table.put("A save was interrupted",
                 "Penyimpanan terputus");
+        table.put("A sideways swipe on your feed no longer slides into Search. The Search button still opens it. Restart Threads to see the change.",
+                "Menggeser ke samping di feed Anda tidak lagi membuka Pencarian. Tombol Pencarian tetap membukanya. Mulai ulang Threads untuk melihat perubahannya.");
         table.put("About",
                 "Tentang");
         table.put("Adds Save to a post's menu. A post with several photos or videos saves them all. Off or paused, you get Threads' normal menu.",
@@ -1450,11 +1460,11 @@ public final class L10nTranslations {
                 "Salin laporan singkat ke papan klip.");
         table.put("Copy quick report",
                 "Salin laporan singkat");
-        table.put("Copy text on long press",
-                "Salin teks dengan tekan lama");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Copy text on long press",
+                "Salin teks dengan tekan lama");
         table.put("Copy text when you hold a post",
                 "Salin teks saat Anda menekan lama postingan");
         table.put("Copying to the gallery",
@@ -1573,11 +1583,11 @@ public final class L10nTranslations {
                 "Pengaturan HushThreads");
         table.put("HushThreads settings couldn't open",
                 "Pengaturan HushThreads tidak dapat dibuka");
-        table.put("HushThreads turns back on when Threads restarts.",
-                "HushThreads aktif lagi saat Threads dimulai ulang.");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("HushThreads turns back on when Threads restarts.",
+                "HushThreads aktif lagi saat Threads dimulai ulang.");
         table.put("Import",
                 "Impor");
         table.put("Import settings",
@@ -1612,6 +1622,8 @@ public final class L10nTranslations {
                 "Tidak ada pengaturan yang cocok");
         table.put("No saves in progress.",
                 "Tidak ada penyimpanan yang berlangsung.");
+        table.put("No swipe into Search",
+                "Tanpa geser ke Pencarian");
         table.put("No time limit",
                 "Tanpa batas waktu");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
@@ -1694,13 +1706,13 @@ public final class L10nTranslations {
                 "Mulai ulang Threads untuk menerapkan %1$d perubahan");
         table.put("Restart Threads to apply this change",
                 "Mulai ulang Threads untuk menerapkan perubahan ini");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Restore diagnostic data",
                 "Pulihkan data diagnostik");
         table.put("Resume",
                 "Lanjutkan");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Retry",
                 "Coba lagi");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
@@ -1817,13 +1829,13 @@ public final class L10nTranslations {
                 "Menghapus tag pelacakan seperti xmt dan slof dari tautan postingan yang Anda salin atau bagikan. Tautan berbagi pendek diganti dengan tautan postingan itu sendiri.");
         table.put("Tap to play videos",
                 "Ketuk untuk memutar video");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Tap to see which.",
                 "Ketuk untuk melihat yang mana.");
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushThreads lagi.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "File itu terlalu besar untuk sebuah file pengaturan. Tidak ada yang diubah.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -1940,13 +1952,13 @@ public final class L10nTranslations {
                 "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("none",
                 "tidak ada");
         table.put("the raised version code",
                 "kode versi yang dinaikkan");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("the re-signed build fix",
                 "perbaikan build yang ditandatangani ulang");
         table.put("the removed advertising ID permission",
@@ -1958,7 +1970,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(608);
+        Map<String, String> table = new HashMap<>(612);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2011,6 +2023,8 @@ public final class L10nTranslations {
                 "Um salvamento parou. Reabra a publica\u00e7\u00e3o e salve de novo.");
         table.put("A save was interrupted",
                 "Um salvamento foi interrompido");
+        table.put("A sideways swipe on your feed no longer slides into Search. The Search button still opens it. Restart Threads to see the change.",
+                "Deslizar para o lado no seu feed n\u00e3o leva mais \u00e0 pesquisa. O bot\u00e3o de pesquisa continua abrindo a pesquisa. Reinicie o Threads para ver a mudan\u00e7a.");
         table.put("About",
                 "Sobre");
         table.put("Adds Save to a post's menu. A post with several photos or videos saves them all. Off or paused, you get Threads' normal menu.",
@@ -2087,11 +2101,11 @@ public final class L10nTranslations {
                 "Copie um relat\u00f3rio curto para a \u00e1rea de transfer\u00eancia.");
         table.put("Copy quick report",
                 "Copiar relat\u00f3rio r\u00e1pido");
-        table.put("Copy text on long press",
-                "Copiar texto ao tocar e segurar");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Copy text on long press",
+                "Copiar texto ao tocar e segurar");
         table.put("Copy text when you hold a post",
                 "Copiar texto ao tocar e segurar uma publica\u00e7\u00e3o");
         table.put("Copying to the gallery",
@@ -2210,11 +2224,11 @@ public final class L10nTranslations {
                 "Configura\u00e7\u00f5es do HushThreads");
         table.put("HushThreads settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es do HushThreads");
-        table.put("HushThreads turns back on when Threads restarts.",
-                "O HushThreads ser\u00e1 reativado quando o Threads for reiniciado.");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("HushThreads turns back on when Threads restarts.",
+                "O HushThreads ser\u00e1 reativado quando o Threads for reiniciado.");
         table.put("Import",
                 "Importar");
         table.put("Import settings",
@@ -2249,6 +2263,8 @@ public final class L10nTranslations {
                 "Nenhuma configura\u00e7\u00e3o encontrada");
         table.put("No saves in progress.",
                 "Nenhum salvamento em andamento.");
+        table.put("No swipe into Search",
+                "Sem deslizar para a pesquisa");
         table.put("No time limit",
                 "Sem limite de tempo");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
@@ -2331,13 +2347,13 @@ public final class L10nTranslations {
                 "Reinicie o Threads para aplicar %1$d altera\u00e7\u00f5es");
         table.put("Restart Threads to apply this change",
                 "Reinicie o Threads para aplicar esta altera\u00e7\u00e3o");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Restore diagnostic data",
                 "Restaurar dados de diagn\u00f3stico");
         table.put("Resume",
                 "Retomar");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Retry",
                 "Tentar novamente");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
@@ -2454,13 +2470,13 @@ public final class L10nTranslations {
                 "Remove dos links de publica\u00e7\u00f5es que voc\u00ea copia ou compartilha as tags de rastreamento, como xmt e slof. Um link curto de compartilhamento vira o link da pr\u00f3pria publica\u00e7\u00e3o.");
         table.put("Tap to play videos",
                 "Tocar para reproduzir v\u00eddeos");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Tap to see which.",
                 "Toque para ver quais.");
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Esse arquivo \u00e9 grande demais para ser um arquivo de configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -2577,13 +2593,13 @@ public final class L10nTranslations {
                 "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("none",
                 "nenhum");
         table.put("the raised version code",
                 "o c\u00f3digo de vers\u00e3o aumentado");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("the re-signed build fix",
                 "a corre\u00e7\u00e3o para vers\u00e3o reassinada");
         table.put("the removed advertising ID permission",
@@ -2595,7 +2611,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(608);
+        Map<String, String> table = new HashMap<>(612);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2648,6 +2664,8 @@ public final class L10nTranslations {
                 "Bir kaydetme durdu. G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
         table.put("A save was interrupted",
                 "Bir kaydetme i\u015flemi kesildi");
+        table.put("A sideways swipe on your feed no longer slides into Search. The Search button still opens it. Restart Threads to see the change.",
+                "Ak\u0131\u015f\u0131nda yana kayd\u0131rmak art\u0131k Arama'ya g\u00f6t\u00fcrmez. Arama d\u00fc\u011fmesi Arama'y\u0131 a\u00e7maya devam eder. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
         table.put("About",
                 "Hakk\u0131nda");
         table.put("Adds Save to a post's menu. A post with several photos or videos saves them all. Off or paused, you get Threads' normal menu.",
@@ -2724,11 +2742,11 @@ public final class L10nTranslations {
                 "K\u0131sa raporu panoya kopyalar.");
         table.put("Copy quick report",
                 "H\u0131zl\u0131 raporu kopyala");
-        table.put("Copy text on long press",
-                "Uzun bas\u0131nca metni kopyala");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("Copy text on long press",
+                "Uzun bas\u0131nca metni kopyala");
         table.put("Copy text when you hold a post",
                 "Bir g\u00f6nderiye bas\u0131l\u0131 tutunca metni kopyala");
         table.put("Copying to the gallery",
@@ -2847,11 +2865,11 @@ public final class L10nTranslations {
                 "HushThreads ayarlar\u0131");
         table.put("HushThreads settings couldn't open",
                 "HushThreads ayarlar\u0131 a\u00e7\u0131lamad\u0131");
-        table.put("HushThreads turns back on when Threads restarts.",
-                "HushThreads, Threads yeniden ba\u015flad\u0131\u011f\u0131nda tekrar a\u00e7\u0131l\u0131r.");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("HushThreads turns back on when Threads restarts.",
+                "HushThreads, Threads yeniden ba\u015flad\u0131\u011f\u0131nda tekrar a\u00e7\u0131l\u0131r.");
         table.put("Import",
                 "\u0130\u00e7e aktar");
         table.put("Import settings",
@@ -2886,6 +2904,8 @@ public final class L10nTranslations {
                 "E\u015fle\u015fen ayar yok");
         table.put("No saves in progress.",
                 "Devam eden kaydetme yok.");
+        table.put("No swipe into Search",
+                "Aramaya kayd\u0131rma yok");
         table.put("No time limit",
                 "S\u00fcre s\u0131n\u0131r\u0131 yok");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
@@ -2968,13 +2988,13 @@ public final class L10nTranslations {
                 "%1$d de\u011fi\u015fikli\u011fi uygulamak i\u00e7in Threads'i yeniden ba\u015flat");
         table.put("Restart Threads to apply this change",
                 "Bu de\u011fi\u015fikli\u011fi uygulamak i\u00e7in Threads'i yeniden ba\u015flat");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Restore diagnostic data",
                 "Tan\u0131lama verilerini geri y\u00fckle");
         table.put("Resume",
                 "Devam et");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Retry",
                 "Yeniden dene");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
@@ -3091,13 +3111,13 @@ public final class L10nTranslations {
                 "Kopyalad\u0131\u011f\u0131n veya payla\u015ft\u0131\u011f\u0131n g\u00f6nderi ba\u011flant\u0131lar\u0131ndan xmt ve slof gibi izleme etiketlerini kald\u0131r\u0131r. K\u0131sa payla\u015f\u0131m ba\u011flant\u0131s\u0131, g\u00f6nderinin kendi ba\u011flant\u0131s\u0131na d\u00f6n\u00fc\u015f\u00fcr.");
         table.put("Tap to play videos",
                 "Videolar\u0131 dokunarak oynat");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Tap to see which.",
                 "Hangileri oldu\u011funu g\u00f6rmek i\u00e7in dokun.");
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Bu dosya bir ayar dosyas\u0131 olamayacak kadar b\u00fcy\u00fck. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -3214,13 +3234,13 @@ public final class L10nTranslations {
                 "Ayarlar\u0131n etkin.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("none",
                 "yok");
         table.put("the raised version code",
                 "y\u00fckseltilmi\u015f s\u00fcr\u00fcm kodu");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("the re-signed build fix",
                 "yeniden imzalanm\u0131\u015f s\u00fcr\u00fcm d\u00fczeltmesi");
         table.put("the removed advertising ID permission",

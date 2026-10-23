@@ -290,7 +290,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
 
         if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_SUGGESTED_USERS)
                 || build.contains(PatchFamily.RETURN_REFRESH) || build.contains(PatchFamily.VIDEO_AUTOPLAY)
-                || build.contains(PatchFamily.MAX_IMAGE_QUALITY)) {
+                || build.contains(PatchFamily.MAX_IMAGE_QUALITY) || build.contains(PatchFamily.SWIPE_TO_SEARCH)) {
             PreferenceCategory feed = category(screen, L10n.t("Feed"));
             if (build.contains(PatchFamily.HIDE_ADS)) feed.addPreference(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
                     L10n.t("Sponsored posts come out of For you, Following and the posts you open before Threads "
@@ -320,6 +320,11 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
             if (build.contains(PatchFamily.MAX_IMAGE_QUALITY)) {
                 feed.addPreference(toggle(context, Settings.MAX_IMAGE_QUALITY, L10n.t("Full size photos"),
                         L10n.t("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.")));
+            }
+            if (build.contains(PatchFamily.SWIPE_TO_SEARCH)) {
+                feed.addPreference(toggle(context, Settings.DISABLE_SWIPE_TO_SEARCH, L10n.t("No swipe into Search"),
+                        L10n.t("A sideways swipe on your feed no longer slides into Search. The Search button still opens it. "
+                            + "Restart Threads to see the change.")));
             }
         }
 
@@ -1050,6 +1055,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         else if (setting == Settings.RETURN_REFRESH_NO_LIMIT) icon = SettingsIcons.CLOCK;
         else if (setting == Settings.DISABLE_VIDEO_AUTOPLAY || setting == Settings.DOWNLOAD_COMPATIBLE) icon = SettingsIcons.PLAY;
         else if (setting == Settings.MAX_IMAGE_QUALITY) icon = SettingsIcons.PHOTO;
+        else if (setting == Settings.DISABLE_SWIPE_TO_SEARCH) icon = SettingsIcons.SEARCH;
         else if (setting == Settings.SANITIZE_SHARING_LINKS) icon = SettingsIcons.LINKS;
         else if (setting == Settings.OPEN_LINKS_EXTERNALLY) icon = SettingsIcons.OPENING;
         else if (setting == Settings.DISABLE_ANALYTICS) icon = SettingsIcons.ANALYTICS;

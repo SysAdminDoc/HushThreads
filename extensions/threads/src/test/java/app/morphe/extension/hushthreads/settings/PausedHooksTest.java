@@ -37,6 +37,7 @@ import app.morphe.extension.hushthreads.download.SavesForTests;
 import app.morphe.extension.hushthreads.feed.CopyText;
 import app.morphe.extension.hushthreads.feed.ImageQuality;
 import app.morphe.extension.hushthreads.feed.ReturnRefresh;
+import app.morphe.extension.hushthreads.feed.SwipeToSearch;
 import app.morphe.extension.hushthreads.feed.VideoAutoplay;
 import app.morphe.extension.hushthreads.misc.Analytics;
 import app.morphe.extension.hushthreads.misc.ExternalBrowser;
@@ -138,6 +139,8 @@ public class PausedHooksTest {
         probes.put(PatchFamily.VIDEO_AUTOPLAY, Collections.singletonList(() -> !VideoAutoplay.play(true)));
         // The photo size chooser aims past the screen's width.
         probes.put(PatchFamily.MAX_IMAGE_QUALITY, Collections.singletonList(() -> ImageQuality.targetWidth(1080) != 1080));
+        // A home screen Threads would build with Search a swipe away is built with the feed alone.
+        probes.put(PatchFamily.SWIPE_TO_SEARCH, Collections.singletonList(() -> !SwipeToSearch.allow(true)));
         // A shared post link loses the tracking tags Threads added to it, and a short one becomes the post's own.
         probes.put(PatchFamily.SANITIZE_SHARING_LINKS, Arrays.asList(
                 () -> {

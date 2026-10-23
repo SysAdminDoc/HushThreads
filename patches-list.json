@@ -153,6 +153,43 @@
       "options": []
     },
     {
+      "name": "Disable swipe to Search",
+      "description": "Stops a sideways swipe on your feed from sliding into Search. The Search button still opens Search. Threads only has the swipe on some accounts. Good if you keep landing in Search while you scroll. Starts off. Turn it on in HushThreads settings > Feed.",
+      "category": "Feed",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "452.0.0.50.64"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "452.0.0.50.64",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 512207626
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Disable video autoplay",
       "description": "Videos in your feed wait for a tap instead of playing as you scroll. Good for a calmer feed and less data use. Starts off. Turn it on in HushThreads settings > Feed.",
       "category": "Feed",

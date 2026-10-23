@@ -66,12 +66,15 @@ On a new phone, import the key before you patch anything. Reinstalling Manager o
 
 HushThreads v0.0.15 has 19 patches. Morphe Manager's default selection has all but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Those three change Threads when you patch and have no switch to undo them. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
 
+`Disable swipe to Search` is in the source but not in a release yet.
+
 | Patch | What it does |
 |---|---|
 | `Block background-return feed refresh` | Keeps your place in your feed when you leave Threads and come back within ten minutes. Pulling down to refresh still loads new posts. Good if you hate losing the post you were reading. Starts off. Turn it on in HushThreads settings > Feed. |
 | `Change version code` | Raises the version number as high as Android allows, so Google Play won't offer Meta's updates over it. Going back to stock Threads means uninstalling, which deletes its data. It isn't selected by default. Works as soon as you patch it in, with no switch. |
 | `Disable analytics` | Stops Threads from sending most of its usage reports to Meta. A few may still get through. Good if you'd rather share less about how you use the app. On by default. Turn it off in HushThreads settings > Privacy. |
 | `Disable screenshot detection` | Threads isn't told when you take a screenshot. It stops watching your photos for new screenshots. Good if you want to screenshot without Threads noticing. Starts off. Turn it on in HushThreads settings > Privacy. |
+| `Disable swipe to Search` | Stops a sideways swipe on your feed from sliding into Search. The Search button still opens Search. Threads only has the swipe on some accounts. Good if you keep landing in Search while you scroll. Starts off. Turn it on in HushThreads settings > Feed. |
 | `Disable video autoplay` | Videos in your feed wait for a tap instead of playing as you scroll. Good for a calmer feed and less data use. Starts off. Turn it on in HushThreads settings > Feed. |
 | `Hide ads` | Removes sponsored posts from your feed and from under the posts you open before Threads shows them, so they leave no gap. On by default. Turn it off in HushThreads settings > Feed. |
 | `Hide ghost post bubbles` | Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. The pictures and the ghost posts themselves stay. Good for a calmer look. Starts off. Turn it on in HushThreads settings > Appearance. |

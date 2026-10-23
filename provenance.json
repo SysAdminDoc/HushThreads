@@ -265,6 +265,17 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/SwipeToSearch.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/feed/swipesearch/DisableSwipeToSearchPatch.kt"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Disable swipe to Search: the home screen state's constructor asks the extension for its swipe to Search flag first thing, before it stores the flag the home pager reads to put Search beside the feed, and the extension answers false while the switch is on. Found by reading BarcelonaMainTabsScreen and its state in 452, with no outside code."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/profile/ProfileSuggestions.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/ads/ProfileSuggestedUsers.kt"
       ],

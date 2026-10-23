@@ -278,6 +278,8 @@ Hide screenshots from Threads	Screenshots vor Threads verbergen
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	Threads erfährt nicht, wenn du einen Screenshot machst, und kann ihn daher weder protokollieren noch darauf reagieren.
 Full size photos	Fotos in voller Größe
 Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	Fotos werden in der größten Größe geladen, die Threads hat, nicht in einer für deinen Bildschirm gewählten. Sie wirken schärfer und verbrauchen mehr Daten.
+No swipe into Search	Kein Wischen in die Suche
+A sideways swipe on your feed no longer slides into Search. The Search button still opens it. Restart Threads to see the change.	Ein Wischen zur Seite in deinem Feed führt nicht mehr in die Suche. Der Such-Button öffnet sie weiterhin. Starte Threads neu, damit die Änderung greift.
 # context: title of the last row on the settings home page; a tap opens the maintainer's Ko-fi page in a browser
 Support HushThreads	HushThreads unterstützen
 # context: reports use the app's own Downloads folder on Android 9, where the shared Downloads collection isn't available

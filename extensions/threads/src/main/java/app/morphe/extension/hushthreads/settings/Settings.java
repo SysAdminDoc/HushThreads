@@ -71,6 +71,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_max_image_quality", FALSE);
 
     /**
+     * A sideways swipe on the feed doesn't slide into Search
+     * ({@link app.morphe.extension.hushthreads.feed.SwipeToSearch}). Threads settles the swipe
+     * when it builds the home screen, so a change waits for a restart.
+     */
+    public static final BooleanSetting DISABLE_SWIPE_TO_SEARCH =
+            new BooleanSetting("hushthreads_disable_swipe_to_search", FALSE, true);
+
+    /**
      * The tracking keys come off the post links Threads hands out when you copy or share one
      * (xmt, slof, igsh and the rest), with the rest of the link left as the server wrote it.
      */

@@ -85,6 +85,7 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.RETURN_REFRESH, "Keep feed position on return");
         ROW_TITLES.put(PatchFamily.VIDEO_AUTOPLAY, "Tap to play videos");
         ROW_TITLES.put(PatchFamily.MAX_IMAGE_QUALITY, "Full size photos");
+        ROW_TITLES.put(PatchFamily.SWIPE_TO_SEARCH, "No swipe into Search");
         ROW_TITLES.put(PatchFamily.SANITIZE_SHARING_LINKS, "Remove tracking from shared links");
         ROW_TITLES.put(PatchFamily.EXTERNAL_BROWSER, "Open links in your browser");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop analytics uploads");
@@ -199,7 +200,7 @@ public class HushThreadsPreferenceFragmentTest {
                 List<String> expected = new ArrayList<>();
                 if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_SUGGESTED_USERS)
                         || build.contains(PatchFamily.RETURN_REFRESH) || build.contains(PatchFamily.VIDEO_AUTOPLAY)
-                        || build.contains(PatchFamily.MAX_IMAGE_QUALITY)) {
+                        || build.contains(PatchFamily.MAX_IMAGE_QUALITY) || build.contains(PatchFamily.SWIPE_TO_SEARCH)) {
                     expected.add("Feed");
                 }
                 if (build.contains(PatchFamily.SANITIZE_SHARING_LINKS) || build.contains(PatchFamily.EXTERNAL_BROWSER)
@@ -252,6 +253,10 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Full size photos", String.valueOf(page.findPreference(Settings.MAX_IMAGE_QUALITY.key).getTitle()));
             assertEquals("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
                     String.valueOf(page.findPreference(Settings.MAX_IMAGE_QUALITY.key).getSummary()));
+            assertEquals("No swipe into Search", String.valueOf(page.findPreference(Settings.DISABLE_SWIPE_TO_SEARCH.key).getTitle()));
+            assertEquals("A sideways swipe on your feed no longer slides into Search. The Search button still opens it. "
+                + "Restart Threads to see the change.",
+                    String.valueOf(page.findPreference(Settings.DISABLE_SWIPE_TO_SEARCH.key).getSummary()));
             assertEquals("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share "
                     + "link becomes the post's own link.", String.valueOf(page.findPreference(Settings.SANITIZE_SHARING_LINKS.key).getSummary()));
             assertEquals("Open links in your browser", String.valueOf(page.findPreference(Settings.OPEN_LINKS_EXTERNALLY.key).getTitle()));
@@ -283,10 +288,10 @@ public class HushThreadsPreferenceFragmentTest {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             // The ones that joined it later start off, so a default build looks like Threads, and so
-            // do Hide the Instagram button and Hide ghost post bubbles, which came after.
+            // do Hide the Instagram button, Hide ghost post bubbles and Disable swipe to Search, which came after.
             for (BooleanSetting setting : Arrays.asList(Settings.BLOCK_RETURN_REFRESH, Settings.DISABLE_VIDEO_AUTOPLAY,
                     Settings.MAX_IMAGE_QUALITY, Settings.DISABLE_SCREENSHOT_DETECTION, Settings.PURE_BLACK,
-                    Settings.HIDE_INSTAGRAM_BUTTON, Settings.HIDE_GHOST_POST_BUBBLES)) {
+                    Settings.HIDE_INSTAGRAM_BUTTON, Settings.HIDE_GHOST_POST_BUBBLES, Settings.DISABLE_SWIPE_TO_SEARCH)) {
                 assertFalse(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             // The time limit holds until someone lifts it.

@@ -76,6 +76,7 @@ body:
         - Change version code
         - Disable analytics
         - Disable screenshot detection
+        - Disable swipe to Search
         - Disable video autoplay
         - Hide ads
         - Hide ghost post bubbles
