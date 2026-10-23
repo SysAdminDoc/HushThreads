@@ -7395,3 +7395,4 @@ Write-Host '[scripts] report, target, Java and guarded replacement contracts pas
 
 & (Join-Path $PSScriptRoot 'test-native-page-alignment.ps1') -Root $Root
 if ($LASTEXITCODE -ne 0) { throw 'Native alignment contract suite failed.' }
+& (Join-Path $PSScriptRoot 'test-walk-app.ps1') -Root $Root
