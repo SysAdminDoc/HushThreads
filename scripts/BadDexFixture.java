@@ -722,6 +722,8 @@ public class BadDexFixture {
     private static final String RECORDED_RAW = "hushthreadsSuggestedUsersRaw";
     private static final String FEATURE_CACHE = "Lcom/instagram/barcelona/feed/data/cache/BarcelonaFeedCache;";
     private static final String FEATURE_LAMBDA = FEATURE_CACHE.substring(0, FEATURE_CACHE.length() - 1) + "$addAndSaveItemsFromFeedFetchSuccess$2$1;";
+    private static final String FEATURE_PERMALINK = "Lcom/instagram/barcelona/sponsored/permalink/ThreadsPermalinkAdFetcher;";
+    private static final String FEATURE_PERMALINK_RESULT = "Lfixture/PermalinkAds;";
     private static final String FEATURE_RESPONSE = "Lfixture/Permalink;";
     private static final String FEATURE_HOLDER = "Lfixture/CopyLink;";
     private static final String FEATURE_PARENT = "Lfixture/GraphResponse;";
@@ -732,6 +734,7 @@ public class BadDexFixture {
     private static final String SIGNER_HOST = "Lfixture/Signers;";
     private static final String SIGNER_RESULT = "Lfixture/SignerResult;";
     private static final ImmutableMethodReference PAGE_FILTER = method(FEATURE_ADS, "filter", SHORTCUT_LIST, SHORTCUT_LIST);
+    private static final ImmutableMethodReference PERMALINK_FILTER = method(FEATURE_ADS, "permalinkAds", SHORTCUT_LIST, SHORTCUT_LIST);
     private static final ImmutableMethodReference LINK_SANITIZER = method(FEATURE_LINKS, "sanitizeShared", "Ljava/lang/String;", "Ljava/lang/String;");
     private static final String FEATURE_USER = "Lcom/instagram/user/model/User;";
     private static final String FEATURE_REPOSITORY = "Lcom/instagram/barcelona/share/permalink/data/PermalinkRepository;";
@@ -2921,6 +2924,20 @@ public class BadDexFixture {
                 SHORTCUT_LIST, OBJECT, "Lkotlin/jvm/functions/Function3;", "Z")));
         classes.add(featureClass(FEATURE_LAMBDA, OBJECT, List.of(), define(FEATURE_LAMBDA, "<init>", "V", false,
                 body(1, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)))));
+        // An opened post's ads: the fetcher builds its one result from the list the hook hands back.
+        List<Instruction> permalinkFetch = new ArrayList<>(List.of(string(0, "text_feed/threads_permalink_ads/"), new ImmutableInstruction11n(Opcode.CONST_4, 1, 0)));
+        if ((ads || fault.equals("omitted-permalink-hook")) && !fault.equals("permalink-missing") && !fault.startsWith("historical")) {
+            int list = fault.equals("permalink-register") ? 0 : 3;
+            permalinkFetch.add(invoke(PERMALINK_FILTER, list));
+            permalinkFetch.add(op(Opcode.MOVE_RESULT_OBJECT, list));
+        }
+        permalinkFetch.add(type(Opcode.NEW_INSTANCE, 2, FEATURE_PERMALINK_RESULT));
+        permalinkFetch.add(direct(method(FEATURE_PERMALINK_RESULT, "<init>", "V", SHORTCUT_LIST, "I"), 2, 3, 1));
+        permalinkFetch.add(op(Opcode.RETURN_OBJECT, 2));
+        classes.add(featureClass(FEATURE_PERMALINK, OBJECT, List.of(), define(FEATURE_PERMALINK, "fetch", OBJECT, true,
+                body(4, permalinkFetch.toArray(new Instruction[0])), SHORTCUT_LIST)));
+        classes.add(featureClass(FEATURE_PERMALINK_RESULT, OBJECT, List.of(), define(FEATURE_PERMALINK_RESULT, "<init>", "V", false,
+                body(3, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), SHORTCUT_LIST, "I")));
         classes.add(featureClass(FEATURE_ITEM, OBJECT, List.of(featureField(FEATURE_ITEM, "kind", FEATURE_KIND),
                 featureField(FEATURE_ITEM, "suggested", FEATURE_RAW), featureField(FEATURE_ITEM, "kickstart", FEATURE_RAW), featureField(FEATURE_ITEM, "other", FEATURE_RAW),
                 featureField(FEATURE_ITEM, "active", FEATURE_WRAPPER), featureField(FEATURE_ITEM, "otherActive", FEATURE_WRAPPER)),
@@ -3163,12 +3180,15 @@ public class BadDexFixture {
         ImmutableMethodImplementation adCheck = ads ? body(2, type(Opcode.CHECK_CAST, 1, FEATURE_MEDIA),
                 virtual(fault.equals("ad-target") || fault.equals("ad-discarded") ? method(FEATURE_MEDIA, "other", "Z") : MEDIA_AD, 1), op(Opcode.MOVE_RESULT, 0), op(Opcode.RETURN, 0))
                 : body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0));
-        classes.add(featureClass(FEATURE_ADS, OBJECT, List.of(),
+        List<Method> adMethods = new ArrayList<>(List.of(
                 define(FEATURE_ADS, "filter", SHORTCUT_LIST, true, body(1, op(Opcode.RETURN_OBJECT, 0)), SHORTCUT_LIST),
                 define(FEATURE_ADS, "itemMedia", OBJECT, true, getter, OBJECT), define(FEATURE_ADS, "isAd", "Z", true, adCheck, OBJECT),
                 define(FEATURE_ADS, "isSuggestedUserItem", "Z", true,
                         fault.equals("omitted-suggestion-predicate") ? body(1, new ImmutableInstruction11n(Opcode.CONST_4, 0, 1), op(Opcode.RETURN, 0))
                                 : suggestions ? suggestionPredicate(fault) : body(1, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN, 0)), OBJECT)));
+        // The historical builds' extension came before the opened post's ad hook.
+        if (!fault.startsWith("historical")) adMethods.add(define(FEATURE_ADS, "permalinkAds", SHORTCUT_LIST, true, body(1, op(Opcode.RETURN_OBJECT, 0)), SHORTCUT_LIST));
+        classes.add(featureClass(FEATURE_ADS, OBJECT, List.of(), adMethods.toArray(new Method[0])));
         classes.add(featureClass(FEATURE_ANALYTICS, OBJECT, List.of(), define(FEATURE_ANALYTICS, "endpoint", "Ljava/lang/String;", true,
                 body(1, op(Opcode.RETURN_OBJECT, 0)), "Ljava/lang/String;")));
         classes.add(featureClass(FEATURE_LINKS, OBJECT, List.of(), define(FEATURE_LINKS, "sanitizeShared", "Ljava/lang/String;", true,
@@ -3376,6 +3396,7 @@ public class BadDexFixture {
         for (String feature : allFeatures) dexes.put("features-only-" + feature, featureBuild(true, Set.of(feature), 7, ""));
         for (int mask = 1; mask <= 7; mask++) dexes.put("features-mask-" + mask, featureBuild(true, Set.of("disableAnalytics"), mask, ""));
         for (String fault : List.of("feed-missing", "feed-replaced", "feed-register", "feed-duplicate", "item-stub", "ad-target", "ad-discarded", "ad-body", "ad-helper-body", "getter-body", "ad-helper-native", "getter-static",
+                "permalink-missing", "permalink-register",
                 "link-missing", "link-replaced", "link-register", "post-link-missing", "post-link-register", "post-link-getter", "post-link-bypass",
                 "holder-link-missing", "holder-link-receiver", "holder-link-field", "holder-post-link-register", "holder-post-link-bypass",
                 "resume-remember-missing", "resume-remember-key", "resume-recall-missing", "resume-recall-key", "resume-recall-cast",
@@ -3581,7 +3602,7 @@ public class BadDexFixture {
             if (fault.contains("missing-status")) omitFeatureStatus(unselected, "hideSuggestedUsers", true);
             dexes.put("features-bad-" + fault, unselected);
         }
-        for (String fault : List.of("omitted-feed-hook", "omitted-item-getter")) dexes.put("features-bad-" + fault, featureBuild(true, Set.of(), 0, fault));
+        for (String fault : List.of("omitted-feed-hook", "omitted-item-getter", "omitted-permalink-hook")) dexes.put("features-bad-" + fault, featureBuild(true, Set.of(), 0, fault));
         Set<String> historical = Set.of("hideAds", "sanitizeSharingLinks", "disableAnalytics", "restoreTrust");
         dexes.put("features-historical", featureBuild(true, historical, 7, "historical"));
         dexes.put("features-historical-missing-ad-status", featureBuild(true, historical, 7, "historical-missing-ad-status"));

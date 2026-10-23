@@ -261,6 +261,58 @@ public class FeedAdsTest {
         assertTrue(report.toString(), report.get(1).startsWith("Hide suggested users: invoked 1, 0 found, 1 missing"));
     }
 
+    /** The ads an opened post fetches for its replies all come out, and are counted apart from the feed's. */
+    @Test
+    public void anOpenedPostsAdsAllComeOut() {
+        List<Object> ads = Arrays.asList("first ad", "second ad");
+        List<?> left = FeedAds.permalinkAds(ads);
+        assertTrue(left.toString(), left.isEmpty());
+        assertEquals(Collections.singletonList("Hide ads: invoked 1, 0 found, 0 missing. "
+                + "Counted: opened post ads taken out 2"), HookStatus.report());
+    }
+
+    @Test
+    public void anOpenedPostsAdsStayWithTheSwitchOffUnselectedOrPaused() throws Exception {
+        List<Object> ads = Collections.singletonList("ad");
+        Settings.HIDE_ADS.save(false);
+        assertSame(ads, FeedAds.permalinkAds(ads));
+        Settings.HIDE_ADS.save(true);
+        SettingsContextRule.withoutContext(() -> assertSame(ads, FeedAds.permalinkAds(ads)));
+        java.lang.reflect.Method pause = Setting.class.getDeclaredMethod("setPausedForProcess", boolean.class);
+        pause.setAccessible(true);
+        try {
+            pause.invoke(null, true);
+            assertSame(ads, FeedAds.permalinkAds(ads));
+        } finally {
+            pause.invoke(null, false);
+        }
+        assertTrue(HookStatus.report().toString(), !HookStatus.report().toString().contains("Counted:"));
+        HookStatus.clear();
+        ShadowFeedAds.Status.ads = false;
+        assertSame(ads, FeedAds.permalinkAds(ads));
+        assertEquals(Collections.emptyList(), HookStatus.report());
+    }
+
+    @Test
+    public void noOpenedPostAdsComeBackAsTheyAre() {
+        assertNull(FeedAds.permalinkAds(null));
+        List<Object> none = Collections.emptyList();
+        assertSame(none, FeedAds.permalinkAds(none));
+        assertTrue(HookStatus.report().toString(), !HookStatus.report().toString().contains("Counted:"));
+    }
+
+    /** A list that breaks when asked keeps what Threads sent, and files the failure under Hide ads. */
+    @Test
+    public void anOpenedPostAdListThatBreaksStaysAsItWas() {
+        List<Object> ads = new java.util.AbstractList<Object>() {
+            @Override public Object get(int index) { throw new java.util.ConcurrentModificationException(); }
+            @Override public int size() { throw new java.util.ConcurrentModificationException(); }
+        };
+        assertSame(ads, FeedAds.permalinkAds(ads));
+        String line = HookStatus.report().get(0);
+        assertTrue(line, line.startsWith("Hide ads: invoked 1, 0 found, 1 missing"));
+    }
+
     /** A page whose items can't be read, the way a list changed under Threads' feet would behave. */
     private static List<Object> unreadablePage() {
         return new java.util.AbstractList<Object>() {

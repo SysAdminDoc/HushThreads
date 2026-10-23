@@ -5,6 +5,7 @@ Changes in the source build, then released versions.
 ## Unreleased
 
 * **Threads:** HushThreads now patches Threads 452.0.0.50.64 only, the newest stable version. 451.0.0.51.80 isn't offered any more, so update Threads to 452 before you patch. The bundle is built with Morphe's 2.0 patcher, so you'll need Morphe Manager 2.0.0 or newer.
+* **Threads:** Hide ads now also takes out the ads that show up among the replies when you open a post. Those come with the post itself rather than through your feed, so they used to slip past. Turn Hide ads off, or pause HushThreads, and they show the way Threads draws them. The Hide ads switch says so in all six languages.
 * **Tooling:** A release can't go public until the whole app has been walked with that exact bundle on a release phone or an emulator. The publish stage now takes the walk's receipt as `-Walk` and stops before the tag or GitHub if the walk wasn't a full pass, saw a Threads crash, ran on some other device, or patched with a different bundle.
 
 ## 0.0.15 (2026-10-18)

@@ -39,6 +39,9 @@ import app.morphe.extension.shared.diagnostics.HookStatus;
  * ad kinds in {@link #AD_UNIT_TYPES} come out whatever they carry. Suggestion units (the NETEGO and
  * SUGGESTED kinds) and ordinary posts aren't ad kinds.
  *
+ * <p>An opened post fetches its own ads to show among its replies, apart from the feed. Those come
+ * through {@link #permalinkAds}, where every item is an ad.
+ *
  * <p>The typed methods at the bottom have no body of their own here. Their answers are Threads'
  * obfuscated names, which change with every build, so the patch finds them by what they do and
  * writes the calls in when you patch. Unpatched they answer nothing and every item stays.
@@ -134,6 +137,28 @@ public final class FeedAds {
                 for (Rule rule : active) HookStatus.threw(rule.family, "feed page", t);
             }
             return items;
+        }
+    }
+
+    /**
+     * Injected where Threads' fetcher for the ads under an opened post's replies hands them on, with
+     * the ads it read. Every item there is an ad, so with Hide ads on this answers an empty list and
+     * the post opens without them. Answers the same list when the switch is off, HushThreads is
+     * paused or anything goes wrong. Never throws.
+     */
+    public static List<?> permalinkAds(List<?> ads) {
+        Rule rule = Rule.ADS;
+        try {
+            if (!rule.selected()) return ads;
+            HookStatus.invoked(rule.family);
+            if (ads == null || ads.isEmpty() || !Utils.settingsReady() || !rule.enabled()) return ads;
+            int count = ads.size();
+            HookStatus.counted(rule.family, "opened post ads taken out", count);
+            Logger.printDebug(() -> rule.family + ": took " + count + " ads out from under an opened post");
+            return new ArrayList<>(0);
+        } catch (Throwable t) {
+            HookStatus.threw(rule.family, "opened post ads", t);
+            return ads;
         }
     }
 

@@ -515,8 +515,8 @@ public final class L10nTranslations {
                 "Manche Threads-Bildschirme pr\u00fcfen, wer die App signiert hat, und scheitern bei einer gepatchten. Dieser Fix l\u00e4sst sie wieder \u00f6ffnen.");
         table.put("Source code and issues",
                 "Quellcode und Issues");
-        table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
-                "Gesponserte Beitr\u00e4ge werden aus \u201eF\u00fcr dich\u201c und \u201eGefolgt\u201c entfernt, bevor Threads sie zeigt, deshalb bleibt keine L\u00fccke.");
+        table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
+                "Gesponserte Beitr\u00e4ge werden aus \u201eF\u00fcr dich\u201c, \u201eGefolgt\u201c und ge\u00f6ffneten Beitr\u00e4gen entfernt, bevor Threads sie zeigt, deshalb bleibt keine L\u00fccke.");
         table.put("Sponsored posts in For you and Following",
                 "Gesponserte Beitr\u00e4ge in \u201eF\u00fcr dich\u201c und \u201eGefolgt\u201c");
         table.put("Stays in while paused",
@@ -1152,8 +1152,8 @@ public final class L10nTranslations {
                 "Algunas pantallas de Threads comprueban qui\u00e9n firm\u00f3 la app y fallan en una parcheada. Esta correcci\u00f3n hace que vuelvan a abrirse.");
         table.put("Source code and issues",
                 "C\u00f3digo fuente e incidencias");
-        table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
-                "Las publicaciones patrocinadas salen de Para ti y Siguiendo antes de que Threads las muestre, as\u00ed que no queda ning\u00fan hueco.");
+        table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
+                "Las publicaciones patrocinadas salen de Para ti, Siguiendo y las publicaciones que abres antes de que Threads las muestre, as\u00ed que no queda ning\u00fan hueco.");
         table.put("Sponsored posts in For you and Following",
                 "Publicaciones patrocinadas en Para ti y Siguiendo");
         table.put("Stays in while paused",
@@ -1789,8 +1789,8 @@ public final class L10nTranslations {
                 "Beberapa layar Threads memeriksa siapa yang menandatangani aplikasi dan gagal pada aplikasi yang ditambal. Perbaikan ini membuatnya terbuka lagi.");
         table.put("Source code and issues",
                 "Kode sumber dan laporan masalah");
-        table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
-                "Postingan bersponsor dihapus dari Untuk Anda dan Mengikuti sebelum Threads menampilkannya, jadi tidak ada celah kosong.");
+        table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
+                "Postingan bersponsor dihapus dari Untuk Anda, Mengikuti, dan postingan yang Anda buka sebelum Threads menampilkannya, jadi tidak ada celah kosong.");
         table.put("Sponsored posts in For you and Following",
                 "Postingan bersponsor di Untuk Anda dan Mengikuti");
         table.put("Stays in while paused",
@@ -2426,8 +2426,8 @@ public final class L10nTranslations {
                 "Algumas telas do Threads verificam quem assinou o app e falham em um app com patches. Esta corre\u00e7\u00e3o faz com que abram de novo.");
         table.put("Source code and issues",
                 "C\u00f3digo-fonte e relatos de problemas");
-        table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
-                "As publica\u00e7\u00f5es patrocinadas saem de Para voc\u00ea e Seguindo antes que o Threads as mostre, ent\u00e3o nenhum espa\u00e7o fica vazio.");
+        table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
+                "As publica\u00e7\u00f5es patrocinadas saem de Para voc\u00ea, Seguindo e das publica\u00e7\u00f5es que voc\u00ea abre antes que o Threads as mostre, ent\u00e3o nenhum espa\u00e7o fica vazio.");
         table.put("Sponsored posts in For you and Following",
                 "Publica\u00e7\u00f5es patrocinadas em Para voc\u00ea e Seguindo");
         table.put("Stays in while paused",
@@ -3063,8 +3063,8 @@ public final class L10nTranslations {
                 "Baz\u0131 Threads ekranlar\u0131 uygulamay\u0131 kimin imzalad\u0131\u011f\u0131na bakar ve yamal\u0131 uygulamada a\u00e7\u0131lmaz. Bu d\u00fczeltme onlar\u0131 yeniden a\u00e7\u0131l\u0131r yapar.");
         table.put("Source code and issues",
                 "Kaynak kodu ve sorunlar");
-        table.put("Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.",
-                "Sponsorlu g\u00f6nderiler, Threads onlar\u0131 g\u00f6stermeden \u00f6nce Senin \u0130\u00e7in ve Takip Edilenler ak\u0131\u015flar\u0131ndan \u00e7\u0131kar\u0131l\u0131r, b\u00f6ylece bo\u015fluk kalmaz.");
+        table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
+                "Sponsorlu g\u00f6nderiler, Threads onlar\u0131 g\u00f6stermeden \u00f6nce Senin \u0130\u00e7in ve Takip Edilenler ak\u0131\u015flar\u0131ndan ve a\u00e7t\u0131\u011f\u0131n g\u00f6nderilerden \u00e7\u0131kar\u0131l\u0131r, b\u00f6ylece bo\u015fluk kalmaz.");
         table.put("Sponsored posts in For you and Following",
                 "Senin \u0130\u00e7in ve Takip Edilenler'deki sponsorlu g\u00f6nderiler");
         table.put("Stays in while paused",

@@ -191,7 +191,7 @@
     },
     {
       "name": "Hide ads",
-      "description": "Removes sponsored posts from your feed before Threads shows them, so they leave no gap. Good for a cleaner feed. On by default. Turn it off in HushThreads settings > Feed.",
+      "description": "Removes sponsored posts from your feed and from under the posts you open before Threads shows them, so they leave no gap. On by default. Turn it off in HushThreads settings > Feed.",
       "category": "Ads",
       "use": true,
       "dependencies": [

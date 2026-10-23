@@ -55,7 +55,7 @@ Saved. Restart Threads to apply this change.	Kaydedildi. Bu değişikliği uygul
 Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.	Bazı Threads ekranları uygulamayı kimin imzaladığına bakar ve yamalı uygulamada açılmaz. Bu düzeltme onları yeniden açılır yapar.
 Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.	Ayarlar dışa aktarıldı. Dosyayı tutan uygulama HushThreads'un onu geri okumasına izin vermedi, bu yüzden kontrol edilmedi.
 # context: summary of the Hide ads switch; For you and Following are the names of Threads' two feeds, written as the app shows them in this language
-Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.	Sponsorlu gönderiler, Threads onları göstermeden önce Senin İçin ve Takip Edilenler akışlarından çıkarılır, böylece boşluk kalmaz.
+Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.	Sponsorlu gönderiler, Threads onları göstermeden önce Senin İçin ve Takip Edilenler akışlarından ve açtığın gönderilerden çıkarılır, böylece boşluk kalmaz.
 # context: summary of the Feed section link on the overview; the same two feed names as the Hide ads switch
 Sponsored posts in For you and Following	Senin İçin ve Takip Edilenler'deki sponsorlu gönderiler
 # context: Feed overview summaries when suggestions alone, or both feed rules, are selected

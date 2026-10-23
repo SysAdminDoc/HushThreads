@@ -62,17 +62,21 @@ internal const val FEED_ITEM_TYPE = "feedItemType"
  * the unit carries. A third stub reads the item's field for it. The field is found by its type, the
  * one enum on the item naming every ad kind and the ordinary ones, and checked against the item's
  * own getter for it, which names it "feedItemType".
+ *
+ * An opened post fetches its own ads to show among its replies, and those never reach the feed
+ * cache. [permalinkAdsPatch] hands that list to the extension too.
  */
 @Suppress("unused")
 val hideAdsPatch = bytecodePatch(
     name = PATCH,
-    description = "Removes sponsored posts from your feed before Threads shows them, so they leave no gap. Good for" +
-        " a cleaner feed. On by default. Turn it off in HushThreads settings > Feed.",
+    description = "Removes sponsored posts from your feed and from under the posts you open before Threads shows" +
+        " them, so they leave no gap. On by default. Turn it off in HushThreads settings > Feed.",
     default = true,
 ) {
     category("Ads")
     dependsOn(settingsPatch)
     dependsOn(feedPageFilterPatch)
+    dependsOn(permalinkAdsPatch)
     compatibleWith(*AppCompatibilities.threads())
     dependsOn(threadsExtensionPatch)
 

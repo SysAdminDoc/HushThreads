@@ -55,7 +55,7 @@ Saved. Restart Threads to apply this change.	Tersimpan. Mulai ulang Threads untu
 Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.	Beberapa layar Threads memeriksa siapa yang menandatangani aplikasi dan gagal pada aplikasi yang ditambal. Perbaikan ini membuatnya terbuka lagi.
 Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.	Pengaturan diekspor. Aplikasi yang menyimpan file itu tidak mengizinkan HushThreads membacanya kembali, jadi file itu tidak diperiksa.
 # context: summary of the Hide ads switch; For you and Following are the names of Threads' two feeds, written as the app shows them in this language
-Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.	Postingan bersponsor dihapus dari Untuk Anda dan Mengikuti sebelum Threads menampilkannya, jadi tidak ada celah kosong.
+Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.	Postingan bersponsor dihapus dari Untuk Anda, Mengikuti, dan postingan yang Anda buka sebelum Threads menampilkannya, jadi tidak ada celah kosong.
 # context: summary of the Feed section link on the overview; the same two feed names as the Hide ads switch
 Sponsored posts in For you and Following	Postingan bersponsor di Untuk Anda dan Mengikuti
 # context: Feed overview summaries when suggestions alone, or both feed rules, are selected

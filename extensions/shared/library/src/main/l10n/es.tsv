@@ -55,7 +55,7 @@ Saved. Restart Threads to apply this change.	Guardado. Reinicia Threads para apl
 Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.	Algunas pantallas de Threads comprueban quién firmó la app y fallan en una parcheada. Esta corrección hace que vuelvan a abrirse.
 Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.	Configuración exportada. La app que guarda el archivo no dejó que HushThreads lo volviera a leer, así que no se comprobó.
 # context: summary of the Hide ads switch; For you and Following are the names of Threads' two feeds, written as the app shows them in this language
-Sponsored posts come out of For you and Following before Threads shows them, so no gap is left.	Las publicaciones patrocinadas salen de Para ti y Siguiendo antes de que Threads las muestre, así que no queda ningún hueco.
+Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.	Las publicaciones patrocinadas salen de Para ti, Siguiendo y las publicaciones que abres antes de que Threads las muestre, así que no queda ningún hueco.
 # context: summary of the Feed section link on the overview; the same two feed names as the Hide ads switch
 Sponsored posts in For you and Following	Publicaciones patrocinadas en Para ti y Siguiendo
 # context: Feed overview summaries when suggestions alone, or both feed rules, are selected

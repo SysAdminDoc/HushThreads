@@ -1954,6 +1954,8 @@ public class DexDiff {
     private static final String MEDIA = "Lcom/instagram/feed/media/Media;";
     private static final String ADS = "Lapp/morphe/extension/hushthreads/ads/FeedAds;->";
     private static final String FILTER_PAGE = ADS + "filter(Ljava/util/List;)Ljava/util/List;";
+    private static final String PERMALINK_ADS = ADS + "permalinkAds(Ljava/util/List;)Ljava/util/List;";
+    private static final String PERMALINK_AD_FETCHER = "Lcom/instagram/barcelona/sponsored/permalink/ThreadsPermalinkAdFetcher;";
     private static final String CLEAN_LINK = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->sanitizeShared(Ljava/lang/String;)Ljava/lang/String;";
     private static final String POST_LINK = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->postLink(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;";
     private static final String REMEMBER_POST = "Lapp/morphe/extension/hushthreads/misc/LinkCleaner;->rememberPost(Ljava/lang/Object;Ljava/lang/Object;)V";
@@ -2407,6 +2409,36 @@ public class DexDiff {
                 && Arrays.equals(invokeRegisters(a.get(1)), new int[]{adInput})
                 && ((OneRegisterInstruction) a.get(2)).getRegisterA() == ((OneRegisterInstruction) a.get(3)).getRegisterA(),
                 "isAd uses the wrong receiver or result");
+        // A build whose extension can't take an opened post's ads out predates that hook.
+        if (patched.containsKey(PERMALINK_ADS)) featurePermalinkAds(clean, patched);
+    }
+
+    /**
+     * An opened post's ads: the fetcher builds its one result from the list it read the ads into,
+     * and that list goes through the extension right before the result is made. A branch into the
+     * new-instance would skip the hook, so featureBody wants every way in to land on the hook.
+     */
+    private static void featurePermalinkAds(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        Method fetch = featureTarget(clean, m -> m.getDefiningClass().equals(PERMALINK_AD_FETCHER)
+                && holds(m, "text_feed/threads_permalink_ads/"), "opened post ad fetcher");
+        List<Instruction> body = instructions(fetch);
+        List<Integer> sites = new ArrayList<>();
+        for (int k = 1; k + 1 < body.size(); k++) {
+            Instruction made = body.get(k - 1), init = body.get(k), back = body.get(k + 1);
+            if (init.getOpcode() != Opcode.INVOKE_DIRECT || !(((ReferenceInstruction) init).getReference() instanceof MethodReference)) continue;
+            MethodReference ctor = (MethodReference) ((ReferenceInstruction) init).getReference();
+            int[] args = invokeRegisters(init);
+            if (ctor.getName().equals("<init>") && String.join("", ctor.getParameterTypes()).equals("Ljava/util/List;I")
+                    && made.getOpcode() == Opcode.NEW_INSTANCE && reference(made).equals(ctor.getDefiningClass())
+                    && ((OneRegisterInstruction) made).getRegisterA() == args[0]
+                    && back.getOpcode() == Opcode.RETURN_OBJECT && ((OneRegisterInstruction) back).getRegisterA() == args[0]) sites.add(k - 1);
+        }
+        requireFeature(sites.size() == 1, "opened post ad fetcher builds " + sites.size() + " results from a List");
+        int made = sites.get(0);
+        int[] args = invokeRegisters(body.get(made + 1));
+        requireFeature(args[1] != args[0], "opened post ad fetcher builds its result from itself");
+        featureBody(fetch, featureMethod(patched, featureSig(fetch)), 0, Map.of(made, args[1]), PERMALINK_ADS);
+        featureHostCalls(patched, PERMALINK_ADS, Map.of(featureSig(fetch), 1));
     }
 
     private static final String FEATURE_STRING = "Ljava/lang/String;";
@@ -6249,7 +6281,9 @@ public class DexDiff {
                 featureFalseStub(patched, ADS + "isAd(Ljava/lang/Object;)Z", true);
                 featurePreserveTargets(clean, patched, m -> m.getDefiningClass().equals(MEDIA)
                         || m.getReturnType().equals("Z") && instructions(m).stream().anyMatch(i -> i instanceof WideLiteralInstruction
-                                && (int) ((WideLiteralInstruction) i).getWideLiteral() == 0x8669a9b0));
+                                && (int) ((WideLiteralInstruction) i).getWideLiteral() == 0x8669a9b0)
+                        || m.getDefiningClass().equals(PERMALINK_AD_FETCHER));
+                featureHostCalls(patched, PERMALINK_ADS, Map.of());
                 break;
             case "sanitizeSharingLinks":
                 featureHostCalls(patched, CLEAN_LINK, Map.of());

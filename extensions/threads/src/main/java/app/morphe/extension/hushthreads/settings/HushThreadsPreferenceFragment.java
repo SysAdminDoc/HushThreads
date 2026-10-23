@@ -293,8 +293,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 || build.contains(PatchFamily.MAX_IMAGE_QUALITY)) {
             PreferenceCategory feed = category(screen, L10n.t("Feed"));
             if (build.contains(PatchFamily.HIDE_ADS)) feed.addPreference(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
-                    L10n.t("Sponsored posts come out of For you and Following before Threads shows them, so no gap is "
-                            + "left.")));
+                    L10n.t("Sponsored posts come out of For you, Following and the posts you open before Threads "
+                            + "shows them, so no gap is left.")));
             if (build.contains(PatchFamily.HIDE_SUGGESTED_USERS)) {
                 feed.addPreference(toggle(context, Settings.HIDE_SUGGESTED_USERS, L10n.t("Hide suggested users"),
                         L10n.t("Removes the cards that suggest accounts to follow, in your feed and on "

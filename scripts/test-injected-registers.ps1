@@ -727,6 +727,7 @@ try {
         ("A standalone check passed an extension with the settings row and a list without its hook. " + ($standaloneBare.Output -join [Environment]::NewLine))
     $discardedClean = New-DexApk -Name 'features-ad-discarded-clean' -Entries ([ordered]@{ 'classes.dex' = (Get-Dex 'features-ad-discarded-clean') })
     $featureFaults = @('feed-missing', 'feed-replaced', 'feed-register', 'feed-duplicate', 'item-stub', 'ad-target', 'ad-discarded', 'ad-body', 'ad-helper-body', 'getter-body', 'ad-helper-native', 'getter-static',
+        'permalink-missing', 'permalink-register',
         'link-missing', 'link-replaced', 'link-register', 'post-link-missing', 'post-link-register', 'post-link-getter', 'post-link-bypass',
         'holder-link-missing', 'holder-link-receiver', 'holder-link-field', 'holder-post-link-register', 'holder-post-link-bypass',
         'resume-remember-missing', 'resume-remember-key', 'resume-recall-missing', 'resume-recall-key', 'resume-recall-cast',
@@ -1432,6 +1433,7 @@ try {
         'omitted-suggestion-missing-status-capture' = @('hideSuggestedUsers', 'hideAds')
         'omitted-feed-hook' = @('hideAds', 'none')
         'omitted-item-getter' = @('hideAds', 'none')
+        'omitted-permalink-hook' = @('hideAds', 'none')
     }
     foreach ($fault in $omittedFaults.Keys) {
         $case = "features-bad-$fault"
