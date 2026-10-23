@@ -276,10 +276,17 @@ class ThreadsSettingsRowFixtureTest {
         }
         val casts = list.body().filter { it.opcode == Opcode.CHECK_CAST }.mapNotNull { it.getReference<TypeReference>()?.type }.toSet()
         val read = FixtureDex.classes(build, casts + FUNCTION0)
-        // The enum the list switches on: its last cast into the register it asks the ordinal of. 452
-        // casts to other enums further down the list.
+        // The enum the list switches on: the cast into the register whose ordinal the switch reads.
+        // 452 casts to other enums further down the list and asks for more than one ordinal.
         val body = list.body()
-        val ordinalAt = body.indices.single { body[it].method()?.let { m -> m.name == "ordinal" && m.returnType == "I" } == true }
+        val switchAt = body.indices.single { body[it].opcode == Opcode.PACKED_SWITCH }
+        val switchRegister = (body[switchAt] as OneRegisterInstruction).registerA
+        val ordinalResult = (0 until switchAt).last {
+            body[it].opcode == Opcode.MOVE_RESULT && (body[it] as OneRegisterInstruction).registerA == switchRegister
+        }
+        val ordinalAt = ordinalResult - 1
+        assertTrue("${build.name}: the list switches on an enum's ordinal",
+            body[ordinalAt].method()?.let { m -> m.name == "ordinal" && m.returnType == "I" } == true)
         val receiver = (body[ordinalAt] as FiveRegisterInstruction).registerC
         val entries = body[(0 until ordinalAt).last { body[it].opcode == Opcode.CHECK_CAST && (body[it] as OneRegisterInstruction).registerA == receiver }]
             .getReference<TypeReference>()!!.type

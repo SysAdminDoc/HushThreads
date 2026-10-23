@@ -371,9 +371,9 @@ internal fun BytecodePatchContext.saveRowSite(): SaveRowSite {
 
 /**
  * The controller type the click's case [which] casts its Object field [objectField] to, and the
- * one no-argument call on it that's followed by a goto: Copy link's click closes the menu with it
- * once it has copied the link. The case is found by the click's int field [intField], which the
- * merged lambda compares with each case's literal, or switches on.
+ * one no-argument call on it that ends the case: Copy link's click closes the menu with it once it
+ * has copied the link. The case is found by the click's int field [intField], which the merged
+ * lambda compares with each case's literal, or switches on.
  */
 private fun BytecodePatchContext.clickCase(click: String, intField: String, objectField: String, which: Int): Pair<String, MethodReference> {
     val invokes = classDefBy(click).methods.filter {
@@ -424,10 +424,23 @@ private fun BytecodePatchContext.clickCase(click: String, intField: String, obje
     val dismiss = region.filter { index ->
         body[index].opcode.let { it == Opcode.INVOKE_VIRTUAL || it == Opcode.INVOKE_VIRTUAL_RANGE } &&
             body[index].method()?.let { it.definingClass == controller && it.parameterTypes.isEmpty() && it.returnType == "V" } == true &&
-            body.getOrNull(index + 1)?.opcode in GOTOS
+            invoke.endsCase(index + 1, end)
     }.map { body[it].method()!! }.distinctBy { it.signature() }
-        .singleOrPatchException("$PATCH: the call Copy link's click closes the menu with, a no-argument call on $controller before a goto")
+        .singleOrPatchException("$PATCH: the call Copy link's click closes the menu with, a no-argument call on $controller before the case ends")
     return controller to dismiss
+}
+
+private fun Method.endsCase(at: Int, end: Int): Boolean {
+    val body = body()
+    for (index in at until end) {
+        val instruction = body[index]
+        when {
+            instruction.opcode in EXITS || instruction.opcode in GOTOS -> return true
+            instruction is OffsetInstruction ||
+                instruction.opcode == Opcode.PACKED_SWITCH || instruction.opcode == Opcode.SPARSE_SWITCH -> return false
+        }
+    }
+    return false
 }
 
 /** The static call whose answer is the one write that [reaching] finds, and its index. */

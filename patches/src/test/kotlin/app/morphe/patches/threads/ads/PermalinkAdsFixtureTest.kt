@@ -42,6 +42,11 @@ import java.io.File
 class PermalinkAdsFixtureTest {
     private val feedAds = "$EXTENSION_PACKAGE/ads/FeedAds;"
     private val useCase = "Lcom/instagram/barcelona/permalink/adsusecase/PermalinkAdsUseCase;"
+    /** The result type each 452 build makes, by version code. */
+    private val adResults = mapOf(
+        "512207626" to "LX/6Mi;",
+        "512207629" to "LX/6ON;",
+    )
 
     @Test
     fun `each declared build builds the opened post's ad result once and the patch filters its list`() {
@@ -54,11 +59,12 @@ class PermalinkAdsFixtureTest {
             val body = stock.single().instructions()
             val at = stock.single().permalinkAdResult()
 
-            // Read off 452 apart from the patch: the loop adds each ad it reads to v4, the size of what
-            // the server sent is read at 108 and 109, and 6Mi is made from both at 110 and 111.
+            // Read off each 452 build apart from the patch: the loop adds each ad it reads to v4, the
+            // size of what the server sent is read at 108 and 109, and the result is made at 110 and 111.
+            val expectedResult = adResults.entries.single { build.name.contains("-${it.key}.") }.value
             assertEquals(where, 110, at.index)
             assertEquals(where, 4, at.list)
-            assertEquals(where, "LX/6Mi;", at.result)
+            assertEquals(where, expectedResult, at.result)
             assertTrue("$where: the loop adds each ad to v${at.list}", body.any {
                 it.opcode == Opcode.INVOKE_VIRTUAL && it.referenceText() == "Ljava/util/AbstractCollection;->add(Ljava/lang/Object;)Z" &&
                     (it as FiveRegisterInstruction).registerC == at.list

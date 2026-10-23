@@ -78,7 +78,9 @@ class SaveMediaFixtureTest {
     fun `each declared build asks for the row just after Copy link and the stubs draw it with Copy link's calls`() {
         for (build in Fixtures.declaredBuilds()) {
             val where = build.name
-            val expected = EXPECTED.entries.single { build.name.startsWith("threads-${it.key}-") }.value
+            val expected = EXPECTED.entries.single {
+                build.name.startsWith("threads-${it.key}.") || build.name.startsWith("threads-${it.key}-")
+            }.value
             val fixture = fixture(build)
             assertEquals("$where: the menu lambda", expected.menu, fixture.menu.definingClass)
             val stock = fixture.menu.body()
@@ -345,7 +347,8 @@ class SaveMediaFixtureTest {
         val EXPECTED = mapOf(
             "450.0.0.51.78" to Expected("LX/Slj;", "LX/Slj;->A0G:$MEDIA", "LX/Slj;->A0D:LX/At4;", "LX/At4;->A0u()V"),
             "451.0.0.51.80" to Expected("LX/0Wif;", "LX/0Wif;->A0G:$MEDIA", "LX/0Wif;->A0D:LX/0BUR;", "LX/0BUR;->A0x()V"),
-            "452.0.0.50.64" to Expected("LX/Lve;", "LX/Lve;->A0G:$MEDIA", "LX/Lve;->A0D:LX/39o;", "LX/39o;->A0x()V"),
+            "452.0.0.50.64-512207626" to Expected("LX/Lve;", "LX/Lve;->A0G:$MEDIA", "LX/Lve;->A0D:LX/39o;", "LX/39o;->A0x()V"),
+            "452.0.0.50.64-512207629" to Expected("LX/NBh;", "LX/NBh;->A0G:$MEDIA", "LX/NBh;->A0D:LX/52F;", "LX/52F;->A0z()V"),
         )
     }
 }

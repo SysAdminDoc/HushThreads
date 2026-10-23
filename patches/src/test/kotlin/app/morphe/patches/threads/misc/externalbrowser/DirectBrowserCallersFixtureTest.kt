@@ -46,9 +46,45 @@ private const val FACTORY_MODULE_NOTE = "TrackingInfo.ARG_MODULE_NAME"
 private const val AD_NOTE = "AdClickHandler.openWebLink missing webUri for AD_DESTINATION_WEB"
 private const val IMMERSIVE_NOTE = "com.instagram.barcelona.inappbrowser.compose.ImmersiveBrowserScreen (ImmersiveBrowserScreen.kt:97)"
 private const val STATE_SETTER = "(Landroidx/compose/runtime/MutableState;Z)V"
-private const val WEB = "LX/1Dc;->A0G:LX/1Dc;"
-private const val METRICS = "LX/M0t;->A03(I)V"
 private const val VIEW_MODES = "Lcom/facebook/browser/common/viewmode/IABViewModeLaunchConfig$"
+
+/** What the stock 452 builds name the parts this test reads, per version code. */
+private data class BuildNames(
+    val web: String,
+    val otherWeb: String,
+    val metrics: String,
+    val ctaUrl: String,
+    val otherCtaUrl: String,
+    val parser: String,
+    val adInvoke: String,
+    val leadCallers: List<Int>,
+)
+
+private val builds = mapOf(
+    "512207626" to BuildNames(
+        web = "LX/1Dc;->A0G:LX/1Dc;",
+        otherWeb = "LX/1Dc;->A0H:LX/1Dc;",
+        metrics = "LX/M0t;->A03(I)V",
+        ctaUrl = "LX/6qK;->A07:Ljava/lang/String;",
+        otherCtaUrl = "LX/6qK;->A05:Ljava/lang/String;",
+        parser = "LX/160;->A04(Ljava/lang/String;)Landroid/net/Uri;",
+        adInvoke = "LX/HnM;->invoke()Ljava/lang/Object;",
+        leadCallers = listOf(1, 2),
+    ),
+    "512207629" to BuildNames(
+        web = "LX/1Ch;->A0G:LX/1Ch;",
+        otherWeb = "LX/1Ch;->A0H:LX/1Ch;",
+        metrics = "LX/Jyk;->A03(I)V",
+        ctaUrl = "LX/7AX;->A07:Ljava/lang/String;",
+        otherCtaUrl = "LX/7AX;->A05:Ljava/lang/String;",
+        parser = "LX/12X;->A04(Ljava/lang/String;)Landroid/net/Uri;",
+        adInvoke = "LX/Nb6;->invoke()Ljava/lang/Object;",
+        leadCallers = listOf(1),
+    ),
+)
+
+private fun buildNames(build: File): BuildNames =
+    builds.entries.single { build.name.contains("-${it.key}.") }.value
 
 /**
  * The browser Intent factory, every method that calls it, and the ad click handler, read from the
@@ -89,8 +125,9 @@ internal fun browserFixture(build: File): BrowserFixture {
  */
 class DirectBrowserCallersFixtureTest {
     @Test
-    fun `each declared build makes the browser Intent in five places and the lead form helper has two callers`() {
+    fun `each declared build makes the browser Intent in five places and the lead form helper has its callers`() {
         for (build in Fixtures.declaredBuilds()) {
+            val names = buildNames(build)
             val fixture = browserFixture(build)
             val reference = fixture.factory.toString()
             assertEquals(build.name, 5, fixture.callers.size)
@@ -100,12 +137,12 @@ class DirectBrowserCallersFixtureTest {
             assertEquals(5, setOf(fixture.launcher, fixture.immersive, fixture.lead, fixture.ad, fixture.media).size)
 
             // The lead form helper serves the lead form's privacy policy and disclaimer links from one
-            // lambda. 452 also calls it once from a lambda merged with unrelated ones.
+            // lambda. The arm64 build also calls it once from a lambda merged with unrelated ones.
             val lead = fixture.lead.toString()
             val leadCallers = FixtureDex.methodsWhere(build, { dex -> dex.methodSection.any { it.toString() == lead } }) { m ->
                 m.code().any { it.ref() == lead }
             }
-            assertEquals("${build.name}: lead form helper calls per caller", listOf(1, 2),
+            assertEquals("${build.name}: lead form helper calls per caller", names.leadCallers,
                 leadCallers.map { m -> m.code().count { it.ref() == lead } }.sorted())
         }
     }
@@ -113,6 +150,7 @@ class DirectBrowserCallersFixtureTest {
     @Test
     fun `each declared build's direct web callers hand off once and finish the successful route`() {
         for (build in Fixtures.declaredBuilds()) {
+            val names = buildNames(build)
             val fixture = browserFixture(build)
             val reference = fixture.factory.toString()
             val context = PatchContexts.of(ExtensionDex.classes() + fixture.classes)
@@ -162,7 +200,7 @@ class DirectBrowserCallersFixtureTest {
                 val reached = actual.reachable(success)
                 assertTrue("$where: opens twice", reached.none { after[it].ref() == reference || after[it].ref() == OPEN_LINK })
                 assertTrue("$where: starts the stock browser", reached.none { after[it].ref().endsWith("->startActivity(Landroid/content/Intent;)V") })
-                assertTrue("$where: runs the metrics the skipped browser set up", reached.none { after[it].ref() == METRICS })
+                assertTrue("$where: runs the metrics the skipped browser set up", reached.none { after[it].ref() == names.metrics })
                 if (!entry) assertEquals("$where: a link that stays reaches the factory", reference, after[at + 6].ref())
 
                 when (stock) {
@@ -172,10 +210,10 @@ class DirectBrowserCallersFixtureTest {
                         assertTrue(after.drop(6).any { it.string() == "android.intent.action.VIEW" })
                     }
                     else -> {
-                        // 452's call to action keeps its web link in 6qK.A07, and the web check sits in front of it.
+                        // The call to action keeps its web link in a field, and the web check sits in front of it.
                         val (url, _) = before.source(factoryAt, args[5])
-                        assertEquals("LX/6qK;->A07:Ljava/lang/String;", before[url].ref())
-                        val guard = before.indices.single { it > 0 && before[it].opcode == Opcode.IF_NE && before[it - 1].ref() == WEB }
+                        assertEquals(names.ctaUrl, before[url].ref())
+                        val guard = before.indices.single { it > 0 && before[it].opcode == Opcode.IF_NE && before[it - 1].ref() == names.web }
                         assertTrue("$where: web check before the link is read", guard < url)
                         val (ctx, ctxRegister) = before.source(factoryAt, args[0])
                         if (stock == fixture.ad) {
@@ -187,7 +225,7 @@ class DirectBrowserCallersFixtureTest {
                             assertEquals("so finding it by its return alone would be wrong", 3, before.count { it.opcode == Opcode.RETURN_VOID })
                             // The pre-open callback and both view modes still lead to the browser when the link stays.
                             val pieces = listOf(
-                                before.indices.single { before[it].ref() == "LX/HnM;->invoke()Ljava/lang/Object;" },
+                                before.indices.single { before[it].ref() == names.adInvoke },
                                 before.indices.single { before[it].opcode == Opcode.NEW_INSTANCE && before[it].ref() == "${VIEW_MODES}FullScreen;" },
                                 before.indices.single { before[it].opcode == Opcode.SGET_OBJECT && before[it].ref().endsWith(":${VIEW_MODES}HalfSheet;") },
                             )
@@ -206,7 +244,7 @@ class DirectBrowserCallersFixtureTest {
                             assertEquals("${stock.definingClass}->A08:Landroidx/compose/runtime/MutableState;", after[state].ref())
                             assertTrue("$where: state read before the hook", state < at)
                             // It lands just past the metrics call on the 0PAX the skipped browser would have made.
-                            assertEquals(METRICS, after[lands - 1].ref())
+                            assertEquals(names.metrics, after[lands - 1].ref())
                             // The ending for an ad with no web link still sets the state to false.
                             val failed = before.destination(guard)
                             assertEquals(0, (before[failed] as NarrowLiteralInstruction).narrowLiteral)
@@ -232,6 +270,7 @@ class DirectBrowserCallersFixtureTest {
     @Test
     fun `wrong sources guards completions and callers are refused`() {
         for (build in Fixtures.declaredBuilds()) {
+            val names = buildNames(build)
             val fixture = browserFixture(build)
             val reference = fixture.factory.toString()
             val cases = linkedMapOf(
@@ -269,7 +308,7 @@ class DirectBrowserCallersFixtureTest {
                     body.getOrNull(it + 2)?.ref()?.endsWith(STATE_SETTER) == true }
                 when (fault) {
                     "factory URL" -> {
-                        val parser = index { body[it].ref() == "LX/160;->A04(Ljava/lang/String;)Landroid/net/Uri;" }
+                        val parser = index { body[it].ref() == names.parser }
                         // Parameter 6, the string after the link.
                         val sixth = registers - 3
                         method.replaceInstruction(parser, "invoke-static/range { v$sixth .. v$sixth }, ${body[parser].ref()}")
@@ -278,15 +317,15 @@ class DirectBrowserCallersFixtureTest {
                         val (load, _) = body.source(call, body[call].args()[5])
                         val read = body[load] as TwoRegisterInstruction
                         // A05 is another String of the call to action, the one 452 passes as the factory's last argument.
-                        method.replaceInstruction(load, "iget-object v${read.registerA}, v${read.registerB}, LX/6qK;->A05:Ljava/lang/String;")
+                        method.replaceInstruction(load, "iget-object v${read.registerA}, v${read.registerB}, ${names.otherCtaUrl}")
                     }
                     "web enum" -> {
-                        val n = index { body[it].ref() == WEB }
-                        method.replaceInstruction(n, "sget-object v${(body[n] as OneRegisterInstruction).registerA}, LX/1Dc;->A0H:LX/1Dc;")
+                        val n = index { body[it].ref() == names.web }
+                        method.replaceInstruction(n, "sget-object v${(body[n] as OneRegisterInstruction).registerA}, ${names.otherWeb}")
                     }
                     "ad return" -> {
                         // The web check's no-web branch sent to the metrics check in front of the shared return instead.
-                        val guard = index { it > 0 && body[it].opcode == Opcode.IF_NE && body[it - 1].ref() == WEB }
+                        val guard = index { it > 0 && body[it].opcode == Opcode.IF_NE && body[it - 1].ref() == names.web }
                         val elsewhere = body.destination(guard) - 6
                         assertEquals(Opcode.IF_NEZ, body[elsewhere].opcode)
                         val compare = body[guard] as TwoRegisterInstruction
