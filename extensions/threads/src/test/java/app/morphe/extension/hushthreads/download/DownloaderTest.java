@@ -881,6 +881,25 @@ public class DownloaderTest {
         return file;
     }
 
+    /**
+     * A wait cut to the time that's left ends at the deadline or after it, never a fraction of a
+     * millisecond before, so the socket timeout it ends in reads as TIMED_OUT. Rounded down, the
+     * 0.7 ms past the whole milliseconds here was lost, and a DASH track that ran out of time
+     * was logged as a network failure.
+     */
+    @Test
+    public void aWaitCutToTheTimeLeftEndsAtTheDeadline() {
+        assertEquals(1, Downloader.within(20_000, System.nanoTime() - 1));
+
+        long deadline = System.nanoTime() + 1_500_700_000L;
+        int cut = Downloader.within(20_000, deadline);
+        long after = System.nanoTime();
+
+        assertTrue(cut + " ms ends before the deadline",
+                after + java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(cut) - deadline >= 0);
+        assertEquals(1_000, Downloader.within(1_000, deadline));
+    }
+
     @Test
     public void aCheckedFileIsPublishedWhole() throws IOException {
         byte[] body = mp4(50_000);

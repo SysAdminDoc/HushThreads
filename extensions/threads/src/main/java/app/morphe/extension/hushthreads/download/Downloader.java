@@ -733,10 +733,13 @@ final class Downloader {
 
     /**
      * [timeoutMs] cut to what's left before [deadline], and never 0, which a connection reads as
-     * no timeout at all. A [timeoutMs] of 0 (no timeout) becomes what's left.
+     * no timeout at all. A [timeoutMs] of 0 (no timeout) becomes what's left. What's left rounds
+     * up to the next millisecond: rounded down, a wait cut to it ended a fraction of a millisecond
+     * before [deadline], and its socket timeout read as a network failure rather than TIMED_OUT.
      */
     static int within(int timeoutMs, long deadline) {
-        long left = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime());
+        long nanosLeft = deadline - System.nanoTime();
+        long left = nanosLeft <= 0 ? 0 : (nanosLeft - 1) / 1_000_000L + 1;
         long cut = timeoutMs <= 0 ? left : Math.min(timeoutMs, left);
         return (int) Math.max(1L, Math.min(Integer.MAX_VALUE, cut));
     }
