@@ -132,13 +132,13 @@ The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.o
 
 ## Verify a download
 
-Each release ships `SHA256SUMS.txt` beside the bundle, along with a CycloneDX SBOM and a release receipt recording the Threads build every patch was checked on. Compare the `.mpp` hash with your download. For v0.0.15 it's:
+Each release ships `SHA256SUMS.txt` beside the bundle, along with a CycloneDX SBOM and a release receipt recording the Threads build every patch was checked on. Compare the `.mpp` hash with your download. For v0.0.16 it's:
 
 ```text
-19ff38798e6ff7f8e64ad4b7d9249ff17df16a9b0592bd131452aff727c5bcca  patches-0.0.15.mpp
+73c9ad6e58c99120ff16b529ba4aa6164e7e220bb3fe017dc9522bfe17c7f891  patches-0.0.16.mpp
 ```
 
-On Windows, run `Get-FileHash -Algorithm SHA256 .\patches-0.0.15.mpp`. Inside the patched app, the About page in HushThreads settings shows the bundle's payload hash and the source it was built from.
+On Windows, run `Get-FileHash -Algorithm SHA256 .\patches-0.0.16.mpp`. Inside the patched app, the About page in HushThreads settings shows the bundle's payload hash and the source it was built from.
 
 ## Reporting a problem
 
