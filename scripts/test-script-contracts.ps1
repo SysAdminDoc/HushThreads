@@ -6547,7 +6547,12 @@ try {
     Edit-ReleaseFile 'gradle/libs.versions.toml' {
         param($text) $text -replace '(?m)^(\s*manager-floor\s*=\s*")[^"]+', "`${1}$laterFloor"
     }
-    Edit-ReleaseFile 'README.md' { param($text) $text.Replace($releaseFloor, $laterFloor) }
+    # Whole version numbers only. A plain replace of floor 2.0.0 also hit the 2.0.0 inside Threads
+    # 452.0.0.50.64, so the README named a build the catalog doesn't. The badge's %20 sits right
+    # before its floor, so a digit there still counts as the start of one.
+    Edit-ReleaseFile 'README.md' {
+        param($text) $text -replace ('(?:(?<=%20)|(?<![\d.]))' + [regex]::Escape($releaseFloor) + '(?!\.?\d)'), $laterFloor
+    }
     Edit-ReleaseFile '.github/ISSUE_TEMPLATE/bug_report.yml' {
         param($text) $text.Replace("Morphe Manager $releaseFloor", "Morphe Manager $laterFloor")
     }
