@@ -66,7 +66,11 @@ param(
     # publish: the walk-receipt.json a whole-app walk of this exact bundle left.
     [string]$Walk,
     # index: a file holding what's new, for the description Morphe Manager shows.
-    [string]$Summary
+    [string]$Summary,
+    # publish: tools used to recheck the walked APK's manifest and embedded identity.
+    [string]$Java,
+    [string]$DesktopJar,
+    [string]$Aapt2
 )
 
 $ErrorActionPreference = 'Stop'
@@ -537,7 +541,7 @@ try {
             if ($receiptCommit -ne $head) { throw "The receipt in $assets names $receiptCommit, not $head. Run -Stage build again." }
             # Nothing goes public until the whole app has been walked with this exact bundle.
             if (-not $Walk) { throw '-Walk names the walk-receipt.json a whole-app walk of this bundle left on a release phone or an emulator.' }
-            $walked = Test-WalkReceipt -Path $Walk -BundlePath (Join-Path $assets $bundleName)
+        $walked = Test-WalkReceipt -Path $Walk -BundlePath (Join-Path $assets $bundleName) -Java $Java -DesktopJar $DesktopJar -Aapt2 $Aapt2 -SourceRoot $root
             if (-not $walked.Valid) {
                 throw ("The whole-app walk doesn't back $bundleName, so nothing was published: $($walked.Reason). " +
                     'Patch an APK from this bundle, walk the whole app on a release phone or an emulator, and pass its walk-receipt.json as -Walk.')

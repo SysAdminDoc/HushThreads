@@ -54,6 +54,12 @@ function Get-WalkSections {
     $names
 }
 
+function Get-WalkExpectedScreens {
+    param([Parameter(Mandatory = $true)][string]$Root)
+    @($WalkScreens | ForEach-Object { $_.Name }) + @("Threads' settings", 'Settings: home') +
+        @(Get-WalkSections -Root $Root | ForEach-Object { "Settings: $_" })
+}
+
 function ConvertFrom-UiDump {
     <#
     .SYNOPSIS

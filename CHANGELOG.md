@@ -2,6 +2,10 @@
 
 Changes in the source build, then released versions.
 
+## Unreleased
+
+* **Tooling:** Release walks now bind the installed APK to its original patching inputs and bundle. Publication rechecks its manifest and embedded identity, complete screen coverage and a clean result. A retained install needs its patch receipt, and stale or incomplete receipts are refused.
+
 ## 0.0.16 (2026-10-23)
 
 * **Threads:** HushThreads now patches Threads 452.0.0.50.64 only, the newest stable version, and drops 451.0.0.51.80. Update Threads to 452 before you patch. The bundle is built with Morphe's 2.0 patcher, so you'll need Morphe Manager 2.0.0 or newer.

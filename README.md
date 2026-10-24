@@ -165,6 +165,10 @@ The bundle, its SHA-256 and a CycloneDX SBOM land in `patches/build/release`. Wi
 
 A release runs in five stages of `scripts/release/release.ps1`, each with `-Version <version>`, from a clean checkout of main. `prepare` dates the changelog, moves the version strings, regenerates the patch list and rewrites the README's latest-release line for you to review and commit. `preflight` runs the quick checks and pushes. `build` reruns the tests, builds the bundle, writes the receipt from one fixture run per declared build and tags the commit last. `publish` (with `-Intro` and `-Update` text files) creates the GitHub release and downloads each asset back to compare it, and `index` (with `-Summary`) points `patches-bundle.json` at it. A stage won't start before the one it follows, and one that stopped part way can be run again.
 
+Before publishing, run `scripts/walk-app.ps1 -Serial <serial> -OutDir <walk folder>` under an owned device lease. It writes a patch receipt and a walk receipt. To walk that retained install again, use `-SkipPatch -PatchReceipt <walk folder>/patch-receipt.json`. Keep the signed APK, original vendor input and catalog at their recorded paths until publication. An unknown or different install is refused without reinstalling it.
+
+The publish stage also needs `-Walk <walk folder>/walk-receipt.json`. Its catalog must match the bundle's source commit. It rechecks the APK's manifest and embedded bundle identity, the installed hashes from both ends of the walk, every named screen and any recorded problem. Old schema 1 receipts remain historical records and can't qualify a new release. `-Java`, `-DesktopJar` and `-Aapt2` select the validation tools when needed.
+
 Where things live:
 
 - `patches/src/main/kotlin/app/morphe/patches/threads/` holds the patches. `AppCompatibilities.kt` under `patches/.../shared/compat/` names the supported Threads build, and only the newest stable one is declared.
