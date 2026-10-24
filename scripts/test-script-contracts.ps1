@@ -2812,13 +2812,15 @@ try {
     # every "Threads <build>" one build. The lag check read the first of each and the equality
     # check any, so a description quoting the catalog's count once and a stale one elsewhere, or
     # naming another build beside the target, passed the equality check. On both paths now.
-    $indexCount = [regex]::Match([string](Get-Content -LiteralPath (Join-Path $factsRoot 'patches-bundle.json') -Raw |
-        ConvertFrom-Json).description, '(?<![\d.])(\d+) patches\b').Groups[1].Value
-    $indexCounts = [regex]::Matches((Get-Content -LiteralPath (Join-Path $factsRoot 'patches-bundle.json') -Raw), '(?<!\d)\d+ patches\b').Count
+    $factsDescription = [string](Get-Content -LiteralPath (Join-Path $factsRoot 'patches-bundle.json') -Raw |
+        ConvertFrom-Json).description
+    $factsHeader = ($factsDescription -split '(?m)^### ', 2)[0]
+    $indexCount = [regex]::Match($factsHeader, '(?<![\d.])(\d+) patches\b').Groups[1].Value
+    $indexCounts = [regex]::Matches($factsHeader, '(?<!\d)\d+ patches\b').Count
     Assert-True ($indexCounts -ge 2) "The copied description names its patch count once, so the stale-count case would prove nothing."
     $factsTarget = (Get-PatchTarget -PatchList (Get-Content -LiteralPath (Join-Path $factsRoot 'patches-list.json') -Raw |
         ConvertFrom-Json)).PackageVersion
-    Assert-True ([regex]::Matches((Get-Content -LiteralPath (Join-Path $factsRoot 'patches-bundle.json') -Raw),
+    Assert-True ([regex]::Matches($factsHeader,
             "Threads $([regex]::Escape($factsTarget))(?!\d)").Count -ge 2) `
         "The copied description names Threads $factsTarget once, so the other-build case would prove nothing."
     foreach ($case in @(
@@ -2827,7 +2829,16 @@ try {
             @{ Name = 'another build beside the target'; Pattern = "*names Threads $factsTarget and Threads 9.9.9.9.9, and it has to name one build*"
                 Edit = { param($text) $at = $text.LastIndexOf("Threads $factsTarget")
                     $text.Substring(0, $at) + 'Threads 9.9.9.9.9' + $text.Substring($at + "Threads $factsTarget".Length) } })) {
-        Set-FactsFile 'patches-bundle.json' $case.Edit
+        # Published descriptions also contain historical CHANGELOG bullets. Mutate the facts
+        # before the first heading, or a later mention can leave the intended contradiction absent.
+        Set-FactsFile 'patches-bundle.json' {
+            param($text)
+            $document = $text | ConvertFrom-Json
+            $parts = ([regex]'(?m)(?=^### )').Split([string]$document.description, 2)
+            $parts[0] = & $case.Edit $parts[0]
+            $document.description = $parts -join ''
+            $document | ConvertTo-Json -Depth 100
+        }
         try {
             Assert-Throws { Invoke-Facts } $case.Pattern "An index description naming $($case.Name) was accepted."
             Assert-Throws { & $factsScript -Root $factsRoot -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipUrlCheck 6> $null } `

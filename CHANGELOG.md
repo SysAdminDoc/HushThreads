@@ -5,6 +5,7 @@ Changes in the source build, then released versions.
 ## Unreleased
 
 * **Tooling:** Release walks now bind the installed APK to its original patching inputs and bundle. Publication rechecks its manifest and embedded identity, complete screen coverage and a clean result. A retained install needs its patch receipt, and stale or incomplete receipts are refused.
+* **Tests:** Corrected the release-description fixtures so conflicting build claims are tested in the current facts, ahead of historical notes.
 
 ## 0.0.16 (2026-10-23)
 
