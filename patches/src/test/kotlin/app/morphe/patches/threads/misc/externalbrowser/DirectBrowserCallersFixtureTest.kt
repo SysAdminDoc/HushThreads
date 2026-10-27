@@ -60,13 +60,41 @@ private val builds = mapOf(
         web = "LX/1Ch;->A0G:LX/1Ch;",
         parser = "LX/12X;->A04(Ljava/lang/String;)Landroid/net/Uri;",
     ),
+    "512308671" to BuildNames(
+        web = "LX/1t8;->A0G:LX/1t8;",
+        parser = "LX/14R;->A04(Ljava/lang/String;)Landroid/net/Uri;",
+    ),
+    "512308673" to BuildNames(
+        web = "LX/1t8;->A0G:LX/1t8;",
+        parser = "LX/14R;->A04(Ljava/lang/String;)Landroid/net/Uri;",
+    ),
     "512308675" to BuildNames(
         web = "LX/1t8;->A0G:LX/1t8;",
         parser = "LX/14R;->A04(Ljava/lang/String;)Landroid/net/Uri;",
     ),
+    "512308685" to BuildNames(
+        web = "LX/01q4;->A0G:LX/01q4;",
+        parser = "LX/013w;->A04(Ljava/lang/String;)Landroid/net/Uri;",
+    ),
+    "512308686" to BuildNames(
+        web = "LX/1t0;->A0G:LX/1t0;",
+        parser = "LX/148;->A04(Ljava/lang/String;)Landroid/net/Uri;",
+    ),
+    "512308688" to BuildNames(
+        web = "LX/1t0;->A0G:LX/1t0;",
+        parser = "LX/148;->A04(Ljava/lang/String;)Landroid/net/Uri;",
+    ),
     "512308695" to BuildNames(
         web = "LX/01s7;->A0G:LX/01s7;",
         parser = "LX/012X;->A04(Ljava/lang/String;)Landroid/net/Uri;",
+    ),
+    "512308696" to BuildNames(
+        web = "LX/1t8;->A0G:LX/1t8;",
+        parser = "LX/14R;->A04(Ljava/lang/String;)Landroid/net/Uri;",
+    ),
+    "512308697" to BuildNames(
+        web = "LX/01rU;->A0G:LX/01rU;",
+        parser = "LX/0135;->A04(Ljava/lang/String;)Landroid/net/Uri;",
     ),
 )
 
@@ -223,6 +251,7 @@ class DirectBrowserCallersFixtureTest {
             assertEquals("${build.name}: the launcher and the three", 4, hosts.sumOf { m -> m.code().count { it.ref() == OPEN_LINK } })
         }
     }
+
 
     /** A changed build the patch can't prove is refused before anything changes, saying what it found. */
     @Test

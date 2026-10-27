@@ -77,8 +77,15 @@ internal object ProfileSuggestionsFixture {
  */
 class ProfileSuggestionsFixtureTest {
     private val carouselOffsets = mapOf(
+        "512308671" to intArrayOf(557, 558, 1026),
+        "512308673" to intArrayOf(557, 558, 1026),
         "512308675" to intArrayOf(557, 558, 1026),
+        "512308685" to intArrayOf(556, 557, 1025),
+        "512308686" to intArrayOf(556, 557, 1025),
+        "512308688" to intArrayOf(556, 557, 1025),
         "512308695" to intArrayOf(554, 555, 1021),
+        "512308696" to intArrayOf(557, 558, 1026),
+        "512308697" to intArrayOf(555, 556, 1024),
     )
 
     @Test
@@ -124,9 +131,10 @@ class ProfileSuggestionsFixtureTest {
 
             // The view model checks for Threads' suggestions at 213, makes the row from 214 on, and
             // goes to 225 without them. What the check compared, and the hook's register, are dead there.
-            assertEquals(where, 268, row.guard)
-            assertEquals(where, 269, row.start)
-            assertEquals(where, 280, row.away)
+            val rowAt = if (where.contains("-512308697.")) 266 else 268
+            assertEquals(where, rowAt, row.guard)
+            assertEquals(where, rowAt + 1, row.start)
+            assertEquals(where, rowAt + 12, row.away)
             assertEquals(where, Opcode.IF_NE, rowStock[row.guard].opcode)
             assertEquals(where, row.away, rowStock.jumpTarget(row.guard))
             val live = RegisterLiveness.of(row.method)

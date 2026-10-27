@@ -42,7 +42,7 @@ class TrustUserCertificatesFixtureTest {
             assertEquals("${build.name}: a second run adds nothing", 1, trustUserCertificates(config))
             assertEquals(patched, FixtureResources.elements(config))
         }
-        val declaredBuilds = AppCompatibilities.threads().single().targets.sumOf { it.versionCodes?.size ?: 1 }
+        val declaredBuilds = AppCompatibilities.THREADS_TARGET_VERSION_CODES.size
         assertEquals("one build of each declared version and ABI", declaredBuilds, builds.size)
 
         val other = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse("<shortcuts/>".byteInputStream())

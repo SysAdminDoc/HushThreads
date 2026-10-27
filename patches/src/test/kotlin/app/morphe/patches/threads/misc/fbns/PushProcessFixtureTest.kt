@@ -39,7 +39,7 @@ class PushProcessFixtureTest {
     @Test
     fun `each declared build's push service reports its create and destroy`() {
         val builds = Fixtures.declaredBuilds()
-        val declaredBuilds = AppCompatibilities.threads().single().targets.sumOf { it.versionCodes?.size ?: 1 }
+        val declaredBuilds = AppCompatibilities.THREADS_TARGET_VERSION_CODES.size
         assertEquals("one build of each declared version and ABI", declaredBuilds, builds.size)
         for (build in builds) {
             val classes = withSuperclasses(build, setOf(PUSH_SERVICE, "Lcom/facebook/rti/pushv2/inapp/InappFbnsServiceDelegate;"))

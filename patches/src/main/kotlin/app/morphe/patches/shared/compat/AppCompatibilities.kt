@@ -16,7 +16,6 @@ package app.morphe.patches.shared.compat
 import app.morphe.patcher.patch.ApkFileType
 import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
-import app.morphe.patcher.patch.SupportedAbi
 
 internal object AppCompatibilities {
     /** Threads' icon is black. */
@@ -57,6 +56,24 @@ internal object AppCompatibilities {
      */
     const val THREADS_TARGET_ARMV7_VERSION_CODE = 512308695
 
+    /**
+     * Every version code APKMirror shipped for [THREADS_TARGET_VERSION] when it was read
+     * (2026-10-27): four arm64-v8a density variants, two armeabi-v7a, two x86_64 and one x86. The
+     * bundle names the version without pinning a code, so any genuine build of this version
+     * patches, including a reupload with a new code.
+     */
+    internal val THREADS_TARGET_VERSION_CODES = setOf(
+        512308671, // arm64-v8a, 480-640dpi
+        512308673, // x86_64, 480dpi
+        512308675, // arm64-v8a, 160-480dpi
+        512308685, // armeabi-v7a, 480dpi
+        512308686, // arm64-v8a, 640dpi
+        512308688, // x86_64, 480dpi
+        512308695, // armeabi-v7a, 480dpi
+        512308696, // arm64-v8a, 120-640dpi
+        512308697, // x86, 480dpi
+    )
+
     /** Threads' own floor on this build, Android 9. */
     const val THREADS_TARGET_MIN_SDK = 28
 
@@ -68,12 +85,10 @@ internal object AppCompatibilities {
             appIconColor = THREADS_COLOR,
             signatures = setOf(THREADS_SIGNER_SHA256, THREADS_ROTATED_SIGNER_SHA256),
             targets = listOf(
+                // No version codes: APKMirror ships several density and ABI variants under this
+                // one version, and Morphe accepts any code when a target names none.
                 AppTarget(
                     version = THREADS_TARGET_VERSION,
-                    versionCodes = mapOf(
-                        SupportedAbi.ARM64_V8A to THREADS_TARGET_VERSION_CODE,
-                        SupportedAbi.ARMEABI_V7A to THREADS_TARGET_ARMV7_VERSION_CODE,
-                    ),
                     minSdk = THREADS_TARGET_MIN_SDK,
                 ),
             ),
