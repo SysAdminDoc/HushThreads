@@ -231,7 +231,7 @@ try {
             @{ Verdict = $skipped; Crashes = 0; Valid = $false },
             @{ Verdict = $crashed; Crashes = 1; Valid = $false })) {
         $receipt = New-WalkReceipt -Result $case.Verdict.Result -Full $case.Verdict.Full -Serial 'emulator-5580' -Device 'sdk_gphone64_x86_64' `
-            -AppVersion '452.0.0.50.64' -BundleSha256 $bundleSha -InstalledApkSha256 'ab' -Started ([DateTimeOffset]::UtcNow) `
+            -AppVersion '453.0.0.56.79' -BundleSha256 $bundleSha -InstalledApkSha256 'ab' -Started ([DateTimeOffset]::UtcNow) `
             -Finished ([DateTimeOffset]::UtcNow) -Screens 4 -Crashes $case.Crashes -Problems ([string[]]$case.Verdict.Problems)
         $path = Join-Path $scratch 'walk-receipt.json'
         [IO.File]::WriteAllText($path, (ConvertTo-Json -InputObject $receipt -Depth 4))

@@ -42,10 +42,10 @@ import java.io.File
 class PermalinkAdsFixtureTest {
     private val feedAds = "$EXTENSION_PACKAGE/ads/FeedAds;"
     private val useCase = "Lcom/instagram/barcelona/permalink/adsusecase/PermalinkAdsUseCase;"
-    /** The result type each 452 build makes, by version code. */
+    /** The result type each 453 build makes, by version code. */
     private val adResults = mapOf(
-        "512207626" to "LX/6Mi;",
-        "512207629" to "LX/6ON;",
+        "512308675" to "LX/4y1;",
+        "512308695" to "LX/05Cv;",
     )
 
     @Test
@@ -59,11 +59,11 @@ class PermalinkAdsFixtureTest {
             val body = stock.single().instructions()
             val at = stock.single().permalinkAdResult()
 
-            // Read off each 452 build apart from the patch: the loop adds each ad it reads to v4, the
-            // size of what the server sent is read at 108 and 109, and the result is made at 110 and 111.
+            // Read off each 453 build apart from the patch: the loop adds each ad it reads to v6, the
+            // size of what the server sent is read at 115 and 116, and the result is made at 117 and 118.
             val expectedResult = adResults.entries.single { build.name.contains("-${it.key}.") }.value
-            assertEquals(where, 110, at.index)
-            assertEquals(where, 4, at.list)
+            assertEquals(where, 117, at.index)
+            assertEquals(where, 6, at.list)
             assertEquals(where, expectedResult, at.result)
             assertTrue("$where: the loop adds each ad to v${at.list}", body.any {
                 it.opcode == Opcode.INVOKE_VIRTUAL && it.referenceText() == "Ljava/util/AbstractCollection;->add(Ljava/lang/Object;)Z" &&

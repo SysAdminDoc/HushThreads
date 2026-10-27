@@ -160,7 +160,7 @@ class PureBlackFixtureTest {
             val index = constructor.body().indexOfFirst { it.opcode == Opcode.IPUT_WIDE &&
                 it.getReference<FieldReference>()?.name == "A04" }
             val store = constructor.body()[index] as TwoRegisterInstruction
-            constructor.replaceInstruction(index, "iput-wide v${store.registerA}, v${store.registerB}, ${fixture.scheme}->A0O:J")
+            constructor.replaceInstruction(index, "iput-wide v${store.registerA}, v${store.registerB}, ${fixture.scheme}->A0Q:J")
             val error = assertThrows(build.name, PatchException::class.java) { pureBlackPatch.execute(context) }
             assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("copies a known dark background"))
         }
@@ -285,7 +285,7 @@ class PureBlackFixtureTest {
     /** 451's independently traced Bds background, copied into its inherited color palette. */
     private fun Fixture.backgroundReads(name: String? = null) = theme.body().withIndex().filter { (_, instruction) ->
         instruction.opcode == Opcode.IGET_WIDE && instruction.getReference<FieldReference>()?.let {
-            it.definingClass == scheme && it.name in setOf("A04", "A0O") && (name == null || it.name == name)
+            it.definingClass == scheme && it.name in setOf("A04", "A0O", "A0Q") && (name == null || it.name == name)
         } == true
     }.map { it.index }
 

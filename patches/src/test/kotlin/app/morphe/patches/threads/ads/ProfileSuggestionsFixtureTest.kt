@@ -77,8 +77,8 @@ internal object ProfileSuggestionsFixture {
  */
 class ProfileSuggestionsFixtureTest {
     private val carouselOffsets = mapOf(
-        "512207626" to intArrayOf(554, 555, 1021),
-        "512207629" to intArrayOf(550, 551, 1023),
+        "512308675" to intArrayOf(557, 558, 1026),
+        "512308695" to intArrayOf(554, 555, 1021),
     )
 
     @Test
@@ -101,18 +101,18 @@ class ProfileSuggestionsFixtureTest {
             assertTrue(where, targets.screen.note.orEmpty().contains("($PROFILE_SCREEN_FILE:"))
             assertTrue(where, targets.infoRows.note.orEmpty().contains("($PROFILE_INFO_ROWS_FILE:"))
             assertEquals(where, targets.screen.callee.toString(), targets.infoRows.callee.toString())
-            assertTrue(where, targets.calls.any { it.note.orEmpty().endsWith("(DiscoveryContent.kt:357)") })
-            assertTrue(where, targets.calls.any { it.note.orEmpty().endsWith("(ActivityFeedContent.kt:915)") })
+            assertTrue(where, targets.calls.any { it.note.orEmpty().endsWith("(DiscoveryContent.kt:375)") })
+            assertTrue(where, targets.calls.any { it.note.orEmpty().endsWith("(ActivityFeedContent.kt:945)") })
 
             // Read off each 452 build apart from the patch: the profile screen reads the profile's
             // carousel list at the read below, the only read of that field outside its own class,
             // checks it just after, and builds the carousel from the landing below.
-            val offsets = carouselOffsets.entries.single { where.contains("-${it.key}.") }.value
             val carousel = targets.carousel
             val screenStock = classes.original(carousel.method)
             val landing = screenStock.jumpTarget(carousel.guard)
             val row = targets.headerRow
             val rowStock = classes.original(row.method)
+            val offsets = carouselOffsets.entries.single { where.contains("-${it.key}.") }.value
             assertEquals(where, offsets[0], carousel.read)
             assertEquals(where, offsets[1], carousel.guard)
             assertEquals(where, Opcode.IGET_OBJECT, screenStock[carousel.read].opcode)
@@ -124,9 +124,9 @@ class ProfileSuggestionsFixtureTest {
 
             // The view model checks for Threads' suggestions at 213, makes the row from 214 on, and
             // goes to 225 without them. What the check compared, and the hook's register, are dead there.
-            assertEquals(where, 213, row.guard)
-            assertEquals(where, 214, row.start)
-            assertEquals(where, 225, row.away)
+            assertEquals(where, 268, row.guard)
+            assertEquals(where, 269, row.start)
+            assertEquals(where, 280, row.away)
             assertEquals(where, Opcode.IF_NE, rowStock[row.guard].opcode)
             assertEquals(where, row.away, rowStock.jumpTarget(row.guard))
             val live = RegisterLiveness.of(row.method)

@@ -4,6 +4,7 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* **Threads:** HushThreads now patches Threads 453.0.0.56.79 only, for arm64-v8a (version code 512308675) and armeabi-v7a (512308695). Update Threads to 453 before you patch the source build. v0.0.16 is the last release for 452.0.0.50.64. The browser, push, swipe-to-Search, Pure Black, Save media and suggestion patches were retargeted to the new build.
 * **Threads:** HushThreads now also patches the armeabi-v7a build of Threads 452.0.0.50.64 (version code 512207629), not just arm64-v8a. Every patch applies to both, including Save photos and videos, which now finds Copy link's menu close whether the case jumps to the shared run or returns straight away.
 
 ## 0.0.16 (2026-10-23)

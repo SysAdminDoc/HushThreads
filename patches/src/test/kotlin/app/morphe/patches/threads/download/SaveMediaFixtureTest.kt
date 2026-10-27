@@ -347,8 +347,8 @@ class SaveMediaFixtureTest {
         val EXPECTED = mapOf(
             "450.0.0.51.78" to Expected("LX/Slj;", "LX/Slj;->A0G:$MEDIA", "LX/Slj;->A0D:LX/At4;", "LX/At4;->A0u()V"),
             "451.0.0.51.80" to Expected("LX/0Wif;", "LX/0Wif;->A0G:$MEDIA", "LX/0Wif;->A0D:LX/0BUR;", "LX/0BUR;->A0x()V"),
-            "452.0.0.50.64-512207626" to Expected("LX/Lve;", "LX/Lve;->A0G:$MEDIA", "LX/Lve;->A0D:LX/39o;", "LX/39o;->A0x()V"),
-            "452.0.0.50.64-512207629" to Expected("LX/NBh;", "LX/NBh;->A0G:$MEDIA", "LX/NBh;->A0D:LX/52F;", "LX/52F;->A0z()V"),
+            "453.0.0.56.79-512308675" to Expected("LX/WA9;", "LX/WA9;->A0G:$MEDIA", "LX/WA9;->A0D:LX/76t;", "LX/76t;->A1A()V"),
+            "453.0.0.56.79-512308695" to Expected("LX/0XA6;", "LX/0XA6;->A0G:$MEDIA", "LX/0XA6;->A0D:LX/071n;", "LX/071n;->A1B()V"),
         )
     }
 }

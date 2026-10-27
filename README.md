@@ -4,7 +4,7 @@
   <a href="https://github.com/SysAdminDoc/HushThreads"><img src="https://img.shields.io/badge/version-0.0.16-000000" alt="Version 0.0.16"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
-  <img src="https://img.shields.io/badge/Threads-452.0.0.50.64-000000" alt="Threads 452.0.0.50.64">
+  <img src="https://img.shields.io/badge/Threads-453.0.0.56.79-000000" alt="Threads 453.0.0.56.79">
   <img src="https://img.shields.io/badge/for-Morphe%20Manager%202.0.0%2B-8A2BE2" alt="For Morphe Manager 2.0.0 or newer">
 </p>
 
@@ -24,7 +24,7 @@ HushThreads is a Morphe patch bundle for Android that takes the ads out of Threa
 
 Sponsored posts and suggested-account cards leave your feed before Threads shows them. Shared links lose their tracking tags, and a short `/share/` link becomes the post's own link. Web links open in your browser instead of Threads' own, with its click tracker skipped. You can also save photos and videos, keep your place in the feed, stop autoplay and make dark mode pure black.
 
-The latest release is [v0.0.16](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.16), with 20 patches. What changed in each version is in the [changelog](CHANGELOG.md).
+The latest release is [v0.0.16](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.16), with 20 patches. The source build now targets Threads 453.0.0.56.79; that support ships in the next release, while v0.0.16 still patches Threads 452.0.0.50.64. What changed in each version is in the [changelog](CHANGELOG.md).
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
@@ -32,26 +32,26 @@ The latest release is [v0.0.16](https://github.com/SysAdminDoc/HushThreads/relea
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 2.0.0 or newer.
 2. Add HushThreads as a patch source: https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads
-3. Get Threads 452.0.0.50.64 (`com.instagram.barcelona`) for arm64-v8a (version code 512207626) or armeabi-v7a (512207629), both 480dpi and Android 9+. If you're on an older Threads, update it to 452 before you patch.
+3. Get Threads 453.0.0.56.79 (`com.instagram.barcelona`) for arm64-v8a (version code 512308675, 160-480dpi) or armeabi-v7a (512308695, 480dpi), both Android 9+. If you're installing the v0.0.16 release instead, get Threads 452.0.0.50.64 for arm64-v8a (512207626) or armeabi-v7a (512207629). If you're on an older Threads, update it to 453 before you patch the source build.
 4. Uninstall the stock Threads. A patched Threads can't install over Meta's signed copy.
 5. In Morphe Manager, pick that file and patch. The default selection has every patch except the three the [Patches](#patches) section names, so you don't need Expert mode.
 
 To add one of those three, turn on **Settings → Advanced → Expert mode** in Manager before you pick the file. If you saved your own selection in Expert mode before, Manager may keep using it, so look over the list once.
 
-HushThreads patches Threads 452 only. Each release moves to the newest stable Threads and drops the one before, so v0.0.15 is the last release for 451.0.0.51.80. If a patch can't find what it needs in your build, patching stops with a message naming it instead of handing you an app that quietly does nothing.
+HushThreads patches Threads 453 only. Each release moves to the newest stable Threads and drops the one before, so v0.0.15 is the last release for 451.0.0.51.80 and v0.0.16 is the last release for 452.0.0.50.64. If a patch can't find what it needs in your build, patching stops with a message naming it instead of handing you an app that quietly does nothing.
 
 ### Supported Threads build
 
 | Threads version | Version code | Android floor |
 |---|---|---|
-| 452.0.0.50.64 | 512207626 (arm64-v8a, 480dpi) | Android 9 |
-| 452.0.0.50.64 | 512207629 (armeabi-v7a, 480dpi) | Android 9 |
+| 453.0.0.56.79 | 512308675 (arm64-v8a, 160-480dpi) | Android 9 |
+| 453.0.0.56.79 | 512308695 (armeabi-v7a, 480dpi) | Android 9 |
 
 Release checks run on these stock bundles:
 
 ```text
-21575cde2a455267838009e4885bc907a0c6ed2801485f657f453951df3f4bc1  threads-452.0.0.50.64-512207626.apkm
-688e6ba544e88bf7f1fe50fb892831b733e7ba4654d177f7be328b6d05f8a346  threads-452.0.0.50.64-512207629.apkm
+3975362986715ed3427daa4523caf9f9903dced230ed20b888fd944410a3aecf  threads-453.0.0.56.79-512308675.apkm
+42c7c997674a55ff728450d02e01f9b97c3710f4127e41998419af167b953018  threads-453.0.0.56.79-512308695.apkm
 ```
 
 A copy from another site may be packed differently and have another hash. The version code is what has to match.
