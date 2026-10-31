@@ -67,7 +67,7 @@ class ShareTilesFixtureTest {
                 assertEquals("${build.name}: the context", launch.registerD, call.registerD)
                 assertEquals("${build.name}: the intent", launch.registerE, call.registerE)
                 assertFalse("${build.name}: the answer took the context or intent", answer == launch.registerD || answer == launch.registerE)
-                assertEquals("${build.name}: the code after it", stock[stockAt + 1].opcode, body[at + 3].opcode)
+                assertEquals("${build.name}: the code after it", stock[stockAt + 1].kind(), body[at + 3].kind())
             }
         }
     }
@@ -157,6 +157,9 @@ class ShareTilesFixtureTest {
         return called.returnType == "Z" && called.definingClass.startsWith("LX/") &&
             called.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;", "Landroid/content/Intent;")
     }
+
+    /** A goto widens when the code it jumps over grows, and is still the same goto. */
+    private fun Instruction.kind(): Opcode = if (opcode == Opcode.GOTO_16 || opcode == Opcode.GOTO_32) Opcode.GOTO else opcode
 
     private fun Instruction.string(): String? = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
 
