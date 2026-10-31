@@ -1971,6 +1971,8 @@ public class DexDiff {
     private static final Map<String, List<String>> POST_FIELDS = new HashMap<>();
     private static final String ENDPOINT = "Lapp/morphe/extension/hushthreads/misc/Analytics;->endpoint(Ljava/lang/String;)Ljava/lang/String;";
     private static final String SIGNERS = "Lapp/morphe/extension/hushthreads/misc/ThreadsSignature;->originalSigners(Landroid/content/pm/PackageInfo;)Ljava/util/List;";
+    private static final String OPEN_REFUSED_TILE = "Lapp/morphe/extension/hushthreads/coexist/ShareTiles;->openRefused(ZLandroid/content/Context;Landroid/content/Intent;)V";
+    private static final String TILE_COMPOSER_EXTRA = "DirectPrivateStoryRecipientFragment.DIRECT_SHOULD_SHOW_MESSAGE_COMPOSER";
     private static final String LOGGING_URL = "https://graph.facebook.com/logging_client_events";
     private static final String RETURN_REFRESH = "Lapp/morphe/extension/hushthreads/feed/ReturnRefresh;->";
     private static final String HOLD_HOT_START = RETURN_REFRESH + "holdHotStart()Z";
@@ -4092,6 +4094,44 @@ public class DexDiff {
                 "null signers do not fall back to the original body");
         featureBody(stock, actual, 9, Map.of(), SIGNERS);
         featureHostCalls(patched, SIGNERS, Map.of(featureSig(stock), 1));
+        featureShareTiles(clean, patched);
+    }
+
+    private static boolean featureIsShareTiles(Method m) {
+        return m.getName().equals("invokeSuspend") && holds(m, "com.facebook.orca", TILE_COMPOSER_EXTRA);
+    }
+
+    /**
+     * Share tiles on a re-signed build: each launch in the tiles' lambda hands the launcher's answer
+     * and the same context and intent to the extension, the answer in a register nothing reads after
+     * it, and nothing else in the lambda changes. Nothing else in Threads calls the extension.
+     */
+    private static void featureShareTiles(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        Method stock = featureTarget(clean, DexDiff::featureIsShareTiles, "share tile launches");
+        FeatureFlow flow = new FeatureFlow(stock);
+        List<Instruction> code = instructions(stock);
+        Map<Integer, FeatureBlock> hooks = new HashMap<>();
+        for (int k = 0; k < code.size(); k++) {
+            if (code.get(k).getOpcode() != Opcode.INVOKE_VIRTUAL) continue;
+            MethodReference called = (MethodReference) ((ReferenceInstruction) code.get(k)).getReference();
+            if (!called.getReturnType().equals("Z") || !called.getDefiningClass().startsWith("LX/")
+                    || !called.getParameterTypes().stream().map(CharSequence::toString).toList().equals(List.of("Landroid/content/Context;", "Landroid/content/Intent;"))) continue;
+            int[] launch = invokeRegisters(code.get(k));
+            int next = k + 1;
+            hooks.put(next, (body, at) -> {
+                requireFeature(at + 1 < body.size() && body.get(at).getOpcode() == Opcode.MOVE_RESULT,
+                        "the share tile launch before original instruction " + next + " drops its answer");
+                int answer = registerA(body.get(at));
+                requireFeature(isStaticInvoke(body.get(at + 1).getOpcode()) && reference(body.get(at + 1)).equals(OPEN_REFUSED_TILE)
+                        && Arrays.equals(invokeRegisters(body.get(at + 1)), new int[]{answer, launch[1], launch[2]}),
+                        "the share tile launch before original instruction " + next + " doesn't hand its answer, context and intent to " + OPEN_REFUSED_TILE);
+                requireFeature(flow.readsFrom(next, answer).isEmpty(), "the share tile hook clobbers v" + answer + ", which is read after it");
+                return 2;
+            });
+        }
+        requireFeature(!hooks.isEmpty(), featureSig(stock) + " has no share tile launch");
+        featureBody(stock, featureMethod(patched, featureSig(stock)), 0, Map.of(), OPEN_REFUSED_TILE, null, hooks);
+        featureHostCalls(patched, OPEN_REFUSED_TILE, Map.of(featureSig(stock), hooks.size()));
     }
 
     /**
@@ -6426,8 +6466,10 @@ public class DexDiff {
                 break;
             case "restoreTrust":
                 featureHostCalls(patched, SIGNERS, Map.of());
+                featureHostCalls(patched, OPEN_REFUSED_TILE, Map.of());
                 featurePreserveTargets(clean, patched, m -> !callSites(instructions(m), "Landroid/content/pm/SigningInfo;->getApkContentsSigners()[Landroid/content/pm/Signature;").isEmpty()
                         && !callSites(instructions(m), "Landroid/content/pm/SigningInfo;->getSigningCertificateHistory()[Landroid/content/pm/Signature;").isEmpty());
+                featurePreserveTargets(clean, patched, DexDiff::featureIsShareTiles);
                 break;
             case "returnRefresh": featureOmittedReturnRefresh(clean, patched); break;
             case "disableVideoAutoplay": featureOmittedVideoAutoplay(clean, patched); break;

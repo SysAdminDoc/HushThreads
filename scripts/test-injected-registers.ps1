@@ -735,6 +735,7 @@ try {
         'browser-missing', 'browser-register', 'browser-bypass', 'browser-clobber',
         'pigeon-missing', 'pigeon-replaced', 'pigeon-bypass',
         'default-missing', 'mqtt-missing', 'trust-missing', 'trust-replaced', 'trust-fallback',
+        'tile-missing', 'tile-swapped', 'tile-answer', 'tile-live',
         'status-missing', 'status-false', 'zero-mask', 'unknown-mask')
     foreach ($fault in $featureFaults) {
         $case = "features-bad-$fault"

@@ -2684,6 +2684,33 @@ public class BadDexFixture {
             new SaveBridgeShape("repostedPost", OBJECT, SHARE_INFO, Opcode.INVOKE_INTERFACE, method(SHARE_INFO, "reposted", FEATURE_MEDIA)),
             new SaveBridgeShape("quotedPost", OBJECT, SHARE_INFO, Opcode.INVOKE_INTERFACE, method(SHARE_INFO, "quoted", FEATURE_MEDIA)));
 
+    private static final String TILE_HOST = "Lfixture/ShareTileLaunch;";
+    private static final ImmutableMethodReference TILE_LAUNCH = method("LX/Launcher;", "A04", "Z", "Landroid/content/Context;", "Landroid/content/Intent;");
+    private static final ImmutableMethodReference OPEN_REFUSED_TILE = method("Lapp/morphe/extension/hushthreads/coexist/ShareTiles;", "openRefused", "V",
+            "Z", "Landroid/content/Context;", "Landroid/content/Intent;");
+
+    /**
+     * Threads' share tiles, shaped like 453's: one lambda that launches the intent it built. Hooked,
+     * the launch's answer goes to the extension with the context and intent. Faults: no hook, the
+     * arguments swapped, another register passed as the answer, and an answer in a register read after.
+     */
+    private static ClassDef shareTileClass(boolean hooked, String fault) {
+        List<Instruction> code = new ArrayList<>(List.of(string(0, "com.facebook.orca"), string(0, "DirectPrivateStoryRecipientFragment.DIRECT_SHOULD_SHOW_MESSAGE_COMPOSER"),
+                new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), new ImmutableInstruction11n(Opcode.CONST_4, 1, 0),
+                new ImmutableInstruction11n(Opcode.CONST_4, 2, 0), new ImmutableInstruction11n(Opcode.CONST_4, 3, 0),
+                virtual(TILE_LAUNCH, 0, 1, 2)));
+        if (hooked && !fault.equals("tile-missing")) {
+            int answer = fault.equals("tile-live") ? 3 : 0;
+            code.add(op(Opcode.MOVE_RESULT, answer));
+            code.add(fault.equals("tile-swapped") ? invoke(OPEN_REFUSED_TILE, answer, 2, 1)
+                    : fault.equals("tile-answer") ? invoke(OPEN_REFUSED_TILE, 1, 1, 2)
+                    : invoke(OPEN_REFUSED_TILE, answer, 1, 2));
+        }
+        // The stock code reads v3 after the launch and rewrites v0 first, so only v3 stays live.
+        code.addAll(List.of(new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 3)));
+        return featureClass(TILE_HOST, OBJECT, List.of(), define(TILE_HOST, "invokeSuspend", OBJECT, false, body(6, code.toArray(new Instruction[0])), OBJECT));
+    }
+
     /** A data class's plain getter for its own field. */
     private static Method plainGetter(String owner, String name, String field, String returns) {
         return define(owner, name, returns, false, body(2, objectField(Opcode.IGET_OBJECT, 0, 1, owner, field, returns), op(Opcode.RETURN_OBJECT, 0)));
@@ -3228,6 +3255,7 @@ public class BadDexFixture {
                 define(SIGNER_HOST, "read", SIGNER_RESULT, false, body(signerSelf + 1, signers.toArray(new Instruction[0])))));
         classes.add(featureClass(SIGNER_RESULT, OBJECT, List.of(), define(SIGNER_RESULT, "<init>", "V", false,
                 body(4, direct(method(OBJECT, "<init>", "V"), 0), op(Opcode.RETURN_VOID)), SHORTCUT_LIST, "Z", "Z")));
+        classes.add(shareTileClass(trust, fault));
         classes.addAll(returnRefreshClasses(patched && selected.contains("returnRefresh"), fault));
         classes.addAll(videoAutoplayClasses(patched && selected.contains("disableVideoAutoplay"), fault));
         classes.addAll(prefetchClasses(patched && selected.contains("disableVideoAutoplay"), patched ? fault : ""));
@@ -3494,7 +3522,8 @@ public class BadDexFixture {
                 "resume-post-link-bypass", "quick-remember-missing", "quick-remember-post", "quick-recall-key", "quick-post-link-bypass",
                 "browser-missing", "browser-register", "browser-bypass", "browser-clobber",
                 "pigeon-missing", "pigeon-replaced", "pigeon-bypass",
-                "default-missing", "mqtt-missing", "trust-missing", "trust-replaced", "trust-fallback", "status-missing", "status-false")) {
+                "default-missing", "mqtt-missing", "trust-missing", "trust-replaced", "trust-fallback",
+                "tile-missing", "tile-swapped", "tile-answer", "tile-live", "status-missing", "status-false")) {
             dexes.put("features-bad-" + fault, featureBuild(true, allFeatures, 7, fault));
         }
         for (String fault : List.of("lead-missing", "lead-url", "lead-double-open", "lead-parameter", "ad-missing", "ad-url", "ad-context", "ad-double-open", "ad-return", "ad-bypass", "ad-live",

@@ -8,6 +8,7 @@ Changes in the source build, then released versions.
 * **Tests:** Corrected the release-description fixtures so conflicting build claims are tested in the current facts, ahead of historical notes.
 * **Threads:** HushThreads now patches Threads 453.0.0.56.79 only, for all eleven APKMirror variants across arm64-v8a, armeabi-v7a, x86_64 and x86. The build is matched by version name, not pinned to one code, so a reupload of the same version works too. Update Threads to 453 before you patch, and use Morphe Manager 2.3.0 or newer. v0.0.16 is the last release for 452.0.0.50.64.
 * **Threads:** Save photos and videos now works on text posts that show a video from somewhere else. When a post has no media of its own, the Save row finds the post it links, quotes or reposts, and saves that post's video or carousel under that post's details. A post's own media still comes first.
+* **Threads:** The share sheet's Messenger tile opens a re-signed Messenger now, same as More > Messenger always did. Threads' launcher only accepts Meta's own signature and the tile ignored the refusal, so nothing happened. Every tile in that sheet falls back the same way. It's part of `Restore screens on re-signed builds`, with no switch.
 * **Tooling:** Fixture tests keep what they work out per build in soft references, with a 3 GB heap, so all eleven variants fit in one run.
 
 ## 0.0.16 (2026-10-23)
