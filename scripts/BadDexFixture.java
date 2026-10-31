@@ -2706,8 +2706,9 @@ public class BadDexFixture {
                     : fault.equals("tile-answer") ? invoke(OPEN_REFUSED_TILE, 1, 1, 2)
                     : invoke(OPEN_REFUSED_TILE, answer, 1, 2));
         }
-        // The stock code reads v3 after the launch and rewrites v0 first, so only v3 stays live.
-        code.addAll(List.of(new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 3)));
+        // The stock code reads v3 after the launch and rewrites v0 first, so only v3 stays live. The
+        // read is a plain move, which an int in v3 still passes, so that fault fails the contract alone.
+        code.addAll(List.of(new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), new ImmutableInstruction12x(Opcode.MOVE, 2, 3), op(Opcode.RETURN_OBJECT, 0)));
         return featureClass(TILE_HOST, OBJECT, List.of(), define(TILE_HOST, "invokeSuspend", OBJECT, false, body(6, code.toArray(new Instruction[0])), OBJECT));
     }
 
