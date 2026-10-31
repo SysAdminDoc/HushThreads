@@ -7148,18 +7148,18 @@ exit 0
     Assert-Throws { Invoke-FlowStage -Stage index -Version 1.2.3 } '*Run -Stage publish first*' '-Stage index ran before the release was published.'
     Assert-True ((Get-FlowSteps @(Read-FlowLog)) -eq 'gh release view') 'A stage refused before build still ran a step.'
 
-    # build wants the folder of Threads fixtures, and one fixture of each declared build in it.
+    # build wants the folder of Threads fixtures, and at least one fixture of each declared build in it.
     $flowStamp = "$(Invoke-FixtureGit -Root $flowRepo -Arguments @('log', '-1', '--format=%ct', 'HEAD') | Select-Object -First 1)".Trim() + '000'
     [IO.File]::WriteAllText($flowHead, $flowPrep)
     New-FlowBundle -Stamp $flowStamp
     $env:HUSHTHREADS_FIXTURE_DIR = Join-Path $releaseFlow 'no-fixtures'
     Assert-Throws { Invoke-FlowStage -Stage build -Version 1.2.3 } '*HUSHTHREADS_FIXTURE_DIR has to name*' 'Build ran with no fixture folder.'
+    $emptyFixtures = Join-Path $releaseFlow 'empty-fixtures'
+    New-Item -ItemType Directory -Force -Path $emptyFixtures | Out-Null
+    $env:HUSHTHREADS_FIXTURE_DIR = $emptyFixtures
+    Assert-Throws { Invoke-FlowStage -Stage build -Version 1.2.3 } '*Expected at least one threads-450.0.0.51.78-* fixture in*' `
+        'Build ran with no fixture of a declared build.'
     $env:HUSHTHREADS_FIXTURE_DIR = $flowFixtures
-    $secondFixture = Join-Path $flowFixtures 'threads-450.0.0.51.78-other.xapk'
-    [IO.File]::WriteAllText($secondFixture, 'fixture')
-    Assert-Throws { Invoke-FlowStage -Stage build -Version 1.2.3 } '*Expected one threads-450.0.0.51.78-* fixture in*' `
-        'Build picked one of two fixtures of the same build.'
-    Remove-Item -LiteralPath $secondFixture -Force
     Assert-True (@(Read-FlowLog).Count -eq 0) 'A refused build still ran a step.'
 
     # A failing step stops build there, before any tag: the tests, a stale patch list, the bundle,
@@ -7185,6 +7185,26 @@ exit 0
     }
     Set-FlowFail ''
     Read-QueueLog | Out-Null
+
+    # Every variant of a build gets its own run and the receipt reads them all. The receipt fails on
+    # purpose, so this run leaves no tag behind for the one below.
+    $secondFixture = Join-Path $flowFixtures 'threads-450.0.0.51.78-x86_64.apkm'
+    [IO.File]::WriteAllText($secondFixture, 'fixture')
+    Set-FlowFail 'receipt'
+    Assert-Throws { Invoke-FlowStage -Stage build -Version 1.2.3 } '*build-release-receipt.ps1 did not pass*' `
+        'Build carried on past a failing receipt on two variants.'
+    $flow = @(Read-FlowLog)
+    Assert-True ((Get-FlowSteps $flow) -eq 'gradle tests | gradle list | gradle bundle | verify | verify | receipt') `
+        "Build did not patch both variants of a build: $($flow -join ' | ')"
+    Assert-True ($flow[3] -like 'verify apk=threads-450.0.0.51.78-arm64.apkm *' -and $flow[4] -like 'verify apk=threads-450.0.0.51.78-x86_64.apkm *') `
+        "Build did not patch each variant by name: $($flow -join ' | ')"
+    Assert-True ($flow[5] -like 'receipt fixtures=threads-450.0.0.51.78-arm64.apkm,threads-450.0.0.51.78-x86_64.apkm applied=*') `
+        "Build's receipt did not read both variants: $($flow[5])"
+    Remove-Item -LiteralPath $secondFixture -Force
+    Set-FlowFail ''
+    Read-QueueLog | Out-Null
+    New-FlowBundle -Stamp $flowStamp
+    Reset-FlowTree
 
     # The release folder starts empty, the tests rerun, the list comes out unchanged, the fixture
     # is patched once in a queue slot and kept, the receipt reads it in a slot, the four assets and
