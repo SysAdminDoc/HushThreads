@@ -3613,7 +3613,7 @@ public class BadDexFixture {
         // out. The branch straight to Copy link's row call is Threads' own, so it has a clean build too.
         for (String fault : List.of("missing", "copy", "capture", "goto", "twice", "duplicate", "other-item", "show-stub", "show-row",
                 "show-composer", "show-role", "show-style", "show-icon", "show-label", "media-field", "media-cast", "activity-field",
-                "activity-cast", "dismiss-cast", "dismiss-field", "dismiss-call", "click", "click-static", "bridge-getter", "bridge-call",
+                "activity-cast", "dismiss-cast", "dismiss-field", "dismiss-call", "click", "click-static", "bridge-getter", "bridge-shared-getter", "bridge-call",
                 "bridge-cast", "bridge-result", "bridge-stub", "bridge-extra", "status-false", "bypass")) {
             dexes.put("features-bad-save-" + fault, featureBuild(true, Set.of("saveMedia"), 0, "save-" + fault));
         }
