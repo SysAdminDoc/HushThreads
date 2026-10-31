@@ -144,6 +144,18 @@ foreach ($screen in $WalkScreens) {
     Assert-WalkContract ([bool]$screen.ExpectId) "The $($screen.Name) screen has no screen id to check it opened."
 }
 
+# A screen still drawing, or a video holding uiautomator off, is no fault until the wait runs out.
+$feedTest = { param($dump) Test-WalkScreenShown -Nodes $dump -Screen $screenByName['Home feed'] }
+$script:walkReads = 0
+$slowDrawing = @(@(), $ownProfile, $feedScreen)
+$drawn = Wait-WalkScreen -Seconds 30 -PauseMilliseconds 1 -Test $feedTest -Read { $slowDrawing[$script:walkReads++] }
+Assert-WalkContract ($drawn.Found -and $script:walkReads -eq 3 -and $drawn.Nodes.Count -eq $feedScreen.Count -and -not $drawn.Unread) "A screen that drew on the third read wasn't found there: $script:walkReads reads."
+$script:walkReads = 0
+$neverThere = Wait-WalkScreen -Seconds 0 -PauseMilliseconds 1 -Test $feedTest -Read { $script:walkReads++; $ownProfile }
+Assert-WalkContract (-not $neverThere.Found -and $script:walkReads -eq 1 -and -not $neverThere.Unread -and $neverThere.Nodes.Count -gt 0) "A screen read without the thing in it didn't answer as read and missing."
+$unreadable = Wait-WalkScreen -Seconds 0 -PauseMilliseconds 1 -Test { throw 'An empty read was tested.' } -Read { }
+Assert-WalkContract (-not $unreadable.Found -and $unreadable.Unread -and $unreadable.Nodes.Count -eq 0) "A screen that couldn't be read didn't answer as unread."
+
 # The way into Threads' settings: each step on its own screen, and nowhere else.
 $profileTab = Find-WalkPathNode -Nodes $feedScreen -Step $WalkSettingsPath[0]
 Assert-WalkContract ($profileTab -and $profileTab.X -eq 938 -and $profileTab.Y -eq 2263) "The Profile tab was found at $($profileTab.X),$($profileTab.Y), not 938,2263."
@@ -152,6 +164,24 @@ Assert-WalkContract ($settingsButton -and $settingsButton.X -eq 1007 -and $setti
 $hushRow = Find-WalkPathNode -Nodes $threadsSettingsNodes -Step $WalkSettingsPath[2]
 Assert-WalkContract ($hushRow -and $hushRow.X -eq 291 -and $hushRow.Y -eq 1967) "The HushThreads row was found at $($hushRow.X),$($hushRow.Y), not 291,1967."
 Assert-WalkContract ($WalkSettingsPath[2].Shows -ceq "Threads' settings") "Finding the HushThreads row doesn't count Threads' settings as reached."
+# A screen too short for the HushThreads row swipes Threads' settings to it, and nothing else gets swiped.
+$hushStep = $WalkSettingsPath[2]
+$shortSettings = @($threadsSettingsNodes | Where-Object Text -cne 'HushThreads')
+$script:walkSwipes = 0
+$scrolled = Wait-WalkStep -Step $hushStep -Seconds 0 -Swipe { $script:walkSwipes++ } -Read { if ($script:walkSwipes -gt 0) { $threadsSettingsNodes } else { $shortSettings } }
+Assert-WalkContract ($scrolled.Found -and $script:walkSwipes -eq 1 -and (Find-WalkPathNode -Nodes $scrolled.Nodes -Step $hushStep)) "The HushThreads row below the fold wasn't found by one swipe: $script:walkSwipes swipes."
+$script:walkSwipes = 0
+$listEnd = Wait-WalkStep -Step $hushStep -Seconds 0 -Swipe { $script:walkSwipes++ } -Read { $shortSettings }
+Assert-WalkContract (-not $listEnd.Found -and -not $listEnd.Unread -and $script:walkSwipes -eq 1) "A list that stopped moving didn't end the swiping as read and missing: $script:walkSwipes swipes."
+$script:walkSwipes = 0
+$offSettings = Wait-WalkStep -Step $hushStep -Seconds 0 -Swipe { $script:walkSwipes++ } -Read { $feedScreen }
+Assert-WalkContract (-not $offSettings.Found -and $script:walkSwipes -eq 0) "The walk swiped a screen that isn't Threads' settings."
+$script:walkSwipes = 0
+$unscrolled = Wait-WalkStep -Step $WalkSettingsPath[1] -Seconds 0 -Swipe { $script:walkSwipes++ } -Read { $theirProfileNodes }
+Assert-WalkContract (-not $unscrolled.Found -and $script:walkSwipes -eq 0) "A step that doesn't scroll swiped its screen."
+$script:walkSwipes = 0
+$unreadSettings = Wait-WalkStep -Step $hushStep -Seconds 0 -Swipe { $script:walkSwipes++ } -Read { }
+Assert-WalkContract (-not $unreadSettings.Found -and $unreadSettings.Unread -and $script:walkSwipes -eq 0) "A screen that couldn't be read didn't answer as unread, or got swiped."
 Assert-WalkContract ($null -eq (Find-WalkPathNode -Nodes $theirProfileNodes -Step $WalkSettingsPath[1])) "The walk would open someone else's profile menu."
 $theirAsSettings = @(ConvertFrom-UiDump -Xml $theirProfile.Replace('content-desc="Profile menu"', 'content-desc="Settings"'))
 Assert-WalkContract ($null -eq (Find-WalkPathNode -Nodes $theirAsSettings -Step $WalkSettingsPath[1])) "The walk would tap a profile's settings button away from the own profile's Edit profile."

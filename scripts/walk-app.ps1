@@ -202,12 +202,14 @@ function Invoke-WalkApp {
         $launched = ($launch.Output -join "`n") -match '(?m)^Status:\s*ok\r?$'
         $alive = Test-WalkAlive
         $front = $alive -and (Test-WalkForeground)
-        $shown = $front -and (Test-WalkScreenShown -Nodes @(Get-WalkDump) -Screen $screen)
+        $seen = if ($front) { Wait-WalkScreen -Read { Get-WalkDump } -Test { param($dump) Test-WalkScreenShown -Nodes $dump -Screen $screen } }
+        $shown = $front -and $seen.Found
         if ($launched -and $front -and $shown) {
             $reached.Add($screen.Name)
             Write-WalkLog "opened $($screen.Name)"
         } else {
-            $faults.Add("$($screen.Name) ($($screen.Link)) didn't open: launched $launched, Threads running $alive, in front $front, showing what it should $shown")
+            $unread = if ($front -and $seen.Unread) { ", and uiautomator couldn't read the screen" } else { '' }
+            $faults.Add("$($screen.Name) ($($screen.Link)) didn't open: launched $launched, Threads running $alive, in front $front, showing what it should $shown$unread")
             Write-WalkLog "$($screen.Name) didn't open"
         }
         if (-not $alive) { break }
@@ -218,38 +220,44 @@ function Invoke-WalkApp {
     if (-not $SkipSettings) {
         [void](Invoke-WalkAdb @('shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', 'barcelona://mainfeed', '-p', $WalkPackage))
         Start-Sleep -Seconds $SettleSeconds
-        $nodes = @(Get-WalkDump)
+        $size = [regex]::Matches(((Invoke-WalkAdb @('shell', 'wm', 'size')).Output -join "`n"), '(\d+)x(\d+)')
+        if ($size.Count -eq 0) { throw "Couldn't read the screen size of $Serial." }
+        $width = [int]$size[$size.Count - 1].Groups[1].Value
+        $height = [int]$size[$size.Count - 1].Groups[2].Value
+        $swipeList = {
+            $x = [int]($width / 2)
+            [void](Invoke-WalkAdb @('shell', 'input', 'swipe', "$x", "$([int]($height * 0.7))", "$x", "$([int]($height * 0.35))", '450'))
+            Start-Sleep -Milliseconds 1200
+        }
         $missing = $null
         foreach ($step in $WalkSettingsPath) {
-            $target = Find-WalkPathNode -Nodes $nodes -Step $step
-            if (-not $target) { $missing = $step.Name; break }
+            $seen = Wait-WalkStep -Step $step -Read { Get-WalkDump } -Swipe $swipeList
+            if (-not $seen.Found) {
+                $missing = if ($seen.Unread) { "uiautomator couldn't read the screen, looking for $($step.Name)," } else { "$($step.Name) wasn't on screen" }
+                break
+            }
             if ($step.Shows) {
                 $reached.Add($step.Shows)
                 Write-WalkLog "opened $($step.Shows)"
             }
-            Invoke-WalkTap -Row $target -OnScreen $nodes
+            Invoke-WalkTap -Row (Find-WalkPathNode -Nodes $seen.Nodes -Step $step) -OnScreen $seen.Nodes
             Start-Sleep -Seconds 3
             Close-WalkKeyboard
-            $nodes = @(Get-WalkDump)
         }
         $openedBy = "the HushThreads row in Threads' settings"
         if ($missing) {
-            $faults.Add("$missing wasn't on screen on the way to the HushThreads settings")
+            $faults.Add("$missing on the way to the HushThreads settings")
             # The pages still get walked, opened by the settings intent instead.
             [void](Invoke-WalkAdb @('shell', 'am', 'start', '-W', '-n', "$WalkPackage/$WalkMainActivity", '--ez', $WalkOpenSettingsExtra, 'true'))
             Start-Sleep -Seconds $SettleSeconds
             Close-WalkKeyboard
-            $nodes = @(Get-WalkDump)
             $openedBy = 'the settings intent'
         }
+        $nodes = (Wait-WalkScreen -Read { Get-WalkDump } -Test { param($dump) (Get-WalkSettingsPage -Nodes $dump -Sections $sections) -ceq 'home' }).Nodes
         if ((Get-WalkSettingsPage -Nodes $nodes -Sections $sections) -ceq 'home') {
             $reached.Add('Settings: home')
             Write-WalkLog 'opened HushThreads settings'
-            $size = [regex]::Matches(((Invoke-WalkAdb @('shell', 'wm', 'size')).Output -join "`n"), '(\d+)x(\d+)')
-            if ($size.Count -eq 0) { throw "Couldn't read the screen size of $Serial." }
-            $width = [int]$size[$size.Count - 1].Groups[1].Value
-            $height = [int]$size[$size.Count - 1].Groups[2].Value
-            $remaining = [Collections.Generic.List[string]]::new([string[]]$sections)
+            $remaining =[Collections.Generic.List[string]]::new([string[]]$sections)
             $swipes = 0
             while ($remaining.Count -gt 0) {
                 if ((Get-WalkSettingsPage -Nodes $nodes -Sections $sections) -cne 'home') {
