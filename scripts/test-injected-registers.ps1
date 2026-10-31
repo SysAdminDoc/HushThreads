@@ -668,20 +668,23 @@ try {
     $logoRules = @(Get-Content -LiteralPath $contracts | Where-Object { $_ -match '^sole-call\s' })
     Assert-True ($logoRules.Count -eq 1 -and $logoRules[0] -like 'sole-call Lapp/morphe/extension/hushthreads/settings/ThreadsLogo;->clickable*') `
         'The logo fixtures must cover exactly the declared logo stand-in rule.'
-    foreach ($fault in @('logo-missing', 'logo-register', 'logo-duplicate', 'logo-stock-left')) {
+    $soLoaderRules = @(Get-Content -LiteralPath $contracts | Where-Object { $_ -match '^start-call\s' })
+    Assert-True ($soLoaderRules.Count -eq 1 -and $soLoaderRules[0] -like 'start-call Lapp/morphe/extension/hushthreads/misc/NativeLibraries;->soLoaderFlags*') `
+        'The SoLoader fixtures must cover exactly the declared SoLoader flags rule.'
+    foreach ($fault in @('logo-missing', 'logo-register', 'logo-duplicate', 'logo-stock-left', 'soloader-missing', 'soloader-late', 'soloader-elsewhere')) {
         $case = "bad-$fault"
         $apk = New-DexApk -Name $case -Entries ([ordered]@{ 'classes.dex' = (Get-Dex $case) })
         $checked = Invoke-DexDiff -Clean $cleanApk -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts
         $findings = Get-Findings $checked
         Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -eq 1 -and
             @($findings.Categories | Where-Object { $_ -cne 'contract' }).Count -eq 0) `
-            "$fault was not rejected solely by the logo call contract."
+            "$fault was not rejected solely by its call contract."
         $structural = Invoke-DexDiff -Clean $cleanApk -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
     # Every rule must have bad builds of its own. The feature fixtures below cover eleven families.
     $otherRules = @(Get-Content -LiteralPath $contracts | ForEach-Object { $_.Trim() } |
-        Where-Object { $_ -and -not $_.StartsWith('#') -and $_ -notmatch '^(no-call|sole-call)\s' })
+        Where-Object { $_ -and -not $_.StartsWith('#') -and $_ -notmatch '^(no-call|sole-call|start-call)\s' })
     Assert-True ((($otherRules | Sort-Object) -join ',') -ceq 'threads-feature disableAnalytics,threads-feature disableVideoAutoplay,threads-feature hideAds,threads-feature hideSuggestedUsers,threads-feature openLinksExternally,threads-feature pureBlack,threads-feature restoreTrust,threads-feature returnRefresh,threads-feature sanitizeSharingLinks,threads-feature saveMedia,threads-feature settingsRow') `
         ("The contract file holds rules this suite builds no bad fixtures for:`n$($otherRules -join "`n")")
 
@@ -744,21 +747,21 @@ try {
         $checked = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name $case -Contracts $contracts -Features $featureCases['features-good']
         $findings = Get-Findings $checked
         Assert-True ($checked.ExitCode -ne 0 -and $findings.Fails.Count -gt 0 -and
-            @($findings.Categories | Where-Object { $_ -cne 'contract' }).Count -eq 0) "$fault was not rejected solely by a semantic contract."
+            @($findings.Categories | Where-Object { $_ -cne 'contract' }).Count -eq 0) "$fault was not rejected solely by a semantic contract: $($findings.Fails -join '; ')"
         $structural = Invoke-DexDiff -Clean $stock -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
-        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
+        Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid: $((Get-Findings $structural).Fails -join '; ')"
     }
     # Direct ad, media and lead/policy handoffs share the cleaner, while the factory and immersive
     # browser retain their stock code. Every corruption below remains structurally valid.
-    $browserDirectFaults = @('lead-missing', 'lead-url', 'lead-double-open', 'lead-parameter', 'ad-missing', 'ad-url', 'ad-context', 'ad-double-open', 'ad-return', 'ad-bypass', 'ad-live',
+    $browserDirectFaults = @('lead-missing', 'lead-url', 'lead-double-open', 'lead-parameter', 'lead-live', 'ad-missing', 'ad-url', 'ad-context', 'ad-double-open', 'ad-return', 'ad-bypass',
         'media-missing', 'media-url', 'media-context', 'media-double-open', 'media-false', 'media-uninitialized', 'media-live', 'media-bypass', 'factory-hook', 'immersive-hook', 'omitted-body')
     # Each scratch fault reaches one part of the liveness check, and the check names the first edge it
     # hits, in the order the locals bound, the hook site, then the completion: the lead one the locals
-    # bound only, the ad one the hook site only, the media one both of the read edges and so the hook
+    # bound only, the other lead one the hook site only, the media one both of the read edges and so the hook
     # site's, which comes first. The completion edge alone takes a stock shape of its own, checked after these.
     $browserScratchFaults = @{
         'lead-parameter' = "past the method's locals"
-        'ad-live' = 'read at the hook site'
+        'lead-live' = 'read at the hook site'
         'media-live' = 'read at the hook site'
     }
     foreach ($fault in $browserDirectFaults) {
@@ -1094,7 +1097,7 @@ try {
         $structural = Invoke-DexDiff -Clean $featureClean -Patched $apk -Allowlist $emptyAllowlist -Name "$case-structural"
         Assert-True ($structural.ExitCode -eq 0 -and (Get-Findings $structural).Fails.Count -eq 0) "$fault was not structurally valid."
     }
-    # 451 uses a field copy into its inherited palette. The original literal-layout controls
+    # Threads copies its dark backgrounds into its inherited palette by field. The original literal-layout controls
     # above stay independent, while these prove both selected and omitted field layouts.
     $fieldPaletteClean = New-DexApk -Name 'features-pure-black-fields-clean' -Entries ([ordered]@{
         'classes.dex' = (Get-Dex 'features-pure-black-fields-clean') })
