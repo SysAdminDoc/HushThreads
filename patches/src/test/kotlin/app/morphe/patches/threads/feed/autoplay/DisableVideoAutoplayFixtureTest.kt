@@ -610,6 +610,7 @@ class DisableVideoAutoplayFixtureTest {
         val FORWARDERS = mapOf(
             "threads-451." to Forwarder(size = 21, play = 18, mask = 15),
             "threads-452." to Forwarder(size = 17, play = 15, mask = 13),
+            "threads-453." to Forwarder(size = 17, play = 15, mask = 13),
         )
 
         /** The bit of PostVideo's default mask that hands its play flag to the default, on 450. */

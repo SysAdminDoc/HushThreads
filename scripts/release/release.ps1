@@ -263,8 +263,10 @@ function Get-RepositorySlug {
 function Get-Sha256([string]$Path) { (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant() }
 
 function Get-ReleaseFixtures {
-    # One fixture per declared build: threads-<version>-* in the fixture folder, the vendor's .xapk
-    # or .apkm, or a merged .apk where there's no bundle. -Fixture names them instead.
+    # Every fixture for a declared version: threads-<version>-* in the fixture folder, the vendor's
+    # .xapk or .apkm, or merged .apk files where there are no bundles. One Threads version can ship
+    # as several architecture and density variants, each with its own code, so all of them are
+    # patched. -Fixture names them instead.
     param([Parameter(Mandatory = $true)]$Target)
     if ($Fixture) {
         return @($Fixture | ForEach-Object {
@@ -277,12 +279,10 @@ function Get-ReleaseFixtures {
             $files = @(Get-ChildItem -LiteralPath $folder -File | Where-Object { $_.Name.StartsWith("threads-$build-") })
             $bundles = @($files | Where-Object { $_.Extension -in '.xapk', '.apkm' })
             $pick = @(if ($bundles.Count -gt 0) { $bundles } else { $files | Where-Object { $_.Extension -eq '.apk' } })
-            if ($pick.Count -ne 1) {
-                throw ("Expected one threads-$build-* fixture in $folder, found $($pick.Count)" +
-                    $(if ($pick.Count -gt 1) { ' (' + (($pick | ForEach-Object Name) -join ', ') + ')' } else { '' }) +
-                    '. Name each build''s fixture with -Fixture.')
+            if ($pick.Count -eq 0) {
+                throw "Expected at least one threads-$build-* fixture in $folder; name them with -Fixture."
             }
-            $pick[0].FullName
+            $pick | Sort-Object Name | ForEach-Object FullName
         })
 }
 

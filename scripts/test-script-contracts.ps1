@@ -107,14 +107,23 @@ foreach ($patch in @($catalog.patches)) {
 # 475019344) as an unforced run of the declared one.
 foreach ($version in @($target.PackageVersions)) {
     $pinned = @($catalog.patches[0].compatibility | Where-Object { $_.packageName -eq 'com.instagram.barcelona' } |
-        ForEach-Object { @($_.targets) } | Where-Object { $_.version -eq $version } |
+        ForEach-Object { @($_.targets) } | Where-Object { $_.version -eq $version -and $null -ne $_.versionCodes } |
         ForEach-Object { $_.versionCodes.PSObject.Properties } | ForEach-Object { [string]$_.Value })
-    Assert-True ($pinned.Count -gt 0 -and (@($target.PackageVersionCodes[$version]) -join ',') -eq (($pinned | Sort-Object -Unique) -join ',')) `
+    Assert-True (((@($target.PackageVersionCodes[$version] | Where-Object { $_ }) | Sort-Object -Unique) -join ',') -eq
+        (($pinned | Sort-Object -Unique) -join ',')) `
         "The version codes the catalog pins to Threads $version were not read: $(@($target.PackageVersionCodes[$version]) -join ', ')"
-    Assert-True (Test-DeclaredBuild -Target $target -VersionName $version -VersionCode $pinned[0]) `
-        "Threads $version at its pinned code $($pinned[0]) was not taken for a declared build."
-    Assert-True (-not (Test-DeclaredBuild -Target $target -VersionName $version -VersionCode "$([long]$pinned[0] - 61)")) `
-        "Another build of Threads $version, version code $([long]$pinned[0] - 61), was taken for the declared one."
+    if ($pinned.Count -gt 0) {
+        Assert-True (Test-DeclaredBuild -Target $target -VersionName $version -VersionCode $pinned[0]) `
+            "Threads $version at its pinned code $($pinned[0]) was not taken for a declared build."
+        Assert-True (-not (Test-DeclaredBuild -Target $target -VersionName $version -VersionCode "$([long]$pinned[0] - 61)")) `
+            "Another build of Threads $version, version code $([long]$pinned[0] - 61), was taken for the declared one."
+    } else {
+        # A version the catalog doesn't pin accepts every APKMirror variant of that version.
+        Assert-True (Test-DeclaredBuild -Target $target -VersionName $version -VersionCode '1') `
+            "Threads $version at an unpinned code was not taken for a declared build."
+        Assert-True (Test-DeclaredBuild -Target $target -VersionName $version -VersionCode '999999999') `
+            "Threads $version at another unpinned code was not taken for a declared build."
+    }
 }
 Assert-True (-not (Test-DeclaredBuild -Target $target -VersionName '1.0.0' -VersionCode '1')) 'An undeclared version was taken for a declared build.'
 

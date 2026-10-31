@@ -15,7 +15,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -30,11 +30,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -52,7 +50,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -67,11 +65,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -89,7 +85,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -104,11 +100,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -126,7 +120,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -141,11 +135,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -163,7 +155,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -178,11 +170,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -200,7 +190,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -215,11 +205,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -237,7 +225,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -252,11 +240,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -274,7 +260,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -289,11 +275,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -311,7 +295,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -326,11 +310,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -348,7 +330,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -363,11 +345,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -385,7 +365,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -400,11 +380,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -422,7 +400,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -437,11 +415,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -459,7 +435,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -474,11 +450,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -496,7 +470,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -511,11 +485,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -534,7 +506,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -549,11 +521,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -572,7 +542,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -587,11 +557,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -609,7 +577,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -624,11 +592,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -646,7 +612,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -661,11 +627,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -683,7 +647,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -698,11 +662,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
@@ -721,7 +683,7 @@
       ],
       "compatiblePackages": {
         "com.instagram.barcelona": [
-          "452.0.0.50.64"
+          "453.0.0.56.79"
         ]
       },
       "compatibility": [
@@ -736,11 +698,9 @@
           ],
           "targets": [
             {
-              "version": "452.0.0.50.64",
+              "version": "453.0.0.56.79",
               "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 512207626
-              }
+              "versionCodes": null
             }
           ]
         }
