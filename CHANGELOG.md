@@ -10,6 +10,7 @@ Changes in the source build, then released versions.
 * **Threads:** Save photos and videos now works on text posts that show a video from somewhere else. When a post has no media of its own, the Save row finds the post it links, quotes or reposts, and saves that post's video or carousel under that post's details. A post's own media still comes first.
 * **Threads:** The share sheet's Messenger tile opens a re-signed Messenger now, same as More > Messenger always did. Threads' launcher only accepts Meta's own signature and the tile ignored the refusal, so nothing happened. Every tile in that sheet falls back the same way. It's part of `Restore screens on re-signed builds`, with no switch.
 * **Tooling:** Fixture tests keep what they work out per build in soft references, with a 3 GB heap, so all eleven variants fit in one run.
+* **Tooling:** A release build patches every variant of the Threads version it declares and stops if it finds none. Before this it picked one of two variants of the same version without saying so.
 
 ## 0.0.16 (2026-10-23)
 
