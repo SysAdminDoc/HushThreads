@@ -58,7 +58,7 @@ internal object AppCompatibilities {
 
     /**
      * Every version code APKMirror shipped for [THREADS_TARGET_VERSION] when it was read
-     * (2026-10-27): four arm64-v8a density variants, two armeabi-v7a, two x86_64 and one x86. The
+     * (2026-10-31): four arm64-v8a density variants, two armeabi-v7a, three x86_64 and two x86. The
      * bundle names the version without pinning a code, so any genuine build of this version
      * patches, including a reupload with a new code.
      */
@@ -66,12 +66,14 @@ internal object AppCompatibilities {
         512308671, // arm64-v8a, 480-640dpi
         512308673, // x86_64, 480dpi
         512308675, // arm64-v8a, 160-480dpi
+        512308676, // x86, 480dpi, Android 8.0+ listing
         512308685, // armeabi-v7a, 480dpi
         512308686, // arm64-v8a, 640dpi
         512308688, // x86_64, 480dpi
         512308695, // armeabi-v7a, 480dpi
         512308696, // arm64-v8a, 120-640dpi
         512308697, // x86, 480dpi
+        512308698, // x86_64, 480dpi, Android 9.0+ listing
     )
 
     /** Threads' own floor on this build, Android 9. */

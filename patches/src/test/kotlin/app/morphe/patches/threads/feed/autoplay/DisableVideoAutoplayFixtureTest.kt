@@ -482,10 +482,9 @@ class DisableVideoAutoplayFixtureTest {
         val parameter = postVideo.playParameter(effect)
         // The default mask is PostVideo's last int on 450.
         val maskParameter = postVideo.parameterTypes.map { it.toString() }.lastIndexOf("I")
-        // Read independently: the shorter overload calls PostVideo once and returns. On 451 its 21
-        // parameters end on four ints and five booleans, the third boolean (18) goes to PostVideo's
-        // fourth and the last int (15) is the same mask. 452's has 17, ending on four ints and three
-        // booleans, so the play flag is its second boolean (15) and the mask its last int (13).
+        // Read independently: the shorter overload calls PostVideo once and returns. 453's has 17
+        // parameters, ending on four ints and three booleans, so the play flag is its second boolean
+        // (15) and the mask its last int (13).
         val shape = FORWARDERS.entries.singleOrNull { build.name.startsWith(it.key) }?.value
         val forwarders = methods.filter { method ->
             method.definingClass == postVideo.definingClass && method.reference() != postVideo.reference() &&
@@ -608,8 +607,6 @@ class DisableVideoAutoplayFixtureTest {
 
         /** The shortened PostVideo forwarder of each build that has one: its parameter count, play flag and mask. */
         val FORWARDERS = mapOf(
-            "threads-451." to Forwarder(size = 21, play = 18, mask = 15),
-            "threads-452." to Forwarder(size = 17, play = 15, mask = 13),
             "threads-453." to Forwarder(size = 17, play = 15, mask = 13),
         )
 

@@ -134,7 +134,9 @@ internal fun BytecodePatchContext.directBrowserSites(launcher: Method): List<Dir
         callers.singleOrNull(pick) ?: refuse("$PATCH: $what is ${callers.count(pick)} of the ${callers.size} callers of Threads' browser Intent")
 
     val launcherHelper = one("the launcher's Intent helper") { it.definingClass == launcher.definingClass }
-    val adBuilder = one("the ad browser's Intent builder") { it !== launcherHelper && it.returnType == INTENT }
+    val adBuilder = one("the ad browser's Intent builder") { method ->
+        method !== launcherHelper && method.returnType == INTENT && !AccessFlags.STATIC.isSet(method.accessFlags)
+    }
     val immersive = one("the immersive browser screen") { method ->
         method !== launcherHelper && method !== adBuilder && method.strings().any { it.startsWith(IMMERSIVE_SCREEN) }
     }
@@ -143,7 +145,8 @@ internal fun BytecodePatchContext.directBrowserSites(launcher: Method): List<Dir
             method.name == "invokeSuspend" && method.strings().any { it == WEB_DESTINATION }
     }
     val lead = one("the lead form helper") { method ->
-        method !== launcherHelper && method !== adBuilder && method !== immersive && method !== media
+        method !== launcherHelper && method !== adBuilder && method !== immersive && method !== media &&
+            method.name == "invoke" && method.returnType == "Ljava/lang/Object;"
     }
     ensure(callers.size == 5, "Threads' browser Intent has ${callers.size} callers, not five")
     ensure(launcherHelper.body().count { it.method()?.sameAs(factory) == true } == 1,
@@ -197,6 +200,8 @@ private fun BytecodePatchContext.adBrowserSite(builder: Method, factory: Method)
         method !== builder && method.returnType == "Z" && method.parameterTypes.firstOrNull()?.toString() == "Landroid/app/Activity;" &&
             method.body().any { it.method()?.sameAs(builder) == true }
     } ?: refuse("the ad browser's opener is gone from ${builder.definingClass}")
+    // Code put in front of a try block's first instruction would land in the block.
+    ensure(opener.implementation!!.tryBlocks.none { it.startCodeAddress == 0 }, "the ad browser's opener starts inside a try block")
     val context = opener.implementation!!.registerCount - opener.parameterTypes.size
     return DirectBrowserSite(mutableClassDefBy(opener.definingClass).methods.single { it.name == opener.name && it.parameterTypes == opener.parameterTypes }, 0, null, context, 0, url, returnsTrue = true)
 }

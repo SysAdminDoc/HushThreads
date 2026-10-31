@@ -82,7 +82,7 @@ class DisableSwipeToSearchFixtureTest {
             val register = (stock.body()[store] as TwoRegisterInstruction).registerA
             val parameter = stock.parameterTypes.indices.single { stock.parameterRegisterNumber(it) == register }
             assertEquals("$where: the flag", "Z", stock.parameterTypes[parameter].toString())
-            // The second of its two booleans, last of its seven parameters, on 452.
+            // The second of its two booleans, last of its seven parameters.
             assertEquals(where, 6, parameter)
 
             val context = context(build)

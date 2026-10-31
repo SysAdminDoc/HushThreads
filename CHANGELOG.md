@@ -6,8 +6,7 @@ Changes in the source build, then released versions.
 
 * **Tooling:** Release walks now bind the installed APK to its original patching inputs and bundle. Publication rechecks its manifest and embedded identity, complete screen coverage and a clean result. A retained install needs its patch receipt, and stale or incomplete receipts are refused.
 * **Tests:** Corrected the release-description fixtures so conflicting build claims are tested in the current facts, ahead of historical notes.
-* **Threads:** HushThreads now patches Threads 453.0.0.56.79 only, for all nine APKMirror variants: arm64-v8a, armeabi-v7a, x86_64 and x86 (version codes 512308671, 512308673, 512308675, 512308685, 512308686, 512308688, 512308695, 512308696 and 512308697). The build is matched by version name, not pinned to one code, so a reupload of the same version works too. Update Threads to 453 before you patch the source build. v0.0.16 is the last release for 452.0.0.50.64. The browser, push, swipe-to-Search, Pure Black, Save media and suggestion patches were retargeted to the new build.
-* **Threads:** HushThreads now also patches the armeabi-v7a build of Threads 452.0.0.50.64 (version code 512207629), not just arm64-v8a. Every patch applies to both, including Save photos and videos, which now finds Copy link's menu close whether the case jumps to the shared run or returns straight away.
+* **Threads:** HushThreads now patches Threads 453.0.0.56.79 only, for all eleven APKMirror variants across arm64-v8a, armeabi-v7a, x86_64 and x86. The build is matched by version name, not pinned to one code, so a reupload of the same version works too. Update Threads to 453 before you patch, and use Morphe Manager 2.3.0 or newer. v0.0.16 is the last release for 452.0.0.50.64.
 
 ## 0.0.16 (2026-10-23)
 

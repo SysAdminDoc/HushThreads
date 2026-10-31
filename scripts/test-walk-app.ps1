@@ -259,7 +259,8 @@ try {
         Where-Object { Test-Path -LiteralPath $_ -PathType Leaf })[0]
     if (-not $androidJar) { throw 'The walk fixture needs an installed Android SDK platform.' }
     $manifestPath = Join-Path $scratch 'AndroidManifest.xml'
-    $vendorCode = [string]$target.PackageVersionCodes[$target.PackageVersion][0]
+    # The catalog names 453 without pinning a code, so a stand-in fills in when no code is pinned.
+    $vendorCode = [string]@(@($target.PackageVersionCodes[$target.PackageVersion]) + '512308675' | Where-Object { $_ })[0]
     [IO.File]::WriteAllText($manifestPath, ('<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="{0}" android:versionName="{1}" android:versionCode="{2}"><application/></manifest>' -f
         $target.PackageName, $target.PackageVersion, $vendorCode))
     & $Aapt2 link -o $outputFile --manifest $manifestPath -I $androidJar
@@ -284,9 +285,9 @@ try {
     $patch = [ordered]@{
         schema = 1; kind = 'hushthreads-patch'; bundleSha256 = $bundleSha; bundlePayloadSha256 = $payload
         input = [ordered]@{ file = $inputFile; sha256 = (Get-FileHash $inputFile).Hash.ToLowerInvariant()
-            package = $target.PackageName; versionName = $target.PackageVersion; versionCode = [string]$target.PackageVersionCodes[$target.PackageVersion][0] }
+            package = $target.PackageName; versionName = $target.PackageVersion; versionCode = $vendorCode }
         apk = [ordered]@{ file = $outputFile; sha256 = (Get-FileHash $outputFile).Hash.ToLowerInvariant()
-            package = $target.PackageName; versionName = $target.PackageVersion; versionCode = [string]$target.PackageVersionCodes[$target.PackageVersion][0] }
+            package = $target.PackageName; versionName = $target.PackageVersion; versionCode = $vendorCode }
         catalog = [ordered]@{ file = $catalogPath; sha256 = (Get-FileHash $catalogPath).Hash.ToLowerInvariant() }
         requestedPatches = @($selected); appliedPatches = @($selected) + $dependencies; options = 'defaults'
     }

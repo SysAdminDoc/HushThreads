@@ -52,14 +52,6 @@ private data class BuildNames(
 )
 
 private val builds = mapOf(
-    "512207626" to BuildNames(
-        web = "LX/1Dc;->A0G:LX/1Dc;",
-        parser = "LX/160;->A04(Ljava/lang/String;)Landroid/net/Uri;",
-    ),
-    "512207629" to BuildNames(
-        web = "LX/1Ch;->A0G:LX/1Ch;",
-        parser = "LX/12X;->A04(Ljava/lang/String;)Landroid/net/Uri;",
-    ),
     "512308671" to BuildNames(
         web = "LX/1t8;->A0G:LX/1t8;",
         parser = "LX/14R;->A04(Ljava/lang/String;)Landroid/net/Uri;",
@@ -71,6 +63,10 @@ private val builds = mapOf(
     "512308675" to BuildNames(
         web = "LX/1t8;->A0G:LX/1t8;",
         parser = "LX/14R;->A04(Ljava/lang/String;)Landroid/net/Uri;",
+    ),
+    "512308676" to BuildNames(
+        web = "LX/01rU;->A0G:LX/01rU;",
+        parser = "LX/0135;->A04(Ljava/lang/String;)Landroid/net/Uri;",
     ),
     "512308685" to BuildNames(
         web = "LX/01q4;->A0G:LX/01q4;",
@@ -95,6 +91,10 @@ private val builds = mapOf(
     "512308697" to BuildNames(
         web = "LX/01rU;->A0G:LX/01rU;",
         parser = "LX/0135;->A04(Ljava/lang/String;)Landroid/net/Uri;",
+    ),
+    "512308698" to BuildNames(
+        web = "LX/1t8;->A0G:LX/1t8;",
+        parser = "LX/14R;->A04(Ljava/lang/String;)Landroid/net/Uri;",
     ),
 )
 
@@ -268,7 +268,7 @@ class DirectBrowserCallersFixtureTest {
                 "media false" to "the media viewer's ending for an ad with no web link no longer sets its state to false",
                 "media context" to "the media viewer's browser gets a context other than the one it captured",
                 "media half" to "a browser value with half a long written over it",
-                "unknown caller" to "the lead form helper is 2 of the 6 callers",
+                "unknown caller" to "Threads' browser Intent has 6 callers, not five",
             )
             for ((fault, expected) in cases) {
                 val context = PatchContexts.of(ExtensionDex.classes() + fixture.classes)
