@@ -241,6 +241,16 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/misc/NativeLibraries.java"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Native library loading: SoLoader's direct read out of the APK stays off once a merge has compressed the libraries. Found by reading the crash on the 32-bit variants and SoLoader's init in 453, with no outside code."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/theme/PureBlack.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/misc/theme/**"
       ],
