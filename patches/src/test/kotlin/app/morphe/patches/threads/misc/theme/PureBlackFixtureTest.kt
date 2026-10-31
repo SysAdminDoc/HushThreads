@@ -8,6 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.PerBuild
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -343,6 +344,6 @@ class PureBlackFixtureTest {
 
     private companion object {
         /** One read of each build serves every test; each test patches its own copy. */
-        val fixtures = mutableMapOf<File, Fixture>()
+        val fixtures = PerBuild<Fixture>()
     }
 }

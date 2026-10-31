@@ -8,6 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.PerBuild
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -310,6 +311,6 @@ class ThreadsSettingsRowFixtureTest {
     private fun List<Instruction>.code() = filter { it.opcode != Opcode.NOP }
 
     private companion object {
-        val fixtures = HashMap<File, Fixture>()
+        val fixtures = PerBuild<Fixture>()
     }
 }

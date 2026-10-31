@@ -8,6 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.PerBuild
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -53,7 +54,7 @@ import org.junit.Test
  * unchanged. Read once per build; each test patches its own copy.
  */
 internal object SearchSuggestionsFixture {
-    private val loaded = mutableMapOf<File, List<ClassDef>>()
+    private val loaded = PerBuild<List<ClassDef>>()
 
     fun classes(build: File): List<ClassDef> = loaded.getOrPut(build) {
         val noted = FixtureDex.classesWhere(build, { true }) { method ->

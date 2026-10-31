@@ -8,6 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.PerBuild
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -614,7 +615,7 @@ class DisableVideoAutoplayFixtureTest {
         const val PLAY_BIT = 0x4000
 
         /** One read of each build serves every test; each test patches its own copy. */
-        val fixtures = mutableMapOf<File, Fixture>()
-        val prefetches = mutableMapOf<File, Prefetch>()
+        val fixtures = PerBuild<Fixture>()
+        val prefetches = PerBuild<Prefetch>()
     }
 }
