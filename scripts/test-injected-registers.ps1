@@ -1246,6 +1246,7 @@ try {
         'click' = 'SaveMediaRow$Click; implements [], not Lkotlin/jvm/functions/Function0;'
         'click-static' = "SaveMediaRow`$Click;'s invoke() isn't a public instance method"
         'bridge-getter' = 'videoVersions(Ljava/lang/Object;)Ljava/util/List; calls invoke-virtual Lcom/instagram/feed/media/Media;->items()Ljava/util/List;, not invoke-virtual Lcom/instagram/feed/media/Media;->videos()Ljava/util/List;'
+        'bridge-shared-getter' = 'repostedPost(Ljava/lang/Object;)Ljava/lang/Object; calls invoke-interface Lfixture/ShareInfo;->quoted()Lcom/instagram/feed/media/Media;, not invoke-interface Lfixture/ShareInfo;->reposted()Lcom/instagram/feed/media/Media;'
         'bridge-call' = 'versionUrl(Ljava/lang/Object;)Ljava/lang/String; calls invoke-virtual Lcom/instagram/api/schemas/VideoVersionIntf;->A00()Ljava/lang/String;, not invoke-interface'
         'bridge-cast' = 'username(Ljava/lang/Object;)Ljava/lang/String; casts its argument to Lcom/instagram/feed/media/Media;, not Lcom/instagram/user/model/User;'
         'bridge-result' = "takenAt(Ljava/lang/Object;)Ljava/lang/Long; doesn't return what Lcom/instagram/feed/media/Media;->takenAt()Ljava/lang/Long; answers"

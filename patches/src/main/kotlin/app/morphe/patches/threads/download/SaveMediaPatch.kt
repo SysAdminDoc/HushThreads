@@ -97,7 +97,8 @@ internal data class SaveRowSite(
 val saveMediaPatch = bytecodePatch(
     name = PATCH,
     description = "Adds Save to a post's menu, below Copy link. It saves the photo or video to your gallery, every " +
-        "page of a carousel too. Good for keeping posts you like. On by default. Turn it off in " +
+        "page of a carousel too, and on a text post it saves the video that post links or quotes. " +
+        "Good for keeping posts you like. On by default. Turn it off in " +
         "HushThreads settings > Downloads.",
     default = true,
 ) {
@@ -111,11 +112,13 @@ val saveMediaPatch = bytecodePatch(
         val site = saveRowSite()
         val writeMediaBridges = mediaBridges(PATCH)
         val writeImageBridges = imageBridges(PATCH)
+        val writeLinkedPostBridges = linkedPostBridges(PATCH)
 
         implementFunction0(SAVE_MEDIA_CLICK, PATCH)
         writeSaveRowStubs(site)
         writeMediaBridges()
         writeImageBridges()
+        writeLinkedPostBridges()
         // Threads may share the row call with other items: 450 jumps to Copy link's from another
         // item's case. So Copy link's own path gets a copy of the call with the hook after it and
         // then goes where the shared call goes, and every other item still draws through the

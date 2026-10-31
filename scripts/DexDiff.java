@@ -6098,7 +6098,8 @@ public class DexDiff {
         int key = field.hashCode();
         List<Method> getters = new ArrayList<>();
         for (Method m : featureSaveClass(classes, type).getMethods()) {
-            if (!m.getParameterTypes().isEmpty() || !m.getReturnType().equals(returns) || AccessFlags.STATIC.isSet(m.getAccessFlags())) continue;
+            if (!m.getParameterTypes().isEmpty() || AccessFlags.STATIC.isSet(m.getAccessFlags())) continue;
+            if (returns == null ? !m.getReturnType().startsWith("L") : !m.getReturnType().equals(returns)) continue;
             if (instructions(m).stream().anyMatch(i -> java.util.Objects.equals(featureSaveConstant(i), key))) getters.add(m);
         }
         requireFeature(getters.size() == 1, "expected one getter on " + type + " answering " + returns + " for " + field + ", found "
@@ -6138,7 +6139,8 @@ public class DexDiff {
             requireFeature(featureDeclares(featureSaveInterface(classes, IMAGE_URL), name, returns), IMAGE_URL + " has no " + name + "()" + returns);
             return IMAGE_URL + "->" + name + "()" + returns;
         };
-        return List.of(
+        List<SaveBridge> bridges = new ArrayList<>(featureLinkedPostBridges(classes));
+        bridges.addAll(List.of(
                 new SaveBridge("videoVersions", MEDIA, Opcode.INVOKE_VIRTUAL, media.apply("video_versions", "Ljava/util/List;")),
                 new SaveBridge("dashManifest", MEDIA, Opcode.INVOKE_VIRTUAL, media.apply("video_dash_manifest", "Ljava/lang/String;")),
                 new SaveBridge("mediaId", MEDIA, Opcode.INVOKE_VIRTUAL, featureSig(ids.get(0))),
@@ -6153,7 +6155,65 @@ public class DexDiff {
                 new SaveBridge("imageCandidates", IMAGE_INFO, Opcode.INVOKE_INTERFACE, featureSaveThrough(classes, IMAGE_INFO, PANDO_IMAGE_INFO, "candidates", "Ljava/util/List;")),
                 new SaveBridge("candidateUrl", IMAGE_URL, Opcode.INVOKE_INTERFACE, kept.apply("getUrl", "Ljava/lang/String;")),
                 new SaveBridge("candidateWidth", IMAGE_URL, Opcode.INVOKE_INTERFACE, kept.apply("getWidth", "I")),
-                new SaveBridge("candidateHeight", IMAGE_URL, Opcode.INVOKE_INTERFACE, kept.apply("getHeight", "I")));
+                new SaveBridge("candidateHeight", IMAGE_URL, Opcode.INVOKE_INTERFACE, kept.apply("getHeight", "I"))));
+        return bridges;
+    }
+
+    private static final List<String> LINKED_POST_KEYS = List.of("linked_inline_media", "share_info", "quoted_attachment_post", "reposted_post", "quoted_post");
+
+    /**
+     * What reads a post with no media of its own through to the post it shows, found as the Save
+     * patch finds it: the text post info by Pando hash, and the rest by the one method writing all
+     * their keys, the fields it reads for them and the interface getters answering those fields.
+     */
+    private static List<SaveBridge> featureLinkedPostBridges(Map<String, List<ClassDef>> classes) {
+        List<Method> writers = new ArrayList<>();
+        for (List<ClassDef> found : classes.values()) for (ClassDef def : found) for (Method m : def.getMethods()) {
+            List<Instruction> body = instructions(m);
+            if (LINKED_POST_KEYS.stream().allMatch(key -> body.stream().filter(i -> featureIsString(i, key)).count() == 1)) writers.add(m);
+        }
+        requireFeature(writers.size() == 1, "expected one method writing " + LINKED_POST_KEYS + ", found " + writers.size());
+        Method writer = writers.get(0);
+        String info = featurePandoGetter(classes, MEDIA, "text_post_app_info", null).getReturnType();
+        Method share = featureLinkedGetter(classes, writer, "share_info", info);
+        java.util.function.BiFunction<String, String, SaveBridge> post = (name, key) -> {
+            String owner = key.equals("linked_inline_media") ? info : share.getReturnType();
+            Method getter = featureLinkedGetter(classes, writer, key, owner);
+            requireFeature(getter.getReturnType().equals(MEDIA), "the getter for " + key + " answers " + getter.getReturnType() + ", not " + MEDIA);
+            return new SaveBridge(name, owner, Opcode.INVOKE_INTERFACE, owner + "->" + getter.getName() + "()" + MEDIA);
+        };
+        return List.of(
+                new SaveBridge("textPostInfo", MEDIA, Opcode.INVOKE_VIRTUAL, featureSig(featurePandoGetter(classes, MEDIA, "text_post_app_info", null))),
+                post.apply("linkedInlineMedia", "linked_inline_media"),
+                new SaveBridge("shareInfo", info, Opcode.INVOKE_INTERFACE, info + "->" + share.getName() + "()" + share.getReturnType()),
+                post.apply("quotedAttachmentPost", "quoted_attachment_post"),
+                post.apply("repostedPost", "reposted_post"),
+                post.apply("quotedPost", "quoted_post"));
+    }
+
+    private static boolean featureIsString(Instruction i, String value) {
+        return (i.getOpcode() == Opcode.CONST_STRING || i.getOpcode() == Opcode.CONST_STRING_JUMBO) && reference(i).equals(value);
+    }
+
+    /** The getter [owner] declares for [key]: the field [writer] loads and tests just before naming it, read back through that field's class. */
+    private static Method featureLinkedGetter(Map<String, List<ClassDef>> classes, Method writer, String key, String owner) {
+        List<Instruction> code = instructions(writer);
+        int named = 0;
+        while (named < code.size() && !featureIsString(code.get(named), key)) named++;
+        requireFeature(named >= 2 && named < code.size() && code.get(named - 2).getOpcode() == Opcode.IGET_OBJECT && code.get(named - 1).getOpcode() == Opcode.IF_EQZ,
+                featureSig(writer) + " doesn't read a field and test it just before writing " + key);
+        FieldReference field = (FieldReference) ((ReferenceInstruction) code.get(named - 2)).getReference();
+        List<Method> getters = new ArrayList<>();
+        for (Method m : featureSaveClass(classes, field.getDefiningClass()).getMethods()) {
+            List<Instruction> body = instructions(m);
+            if (m.getParameterTypes().isEmpty() && body.size() == 2 && body.get(0).getOpcode() == Opcode.IGET_OBJECT && body.get(1).getOpcode() == Opcode.RETURN_OBJECT
+                    && ((FieldReference) ((ReferenceInstruction) body.get(0)).getReference()).getName().equals(field.getName())) getters.add(m);
+        }
+        requireFeature(getters.size() == 1, "expected one getter on " + field.getDefiningClass() + " for " + key + ", found " + getters.size());
+        Method getter = getters.get(0);
+        requireFeature(featureDeclares(featureSaveInterface(classes, owner), getter.getName(), getter.getReturnType()),
+                owner + " doesn't declare " + getter.getName() + ", the getter for " + key);
+        return getter;
     }
 
     /** The extension's stub for the bridge [name], whatever it answers. */

@@ -63,7 +63,8 @@ sole-call Lapp/morphe/extension/hushthreads/settings/ThreadsLogo;->clickable(Lja
 # caller. showRow draws Threads' row from the calls and literals Copy link's is built with, media,
 # activity and dismiss read the menu's fields and close it with Copy link's call, the click is a
 # Function0, and every static InstagramMedia method is a bridge that calls the getter found by its
-# Pando hash or kept name. Left out, the menu and every one of those stubs stay as they shipped;
+# Pando hash, kept name, or for a post's linked and shared posts, by the fields their one serializer
+# reads. Left out, the menu and every one of those stubs stay as they shipped;
 # bundles from before Save had a status are read as leaving it out.
 # The settings row asks once, right before the goto ending the More settings case, on its composer,
 # and showRow calls the Accounts Center row. Copy text on long press comes with it: each override

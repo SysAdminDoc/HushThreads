@@ -2637,6 +2637,11 @@ public class BadDexFixture {
     private static final String PANDO_VIDEO_VERSION = "Lcom/instagram/api/schemas/ImmutablePandoVideoVersion;";
     private static final String IMAGE_INFO = "Lcom/instagram/model/mediasize/ImageInfo;";
     private static final String PANDO_IMAGE_INFO = "Lcom/instagram/model/mediasize/ImmutablePandoImageInfo;";
+    private static final String TEXT_POST_INFO = "Lfixture/TextPostInfo;";
+    private static final String TEXT_POST_DATA = "Lfixture/TextPostData;";
+    private static final String SHARE_INFO = "Lfixture/ShareInfo;";
+    private static final String SHARE_DATA = "Lfixture/ShareData;";
+    private static final String POST_WRITER = "Lfixture/PostWriter;";
     private static final String IMAGE_URL = "Lcom/instagram/common/typedurl/ImageUrl;";
     private static final String INTEGER = "Ljava/lang/Integer;";
     private static final ImmutableMethodReference MENU_ROW = method(MENU_ROWS, "row", "V", MENU_COMPOSER, MENU_MODIFIER, MENU_STYLE, MENU_ICON, "Ljava/lang/String;");
@@ -2671,7 +2676,47 @@ public class BadDexFixture {
             new SaveBridgeShape("imageCandidates", SHORTCUT_LIST, IMAGE_INFO, Opcode.INVOKE_INTERFACE, method(IMAGE_INFO, "A03", SHORTCUT_LIST)),
             new SaveBridgeShape("candidateUrl", "Ljava/lang/String;", IMAGE_URL, Opcode.INVOKE_INTERFACE, method(IMAGE_URL, "getUrl", "Ljava/lang/String;")),
             new SaveBridgeShape("candidateWidth", "I", IMAGE_URL, Opcode.INVOKE_INTERFACE, method(IMAGE_URL, "getWidth", "I")),
-            new SaveBridgeShape("candidateHeight", "I", IMAGE_URL, Opcode.INVOKE_INTERFACE, method(IMAGE_URL, "getHeight", "I")));
+            new SaveBridgeShape("candidateHeight", "I", IMAGE_URL, Opcode.INVOKE_INTERFACE, method(IMAGE_URL, "getHeight", "I")),
+            new SaveBridgeShape("textPostInfo", OBJECT, FEATURE_MEDIA, Opcode.INVOKE_VIRTUAL, method(FEATURE_MEDIA, "textInfo", TEXT_POST_INFO)),
+            new SaveBridgeShape("linkedInlineMedia", OBJECT, TEXT_POST_INFO, Opcode.INVOKE_INTERFACE, method(TEXT_POST_INFO, "linked", FEATURE_MEDIA)),
+            new SaveBridgeShape("shareInfo", OBJECT, TEXT_POST_INFO, Opcode.INVOKE_INTERFACE, method(TEXT_POST_INFO, "share", SHARE_INFO)),
+            new SaveBridgeShape("quotedAttachmentPost", OBJECT, SHARE_INFO, Opcode.INVOKE_INTERFACE, method(SHARE_INFO, "attached", FEATURE_MEDIA)),
+            new SaveBridgeShape("repostedPost", OBJECT, SHARE_INFO, Opcode.INVOKE_INTERFACE, method(SHARE_INFO, "reposted", FEATURE_MEDIA)),
+            new SaveBridgeShape("quotedPost", OBJECT, SHARE_INFO, Opcode.INVOKE_INTERFACE, method(SHARE_INFO, "quoted", FEATURE_MEDIA)));
+
+    /** A data class's plain getter for its own field. */
+    private static Method plainGetter(String owner, String name, String field, String returns) {
+        return define(owner, name, returns, false, body(2, objectField(Opcode.IGET_OBJECT, 0, 1, owner, field, returns), op(Opcode.RETURN_OBJECT, 0)));
+    }
+
+    /** Threads' text post model and the serializer that names its linked posts' keys, under names that aren't the bridges'. */
+    private static List<ClassDef> linkedPostClasses(int publicInterface, int publicFinal) {
+        List<Instruction> writer = new ArrayList<>();
+        for (String[] key : List.of(new String[]{"linked_inline_media", TEXT_POST_DATA, "a", FEATURE_MEDIA}, new String[]{"share_info", TEXT_POST_DATA, "b", SHARE_INFO},
+                new String[]{"quoted_attachment_post", SHARE_DATA, "c", FEATURE_MEDIA}, new String[]{"reposted_post", SHARE_DATA, "d", FEATURE_MEDIA},
+                new String[]{"quoted_post", SHARE_DATA, "e", FEATURE_MEDIA})) {
+            writer.add(objectField(Opcode.IGET_OBJECT, 0, 1, key[1], key[2], key[3]));
+            writer.add(new ImmutableInstruction21t(Opcode.IF_EQZ, 0, 4));
+            writer.add(string(0, key[0]));
+            writer.add(new ImmutableInstruction10x(Opcode.NOP));
+        }
+        writer.add(op(Opcode.RETURN_VOID));
+        return List.of(
+                new ImmutableClassDef(TEXT_POST_INFO, publicInterface, OBJECT, List.of(), null, null, List.of(),
+                        List.of(abstractGetter(TEXT_POST_INFO, "linked", FEATURE_MEDIA), abstractGetter(TEXT_POST_INFO, "share", SHARE_INFO))),
+                new ImmutableClassDef(SHARE_INFO, publicInterface, OBJECT, List.of(), null, null, List.of(),
+                        List.of(abstractGetter(SHARE_INFO, "attached", FEATURE_MEDIA), abstractGetter(SHARE_INFO, "reposted", FEATURE_MEDIA), abstractGetter(SHARE_INFO, "quoted", FEATURE_MEDIA))),
+                new ImmutableClassDef(TEXT_POST_DATA, publicFinal, OBJECT, List.of(TEXT_POST_INFO), null, null,
+                        List.of(new ImmutableField(TEXT_POST_DATA, "a", FEATURE_MEDIA, AccessFlags.PUBLIC.getValue(), null, null, null),
+                                new ImmutableField(TEXT_POST_DATA, "b", SHARE_INFO, AccessFlags.PUBLIC.getValue(), null, null, null)),
+                        List.of(plainGetter(TEXT_POST_DATA, "linked", "a", FEATURE_MEDIA), plainGetter(TEXT_POST_DATA, "share", "b", SHARE_INFO))),
+                new ImmutableClassDef(SHARE_DATA, publicFinal, OBJECT, List.of(SHARE_INFO), null, null,
+                        List.of(new ImmutableField(SHARE_DATA, "c", FEATURE_MEDIA, AccessFlags.PUBLIC.getValue(), null, null, null),
+                                new ImmutableField(SHARE_DATA, "d", FEATURE_MEDIA, AccessFlags.PUBLIC.getValue(), null, null, null),
+                                new ImmutableField(SHARE_DATA, "e", FEATURE_MEDIA, AccessFlags.PUBLIC.getValue(), null, null, null)),
+                        List.of(plainGetter(SHARE_DATA, "attached", "c", FEATURE_MEDIA), plainGetter(SHARE_DATA, "reposted", "d", FEATURE_MEDIA), plainGetter(SHARE_DATA, "quoted", "e", FEATURE_MEDIA))),
+                featureClass(POST_WRITER, OBJECT, List.of(), define(POST_WRITER, "write", "V", true, body(2, writer.toArray(new Instruction[0])), OBJECT)));
+    }
 
     /** An interface's getter, with no body. */
     private static Method abstractGetter(String owner, String name, String returns) {
@@ -2826,6 +2871,7 @@ public class BadDexFixture {
                 List.of(abstractGetter(IMAGE_INFO, "A03", SHORTCUT_LIST))));
         classes.add(new ImmutableClassDef(PANDO_IMAGE_INFO, publicFinal, OBJECT, List.of(IMAGE_INFO), null, null, List.of(),
                 List.of(pandoGetter(PANDO_IMAGE_INFO, "A03", SHORTCUT_LIST, "candidates"))));
+        classes.addAll(linkedPostClasses(publicInterface, publicFinal));
         classes.add(new ImmutableClassDef(IMAGE_URL, publicInterface, OBJECT, List.of(), null, null, List.of(),
                 List.of(abstractGetter(IMAGE_URL, "getUrl", "Ljava/lang/String;"), abstractGetter(IMAGE_URL, "getWidth", "I"),
                         abstractGetter(IMAGE_URL, "getHeight", "I"))));
@@ -2883,7 +2929,9 @@ public class BadDexFixture {
                 String receiver = fault.equals("save-bridge-cast") && bridge.name().equals("username") ? FEATURE_MEDIA : bridge.receiver();
                 Opcode call = fault.equals("save-bridge-call") && bridge.name().equals("versionUrl") ? Opcode.INVOKE_VIRTUAL : bridge.call();
                 ImmutableMethodReference getter = fault.equals("save-bridge-getter") && bridge.name().equals("videoVersions")
-                        ? method(FEATURE_MEDIA, "items", SHORTCUT_LIST) : bridge.getter();
+                        ? method(FEATURE_MEDIA, "items", SHORTCUT_LIST)
+                        : fault.equals("save-bridge-shared-getter") && bridge.name().equals("repostedPost")
+                        ? method(SHARE_INFO, "quoted", FEATURE_MEDIA) : bridge.getter();
                 code.add(type(Opcode.CHECK_CAST, 0, receiver));
                 code.add(new ImmutableInstruction35c(call, 1, 0, 0, 0, 0, 0, getter));
                 code.add(fault.equals("save-bridge-result") && bridge.name().equals("takenAt") ? none
@@ -3006,6 +3054,7 @@ public class BadDexFixture {
                 pandoGetter(FEATURE_MEDIA, "takenAt", "Ljava/lang/Long;", "taken_at"),
                 pandoGetter(FEATURE_MEDIA, "items", SHORTCUT_LIST, "carousel_media"),
                 pandoGetter(FEATURE_MEDIA, "images", IMAGE_INFO, "image_versions2"),
+                pandoGetter(FEATURE_MEDIA, "textInfo", TEXT_POST_INFO, "text_post_app_info"),
                 define(FEATURE_MEDIA, "getId", "Ljava/lang/String;", false, body(2, new ImmutableInstruction11n(Opcode.CONST_4, 0, 0), op(Opcode.RETURN_OBJECT, 0)))));
 
         List<Instruction> parser = new ArrayList<>(List.of(string(2, "permalink"), string(0, "XDTPermalinkResponse"),
