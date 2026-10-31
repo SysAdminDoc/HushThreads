@@ -111,11 +111,11 @@ internal fun MutableMethod.openRefusedShareTiles() {
     }
 }
 
-/** A launcher call: an instance method with Threads' own name for it, taking a context and an intent and answering whether it started anything. */
+/** A launcher call: an instance method taking a context and an intent and answering whether it started anything. */
 private fun Instruction.isTileLaunch(): Boolean {
     if (opcode != Opcode.INVOKE_VIRTUAL) return false
     val called = (this as ReferenceInstruction).reference as MethodReference
-    return called.returnType == "Z" && called.definingClass.startsWith("LX/") &&
+    return called.returnType == "Z" &&
         called.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;", "Landroid/content/Intent;")
 }
 

@@ -1,3 +1,7 @@
+/*
+ * Copyright 2026 HushThreads contributors
+ * https://github.com/SysAdminDoc/HushThreads
+ */
 package app.morphe.extension.hushthreads.coexist;
 
 import android.app.Activity;
