@@ -24,7 +24,7 @@ HushThreads is a Morphe patch bundle for Android that takes the ads out of Threa
 
 Sponsored posts and suggested-account cards leave your feed before Threads shows them. Shared links lose their tracking tags, and a short `/share/` link becomes the post's own link. Web links open in your browser instead of Threads' own, with its click tracker skipped. You can also save photos and videos, keep your place in the feed, stop autoplay and make dark mode pure black.
 
-The latest release is [v0.0.16](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.16), with 20 patches, and it patches Threads 452.0.0.50.64. The source build has moved to Threads 453.0.0.56.79, which ships in the next release. What changed in each version is in the [changelog](CHANGELOG.md).
+The latest release is [v0.0.16](https://github.com/SysAdminDoc/HushThreads/releases/tag/v0.0.16), with 20 patches. It's for Threads 452.0.0.50.64. The source build has moved to Threads 453.0.0.56.79, which ships in the next release. What changed in each version is in the [changelog](CHANGELOG.md).
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
