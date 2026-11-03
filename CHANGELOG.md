@@ -13,7 +13,7 @@ Changes in the source build, then released versions.
 * **Threads:** Patched 32-bit Threads starts normally on the ARMv7 and x86 variants whose manifest asks for extracted native libraries. Merging the bundle compresses those libraries, and Threads tried to read them straight out of the APK. It loads them from the folder Android unpacked them to now.
 * **Tooling:** Fixture tests keep what they work out per build in soft references, with a 3 GB heap, so every variant fits in one run.
 * **Tooling:** The whole-app walk waits for each screen and scrolls to the row it wants, so a slow phone no longer reads as a failed walk.
-* **Tooling:** The signed-app contracts find their sites by strings and shape instead of naming one build's classes, since a release checks every variant. They'd fallen behind on the move off 452 and caught up here.
+* **Tooling:** The signed-app contracts find their sites by strings and shape instead of naming one build's classes, since a release checks every variant. They'd fallen behind on the move off 452 and again on 454, and caught up both times. On 454 they follow the feed merge's extra parameter, analytics sites that Threads now jumps onto, share tiles spread over several lambdas, and videos that reach the player through a helper holding autoplay off.
 * **Tooling:** A release build patches every variant of the Threads version it declares and stops if it finds none. Before this it picked one of two variants of the same version without saying so.
 
 ## 0.0.16 (2026-10-23)
