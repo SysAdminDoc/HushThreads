@@ -207,33 +207,53 @@ class SanitizeSharingLinksFixtureTest {
                     val self = stock.implementation!!.registerCount - 1 -
                         stock.parameterTypes.sumOf { if (it.toString() == "J" || it.toString() == "D") 2 else 1 }
                     val reads = stock.reads()
-                    assertEquals("$where $type: fourteen instructions after each read", stock.instructions().size + 14 * reads.size, patched.size)
+                    fun linkAt(read: Int) = (stock.instructions()[read + 1] as OneRegisterInstruction).registerA
+                    fun hookSize(read: Int) = if (linkAt(read) > 15) 16 else 14
+                    assertEquals("$where $type: the hook after each read", stock.instructions().size + reads.sumOf(::hookSize), patched.size)
+                    var at = 0
                     for ((n, read) in reads.withIndex()) {
-                        val at = read + 2 + 14 * n
-                        val link = (stock.instructions()[read + 1] as OneRegisterInstruction).registerA
-                        val block = patched.subList(at, at + 14)
+                        at = read + 2 + reads.take(n).sumOf(::hookSize)
+                        val link = linkAt(read)
+                        val copy = if (link > 15) 1 else 0
+                        val block = patched.subList(at, at + hookSize(read))
                         assertEquals("$where $type: hook shape after read $read",
-                            listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.IGET_OBJECT, Opcode.CONST_4, Opcode.CONST_4, Opcode.IF_EQZ,
-                                Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT,
-                                Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT),
+                            listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.IGET_OBJECT) +
+                                (if (copy == 1) listOf(Opcode.MOVE_OBJECT_FROM16) else emptyList()) +
+                                listOf(Opcode.CONST_4, Opcode.CONST_4, Opcode.IF_EQZ,
+                                    Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT,
+                                    Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_STATIC,
+                                    Opcode.MOVE_RESULT_OBJECT) +
+                                (if (copy == 1) listOf(Opcode.MOVE_OBJECT_FROM16) else emptyList()),
                             block.map { it.opcode })
+                        // A link above v15 is copied to a low scratch for the call and copied back after it.
+                        val low = if (copy == 1) (block[2] as TwoRegisterInstruction).registerA else link
+                        if (copy == 1) {
+                            assertEquals("$where $type: the link goes through a scratch", listOf(low, link),
+                                listOf((block[2] as TwoRegisterInstruction).registerA, (block[2] as TwoRegisterInstruction).registerB))
+                        }
                         val media = (block[0] as TwoRegisterInstruction).registerA
                         assertEquals("$where $type: the post comes from this", self, (block[0] as TwoRegisterInstruction).registerB)
                         val load = block[1] as TwoRegisterInstruction
                         assertEquals("$where $type: out of the holder's one post field", listOf(media, media, "$type->${post.name}:$MEDIA"),
                             listOf(load.registerA, load.registerB, block[1].field().toString()))
-                        val code = (block[2] as OneRegisterInstruction).registerA
-                        val name = (block[3] as OneRegisterInstruction).registerA
-                        assertTrue("$where $type: three scratch registers apart from the link", setOf(media, code, name, link).size == 4)
+                        val code = (block[2 + copy] as OneRegisterInstruction).registerA
+                        val name = (block[3 + copy] as OneRegisterInstruction).registerA
+                        assertTrue("$where $type: scratch registers apart from the link",
+                            setOf(media, code, name, low, link).size == if (copy == 1) 5 else 4)
                         val live = RegisterLiveness.of(stock).liveInto(read + 2)
-                        assertTrue("$where $type: nothing reads the scratch registers after read $read", listOf(media, code, name).none { it in live })
-                        assertEquals("$where $type: a missing post skips to the call", at + 12, patched.target(at + 4))
-                        assertEquals(media, (block[5] as FiveRegisterInstruction).registerC)
-                        assertEquals(media, (block[7] as FiveRegisterInstruction).registerC)
-                        assertEquals("$where $type: no author skips to the call", at + 12, patched.target(at + 9))
-                        assertEquals(POST_LINK, block[12].method().toString())
-                        assertEquals(listOf(link, name, code), (block[12] as FiveRegisterInstruction).let { listOf(it.registerC, it.registerD, it.registerE) })
-                        assertEquals("$where $type: the post's own link replaces the read one", link, (block[13] as OneRegisterInstruction).registerA)
+                        assertTrue("$where $type: nothing reads the scratch registers after read $read",
+                            listOf(media, code, name).none { it in live } && (copy == 0 || low !in live))
+                        assertEquals("$where $type: a missing post skips to the call", at + copy + 12, patched.target(at + copy + 4))
+                        assertEquals(media, (block[5 + copy] as FiveRegisterInstruction).registerC)
+                        assertEquals(media, (block[7 + copy] as FiveRegisterInstruction).registerC)
+                        assertEquals("$where $type: no author skips to the call", at + copy + 12, patched.target(at + copy + 9))
+                        assertEquals(POST_LINK, block[12 + copy].method().toString())
+                        assertEquals(listOf(low, name, code), (block[12 + copy] as FiveRegisterInstruction).let { listOf(it.registerC, it.registerD, it.registerE) })
+                        assertEquals("$where $type: the post's own link replaces the read one", low, (block[13 + copy] as OneRegisterInstruction).registerA)
+                        if (copy == 1) {
+                            assertEquals("$where $type: and comes back to the read's register", listOf(link, low),
+                                listOf((block[14 + copy] as TwoRegisterInstruction).registerA, (block[14 + copy] as TwoRegisterInstruction).registerB))
+                        }
                     }
                     assertEquals("$where $type: one call per read", reads.size, patched.count { it.method()?.toString() == POST_LINK })
                 }

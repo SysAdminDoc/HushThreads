@@ -85,10 +85,10 @@ class CopyTextFixtureTest {
                 assertTrue(where, override.free != override.register)
             }
             assertEquals(where, 1, overrides.map { it.action.toString() }.distinct().size)
-            // The selection flag is PostText's thirteenth boolean, copied once and then tested: 65 on 451,
-            // and 68 on 452, which adds two lambdas and an int ahead of the booleans and one boolean after it.
+            // The selection flag is PostText's fourteenth boolean, copied once and then tested: 65 on 451,
+            // 68 on 452, and one more boolean ahead of it on 454.
             val booleans = flag.method.parameterTypes.indices.filter { flag.method.parameterTypes[it].toString() == "Z" }
-            assertEquals(where, booleans[12], flag.parameter)
+            assertEquals(where, booleans[13], flag.parameter)
             assertEquals(where, "Z", flag.method.parameterTypes[flag.parameter].toString())
             assertEquals(where, Opcode.IF_EQZ, textStock[flag.check].opcode)
             val noteAt = textStock.indexOfFirst { it.getReference<StringReference>()?.string?.startsWith(SELECTION_NOTE) == true }

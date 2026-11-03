@@ -26,7 +26,9 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
@@ -67,8 +69,8 @@ class DisableVideoAutoplayFixtureTest {
             val effectTypes = fixture.effect.parameterTypes.map { it.toString() }
             assertEquals(build.name, effectTypes.indexOf("Z"), fixture.effect.requirePlaybackEffect())
             val types = fixture.postVideo.parameterTypes.map { it.toString() }
-            // 450 dropped a boolean ahead of the play flag, so it's the fourth there.
-            assertEquals(build.name, types.indices.filter { types[it] == "Z" }[3], fixture.postVideo.playParameter(fixture.effect))
+            // 454 dropped another boolean ahead of the play flag, so it's the fifth there.
+            assertEquals(build.name, types.indices.filter { types[it] == "Z" }[4], fixture.postVideo.playParameter(fixture.effect))
             assertTrue(build.name, fixture.sites.any { it.method.holdsNote(POST_SINGLE_MEDIA) })
             assertTrue(build.name, fixture.sites.any { it.method.holdsNote(POST_CAROUSEL) })
             // The viewer reaches PostVideo another way, and holds neither note.
@@ -134,31 +136,64 @@ class DisableVideoAutoplayFixtureTest {
             val label = "${build.name} ${method.definingClass}"
             val before = method.body()
             val after = context.method(method)
-            // Two instructions go in front of a call, four in front of a defaulted one.
-            fun added(site: Site) = if (site.defaulted) 4 else 2
+            // Two instructions go in front of a call, four in front of a defaulted one, and six
+            // in front of a mask-only forwarder, which clears the mask's default bit when holding.
+            fun added(site: Site) = when {
+                site.maskOnly -> 6
+                site.defaulted -> 4
+                else -> 2
+            }
             // Where an instruction of the original lands once those are put in front of each call.
             fun moved(index: Int) = index + inMethod.filter { it.call < index }.sumOf(::added)
             assertEquals(label, before.size + inMethod.sumOf(::added), after.size)
             for (site in inMethod) {
                 assertEquals(label, emptyList<Int>(), method.readsAfter(site.call, site.register))
                 var at = moved(site.call)
-                if (site.defaulted) {
-                    assertEquals(label, emptyList<Int>(), method.readsAfter(site.call, site.maskRegister))
-                    assertEquals(label, Opcode.CONST, after[at].opcode)
-                    assertEquals(label, site.maskRegister, (after[at] as OneRegisterInstruction).registerA)
-                    assertEquals(label, site.mask and PLAY_BIT.inv(), (after[at] as NarrowLiteralInstruction).narrowLiteral)
-                    assertEquals(label, Opcode.CONST_16, after[at + 1].opcode)
+                if (site.maskOnly) {
+                    // The answer seeds PostVideo's own default, true, and play's answer turns it into
+                    // 0 when it plays and the flag's bit when it holds, which comes off the mask.
+                    val answer = (after[at] as OneRegisterInstruction).registerA
+                    assertEquals(label, Opcode.CONST_4, after[at].opcode)
+                    assertEquals(label, 1, (after[at] as NarrowLiteralInstruction).narrowLiteral)
+                    val hook = after[at + 1] as FiveRegisterInstruction
+                    assertEquals(label, play, (hook as ReferenceInstruction).reference.toString())
+                    assertEquals(label, listOf(answer), listOf(hook.registerC))
+                    assertEquals(label, 1, hook.registerCount)
+                    assertEquals(label, Opcode.MOVE_RESULT, after[at + 2].opcode)
+                    assertEquals(label, answer, (after[at + 2] as OneRegisterInstruction).registerA)
+                    val invert = after[at + 3] as TwoRegisterInstruction
+                    assertEquals(label, Opcode.XOR_INT_LIT8, invert.opcode)
+                    assertEquals(label, listOf(answer, answer), listOf(invert.registerA, invert.registerB))
+                    assertEquals(label, 1, (invert as NarrowLiteralInstruction).narrowLiteral)
+                    val shift = after[at + 4] as TwoRegisterInstruction
+                    assertEquals(label, Opcode.SHL_INT_LIT8, shift.opcode)
+                    assertEquals(label, listOf(answer, answer), listOf(shift.registerA, shift.registerB))
+                    assertEquals(label, PLAY_BIT.countTrailingZeroBits(), (shift as NarrowLiteralInstruction).narrowLiteral)
+                    val clear = after[at + 5] as ThreeRegisterInstruction
+                    assertEquals(label, Opcode.SUB_INT, clear.opcode)
+                    assertEquals(label, listOf(site.register, site.register, answer),
+                        listOf(clear.registerA, clear.registerB, clear.registerC))
+                    at += 6
+                } else {
+                    if (site.defaulted) {
+                        assertEquals(label, emptyList<Int>(), method.readsAfter(site.call, site.maskRegister))
+                        assertEquals(label, Opcode.CONST, after[at].opcode)
+                        assertEquals(label, site.maskRegister, (after[at] as OneRegisterInstruction).registerA)
+                        assertEquals(label, site.mask and PLAY_BIT.inv(), (after[at] as NarrowLiteralInstruction).narrowLiteral)
+                        assertEquals(label, Opcode.CONST_16, after[at + 1].opcode)
+                        assertEquals(label, site.register, (after[at + 1] as OneRegisterInstruction).registerA)
+                        assertEquals(label, 1, (after[at + 1] as NarrowLiteralInstruction).narrowLiteral)
+                        at += 2
+                    }
+                    val hook = after[at] as RegisterRangeInstruction
+                    assertEquals(label, play, (hook as ReferenceInstruction).reference.toString())
+                    assertEquals(label, site.register, hook.startRegister)
+                    assertEquals(label, 1, hook.registerCount)
+                    assertEquals(label, Opcode.MOVE_RESULT, after[at + 1].opcode)
                     assertEquals(label, site.register, (after[at + 1] as OneRegisterInstruction).registerA)
-                    assertEquals(label, 1, (after[at + 1] as NarrowLiteralInstruction).narrowLiteral)
                     at += 2
                 }
-                val hook = after[at] as RegisterRangeInstruction
-                assertEquals(label, play, (hook as ReferenceInstruction).reference.toString())
-                assertEquals(label, site.register, hook.startRegister)
-                assertEquals(label, 1, hook.registerCount)
-                assertEquals(label, Opcode.MOVE_RESULT, after[at + 1].opcode)
-                assertEquals(label, site.register, (after[at + 1] as OneRegisterInstruction).registerA)
-                val call = after[at + 2]
+                val call = after[at]
                 assertEquals(label, before[site.call].reference(), call.reference())
                 assertEquals(label, site.register, call.argumentRegister(site.target.argumentOffset(site.parameter)))
                 assertEquals(label, site.maskRegister, call.argumentRegister(site.target.argumentOffset(site.maskParameter)))
@@ -311,7 +346,8 @@ class DisableVideoAutoplayFixtureTest {
                 val context = context(fixture)
                 context.mutableMethod(forwarder).replaceInstruction(write, "const/16 v$register, 0x1")
                 val error = assertThrows(build.name, PatchException::class.java) { disableVideoAutoplayPatch.execute(context) }
-                assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("doesn't forward PostVideo's"))
+                assertTrue(error.message.orEmpty(),
+                    error.message.orEmpty().contains("PostVideo's Z argument") || error.message.orEmpty().contains("doesn't forward PostVideo's"))
                 assertEquals(build.name, 0, status(context))
                 for (site in fixture.sites + fixture.embeds) {
                     assertFalse(build.name, context.method(site.method).any { it.reference() == play })
@@ -327,10 +363,11 @@ class DisableVideoAutoplayFixtureTest {
             val context = context(fixture)
             val method = context.mutableMethod(fixture.postVideo)
             val at = method.body().indices.single {
-                method.body()[it].opcode == Opcode.AND_INT_LIT16 && (method.body()[it] as NarrowLiteralInstruction).narrowLiteral == PLAY_BIT
+                (method.body()[it] as? NarrowLiteralInstruction)?.narrowLiteral == PLAY_BIT &&
+                    method.body()[it].opcode in setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opcode.CONST_HIGH16)
             }
-            val and = method.body()[at] as TwoRegisterInstruction
-            method.replaceInstruction(at, "and-int/lit16 v${and.registerA}, v${and.registerB}, ${PLAY_BIT or (PLAY_BIT shr 1)}")
+            val register = (method.body()[at] as OneRegisterInstruction).registerA
+            method.replaceInstruction(at, "const/16 v$register, ${PLAY_BIT or (PLAY_BIT shr 1)}")
             val error = assertThrows(build.name, PatchException::class.java) { disableVideoAutoplayPatch.execute(context) }
             assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("isn't behind one bit"))
         }
@@ -454,7 +491,7 @@ class DisableVideoAutoplayFixtureTest {
      * the constant [mask], in [maskRegister].
      */
     private data class Site(val method: Method, val call: Int, val register: Int, val parameter: Int,
-        val maskRegister: Int, val mask: Int, val target: Method, val maskParameter: Int) {
+        val maskRegister: Int, val mask: Int, val target: Method, val maskParameter: Int, val maskOnly: Boolean = false) {
         /** Whether the caller leaves the play flag to PostVideo's default. */
         val defaulted get() = mask and PLAY_BIT != 0
     }
@@ -471,8 +508,8 @@ class DisableVideoAutoplayFixtureTest {
         val prefetch: Prefetch,
     )
 
-    /** A forwarder's parameter count, the parameter carrying PostVideo's play flag, and its mask, the last int. */
-    private data class Forwarder(val size: Int, val play: Int, val mask: Int)
+    /** A forwarder's parameter count, the parameter carrying PostVideo's play flag, its mask, and whether it leaves the flag at false and forwards only the mask. */
+    private data class Forwarder(val size: Int, val play: Int, val mask: Int, val maskOnly: Boolean = false)
 
     private fun fixture(build: File): Fixture = fixtures.getOrPut(build) {
         val notes = listOf(POST_VIDEO, PLAYBACK_EFFECT, MEDIA_VIEWER) + VIDEO_CALLERS
@@ -483,9 +520,9 @@ class DisableVideoAutoplayFixtureTest {
         val parameter = postVideo.playParameter(effect)
         // The default mask is PostVideo's last int on 450.
         val maskParameter = postVideo.parameterTypes.map { it.toString() }.lastIndexOf("I")
-        // Read independently: the shorter overload calls PostVideo once and returns. 453's has 17
-        // parameters, ending on four ints and three booleans, so the play flag is its second boolean
-        // (15) and the mask its last int (13).
+        // Read independently: the shorter overload calls PostVideo once and returns. 454's has 14
+        // parameters, ending on four ints and one boolean, so the play flag is its last boolean
+        // (13) and the mask its last int (12).
         val shape = FORWARDERS.entries.singleOrNull { build.name.startsWith(it.key) }?.value
         val forwarders = methods.filter { method ->
             method.definingClass == postVideo.definingClass && method.reference() != postVideo.reference() &&
@@ -504,11 +541,37 @@ class DisableVideoAutoplayFixtureTest {
             assertEquals(build.name, body.lastIndex - 1, call)
             assertEquals(build.name, Opcode.RETURN_VOID, body.last().opcode)
             val first = forwarder.implementation!!.registerCount - shape.size
-            for ((into, from) in listOf(parameter to shape.play, maskParameter to shape.mask)) {
-                val argument = body[call].argumentRegister(postVideo.argumentOffset(into))!!
-                val copy = body.take(call).last { it.opcode.setsRegister() && (it as? OneRegisterInstruction)?.registerA == argument }
+            if (shape.maskOnly) {
+                // The play flag is left at false: its register is written by a move from a zero constant.
+                val playArgument = body[call].argumentRegister(postVideo.argumentOffset(parameter))!!
+                var from = call
+                var register = playArgument
+                var set: Instruction? = null
+                while (true) {
+                    val write = (from - 1 downTo 0).firstOrNull {
+                        body[it].opcode.setsRegister() && (body[it] as? OneRegisterInstruction)?.registerA == register
+                    } ?: break
+                    val instruction = body[write]
+                    if (instruction.opcode in setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16)) {
+                        from = write
+                        register = (instruction as TwoRegisterInstruction).registerB
+                        continue
+                    }
+                    set = instruction
+                    break
+                }
+                assertTrue(build.name, set is NarrowLiteralInstruction && set.narrowLiteral == 0)
+                val maskArgument = body[call].argumentRegister(postVideo.argumentOffset(maskParameter))!!
+                val copy = body.take(call).last { it.opcode.setsRegister() && (it as? OneRegisterInstruction)?.registerA == maskArgument }
                 assertEquals(build.name, Opcode.MOVE_FROM16, copy.opcode)
-                assertEquals(build.name, first + from, (copy as TwoRegisterInstruction).registerB)
+                assertEquals(build.name, first + shape.mask, (copy as TwoRegisterInstruction).registerB)
+            } else {
+                for ((into, from) in listOf(parameter to shape.play, maskParameter to shape.mask)) {
+                    val argument = body[call].argumentRegister(postVideo.argumentOffset(into))!!
+                    val copy = body.take(call).last { it.opcode.setsRegister() && (it as? OneRegisterInstruction)?.registerA == argument }
+                    assertEquals(build.name, Opcode.MOVE_FROM16, copy.opcode)
+                    assertEquals(build.name, first + from, (copy as TwoRegisterInstruction).registerB)
+                }
             }
         }
         fun calls(method: Method): List<Site> {
@@ -519,14 +582,14 @@ class DisableVideoAutoplayFixtureTest {
                     forwarder?.reference() -> forwarder ?: return@mapNotNull null
                     else -> return@mapNotNull null
                 }
-                val passedPlay = if (target == postVideo) parameter else shape!!.play
+                val passedPlay = if (target == postVideo) parameter else if (shape!!.maskOnly) shape.mask else shape.play
                 val passedMask = if (target == postVideo) maskParameter else shape!!.mask
                 val maskRegister = body[at].argumentRegister(target.argumentOffset(passedMask))!!
                 // On 450 every caller loads its mask as a constant, last written just before the call.
                 val write = (at - 1 downTo 0).first { body[it].opcode.setsRegister() && (body[it] as? OneRegisterInstruction)?.registerA == maskRegister }
                 val mask = (body[write] as NarrowLiteralInstruction).narrowLiteral
                 Site(method, at, body[at].argumentRegister(target.argumentOffset(passedPlay))!!,
-                    passedPlay, maskRegister, mask, target, passedMask)
+                    passedPlay, maskRegister, mask, target, passedMask, target != postVideo && shape!!.maskOnly)
             }
         }
         val sites = methods.filter { it.holdsNote(POST_SINGLE_MEDIA) || it.holdsNote(POST_CAROUSEL) }.flatMap(::calls)
@@ -608,11 +671,11 @@ class DisableVideoAutoplayFixtureTest {
 
         /** The shortened PostVideo forwarder of each build that has one: its parameter count, play flag and mask. */
         val FORWARDERS = mapOf(
-            "threads-453." to Forwarder(size = 17, play = 15, mask = 13),
+            "threads-454." to Forwarder(size = 14, play = 13, mask = 12, maskOnly = true),
         )
 
         /** The bit of PostVideo's default mask that hands its play flag to the default, on 450. */
-        const val PLAY_BIT = 0x4000
+        const val PLAY_BIT = 0x8000
 
         /** One read of each build serves every test; each test patches its own copy. */
         val fixtures = PerBuild<Fixture>()

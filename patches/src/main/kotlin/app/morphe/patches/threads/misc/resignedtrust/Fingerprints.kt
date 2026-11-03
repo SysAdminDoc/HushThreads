@@ -24,8 +24,10 @@ internal object ShareTileLaunchFingerprint : Fingerprint(
     parameters = listOf("Ljava/lang/Object;"),
     returnType = "Ljava/lang/Object;",
     filters = listOf(
-        string("com.facebook.orca"),
+        // The fingerprint matches string filters in the order the method holds them, and on 454
+        // the composer extra is read before the package name.
         string(SHARE_TILE_COMPOSER_EXTRA),
+        string("com.facebook.orca"),
     ),
 )
 

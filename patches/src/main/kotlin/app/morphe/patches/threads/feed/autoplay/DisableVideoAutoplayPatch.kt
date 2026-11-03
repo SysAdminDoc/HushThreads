@@ -24,16 +24,20 @@ import app.morphe.patches.threads.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.argumentRegister
 import app.morphe.util.findMutableMethodOf
+import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
 import app.morphe.util.readsAfter
 import app.morphe.util.singleOrPatchException
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -110,6 +114,31 @@ val disableVideoAutoplayPatch = bytecodePatch(
             playSites(targets, note).ifEmpty { throw PatchException("$PATCH: no call to PostVideo holds \"$note\"") }
         }
         sites.forEach { site ->
+            val method = mutableClassDefBy(site.method.definingClass).findMutableMethodOf(site.method)
+            if (site.maskOnly) {
+                // The shortened overload leaves PostVideo's play flag at false and forwards only the
+                // default mask. Keep the mask's flag bit when autoplay may run, so PostVideo plays by
+                // its own default, and clear it when the extension holds the video.
+                val defaulted = site.defaulted
+                    ?: throw PatchException("$PATCH: ${site.method.definingClass}->${site.method.name} leaves the play flag to PostVideo without a default mask")
+                val excluded = method.callRegisters(site.call).toIntArray()
+                val answer = method.getFreeRegisterProvider(site.call, 1, *excluded).getFreeRegister4Bit()
+                // play() answers true to keep playing and false to hold, so the flag bit is kept
+                // as play's answer, inverted and shifted under the bit, and subtracted from the mask.
+                val shift = defaulted.bit.countTrailingZeroBits().toString(16)
+                method.addInstructionsAtControlFlowLabel(
+                    site.call,
+                    """
+                        const/4 v$answer, 0x1
+                        invoke-static { v$answer }, $VIDEO_AUTOPLAY->play(Z)Z
+                        move-result v$answer
+                        xor-int/lit8 v$answer, v$answer, 0x1
+                        shl-int/lit8 v$answer, v$answer, 0x$shift
+                        sub-int v${site.register}, v${site.register}, v$answer
+                    """,
+                )
+                return@forEach
+            }
             // A caller that leaves the flag to PostVideo's default gets the bit cleared and the default's value to ask about.
             val defaulted = site.defaulted?.let {
                 """
@@ -117,7 +146,7 @@ val disableVideoAutoplayPatch = bytecodePatch(
                     const/16 v${site.register}, ${it.value}
                 """
             }.orEmpty()
-            mutableClassDefBy(site.method.definingClass).findMutableMethodOf(site.method).addInstructionsAtControlFlowLabel(
+            method.addInstructionsAtControlFlowLabel(
                 site.call,
                 defaulted + """
                     invoke-static/range { v${site.register} .. v${site.register} }, $VIDEO_AUTOPLAY->play(Z)Z
@@ -209,23 +238,30 @@ internal fun BytecodePatchContext.prefetchSkip(): PrefetchSkip {
 
 /**
  * A call to PostVideo, the register carrying whether its video is the one to play, and what to
- * change when the caller leaves that flag to PostVideo's default.
+ * change when the caller leaves that flag to PostVideo's default. A [maskOnly] site is a call to a
+ * shortened overload that leaves the play flag at false and forwards only the default mask, so
+ * [register] is the mask's register.
  */
-internal data class PlaySite(val method: Method, val call: Int, val register: Int, val defaulted: DefaultedFlag? = null)
+internal data class PlaySite(
+    val method: Method, val call: Int, val register: Int,
+    val defaulted: DefaultedFlag? = null, val maskOnly: Boolean = false,
+)
 
-/** The caller's default mask [register], the [mask] to hand PostVideo there without the flag's bit, and the [value] PostVideo would've played by. */
-internal data class DefaultedFlag(val register: Int, val mask: Int, val value: Int)
+/** The caller's default mask [register], the [mask] to hand PostVideo there without the flag's [bit], and the [value] PostVideo would've played by. */
+internal data class DefaultedFlag(val register: Int, val mask: Int, val value: Int, val bit: Int)
 
 /** PostVideo's default for its play flag: when a caller sets [bit] in its [mask] parameter, PostVideo plays by [value] instead of the flag it's handed. */
 internal data class PlayDefault(val mask: Int, val bit: Int, val value: Int)
 
-/** PostVideo or a checked forwarder, with the parameters carrying PostVideo's play flag and mask. */
-private data class PlayTarget(val method: Method, val parameter: Int, val default: PlayDefault?)
+/** PostVideo or a checked forwarder, with the parameters carrying PostVideo's play flag and mask. A [maskOnly] target forwards the mask but leaves the play flag at false. */
+private data class PlayTarget(val method: Method, val parameter: Int, val default: PlayDefault?, val maskOnly: Boolean = false)
 
 /**
- * 451 and 452 embeds call a shortened overload beside PostVideo. It only fills omitted arguments and
- * copies the others before its one call to PostVideo, then returns. Follow the play flag and mask
+ * 451, 452 and 454 embeds call a shortened overload beside PostVideo. It only fills omitted arguments
+ * and copies the others before its one call to PostVideo, then returns. Follow the play flag and mask
  * back to their unchanged parameters, so the hook stays at each embed rather than in shared code.
+ * 454's overload leaves the play flag at false and forwards only the mask, which still decides
+ * whether PostVideo plays by its default; that mask is followed back instead.
  */
 private fun BytecodePatchContext.playTargets(postVideo: Method, play: Int, default: PlayDefault?): List<PlayTarget> {
     val forwards = mutableClassDefBy(postVideo.definingClass).methods.filter { method ->
@@ -242,15 +278,33 @@ private fun BytecodePatchContext.playTargets(postVideo: Method, play: Int, defau
             body.take(call).any { it.opcode !in copies && it.opcode !in CONSTANTS }
         ) throw PatchException("$PATCH: ${method.definingClass}->${method.name} isn't a straight PostVideo forwarder")
         val first = method.implementation!!.registerCount - method.parameterRegisters()
-        fun forwarded(parameter: Int, type: String): Int {
+        fun forwarded(parameter: Int, type: String): Int? {
             val register = body[call].argumentRegister(postVideo.registerOffset(parameter))!!
-            val (write, source) = method.origin(call, register)
-                ?: throw PatchException("$PATCH: ${method.definingClass}->${method.name} changes PostVideo's $type argument")
+            val (write, source) = method.origin(call, register) ?: return null
+            if (write >= 0) return null
             return method.parameterTypes.indices.singleOrNull { index ->
-                write < 0 && method.parameterTypes[index].toString() == type && first + method.registerOffset(index) == source
-            } ?: throw PatchException("$PATCH: ${method.definingClass}->${method.name} doesn't forward PostVideo's $type parameter unchanged")
+                method.parameterTypes[index].toString() == type && first + method.registerOffset(index) == source
+            }
         }
-        PlayTarget(method, forwarded(play, "Z"), default?.let { it.copy(mask = forwarded(it.mask, "I")) })
+        val forwardedMask = default?.let { flag -> forwarded(flag.mask, "I")?.let { flag.copy(mask = it) } }
+        val forwardedPlay = forwarded(play, "Z")
+        if (forwardedPlay != null) {
+            PlayTarget(method, forwardedPlay, forwardedMask)
+        } else {
+            if (forwardedMask == null) {
+                throw PatchException("$PATCH: ${method.definingClass}->${method.name} doesn't forward PostVideo's Z or I parameters unchanged")
+            }
+            // The shortened overload must set the play flag to false, so clearing the mask bit is
+            // enough to hold the video and keeping it lets PostVideo's default play.
+            val playRegister = body[call].argumentRegister(postVideo.registerOffset(play))!!
+            val (write, _) = method.origin(call, playRegister)
+                ?: throw PatchException("$PATCH: ${method.definingClass}->${method.name} changes PostVideo's Z argument")
+            val set = body.getOrNull(write)
+            if (set == null || set !is NarrowLiteralInstruction || set.narrowLiteral != 0) {
+                throw PatchException("$PATCH: ${method.definingClass}->${method.name} changes PostVideo's Z argument")
+            }
+            PlayTarget(method, play, forwardedMask, maskOnly = true)
+        }
     }
     return listOf(PlayTarget(postVideo, play, default)) + forwards
 }
@@ -353,17 +407,50 @@ internal fun Method.playDefault(shape: PlayTest): PlayDefault? {
     val (tests, bitRegister) = origin(write - 1, (guard as OneRegisterInstruction).registerA)
         ?: throw PatchException("$PATCH: PostVideo tests its play flag's default on a value that differs by path")
     val and = body.getOrNull(tests)
-    val bit = (and as? NarrowLiteralInstruction)?.narrowLiteral
-    if ((and?.opcode != Opcode.AND_INT_LIT16 && and?.opcode != Opcode.AND_INT_LIT8) || bit == null || bit.countOneBits() != 1) {
+    val first = implementation!!.registerCount - parameterRegisters()
+    fun maskParameter(register: Int): Int? = parameterTypes.indices.singleOrNull {
+        parameterTypes[it].toString() == "I" && first + registerOffset(it) == register
+    }
+    val mask: Int
+    val bit: Int
+    when (and?.opcode) {
+        Opcode.AND_INT_LIT16, Opcode.AND_INT_LIT8 -> {
+            val literal = (and as NarrowLiteralInstruction).narrowLiteral
+            val (from, register) = origin(tests, (and as TwoRegisterInstruction).registerB)
+                ?: throw PatchException("$PATCH: PostVideo's default mask differs by path")
+            if (from >= 0) throw PatchException("$PATCH: PostVideo's default mask isn't one of its int parameters")
+            mask = maskParameter(register)
+                ?: throw PatchException("$PATCH: PostVideo's default mask isn't one of its int parameters")
+            bit = literal
+        }
+        // 454 builds the bit in a register and ands the mask with it.
+        Opcode.AND_INT -> {
+            val three = and as ThreeRegisterInstruction
+            val operands = listOf(three.registerB, three.registerC)
+            var maskRegister: Int? = null
+            var bitValue: Int? = null
+            for (operand in operands) {
+                val (from, register) = origin(tests, operand) ?: continue
+                if (from < 0) {
+                    maskParameter(register)?.let { maskRegister = it }
+                } else {
+                    val constant = body.getOrNull(from)
+                    if (constant is NarrowLiteralInstruction && constant.narrowLiteral.countOneBits() == 1) {
+                        bitValue = constant.narrowLiteral
+                    }
+                }
+            }
+            mask = maskRegister
+                ?: throw PatchException("$PATCH: PostVideo's default mask isn't one of its int parameters")
+            bit = bitValue
+                ?: throw PatchException("$PATCH: PostVideo's default for its play flag isn't behind one bit of v$bitRegister")
+        }
+        else -> throw PatchException("$PATCH: PostVideo's default for its play flag isn't behind one bit of v$bitRegister")
+    }
+    if (bit.countOneBits() != 1) {
         throw PatchException("$PATCH: PostVideo's default for its play flag isn't behind one bit of v$bitRegister")
     }
-    val (from, mask) = origin(tests, (and as TwoRegisterInstruction).registerB)
-        ?: throw PatchException("$PATCH: PostVideo's default mask differs by path")
-    val first = implementation!!.registerCount - parameterRegisters()
-    val parameter = parameterTypes.indices.takeIf { from < 0 }
-        ?.singleOrNull { parameterTypes[it].toString() == "I" && first + registerOffset(it) == mask }
-        ?: throw PatchException("$PATCH: PostVideo's default mask isn't one of its int parameters")
-    return PlayDefault(parameter, bit, (body[write] as NarrowLiteralInstruction).narrowLiteral)
+    return PlayDefault(mask, bit, (body[write] as NarrowLiteralInstruction).narrowLiteral)
 }
 
 /**
@@ -398,23 +485,38 @@ private fun BytecodePatchContext.playSites(targets: List<PlayTarget>, note: Stri
             val body = method.implementation!!.instructions.toList()
             body.indices.mapNotNull { call ->
                 val target = targets.singleOrNull { body[call].calls(it.method) } ?: return@mapNotNull null
-                val register = body[call].argumentRegister(target.method.registerOffset(target.parameter))!!
+                // A mask-only forwarder answers with the mask argument, since its play flag is fixed false.
+                val parameter = if (target.maskOnly) target.default!!.mask else target.parameter
+                val register = body[call].argumentRegister(target.method.registerOffset(parameter))!!
                 val defaulted = target.default?.let { flag ->
                     val maskRegister = body[call].argumentRegister(target.method.registerOffset(flag.mask))!!
                     val mask = method.origin(call, maskRegister)?.first?.let { body.getOrNull(it) }
                         ?.takeIf { it.opcode in CONSTANTS }?.let { (it as NarrowLiteralInstruction).narrowLiteral }
                         ?: throw PatchException("$PATCH: ${method.definingClass}->${method.name} hands PostVideo a default mask in v$maskRegister that isn't one constant")
-                    DefaultedFlag(maskRegister, mask and flag.bit.inv(), flag.value).takeIf { mask and flag.bit != 0 }
+                    DefaultedFlag(maskRegister, mask and flag.bit.inv(), flag.value, flag.bit).takeIf { mask and flag.bit != 0 }
                 }
-                for (written in listOfNotNull(register, defaulted?.register)) {
+                for (written in listOfNotNull(register, defaulted?.register).distinct()) {
                     val later = method.readsAfter(call, written)
                     if (later.isNotEmpty()) throw PatchException("$PATCH: ${method.definingClass}->${method.name} reads v$written again after PostVideo, at $later")
                 }
                 if (register > 255) throw PatchException("$PATCH: ${method.definingClass}->${method.name} passes the play flag in v$register, past move-result's reach")
                 if ((defaulted?.register ?: 0) > 255) throw PatchException("$PATCH: ${method.definingClass}->${method.name} passes its default mask in v${defaulted!!.register}, past const's reach")
-                PlaySite(method, call, register, defaulted)
+                PlaySite(method, call, register, defaulted, target.maskOnly)
             }
         }
+
+/** The registers a call at [at] names, so a hook's own register doesn't take one. */
+internal fun Method.callRegisters(at: Int): List<Int> {
+    val instruction = implementation!!.instructions.toList()[at]
+    return when (instruction) {
+        is RegisterRangeInstruction ->
+            (instruction.startRegister until instruction.startRegister + instruction.registerCount).toList()
+        is FiveRegisterInstruction ->
+            listOf(instruction.registerC, instruction.registerD, instruction.registerE, instruction.registerF, instruction.registerG)
+                .take(instruction.registerCount)
+        else -> emptyList()
+    }
+}
 
 /** The instructions that load an int constant. */
 private val CONSTANTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opcode.CONST_HIGH16)

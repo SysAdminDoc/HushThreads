@@ -108,8 +108,8 @@ class HideSuggestedUsersFixtureTest {
         for (vendor in vendors) {
             val context = context(vendor)
             val targets = context.suggestedTargets()
-            assertEquals(vendor.name, "A0V", targets.suggestedSlot.name)
-            assertEquals(vendor.name, "A0M", targets.kickstartSlot.name)
+            assertEquals(vendor.name, "A0U", targets.suggestedSlot.name)
+            assertEquals(vendor.name, "A0L", targets.kickstartSlot.name)
             assertEquals(vendor.name, "A0L", targets.rawType.name)
             // 450 added an item field ahead of the impression item, so the same store lands one name later.
             assertEquals(vendor.name, "A0r", targets.content.name)

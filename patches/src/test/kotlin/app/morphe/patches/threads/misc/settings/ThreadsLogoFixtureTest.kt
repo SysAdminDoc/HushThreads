@@ -111,16 +111,26 @@ class ThreadsLogoFixtureTest {
                 },
                 "clearAndSetSemantics" to { context ->
                     // The clearing element's node gets its clearing flag off, like the merging element's.
-                    val element = context.mutableClassDefBy(fixture.semantics.clearing)
-                    val create = element.methods.single { method ->
-                        method.body().any { it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == fixture.semantics.node }
+                    val found = fixture.semantics
+                    val create = context.mutableClassDefBy(found.create.definingClass).methods
+                        .single { it.signature() == found.create.signature() }
+                    val body = create.body()
+                    val at = (found.start + 1 until body.size).first { at ->
+                        if (body[at].opcode != Opcode.CONST_4 ||
+                            (body[at] as NarrowLiteralInstruction).narrowLiteral != 1
+                        ) return@first false
+                        val register = (body[at] as OneRegisterInstruction).registerA
+                        body.drop(at + 1).firstOrNull { (it as? OneRegisterInstruction)?.registerA == register }
+                            ?.let {
+                                it.opcode == Opcode.IPUT_BOOLEAN &&
+                                    it.getReference<FieldReference>()?.definingClass == found.node
+                            } == true
                     }
-                    val at = create.body().indexOfFirst { (it as? NarrowLiteralInstruction)?.narrowLiteral == 1 && it.opcode == Opcode.CONST_4 }
-                    val register = (create.body()[at] as OneRegisterInstruction).registerA
+                    val register = (body[at] as OneRegisterInstruction).registerA
                     // The literal flipped has to be the one a node flag gets, or the case proves nothing.
-                    val use = create.body().drop(at + 1).firstOrNull { (it as? OneRegisterInstruction)?.registerA == register }
-                    assertTrue("${build.name}: v$register's 1 is stored into a flag of ${fixture.semantics.node}, not $use",
-                        use?.opcode == Opcode.IPUT_BOOLEAN && use.getReference<FieldReference>()?.definingClass == fixture.semantics.node)
+                    val use = body.drop(at + 1).firstOrNull { (it as? OneRegisterInstruction)?.registerA == register }
+                    assertTrue("${build.name}: v$register's 1 is stored into a flag of ${found.node}, not $use",
+                        use?.opcode == Opcode.IPUT_BOOLEAN && use.getReference<FieldReference>()?.definingClass == found.node)
                     create.replaceInstruction(at, "const/4 v$register, 0x0")
                 },
             )
@@ -359,6 +369,8 @@ class ThreadsLogoFixtureTest {
         val clearAndSet: String,
         val clearing: String,
         val node: String,
+        val create: Method,
+        val start: Int,
     )
 
     private fun semantics(build: File, modifier: String): Semantics {
@@ -405,26 +417,64 @@ class ThreadsLogoFixtureTest {
         val fromProperties = elements.values.filter { element ->
             element.methods.any { it.name == "<init>" && it.types() == listOf(FUNCTION1) }
         }
-        val nodes = FixtureDex.classes(build, fromProperties.flatMap { element -> element.methods.flatMap { it.made() } }.toSet())
-            .filterValues { node -> node.instanceFields.any { it.type == FUNCTION1 } }
+        val known = mutableMapOf<String, ClassDef?>()
+        fun classOf(type: String) = known.getOrPut(type) { FixtureDex.classes(build, setOf(type))[type] }
+        fun nodeOf(type: String) = classOf(type)?.takeIf { node ->
+            val fields = node.instanceFields.toList()
+            fields.count { it.type == FUNCTION1 } == 1 && fields.count { it.type == "Z" } == 2
+        }
+        fun nodesMadeBy(method: Method): List<String> = method.made().filter { nodeOf(it) != null }
+
+        // The element's own create() builds its node on 453. On 454 the ModifierNodeElement base
+        // builds every element's node in one create() that switches on the element's type, so the
+        // node is the first one built in the branch that tests this element.
+        data class Built(val method: Method, val start: Int, val node: String)
+        fun built(element: ClassDef): Built? {
+            for (method in element.methods) nodesMadeBy(method).singleOrNull()?.let { return Built(method, -1, it) }
+            var ancestor = element.superclass?.let { classOf(it) }
+            while (ancestor != null) {
+                for (method in ancestor.methods) {
+                    val body = method.body()
+                    val branch = body.indexOfFirst {
+                        it.opcode == Opcode.INSTANCE_OF && it.getReference<TypeReference>()?.type == element.type
+                    }
+                    if (branch < 0) continue
+                    val end = (branch + 1 until body.size).firstOrNull { body[it].opcode == Opcode.INSTANCE_OF } ?: body.size
+                    val node = (branch + 1 until end).firstNotNullOfOrNull { at ->
+                        body[at].takeIf { it.opcode == Opcode.NEW_INSTANCE }?.getReference<TypeReference>()?.type
+                            ?.takeIf { nodeOf(it) != null }
+                    }
+                    if (node != null) return Built(method, branch, node)
+                }
+                ancestor = ancestor.superclass?.let { classOf(it) }
+            }
+            return null
+        }
+
+        val builtBy = fromProperties.mapNotNull { element -> built(element)?.let { element to it } }
+        val nodes = builtBy.map { it.second.node }.distinct()
+        val nodeClasses = FixtureDex.classes(build, nodes.toSet())
         // AppendedSemanticsElement: built from a flag and the properties, and builds one of those nodes.
         val builders = FixtureDex.classesWhere(build, { true }) { method -> method.made().any { it in nodes } }
         val merging = builders.filter { element ->
             element.methods.any { it.name == "<init>" && it.types() == listOf("Z", FUNCTION1) }
         }
-        assertEquals("$where: one element takes a flag and the properties and builds ${nodes.keys}: ${merging.map { it.type }}",
+        assertEquals("$where: one element takes a flag and the properties and builds $nodes: ${merging.map { it.type }}",
             1, merging.size)
         val node = merging.single().methods.flatMap { it.made() }.filter { it in nodes }.distinct()
         assertEquals("$where: the merging element builds one node holding the properties: $node", 1, node.size)
-        val clearing = fromProperties.filter { element -> element.methods.any { node.single() in it.made() } }.map { it.type }
+        val clearing = builtBy.filter { it.second.node == node.single() }.map { it.first.type }
         assertEquals("$where: one appended element builds ${node.single()} from the properties alone: $clearing", 1, clearing.size)
         val clearAndSet = appenders.filter { clearing.single() in it.made() }
         assertEquals("$where: one function appends ${clearing.single()}", 1, clearAndSet.size)
+        val clearingBuilt = builtBy.single { it.first.type == clearing.single() }.second
 
-        val classes = holders + setterClasses + appenderClasses + elements.values + nodes.values + merging +
-            FixtureDex.classes(build, setOf(FUNCTION1)).values
+        val classes = holders + setterClasses + appenderClasses + elements.values + nodeClasses.values + merging +
+            FixtureDex.classes(build, setOf(FUNCTION1)).values +
+            listOfNotNull(classOf(clearingBuilt.method.definingClass))
         return Semantics(
             classes, key, setter.signature(), setter.types()[0], clearAndSet.single().signature(), clearing.single(), node.single(),
+            clearingBuilt.method, clearingBuilt.start,
         )
     }
 

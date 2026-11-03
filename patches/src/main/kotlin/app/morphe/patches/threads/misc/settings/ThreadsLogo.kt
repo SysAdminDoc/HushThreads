@@ -218,13 +218,15 @@ internal fun BytecodePatchContext.logoSite(): LogoSite {
 
 /**
  * Reads Compose's semantics calls and refuses a build where they differ from what was read on 451
- * (2026-10-18): the static field a static initializer stores right after it loads
- * [CONTENT_DESCRIPTION]; one static (receiver, String) method that reads that key, wraps its
+ * (2026-10-18) and 454 (2026-11-03): the static field a static initializer stores right after it
+ * loads [CONTENT_DESCRIPTION]; one static (receiver, String) method that reads that key, wraps its
  * String with Collections.singletonList and hands both to the receiver's (key, Object) setter;
  * and one static ([modifier], Function1) [modifier] that builds an element from the Function1 alone
  * and chains it onto the modifier, where the element builds a node holding one Function1 and two
- * flags, sets one flag on and the other off, and hands the Function1 the setter's receiver.
- * clearAndSetSemantics is the only such element: the other semantics element takes a flag too.
+ * flags, sets one flag on and the other off, and hands the Function1 the setter's receiver. On 453
+ * the element builds that node itself; on 454 the ModifierNodeElement base builds it from the
+ * element's type. clearAndSetSemantics is the only such element: the other semantics element takes
+ * a flag too.
  */
 internal fun BytecodePatchContext.logoSemantics(modifier: String): LogoSemantics {
     val keys = classDefByStrings(CONTENT_DESCRIPTION, StringComparisonType.EQUALS)
@@ -323,28 +325,56 @@ private fun appendedElement(method: Method, modifier: String): String? {
  * flag stored on and the other off. That's Compose's clearing element: the node's flags say
  * whether it merges what's inside it and whether it clears it, and the merging element takes its
  * merge flag from its caller.
+ *
+ * On 453 the element builds its node itself. On 454 the ModifierNodeElement base builds every
+ * element's node in one create() that switches on the element's type, so the node is the first
+ * one built in the branch testing [element].
  */
 private fun BytecodePatchContext.clearsSemantics(element: String, receiver: String): Boolean {
-    val owner = classDefByOrNull(element) ?: return false
-    val built = owner.methods.flatMap { method ->
-        method.body().filter { it.opcode == Opcode.NEW_INSTANCE }.mapNotNull { made ->
-            val node = classDefByOrNull(made.getReference<TypeReference>()!!.type) ?: return@mapNotNull null
-            val fields = node.instanceFields.toList()
-            val flags = fields.filter { it.type == "Z" }
-            if (fields.count { it.type == FUNCTION1 } != 1 || flags.size != 2) return@mapNotNull null
-            // The Function1 gets the receiver itself (p1), not something built from it.
-            val applies = node.methods.any { apply ->
+    fun nodeOf(type: String) = classDefByOrNull(type)?.takeIf { node ->
+        val fields = node.instanceFields.toList()
+        fields.count { it.type == FUNCTION1 } == 1 && fields.count { it.type == "Z" } == 2 &&
+            node.methods.any { apply ->
                 !AccessFlags.STATIC.isSet(apply.accessFlags) && apply.returnType == "V" &&
                     apply.parameterTypes.map { it.toString() } == listOf(receiver) &&
                     apply.body().any { it.opcode == Opcode.INVOKE_INTERFACE && it.method()?.let { invoke ->
                         invoke.definingClass == FUNCTION1 && invoke.name == "invoke" } == true &&
                         it.registers().getOrNull(1) == apply.implementation!!.registerCount - 1 }
             }
-            if (applies) Triple(method, node.type, flags.map { it.name }) else null
+    }
+    fun builtIn(method: Method): String? = method.body()
+        .filter { it.opcode == Opcode.NEW_INSTANCE }
+        .mapNotNull { it.getReference<TypeReference>()?.type }
+        .singleOrNull { nodeOf(it) != null }
+
+    val owner = classDefByOrNull(element) ?: return false
+    var create = owner.methods.firstNotNullOfOrNull { method -> builtIn(method)?.let { method to it } }
+    if (create == null) {
+        var ancestor = owner.superclass?.let { classDefByOrNull(it) }
+        while (create == null && ancestor != null) {
+            val host = ancestor
+            for (method in host.methods) {
+                val body = method.body()
+                val branch = body.indexOfFirst {
+                    it.opcode == Opcode.INSTANCE_OF && it.getReference<TypeReference>()?.type == element
+                }
+                if (branch < 0) continue
+                val end = (branch + 1 until body.size).firstOrNull { body[it].opcode == Opcode.INSTANCE_OF } ?: body.size
+                val node = (branch + 1 until end).firstNotNullOfOrNull { at ->
+                    body[at].takeIf { it.opcode == Opcode.NEW_INSTANCE }?.getReference<TypeReference>()?.type
+                        ?.takeIf { nodeOf(it) != null }
+                }
+                if (node != null) {
+                    create = method to node
+                    break
+                }
+            }
+            ancestor = ancestor.superclass?.let { classDefByOrNull(it) }
         }
     }
-    val (create, node, flags) = built.singleOrNull() ?: return false
-    val stored = flags.map { flag -> literalStored(create.body(), node, flag) }
+    val (built, node) = create ?: return false
+    val flags = classDefByOrNull(node)?.instanceFields?.filter { it.type == "Z" }?.map { it.name } ?: return false
+    val stored = flags.map { flag -> literalStored(built.body(), node, flag) }
     return stored.sortedBy { it ?: -1 } == listOf(0, 1)
 }
 

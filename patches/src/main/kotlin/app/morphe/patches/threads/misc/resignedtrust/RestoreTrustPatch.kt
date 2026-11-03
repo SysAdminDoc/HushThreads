@@ -18,15 +18,21 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.patches.threads.misc.extension.parameterRegisterNumber
 import app.morphe.patches.threads.misc.settings.settingsPatch
+import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.getFreeRegisterProvider
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -74,7 +80,7 @@ val restoreTrustPatch = bytecodePatch(
 
         // FBNS's own check (#6) is fbnsSignersPatch, which every build carries through the settings patch.
         method.answerOriginalSigners(packageInfo, signers)
-        ShareTileLaunchFingerprint.method.openRefusedShareTiles()
+        openRefusedShareTiles(ShareTileLaunchFingerprint.method)
 
         enableStatus("restoreTrust")
     }
@@ -85,31 +91,90 @@ val restoreTrustPatch = bytecodePatch(
  * and every tile drops that answer, so a tap on a patched Messenger does nothing (#16). Each launch
  * hands its answer to the extension along with the context and intent it was given, using a register
  * nothing reads again. The launcher's check itself stays, since the rest of Threads relies on it.
+ *
+ * 454 hands each tile to a static wrapper in the launcher's class instead of calling the launcher
+ * from the share lambda. Those wrappers answer the launch's own result, so each of their returns
+ * runs the hook with the wrapper's context and intent.
  */
-internal fun MutableMethod.openRefusedShareTiles() {
-    val body = instructions.toList()
-    val launches = body.indices.filter { body[it].isTileLaunch() }
+internal fun BytecodePatchContext.openRefusedShareTiles(tiles: MutableMethod) {
+    val body = tiles.instructions.toList()
     val composer = body.indexOfFirst {
         ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == SHARE_TILE_COMPOSER_EXTRA
     }
-    if (launches.none { it > composer }) {
+    val launches = body.indices.filter { body[it].isTileLaunch() }
+    if (launches.isNotEmpty()) {
+        if (launches.none { it > composer }) {
+            throw PatchException("Restore screens on re-signed builds: no launch after Messenger's tile sets up its intent")
+        }
+        for (at in launches.asReversed()) {
+            val call = body[at] as FiveRegisterInstruction
+            if (body[at + 1].opcode == Opcode.MOVE_RESULT) {
+                throw PatchException("Restore screens on re-signed builds: the launch at $at already reads its answer")
+            }
+            val free = tiles.getFreeRegisterProvider(at + 1, 1, call.registerD, call.registerE).getFreeRegister4Bit()
+            tiles.addInstructions(
+                at + 1,
+                """
+                    move-result v$free
+                    invoke-static { v$free, v${call.registerD}, v${call.registerE} }, $OPEN_REFUSED_TILE
+                """,
+            )
+        }
+        return
+    }
+
+    // The share lambda calls static share wrappers with no launcher of their own, and those that
+    // reach the launcher are the ones whose answer says whether a tile opened.
+    val wrapperCalls = body.indices.filter { body[it].isStaticTileCall() }
+    val wrapperTypes = wrapperCalls.map {
+        ((body[it] as ReferenceInstruction).reference as MethodReference).definingClass
+    }.distinct()
+    if (wrapperTypes.isEmpty() || wrapperCalls.none { it > composer }) {
         throw PatchException("Restore screens on re-signed builds: no launch after Messenger's tile sets up its intent")
     }
-    for (at in launches.asReversed()) {
-        val call = body[at] as FiveRegisterInstruction
-        if (body[at + 1].opcode == Opcode.MOVE_RESULT) {
-            throw PatchException("Restore screens on re-signed builds: the launch at $at already reads its answer")
+    var hooked = 0
+    for (type in wrapperTypes) {
+        for (wrapper in mutableClassDefBy(type).methods.filter { it.isTileLaunchWrapper() }) {
+            hookTileLaunches(wrapper)
+            hooked++
         }
-        val free = getFreeRegisterProvider(at + 1, 1, call.registerD, call.registerE).getFreeRegister4Bit()
-        addInstructions(
-            at + 1,
-            """
-                move-result v$free
-                invoke-static { v$free, v${call.registerD}, v${call.registerE} }, $OPEN_REFUSED_TILE
-            """,
+    }
+    if (hooked == 0) {
+        throw PatchException("Restore screens on re-signed builds: Threads' share wrappers never reach the launcher")
+    }
+}
+
+/**
+ * Hooks each boolean return of a wrapper that calls the launcher itself. The answer is the value the
+ * wrapper is about to return, and the context and intent are its first two parameters.
+ */
+private fun hookTileLaunches(wrapper: MutableMethod) {
+    val body = wrapper.instructions.toList()
+    val returns = body.indices.filter { body[it].opcode == Opcode.RETURN }
+        .map { it to (body[it] as OneRegisterInstruction).registerA }
+    if (returns.isEmpty()) {
+        throw PatchException("Restore screens on re-signed builds: ${wrapper.definingClass}->${wrapper.name} answers nothing")
+    }
+    val context = wrapper.parameterRegisterNumber(0)
+    val intent = wrapper.parameterRegisterNumber(1)
+    if (returns.any { it.second > 15 } || context > 15 || intent > 15) {
+        throw PatchException("Restore screens on re-signed builds: ${wrapper.definingClass}->${wrapper.name} keeps its answer or parameters above v15")
+    }
+    for ((at, answer) in returns.asReversed()) {
+        wrapper.addInstructionsAtControlFlowLabel(
+            at,
+            "invoke-static { v$answer, v$context, v$intent }, $OPEN_REFUSED_TILE",
         )
     }
 }
+
+/** A static wrapper that takes the launcher's context and intent and answers whether it started anything. */
+private fun Method.isTileLaunchWrapper(): Boolean =
+    AccessFlags.STATIC.isSet(accessFlags) && returnType == "Z" &&
+        parameterTypes.size >= 2 &&
+        parameterTypes[0].toString() == "Landroid/content/Context;" &&
+        parameterTypes[1].toString() == "Landroid/content/Intent;" &&
+        implementation?.instructions?.any { it.isTileLaunch() } == true
 
 /** A launcher call: an instance method taking a context and an intent and answering whether it started anything. */
 private fun Instruction.isTileLaunch(): Boolean {
@@ -117,6 +182,13 @@ private fun Instruction.isTileLaunch(): Boolean {
     val called = (this as ReferenceInstruction).reference as MethodReference
     return called.returnType == "Z" &&
         called.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;", "Landroid/content/Intent;")
+}
+
+/** A static share wrapper the lambda hands its context first and asks for a yes or no. */
+private fun Instruction.isStaticTileCall(): Boolean {
+    if (opcode != Opcode.INVOKE_STATIC) return false
+    val called = (this as? ReferenceInstruction)?.reference as? MethodReference ?: return false
+    return called.returnType == "Z" && called.parameterTypes.firstOrNull()?.toString() == "Landroid/content/Context;"
 }
 
 /**

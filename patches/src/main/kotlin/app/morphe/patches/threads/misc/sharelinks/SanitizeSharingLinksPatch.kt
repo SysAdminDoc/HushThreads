@@ -280,14 +280,14 @@ private fun BytecodePatchContext.replaceShortLinks(link: FieldReference) {
                 (written == media || instruction.opcode.setsWideRegister() && written == media - 1)
             ) throw PatchException("$PATCH: $where writes v$media, the post, between its link read at $read and the store")
         }
-        if (media > 15 || value > 15) throw PatchException("$PATCH: $where keeps the post or the link above v15")
-        Triple(after, value, method.freeLocalsAt(PATCH, after, 2))
+        if (media > 15) throw PatchException("$PATCH: $where keeps the post above v15")
+        Triple(after, value, method.freeLocalsAt(PATCH, after, if (value > 15) 3 else 2))
     }
 
     // Later sites first, so the earlier indices still point where they did.
     for ((after, value, scratch) in sites.sortedByDescending { it.first }) {
         val (postCode, name) = scratch
-        method.addInstructionsWithLabels(after, postLinkHook(value, media, postCode, name))
+        method.addInstructionsWithLabels(after, postLinkHook(value, media, postCode, name, scratch.getOrNull(2) ?: value))
     }
 
     val hooked = replaceShortLinksInHolders(types, getters)
@@ -325,8 +325,7 @@ private fun BytecodePatchContext.replaceShortLinksInHolders(types: Set<String>, 
             val self = method.localRegisterCount()
             val sites = reads.map { read ->
                 val value = (body[read + 1] as OneRegisterInstruction).registerA
-                if (value > 15) throw PatchException("$PATCH: $type->${method.name} keeps the link above v15")
-                Pair(read + 2, value) to method.freeLocalsAt(PATCH, read + 2, 3)
+                Pair(read + 2, value) to method.freeLocalsAt(PATCH, read + 2, if (value > 15) 4 else 3)
             }
             for ((site, scratch) in sites.sortedByDescending { it.first.first }) {
                 val (after, value) = site
@@ -336,7 +335,7 @@ private fun BytecodePatchContext.replaceShortLinksInHolders(types: Set<String>, 
                     """
                         move-object/from16 v$media, v$self
                         iget-object v$media, v$media, $type->${post.name}:$MEDIA
-                    """ + postLinkHook(value, media, postCode, name),
+                    """ + postLinkHook(value, media, postCode, name, scratch.getOrNull(3) ?: value),
                 )
             }
             hooked += method.key()
@@ -487,14 +486,15 @@ private fun BytecodePatchContext.recallAfter(
     for (read in reads) {
         val after = read + 2
         val value = (body[read + 1] as OneRegisterInstruction).registerA
-        if (value > 15) throw PatchException("$PATCH: $where keeps the link above v15")
-        val free = method.freeLocalsAt(PATCH, after, 3).let { if (key in it) method.freeLocalsAt(PATCH, after, 4) - key else it }
+        // One more scratch for a low copy of the link when the read keeps it above v15.
+        val need = if (value > 15) 4 else 3
+        val free = method.freeLocalsAt(PATCH, after, need).let { if (key in it) method.freeLocalsAt(PATCH, after, need + 1) - key else it }
         val (post, postCode, name) = free
         val hook = """
             ${if (key > 15) "invoke-static/range { v$key .. v$key }" else "invoke-static { v$key }"}, $REMEMBERED_POST
             move-result-object v$post
             check-cast v$post, $MEDIA
-        """ + postLinkHook(value, post, postCode, name)
+        """ + postLinkHook(value, post, postCode, name, free.getOrNull(3) ?: value)
         edits += after to { method.addInstructionsWithLabels(after, hook) }
     }
 }
@@ -618,11 +618,16 @@ private fun Method.key(): String = "$definingClass->$name(${parameterTypes.joinT
  * Null code and name, the post's code and its author's username when there is a post and an
  * author, then the extension with the link, the name and the code, its answer replacing the link.
  */
-private fun BytecodePatchContext.postLinkHook(value: Int, media: Int, postCode: Int, name: Int): String {
+private fun BytecodePatchContext.postLinkHook(value: Int, media: Int, postCode: Int, name: Int, link: Int = value): String {
     val code = PostCodeFingerprint.method
     val author = PostAuthorFingerprint.method
     val username = UsernameFingerprint.method
+    // The extension call names three 4-bit registers, so a link the read keeps above v15 goes
+    // through a low scratch and comes back to the register the method goes on reading.
+    val copy = if (link != value) "move-object/from16 v$link, v$value" else ""
+    val back = if (link != value) "move-object/from16 v$value, v$link" else ""
     return """
+        $copy
         const/4 v$postCode, 0x0
         const/4 v$name, 0x0
         if-eqz v$media, :link
@@ -634,8 +639,9 @@ private fun BytecodePatchContext.postLinkHook(value: Int, media: Int, postCode: 
         invoke-virtual { v$name }, ${username.definingClass}->${username.name}()Ljava/lang/String;
         move-result-object v$name
         :link
-        invoke-static { v$value, v$name, v$postCode }, $POST_LINK
-        move-result-object v$value
+        invoke-static { v$link, v$name, v$postCode }, $POST_LINK
+        move-result-object v$link
+        $back
     """
 }
 
