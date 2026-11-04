@@ -4533,7 +4533,7 @@ foreach ($case in @(
         @{ Name = 'duplicate sections'; Text = $pendingEntry.Replace('## Unreleased', "## Unreleased`n`n## Unreleased") },
         @{ Name = 'no change bullets'; Text = "## Unreleased`n`n### Pending`n`n## 0.42.0 (2026-09-20)`n* Shipped." },
         @{ Name = 'an empty bullet'; Text = $pendingEntry.Replace('* A pending change.', '* ') },
-                @{ Name = 'a foreign app scope'; Text = $pendingEntry.Replace('* A pending', '* **Instagram:** A pending') },
+        @{ Name = 'a foreign app scope'; Text = $pendingEntry.Replace('* A pending', '* **Instagram:** A pending') },
         @{ Name = 'a wrapped bullet'; Text = $pendingEntry.Replace('A pending change.', "A pending`n  change.") },
         @{ Name = 'an unresolved conflict'; Text = $pendingEntry.Replace('A pending change.', "A pending change.`n<<<<<<< HEAD") },
         @{ Name = 'Unreleased after a release'; Text = "## 0.42.0 (2026-09-20)`n* Shipped.`n`n## Unreleased`n* Pending." })) {
@@ -4745,7 +4745,7 @@ try {
         (Get-Content -LiteralPath $xapkOut -Raw).StartsWith('app ')) `
         'A bundle with no base.apk did not fall back to its largest APK.'
 
-    # APKPure's layout of* the base named for the package, the arm64 split larger than it,
+    # APKPure's layout of Threads: the base named for the package, the arm64 split larger than it,
     # and a manifest.json whose split_apks name the base by id. Size alone took the split.
     $threadsXapk = Join-Path $commonRoot 'threads.xapk'
     New-TestBundleArchive -Path $threadsXapk -Entries ([ordered]@{
