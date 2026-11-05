@@ -295,11 +295,8 @@ function Assert-BuiltBundle {
     foreach ($path in $Bundle, (Join-Path $folder $sbomName)) {
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "No $(Split-Path -Leaf $path) in $folder after :patches:buildAndroid." }
     }
-    $recorded = Join-Path $folder 'bundle.sha256'
-    if ((Test-Path -LiteralPath $recorded -PathType Leaf) -and
-            [IO.File]::ReadAllText($recorded).Trim().ToLowerInvariant() -ne (Get-Sha256 $Bundle)) {
-        throw "bundle.sha256 doesn't match $bundleName, so the bundle changed after the build wrote it."
-    }
+    # bundle.sha256 and morphe-signing.pub's signature, so an unsigned bundle stops before the tag.
+    Invoke-ReleaseText -Arguments @('signed', '--version', $Version)
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $zip = [IO.Compression.ZipFile]::OpenRead($Bundle)
     try {
