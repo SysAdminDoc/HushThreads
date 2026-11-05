@@ -42,6 +42,8 @@ To add one of those three, turn on **Settings → Advanced → Expert mode** in 
 
 The source build patches Threads 454 only. Each release moves to the newest stable Threads and drops the one before, so v0.0.15 is the last release for 451.0.0.51.80 and v0.0.16 is the last release for 452.0.0.50.64. If a patch can't find what it needs in your build, patching stops with a message naming it, so you don't end up with an app where that patch does nothing.
 
+In 2027 Android developer verification reaches every certified phone (it started on 2026-09-30 in Brazil, Indonesia, Singapore and Thailand), and a patched Threads signed with your own key counts as an app from an unverified developer. You can still install it over ADB, or through Android's advanced install flow, which is a one-time setting with a one-day wait.
+
 ### Supported Threads build
 
 | Threads version | Version code | Android floor |
@@ -117,7 +119,7 @@ If Threads crashes within a minute of starting three times in a row, HushThreads
 
 ## Signing in
 
-Tap Log in with Instagram and enter your Instagram username and password. Threads can ask twice whether to save your login info. Tap Not now each time if you don't want it saved.
+Tap Log in with Instagram and enter your Instagram username and password. Threads can ask twice whether to save your login info. Tap Not now each time if you don't want it saved. Passkey sign-in won't work on a patched Threads, because Meta only lets its own signed copy use your passkeys. Your password still does.
 
 If you also patch Instagram with [HushGram](https://github.com/SysAdminDoc/HushGram), sign both with the same Morphe Manager key. Threads then shows your Instagram account as a tile on its login screen, and tapping it signs you in without your password. With a Root Mount install you can sign in on stock Threads first, and the mounted build keeps that session.
 
@@ -127,13 +129,14 @@ If you also patch Instagram with [HushGram](https://github.com/SysAdminDoc/HushG
 - **A feature you used stopped after updating from v0.0.12 or older.** `Block background-return feed refresh`, `Disable screenshot detection`, `Disable video autoplay`, `Max image quality` and `Pure black dark mode` joined the default selection in v0.0.13 with their switches off. Turn yours back on in HushThreads settings.
 - **Instagram says "Sorry, we weren't able to load that website" when you tap a Threads post.** That message is Instagram's, not a patch you're missing. The regular Instagram app only hands posts over to a Threads signed by Meta, and a patched Threads carries your Morphe Manager key instead. Opening the post from inside Threads still works, and the Links page in HushThreads settings says so when it finds Meta's Instagram on your phone. Reported in [issue #8](https://github.com/SysAdminDoc/HushThreads/issues/8).
 - **Android won't install the patched app.** Uninstall the stock Threads first. An update to your patched Threads needs the same signing key as the copy on your phone.
+- **Android says `INSTALL_FAILED_NO_MATCHING_ABIS`.** The Threads file you patched was built for a different processor. Get the variant in the [table above](#supported-threads-build) that matches your phone's CPU (most phones are arm64-v8a) and patch it again.
 - **Patching stops with a patch's name.** That usually means your Threads isn't the supported build. Check the Threads version name against the [table above](#supported-threads-build).
 
 ## Your Threads account
 
 Assume Meta can tell. A patched Threads is signed with your key instead of Meta's, and Threads checks that signature in places. Meta could also notice the analytics uploads that stop arriving. HushThreads doesn't post, like, follow or message for you, and it doesn't change how you sign in. Your feed still comes from Meta's servers, ads included, and the ads are removed on your phone after they arrive.
 
-Meta's terms ask for its permission before anyone modifies its apps. I haven't heard of an account suspended over a patched Threads, but this is a young project, so that doesn't prove much. If you'd rather not risk the account you care about, try HushThreads with a test account first.
+Meta's terms ask for its permission before anyone modifies its apps. I haven't heard of an account suspended over a patched Threads, but this is a young project, so that doesn't prove much. Threads runs on your Instagram account, so a Threads ban can reach it, and in one report from October 2026 a ban took the linked Instagram and Facebook accounts too. Turn on two-factor authentication before you patch. If you'd rather not risk the account you care about, try HushThreads with a spare account first.
 
 ## Privacy
 
@@ -158,7 +161,7 @@ On Windows, run `Get-FileHash -Algorithm SHA256 .\patches-0.0.16.mpp`. Inside th
 
 ## Reporting a problem
 
-Use [Issues](https://github.com/SysAdminDoc/HushThreads/issues) for bugs and [Discussions](https://github.com/SysAdminDoc/HushThreads/discussions) for questions. Include your Threads version and version code, your Morphe Manager and HushThreads versions, how you installed it, and what you expected to happen. A diagnostic report from HushThreads' settings helps a lot. Reports stay open until the person who opened them confirms the fix works.
+Use [Issues](https://github.com/SysAdminDoc/HushThreads/issues) for bugs and [Discussions](https://github.com/SysAdminDoc/HushThreads/discussions) for questions. Include your Threads version and version code, your Morphe Manager and HushThreads versions, how you installed it, and what you expected to happen. A diagnostic report from HushThreads' settings helps a lot. A report closes once you confirm the fix works, or after a few quiet days once I've asked you something or shipped a fix.
 
 ## Building and checking
 

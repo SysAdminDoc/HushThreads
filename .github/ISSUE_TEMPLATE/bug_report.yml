@@ -25,7 +25,7 @@ body:
     id: variant
     attributes:
       label: Which Threads file did you patch?
-      description: Where it came from, its architecture, and whether you gave the patcher an .xapk or .apkm bundle or a single .apk, if you know them. Most bugs on a build that should work come from a different variant.
+      description: Where it came from, its architecture, and whether you gave the patcher an .xapk or .apkm bundle or a single .apk, if you know them. Most bugs on a build that should work come from a different variant, and an install that fails with INSTALL_FAILED_NO_MATCHING_ABIS means the file is for another processor.
       placeholder: arm64-v8a, an .xapk bundle
   - type: dropdown
     id: manager
