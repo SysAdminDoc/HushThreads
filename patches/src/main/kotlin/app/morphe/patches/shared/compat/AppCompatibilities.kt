@@ -58,9 +58,11 @@ internal object AppCompatibilities {
 
     /**
      * Every version code APKMirror shipped for [THREADS_TARGET_VERSION] when it was read
-     * (2026-11-02, its release day): three arm64-v8a density variants, one armeabi-v7a, one x86_64
-     * and one x86. The bundle names the version without pinning a code, so any genuine build of
-     * this version patches, including a variant APKMirror adds later.
+     * (2026-11-02, its release day, plus the two added 2026-11-03): three arm64-v8a density
+     * variants, two armeabi-v7a, one x86_64 and two x86. The bundle names the version without
+     * pinning a code, so any genuine build of this version patches, including a variant APKMirror
+     * adds later. 512408645 and 512408647 carry the same code as 635 and 622, with only the
+     * version-code literal in classes.dex changed.
      */
     internal val THREADS_TARGET_VERSION_CODES = setOf(
         512408621, // arm64-v8a, 160dpi
@@ -68,6 +70,8 @@ internal object AppCompatibilities {
         512408625, // arm64-v8a, 240dpi
         512408635, // armeabi-v7a, 480dpi, Android 8.0+
         512408636, // arm64-v8a, 480dpi
+        512408645, // armeabi-v7a, 320-480dpi, Android 8.0+
+        512408647, // x86, 213-480dpi, Android 8.0+
         512408648, // x86_64, 480dpi
     )
 

@@ -49,6 +49,8 @@ The source build patches Threads 454 only. Each release moves to the newest stab
 | 454.0.0.54.79 | 512408625 (arm64-v8a, 240dpi) | Android 9 |
 | 454.0.0.54.79 | 512408635 (armeabi-v7a, 480dpi) | Android 9 |
 | 454.0.0.54.79 | 512408636 (arm64-v8a, 480dpi) | Android 9 |
+| 454.0.0.54.79 | 512408645 (armeabi-v7a, 320-480dpi) | Android 9 |
+| 454.0.0.54.79 | 512408647 (x86, 213-480dpi) | Android 9 |
 | 454.0.0.54.79 | 512408648 (x86_64, 480dpi) | Android 9 |
 
 Release checks run on these stock bundles:
@@ -59,10 +61,12 @@ bb3c799dd07c71ae6a4c4a2a74489a6dd37302a43c741df749b6d351ac001a32  threads-454.0.
 7d63c40f2ad4fce80542dfa8e4a6c718496e9250f27c53d6885a4cb8e78b4b47  threads-454.0.0.54.79-512408625.apkm
 ce9a0cdde01928a88e859d905a710d0f5316b1a178ecb4ebe1b2e76b780afb22  threads-454.0.0.54.79-512408635.apkm
 2f9516f16e8fd8cd3f2fa478c7246d3274e5a14f04109c1de4996c9fbd5f45da  threads-454.0.0.54.79-512408636.apkm
+2be7500e68feb3c57c4a7996f7eeefc199f8beac246bc1fe2b9395e1badd4fb0  threads-454.0.0.54.79-512408645.apkm
+e427b7e8c6e88184f839039db71d087f288a37d3a934a18465ce990af1e6c5fd  threads-454.0.0.54.79-512408647.apkm
 672004103783b1c1d0f7e752f7408921c8248b52531987ffbbbd0a05b2eeb7e1  threads-454.0.0.54.79-512408648.apkm
 ```
 
-A copy from another site may be packed differently and have another hash. HushThreads matches the Threads version name, so any 454.0.0.54.79 build works. The table lists the six APKMirror variants checked here.
+A copy from another site may be packed differently and have another hash. HushThreads matches the Threads version name, so any 454.0.0.54.79 build works. The table lists the eight APKMirror variants checked here.
 
 ## Keep your signing key
 
