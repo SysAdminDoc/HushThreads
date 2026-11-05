@@ -19,6 +19,7 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
@@ -63,8 +64,8 @@ class HideAdsFixtureTest {
             assertEquals("$where: static boolean methods reading the injected hash", 1, checks.size)
             val injected = checks.single()
 
-            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, MEDIA, injected.definingClass))
-            assertEquals("$where: both feed caches, Media and the injected check's class", 4, classes.size)
+            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, FEED_CACHE_HANDLER, FOR_YOU_LOCAL_SOURCE, MEDIA, injected.definingClass))
+            assertEquals("$where: both feed caches, the feed cache's handler, For You's data source, Media and the injected check's class", 6, classes.size)
             val merges = classes.getValue(FEED_CACHE).methods.filter { it.isFeedMerge() }
             assertEquals("$where: the feed cache's page merges", 1, merges.size)
             val merge = merges.single()
@@ -118,6 +119,41 @@ class HideAdsFixtureTest {
             assertEquals("$where: nothing else changed in the spool merge", spoolMerge.instructions().size + 2, spoolHead.size)
             assertEquals("$where: the spool page is the List parameter", "Ljava/util/List;", spoolMerge.parameterTypes[5].toString())
 
+            // Both For You handlers' insert of one item at a position asks first, and an ad gets the
+            // feed cache handler's answer for having no page: the one Integer an if-eqz there jumps
+            // to that isn't the spool insert's only answer, its success.
+            val declaredInserts = classes.getValue(FOR_YOU_LOCAL_SOURCE).methods.filter { it.isInsert() }
+            assertEquals("$where: For You's data source declares one insert", 1, declaredInserts.size)
+            assertEquals("$where: the insert takes the merge's feed item", getter.definingClass,
+                declaredInserts.single().parameterTypes[0].toString())
+            val inserts = listOf(FEED_CACHE_HANDLER, SPOOL_FEED_CACHE).associateWith { handler ->
+                classes.getValue(handler).methods.single { it.sameSignatureAs(declaredInserts.single()) }
+            }
+            val success = inserts.getValue(SPOOL_FEED_CACHE).integerReads()
+            assertEquals("$where: the spool insert has one answer", 1, success.size)
+            val noPage = inserts.getValue(FEED_CACHE_HANDLER).integerReadsJumpedToByIfEqz() - success
+            assertEquals("$where: the feed cache handler's no-page answers: $noPage", 1, noPage.size)
+            for ((handler, insert) in inserts) {
+                val hooked = context.mutableClassDefBy(handler).methods.single { it.sameSignatureAs(insert) }.instructions()
+                val ask = hooked[0]
+                assertEquals("$where: $handler's insert starts with the ask", Opcode.INVOKE_STATIC_RANGE, ask.opcode)
+                assertEquals("$feedAds->insertedAd(Ljava/lang/Object;)Z", ask.referenceText())
+                // `this` and the item, then the int position, past the locals: the item is p1.
+                val itemRegister = (insert.implementation!!.registerCount - 3) + 1
+                assertEquals("$where: $handler's ask reads the item, p1", itemRegister, (ask as RegisterRangeInstruction).startRegister)
+                assertEquals(1, ask.registerCount)
+                assertEquals(listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.SGET_OBJECT, Opcode.RETURN_OBJECT),
+                    hooked.subList(1, 5).map { it.opcode })
+                assertTrue("$where: $handler borrows v0, a local", insert.implementation!!.registerCount > 3)
+                assertEquals(listOf(0, 0, 0, 0), hooked.subList(1, 5).map { (it as OneRegisterInstruction).registerA })
+                assertEquals("$where: $handler answers the no-page code for an ad", noPage.single(), hooked[3].referenceText())
+                // A no goes on to the insert's own first instruction, which comes right after. The
+                // offset counts 16-bit code units: if-eqz and sget-object take two, return-object one.
+                assertEquals("$where: $handler's ask jumps past the answer", 5, (hooked[2] as OffsetInstruction).codeOffset)
+                assertEquals(insert.instructions()[0].opcode, hooked[5].opcode)
+                assertEquals("$where: nothing else changed in $handler's insert", insert.instructions().size + 5, hooked.size)
+            }
+
             val stubs = context.mutableClassDefBy(feedAds).methods
             val itemMedia = stubs.single { it.name == "itemMedia" }.instructions()
             assertEquals(getter.definingClass, itemMedia.first { it.opcode == Opcode.INSTANCE_OF }.typeText())
@@ -163,7 +199,7 @@ class HideAdsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             clearMatches()
             val injected = FixtureDex.methodsWhere(build, { true }) { it.isInjectedCheck() }.single()
-            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, MEDIA, injected.definingClass))
+            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, FEED_CACHE_HANDLER, FOR_YOU_LOCAL_SOURCE, MEDIA, injected.definingClass))
             val merge = classes.getValue(FEED_CACHE).methods.single { it.isFeedMerge() }
             val getter = merge.instructions().mapNotNull { it.mediaGetter() }.distinct().single()
             val item = FixtureDex.classes(build, setOf(getter.definingClass)).getValue(getter.definingClass)
@@ -185,7 +221,7 @@ class HideAdsFixtureTest {
     fun `repeated getters and unrelated prototypes do not create another target`() {
         for (build in Fixtures.declaredBuilds()) {
             val injected = FixtureDex.methodsWhere(build, { true }) { it.isInjectedCheck() }.single()
-            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, MEDIA, injected.definingClass))
+            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, FEED_CACHE_HANDLER, FOR_YOU_LOCAL_SOURCE, MEDIA, injected.definingClass))
             val merge = classes.getValue(FEED_CACHE).methods.single { it.isFeedMerge() }
             val getter = merge.instructions().mapNotNull { it.mediaGetter() }.distinct().single()
             val item = FixtureDex.classes(build, setOf(getter.definingClass)).getValue(getter.definingClass)
@@ -209,7 +245,7 @@ class HideAdsFixtureTest {
     fun `discarding the injected result or bypassing it rejects the Media predicate`() {
         for (build in Fixtures.declaredBuilds()) {
             val injected = FixtureDex.methodsWhere(build, { true }) { it.isInjectedCheck() }.single()
-            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, MEDIA, injected.definingClass))
+            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, FEED_CACHE_HANDLER, FOR_YOU_LOCAL_SOURCE, MEDIA, injected.definingClass))
             val merge = classes.getValue(FEED_CACHE).methods.single { it.isFeedMerge() }
             val getter = merge.instructions().mapNotNull { it.mediaGetter() }.distinct().single()
             val item = FixtureDex.classes(build, setOf(getter.definingClass)).getValue(getter.definingClass)
@@ -254,6 +290,26 @@ class HideAdsFixtureTest {
                 reference is MethodReference &&
                     reference.definingClass == "Lcom/instagram/barcelona/spool/core/modelpool/BcnSpoolModelPoolImpl;"
             } }
+
+    private fun Method.isInsert(): Boolean = returnType == "Ljava/lang/Integer;" && parameterTypes.size == 2 &&
+        parameterTypes[0].startsWith("L") && parameterTypes[1] == "I"
+
+    /** The Integer fields the method reads with sget-object, as smali names them. */
+    private fun Method.integerReads(): Set<String> = instructions().mapNotNull { it.integerRead() }.toSet()
+
+    /** The Integer fields read by the instructions an `if-eqz` of the method jumps to. */
+    private fun Method.integerReadsJumpedToByIfEqz(): Set<String> {
+        val body = instructions()
+        val address = body.runningFold(0) { at, instruction -> at + instruction.codeUnits }
+        val indexAt = body.indices.associateBy { address[it] }
+        return body.indices.filter { body[it].opcode == Opcode.IF_EQZ }.mapNotNull { index ->
+            indexAt[address[index] + (body[index] as OffsetInstruction).codeOffset]?.let { body[it].integerRead() }
+        }.toSet()
+    }
+
+    private fun Instruction.integerRead(): String? =
+        ((this as? ReferenceInstruction)?.reference as? FieldReference)
+            ?.takeIf { opcode == Opcode.SGET_OBJECT && it.type == "Ljava/lang/Integer;" }?.toString()
 
     private fun Instruction.mediaGetter(): MethodReference? {
         if (opcode != Opcode.INVOKE_VIRTUAL) return null

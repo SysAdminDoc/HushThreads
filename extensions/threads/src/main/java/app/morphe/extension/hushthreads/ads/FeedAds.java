@@ -47,6 +47,10 @@ import app.morphe.extension.shared.diagnostics.HookStatus;
  * <p>An opened post fetches its own ads to show among its replies, apart from the feed. Those come
  * through {@link #permalinkAds}, where every item is an ad.
  *
+ * <p>Threads can also insert one item into a For You page a cache already holds, which is how it
+ * places an ad it got on its own, and that passes neither merge. Each insert asks
+ * {@link #insertedAd} first.
+ *
  * <p>The typed methods at the bottom have no body of their own here. Their answers are Threads'
  * obfuscated names, which change with every build, so the patch finds them by what they do and
  * writes the calls in when you patch. Unpatched they answer nothing and every item stays.
@@ -177,6 +181,31 @@ public final class FeedAds {
         } catch (Throwable t) {
             HookStatus.threw(rule.family, "opened post ads", t);
             return ads;
+        }
+    }
+
+    /**
+     * Injected at the start of both For You caches' insert of one item into a page they already
+     * hold, the way Threads places an ad it got apart from a page fetch. Answers true for an ad with
+     * Hide ads on, and the patch then answers the insert's own "nothing went in" code. False when
+     * the switch is off, HushThreads is paused, the item isn't an ad or anything goes wrong. Never
+     * throws.
+     */
+    public static boolean insertedAd(Object item) {
+        Rule rule = Rule.ADS;
+        try {
+            if (!rule.selected()) return false;
+            HookStatus.invoked(rule.family);
+            if (item == null || !Utils.settingsReady() || !rule.enabled()) return false;
+            boolean ad = rule.matches(item);
+            HookStatus.counted(rule.family, "inserted items checked");
+            if (!ad) return false;
+            HookStatus.counted(rule.family, "inserted ads taken out");
+            Logger.printDebug(() -> rule.family + ": kept an inserted ad out of For You");
+            return true;
+        } catch (Throwable t) {
+            HookStatus.threw(rule.family, "inserted item", t);
+            return false;
         }
     }
 

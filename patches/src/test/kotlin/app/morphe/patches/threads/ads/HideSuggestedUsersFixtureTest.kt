@@ -171,18 +171,20 @@ class HideSuggestedUsersFixtureTest {
         fun stubSize(context: BytecodePatchContext, name: String) =
             context.mutableClassDefBy(FEED_ADS).methods.single { it.name == name }.instructions().size
         for ((build, cards) in Fixtures.declaredBuilds().asSequence().zip(vendors)) {
-            // Hide ads also needs Media and the injected check, which the card fixture leaves out.
+            // Hide ads also needs Media, the injected check and For You's inserts, which the card
+            // fixture leaves out.
             val adClasses = FixtureDex.classesWhere(build, { true }) { method ->
                 AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == "Z" && method.parameterTypes.size == 1 &&
                     method.instructions().mapNotNull { (it as? WideLiteralInstruction)?.wideLiteral }.toSet()
                         .containsAll(listOf(0x8669a9b0.toInt().toLong(), INJECTED_FIELD.toLong()))
-            } + FixtureDex.classes(build, setOf(MEDIA)).values
+            } + FixtureDex.classes(build, setOf(MEDIA, FOR_YOU_LOCAL_SOURCE, FEED_CACHE_HANDLER)).values
             val vendor = cards.copy(classes = (cards.classes + adClasses).distinctBy { it.type })
             val adsOnly = context(vendor)
             InjectedAdCheckFingerprint.clearMatch()
             hideAdsPatch.execute(adsOnly)
             assertEquals(vendor.name, 1, filterCalls(adsOnly))
             assertEquals(vendor.name, 1, spoolCalls(adsOnly))
+            assertEquals(vendor.name, 2, insertCalls(adsOnly))
             assertEquals(vendor.name, 1, status(adsOnly, "hideAds"))
             assertEquals(vendor.name, 0, status(adsOnly, "hideSuggestedUsers"))
             assertTrue(vendor.name, stubSize(adsOnly, "isAd") > 2)
@@ -192,6 +194,7 @@ class HideSuggestedUsersFixtureTest {
             hideSuggestedUsersPatch.execute(suggestionsOnly)
             assertEquals(vendor.name, 1, filterCalls(suggestionsOnly))
             assertEquals(vendor.name, 1, spoolCalls(suggestionsOnly))
+            assertEquals(vendor.name, 0, insertCalls(suggestionsOnly))
             assertEquals(vendor.name, 0, status(suggestionsOnly, "hideAds"))
             assertEquals(vendor.name, 1, status(suggestionsOnly, "hideSuggestedUsers"))
             assertEquals(vendor.name, 2, stubSize(suggestionsOnly, "isAd"))
@@ -203,6 +206,7 @@ class HideSuggestedUsersFixtureTest {
             hideSuggestedUsersPatch.execute(both)
             assertEquals(vendor.name, 1, filterCalls(both))
             assertEquals(vendor.name, 1, spoolCalls(both))
+            assertEquals(vendor.name, 2, insertCalls(both))
             assertEquals(vendor.name, 1, status(both, "hideAds"))
             assertEquals(vendor.name, 1, status(both, "hideSuggestedUsers"))
             assertTrue(vendor.name, stubSize(both, "isAd") > 2)
@@ -213,6 +217,12 @@ class HideSuggestedUsersFixtureTest {
     private fun spoolCalls(context: BytecodePatchContext) = context.mutableClassDefBy(SPOOL_FEED_CACHE).methods
         .flatMap { it.instructions() }.count {
             it.getReference<MethodReference>()?.toString() == "$FEED_ADS->spoolPage(Ljava/util/List;)Ljava/util/List;"
+        }
+
+    /** Calls to the inserted-ad check across both For You handlers. Only Hide ads writes them. */
+    private fun insertCalls(context: BytecodePatchContext) = listOf(FEED_CACHE_HANDLER, SPOOL_FEED_CACHE)
+        .flatMap { context.mutableClassDefBy(it).methods }.flatMap { it.instructions() }.count {
+            it.getReference<MethodReference>()?.toString() == "$FEED_ADS->insertedAd(Ljava/lang/Object;)Z"
         }
 
     private data class Raw(val owner: String, val type: String?)

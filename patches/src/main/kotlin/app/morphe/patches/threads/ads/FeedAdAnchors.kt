@@ -67,6 +67,16 @@ internal object SpoolFeedPageMergeFingerprint : Fingerprint(
 )
 
 /**
+ * For You's local data source, the abstract class both For You handlers extend. Among its methods
+ * is the insert of one feed item at a position in a page the cache already holds, which is how
+ * Threads places an ad it got apart from a page fetch. The name survives Redex.
+ */
+internal const val FOR_YOU_LOCAL_SOURCE = "Lcom/instagram/barcelona/feed/data/cache/ForYouFeedLocalDataSource;"
+
+/** For You's handler over [FEED_CACHE], the one Threads uses unless the spool's flags are on. The name survives Redex. */
+internal const val FEED_CACHE_HANDLER = "Lcom/instagram/barcelona/feed/data/cache/BarcelonaFeedCacheHandler;"
+
+/**
  * Threads' check of whether a post carries the "injected" block the server puts on an ad. A static
  * boolean method taking the post's fragment. It reads a field by a hash whose name the app doesn't
  * keep, then the "injected" field of that, and answers whether there is one. The first hash is

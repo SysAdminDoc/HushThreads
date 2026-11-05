@@ -129,6 +129,66 @@ public class FeedAdsTest {
                 HookStatus.report());
     }
 
+    /** With the switch off, paused, without settings or with the check broken, a spool page stays whole and uncounted. */
+    @Test
+    public void spoolPagesStayWholeWhenHideAdsCannotAnswer() throws Exception {
+        List<Object> page = Arrays.asList("first", ShadowFeedAds.AD);
+        Settings.HIDE_ADS.save(false);
+        assertSame(page, FeedAds.spoolPage(page));
+        Settings.HIDE_ADS.save(true);
+        SettingsContextRule.withoutContext(() -> assertSame(page, FeedAds.spoolPage(page)));
+        java.lang.reflect.Method pause = Setting.class.getDeclaredMethod("setPausedForProcess", boolean.class);
+        pause.setAccessible(true);
+        try {
+            pause.invoke(null, true);
+            assertSame(page, FeedAds.spoolPage(page));
+        } finally {
+            pause.invoke(null, false);
+        }
+        List<Object> broken = Arrays.asList(ShadowFeedAds.AD, ShadowFeedAds.BROKEN, "first");
+        assertSame(broken, FeedAds.spoolPage(broken));
+        String report = HookStatus.report().toString();
+        assertTrue(report, !report.contains("Counted:"));
+        assertTrue(report, report.contains("'feed page' hook (it threw java.lang.IllegalStateException)"));
+    }
+
+    /** An ad Threads inserts into a page it holds stays out. Anything else goes in. */
+    @Test
+    public void insertedAdsStayOutAndOtherInsertsGoIn() {
+        assertTrue(FeedAds.insertedAd(ShadowFeedAds.AD));
+        assertTrue(FeedAds.insertedAd(UnitType.AD4AD));
+        assertFalse(FeedAds.insertedAd("ordinary post"));
+        assertFalse(FeedAds.insertedAd(UnitType.SUGGESTED_USERS));
+        assertFalse(FeedAds.insertedAd(null));
+        assertEquals(Collections.singletonList("Hide ads: invoked 5, 0 found, 0 missing. "
+                + "Counted: inserted items checked 4, inserted ads taken out 2"), HookStatus.report());
+    }
+
+    /** With the switch off, paused, without settings or with the check broken, every insert goes in uncounted. */
+    @Test
+    public void insertsGoInWhenHideAdsCannotAnswer() throws Exception {
+        Settings.HIDE_ADS.save(false);
+        assertFalse(FeedAds.insertedAd(ShadowFeedAds.AD));
+        Settings.HIDE_ADS.save(true);
+        SettingsContextRule.withoutContext(() -> assertFalse(FeedAds.insertedAd(ShadowFeedAds.AD)));
+        java.lang.reflect.Method pause = Setting.class.getDeclaredMethod("setPausedForProcess", boolean.class);
+        pause.setAccessible(true);
+        try {
+            pause.invoke(null, true);
+            assertFalse(FeedAds.insertedAd(ShadowFeedAds.AD));
+        } finally {
+            pause.invoke(null, false);
+        }
+        assertFalse(FeedAds.insertedAd(ShadowFeedAds.BROKEN));
+        String report = HookStatus.report().toString();
+        assertTrue(report, !report.contains("Counted:"));
+        assertTrue(report, report.contains("'inserted item' hook (it threw java.lang.IllegalStateException)"));
+        ShadowFeedAds.Status.ads = false;
+        HookStatus.clear();
+        assertFalse(FeedAds.insertedAd(ShadowFeedAds.AD));
+        assertEquals(Collections.emptyList(), HookStatus.report());
+    }
+
     @Test
     public void emptyDisabledOmittedAndFailedChecksDoNotCountPages() {
         ShadowFeedAds.Status.suggestions = true;
