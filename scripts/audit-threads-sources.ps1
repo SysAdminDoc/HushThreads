@@ -745,9 +745,40 @@ Invoke-Source 'GitHub code search' {
     "$($queries.Count) queries, $hits hits outside the indexes"
 }
 
+function Get-GitLabBlobIds {
+    <#
+        Each path's blob id at one ref, by path. GitLab's code search answers a hit's project, ref and
+        path but no blob id, and the fork and mirror checks compare blob ids. A path the ref no longer
+        holds is left out. Fifty paths a request, so a busy fork costs one or two of the roughly 60
+        requests an hour gitlab.com allows (Get-GitLabWatchedHeads).
+    #>
+    param([string]$Project, [string]$Ref, [string[]]$Paths)
+    $oids = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([StringComparer]::Ordinal)
+    $wantedPaths = @($Paths)
+    for ($skip = 0; $skip -lt $wantedPaths.Count; $skip += 50) {
+        $chunk = @($wantedPaths | Select-Object -Skip $skip -First 50)
+        $query = "query { project(fullPath: $(ConvertTo-Json -Compress -InputObject $Project)) { repository { " +
+            "blobs(ref: $(ConvertTo-Json -Compress -InputObject $Ref), paths: $(ConvertTo-Json -Compress -InputObject $chunk)) { nodes { path oid } } } } }"
+        $answer = Invoke-SourceRequest -Uri 'https://gitlab.com/api/graphql' -Auth gitlab -Body (ConvertTo-Json -Compress -InputObject @{ query = $query })
+        if ($answer.Status -ne 200) { throw "the blob ids of $Project at $Ref answered HTTP $($answer.Status)" }
+        $document = ConvertFrom-SourceJson -Text $answer.Content -What "$Project blob ids"
+        $refused = @(Get-SourceProperty $document 'errors' | Where-Object { $_ } | ForEach-Object { [string]$_.message })
+        if ($refused.Count -gt 0) { throw "GitLab refused the question about $Project's blob ids: $($refused -join '; ')" }
+        $repository = Get-SourceProperty (Get-SourceProperty (Get-SourceProperty $document 'data') 'project') 'repository'
+        if ($null -eq $repository) { throw "GitLab answered the question about $Project's blob ids with no repository" }
+        foreach ($node in @(Get-JsonItems (Get-SourceProperty (Get-SourceProperty $repository 'blobs') 'nodes'))) {
+            $oids[[string]$node.path] = [string]$node.oid
+        }
+    }
+    return $oids
+}
+
 if ($searchGitLab) {
     Invoke-Source 'GitLab code search' {
         $projects = @{}
+        $projectPaths = @{}
+        # Hits in a recorded fork or mirror, by project and ref, waiting for their blob ids.
+        $held = @{}
         $hits = 0
         foreach ($package in $packages) {
             $result = Get-PagedItems -Uri ("https://gitlab.com/api/v4/search?scope=blobs&search=" + [Uri]::EscapeDataString("`"$package`"")) -Auth gitlab
@@ -757,13 +788,28 @@ if ($searchGitLab) {
                 if (-not $projects.ContainsKey($projectId)) {
                     $project = Invoke-SourceRequest -Uri "https://gitlab.com/api/v4/projects/$projectId" -Auth gitlab
                     $projects[$projectId] = if ($project.Status -eq 200) {
-                        ConvertTo-SourceKey ('https://gitlab.com/' + (ConvertFrom-SourceJson -Text $project.Content -What "GitLab project $projectId").path_with_namespace)
+                        $projectPaths[$projectId] = [string](ConvertFrom-SourceJson -Text $project.Content -What "GitLab project $projectId").path_with_namespace
+                        ConvertTo-SourceKey ('https://gitlab.com/' + $projectPaths[$projectId])
                     } else { $null }
                 }
-                if ($projects[$projectId]) {
-                    Add-Candidate -Key $projects[$projectId] -Source 'GitLab code search' -Mentions @($package) -Path ([string]$item.path) -Blob $null
-                    $hits++
+                if (-not $projects[$projectId]) { continue }
+                $hits++
+                $record = $known[$projects[$projectId]]
+                if ($null -ne $record -and ($record.Kind -eq 'fork' -or $record.Kind -eq 'mirror')) {
+                    $group = $projectId + '|' + [string]$item.ref
+                    if (-not $held.ContainsKey($group)) { $held[$group] = New-Object System.Collections.Generic.List[object] }
+                    $held[$group].Add([pscustomobject]@{ Package = $package; Path = [string]$item.path })
+                    continue
                 }
+                Add-Candidate -Key $projects[$projectId] -Source 'GitLab code search' -Mentions @($package) -Path ([string]$item.path) -Blob $null
+            }
+        }
+        foreach ($group in @($held.Keys | Sort-Object)) {
+            $projectId, $ref = $group -split '\|', 2
+            $oids = Get-GitLabBlobIds -Project $projectPaths[$projectId] -Ref $ref -Paths @($held[$group] | ForEach-Object { $_.Path } | Sort-Object -Unique)
+            foreach ($hit in $held[$group]) {
+                $blob = if ($oids.ContainsKey($hit.Path)) { $oids[$hit.Path] } else { $null }
+                Add-Candidate -Key $projects[$projectId] -Source 'GitLab code search' -Mentions @($hit.Package) -Path $hit.Path -Blob $blob
             }
         }
         "$hits hits in $(@($projects.Values | Where-Object { $_ } | Sort-Object -Unique).Count) projects"
@@ -916,19 +962,27 @@ function Get-GitLabWatchedHeads {
         an hour across every session on it, so the 35 branches and two paths of ReVanced's mirror
         could never be read (HushGram, 2026-10-31). GraphQL shares that budget but asks about 30
         paths in one request, which GitLab scores at 125 of the 200 it allows, so the mirror costs
-        three requests where REST needed seventy.
+        four requests, each branch's head included, where REST needed seventy.
     #>
     param([string]$Project, [string[]]$Branches, [string[]]$WatchPaths)
     $heads = New-Object 'System.Collections.Generic.Dictionary[string,object]'
     $dates = New-Object 'System.Collections.Generic.Dictionary[string,object]'
     foreach ($branch in $Branches) { $heads[$branch] = $null }
-    $wanted = @(foreach ($branch in $Branches) { foreach ($watch in $WatchPaths) { [pscustomobject]@{ Branch = $branch; Watch = $watch } } })
-    for ($skip = 0; $skip -lt $wanted.Count; $skip += 30) {
-        $question = @($wanted | Select-Object -Skip $skip -First 30)
-        $aliases = for ($index = 0; $index -lt $question.Count; $index++) {
+    if (@($WatchPaths).Count -eq 0) { return $heads }
+    # lastCommit answers null for a ref that's gone and for a path with no commits alike, so each
+    # branch's own head is asked in the same request as its paths. A branch deleted since the branch
+    # list has no head and is left out of the answer, rather than read as moved to no Threads code.
+    $names = @($Branches)
+    $perRequest = [int][Math]::Max(1, [Math]::Floor(30 / (1 + @($WatchPaths).Count)))
+    for ($skip = 0; $skip -lt $names.Count; $skip += $perRequest) {
+        $group = @($names | Select-Object -Skip $skip -First $perRequest)
+        $question = @(foreach ($branch in $group) { foreach ($watch in $WatchPaths) { [pscustomobject]@{ Branch = $branch; Watch = $watch } } })
+        $aliases = @(for ($index = 0; $index -lt $group.Count; $index++) {
+            "h${index}: lastCommit(ref: $(ConvertTo-Json -Compress -InputObject $group[$index]), refType: HEADS) { sha }"
+        }) + @(for ($index = 0; $index -lt $question.Count; $index++) {
             "q${index}: lastCommit(ref: $(ConvertTo-Json -Compress -InputObject $question[$index].Branch), " +
                 "path: $(ConvertTo-Json -Compress -InputObject $question[$index].Watch), refType: HEADS) { sha committedDate }"
-        }
+        })
         $query = "query { project(fullPath: $(ConvertTo-Json -Compress -InputObject $Project)) { repository { $($aliases -join ' ') } } }"
         $answer = Invoke-SourceRequest -Uri 'https://gitlab.com/api/graphql' -Auth gitlab -Body (ConvertTo-Json -Compress -InputObject @{ query = $query })
         if ($answer.Status -ne 200) { throw "the commits under its watched paths answered HTTP $($answer.Status)" }
@@ -938,9 +992,12 @@ function Get-GitLabWatchedHeads {
         $commits = Get-SourceProperty (Get-SourceProperty (Get-SourceProperty $document 'data') 'project') 'repository'
         # A missing project mustn't read as branches with no Threads code.
         if ($null -eq $commits) { throw 'GitLab answered the question about its watched paths with no repository' }
+        for ($index = 0; $index -lt $group.Count; $index++) {
+            if ($null -eq (Get-SourceProperty $commits "h$index")) { [void]$heads.Remove($group[$index]) }
+        }
         for ($index = 0; $index -lt $question.Count; $index++) {
             $commit = Get-SourceProperty $commits "q$index"
-            if ($null -eq $commit) { continue }
+            if ($null -eq $commit -or -not $heads.ContainsKey($question[$index].Branch)) { continue }
             # ConvertFrom-Json makes a DateTime of this in PowerShell 7 and leaves a string in 5.1.
             $date = if ($commit.committedDate -is [DateTime]) { ([DateTimeOffset]$commit.committedDate).UtcDateTime } else {
                 [DateTimeOffset]::Parse([string]$commit.committedDate, [Globalization.CultureInfo]::InvariantCulture).UtcDateTime }
@@ -1036,6 +1093,10 @@ function Read-GitLabSource {
         -Branches @($branchList.Items | ForEach-Object { [string]$_.name })
     $branches = [ordered]@{}
     foreach ($branch in $branchList.Items) {
+        if ($watch.Count -gt 0 -and -not $watched.ContainsKey([string]$branch.name)) {
+            $notes.Add("https://gitlab.com/$Path deleted branch $([string]$branch.name) while the census read it, so it counts as gone")
+            continue
+        }
         $branches[[string]$branch.name] = [pscustomobject]@{ Head = [string]$branch.commit.id
             Watched = $(if ($watch.Count -eq 0) { [string]$branch.commit.id } else { $watched[[string]$branch.name] }) }
     }

@@ -595,6 +595,12 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
                 foreach ($asked in [regex]::Matches($query, '(q\d+): lastCommit\(ref: "([^"]+)", path: "([^"]+)", refType: HEADS\) \{ sha committedDate \}')) {
                     $commits[$asked.Groups[1].Value] = $a.gammaWatch["$($asked.Groups[2].Value)|$($asked.Groups[3].Value)"]
                 }
+                # A branch's own head comes from the branch list this stand-in hands out.
+                $listedBranches = @(([string]$a.gammaBranches.Content | ConvertFrom-Json) | ForEach-Object { $_ })
+                foreach ($asked in [regex]::Matches($query, '(h\d+): lastCommit\(ref: "([^"]+)", refType: HEADS\) \{ sha \}')) {
+                    $listedBranch = @($listedBranches | Where-Object { [string]$_.name -ceq $asked.Groups[2].Value } | Select-Object -First 1)
+                    $commits[$asked.Groups[1].Value] = if ($listedBranch.Count -gt 0) { @{ sha = [string]$listedBranch[0].commit.id } } else { $null }
+                }
                 $answer = @{ Status = 200; Content = (@{ data = @{ project = @{ repository = $commits } } } | ConvertTo-Json -Depth 6) }
                 break
             }
@@ -803,7 +809,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     Assert-Drift 'changed-head' "*gamma-patches*branch main moved from $commitG1 to no Threads code*" 'A GitLab branch that lost its watched code'
     $fakeForge.Answers = New-FakeAnswers
 
-    # Forty branches and two paths are three questions, and the last one is read: its branch holds
+    # Forty branches and two paths are four questions (ten branches each, with their heads), and the last one is read: its branch holds
     # the only work the ledger hasn't pinned. A branch name with slashes reaches GitLab whole.
     $manyBranches = @('main') + @(1..39 | ForEach-Object { "github/fork/someone/b$_" })
     $fakeForge.Answers.gammaBranches.Content = ConvertTo-Json -Compress -Depth 4 -InputObject @($manyBranches | ForEach-Object { @{ name = $_; commit = @{ id = ('c4' * 20) } } })
@@ -812,7 +818,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     $manyRun = Invoke-Audit
     $manyFindings = @($manyRun.Report.findings | ForEach-Object { "$($_.kind): $($_.detail)" }) -join ' | '
     $manyQuestions = @($fakeForge.Requests | Where-Object { $_.Uri -ceq 'https://gitlab.com/api/graphql' }).Count
-    Assert-True ($manyQuestions -eq 3) "Forty branches and two paths weren't three questions: $manyQuestions"
+    Assert-True ($manyQuestions -eq 4) "Forty branches and two paths weren't four questions: $manyQuestions"
     Assert-True (@($manyRun.Report.findings | Where-Object { $_.kind -eq 'new-branch' -and $_.detail -like '*branch github/fork/someone/b39 carries Threads work*' }).Count -eq 1) `
         "The last question's branch wasn't read: $manyFindings"
     $fakeForge.Answers = New-FakeAnswers
