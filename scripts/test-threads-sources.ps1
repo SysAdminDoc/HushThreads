@@ -901,6 +901,46 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     Assert-Drift 'mirror-changed' '*copier/alpha-copy*' 'A recorded copy whose file changed'
     $fakeForge.Answers = New-FakeAnswers
 
+    # A recorded fork whose Threads files code search finds and no lineage holds: no index lists
+    # it, so only its files say it carries work of its own.
+    $fakeForge.Answers.searchHits = @($fakeForge.Answers.searchHits) + @(
+        @{ repository = @{ full_name = 'someone/alpha-patches' }; path = 'patches/Alpha.kt'; sha = $blobKnown }
+        @{ repository = @{ full_name = 'someone/alpha-patches' }; path = 'patches/Novel.kt'; sha = ('8c' * 20) })
+    Assert-Drift 'fork-changed' '*github.com/someone/alpha-patches*recorded fork of alpha holds 1 Threads file*' 'A recorded fork with a Threads file of its own'
+    $forkResult = Invoke-Audit
+    $forkFinding = @($forkResult.Report.findings | Where-Object { $_.kind -eq 'fork-changed' })
+    Assert-True ($forkFinding.Count -eq 1 -and @($forkFinding[0].evidence.hits).Count -eq 1 -and $forkFinding[0].evidence.hits[0].path -eq 'patches/Novel.kt') `
+        "The recorded fork's finding didn't name just its own file: $(ConvertTo-Json -Compress -Depth 6 -InputObject $forkFinding)"
+    $fakeForge.Answers = New-FakeAnswers
+
+    # Many such files make one finding that names 20 of them and counts the rest.
+    $fakeForge.Answers.searchHits = @($fakeForge.Answers.searchHits) + @(for ($n = 0; $n -lt 25; $n++) {
+        @{ repository = @{ full_name = 'someone/alpha-patches' }; path = "patches/Novel$n.kt"; sha = ('{0:x2}' -f (0xa0 + $n)) * 20 } })
+    $manyResult = Invoke-Audit
+    $manyFinding = @($manyResult.Report.findings | Where-Object { $_.kind -eq 'fork-changed' })
+    Assert-True ($manyResult.ExitCode -eq 1 -and $manyFinding.Count -eq 1 -and @($manyFinding[0].evidence.hits).Count -eq 20 -and $manyFinding[0].evidence.more -eq 5) `
+        "A recorded fork with 25 files of its own didn't make one finding naming 20 and counting 5: $(ConvertTo-Json -Compress -Depth 4 -InputObject $manyFinding)"
+    Assert-True ([IO.File]::ReadAllText($fixtureLedgerPath) -ceq $fixtureLedgerText) 'An audit with a changed recorded fork changed the ledger.'
+    $fakeForge.Answers = New-FakeAnswers
+
+    # A recorded fork found under its old name gets the same check.
+    $fakeForge.Answers.searchHits = @($fakeForge.Answers.searchHits) + @(
+        @{ repository = @{ full_name = 'fixture-owner/alpha-old' }; path = 'patches/Novel.kt'; sha = ('8d' * 20) })
+    $fakeForge.Answers.oldNameMeta.Content = '{"full_name":"someone/alpha-patches","fork":true,"archived":false}'
+    Assert-Drift 'fork-changed' '*github.com/someone/alpha-patches*recorded fork of alpha*' 'A recorded fork found by its old name with a Threads file of its own'
+    $fakeForge.Answers = New-FakeAnswers
+
+    # A recorded fork holding only files its lineage or that lineage's copies hold stays quiet.
+    $fakeForge.Answers.searchHits = @($fakeForge.Answers.searchHits) + @(
+        @{ repository = @{ full_name = 'someone/alpha-patches' }; path = 'patches/Alpha.kt'; sha = $blobKnown }
+        @{ repository = @{ full_name = 'someone/alpha-patches' }; path = 'patches/Copy.kt'; sha = $blobMirror })
+    $sameFork = Invoke-Audit
+    Assert-True ($sameFork.ExitCode -eq 0 -and @($sameFork.Report.findings | Where-Object { $_.kind -eq 'fork-changed' }).Count -eq 0) `
+        ("A recorded fork holding only its lineage's files was reported: " +
+            (@($sameFork.Report.findings | ForEach-Object { "$($_.kind): $($_.repository) $($_.detail)" }) -join ' | '))
+    Reset-FixtureLedger
+    $fakeForge.Answers = New-FakeAnswers
+
     $fakeForge.Answers.alphaBranches.Content = "[{`"name`":`"trunk`",`"commit`":{`"sha`":`"$commitA1`"}}]"
     Assert-Drift 'branch-removed' '*alpha-patches*branch main is gone*' 'A pinned branch that was deleted'
     $fakeForge.Answers = New-FakeAnswers

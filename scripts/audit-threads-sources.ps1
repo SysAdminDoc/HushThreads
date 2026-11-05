@@ -787,7 +787,22 @@ function Test-KnownRepository {
                 -Detail "a copy of $($Record.Lineage) now holds Threads files the lineage doesn't" `
                 -Evidence ([ordered]@{ hits = @($Candidate.Hits | Where-Object { $diverged -contains $_.blob }) })
         }
-    } elseif ($Candidate.Packages.Count -gt 0) {
+    } else {
+        if ($Record.Kind -eq 'fork') {
+            # A fork is recorded by name only, as a copy of its lineage. Threads files code search
+            # finds in it that no lineage holds are its own work, which nobody has reviewed. One
+            # finding per fork, naming at most 20 of those files.
+            $diverged = @($Blobs | Where-Object { -not $knownBlobs.ContainsKey($_) })
+            if ($diverged.Count -gt 0) {
+                $novelHits = @($Candidate.Hits | Where-Object { $diverged -contains $_.blob } | Sort-Object path -Unique)
+                Add-Finding -Kind 'fork-changed' -Repository "https://$Key" `
+                    -Detail ("a recorded fork of $($Record.Lineage) holds $($novelHits.Count) Threads file(s) the lineage doesn't; " +
+                        "review them, then add their blob ids to the entry's contentHashes or give the fork an entry of its own") `
+                    -Evidence ([ordered]@{ sources = @($Candidate.Sources); hits = @($novelHits | Select-Object -First 20)
+                        more = [Math]::Max(0, $novelHits.Count - 20) })
+            }
+        }
+        if ($Candidate.Packages.Count -eq 0) { return }
         # An index listing a recorded fork or an out-of-scope repository for a Threads
         # package means it publishes a bundle of its own. The Morphe Archive keeps every fork's
         # patch list, so a fork only it lists counts for packages its entry doesn't target.
@@ -886,8 +901,9 @@ function Get-GitLabWatchedHeads {
         Each branch's newest commit under the watched paths, or null where none has any, by branch
         name. REST takes a request per branch and path, and gitlab.com allows an address about 60
         an hour across every session on it, so the 35 branches and two paths of ReVanced's mirror
-        could never be read (HushGram, 2026-10-31). GraphQL takes them together and is counted
-        apart. One question holds 30 paths, which GitLab scores at 125 of the 200 it allows.
+        could never be read (HushGram, 2026-10-31). GraphQL shares that budget but asks about 30
+        paths in one request, which GitLab scores at 125 of the 200 it allows, so the mirror costs
+        three requests where REST needed seventy.
     #>
     param([string]$Project, [string[]]$Branches, [string[]]$WatchPaths)
     $heads = New-Object 'System.Collections.Generic.Dictionary[string,object]'
