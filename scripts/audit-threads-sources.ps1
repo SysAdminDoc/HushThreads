@@ -747,38 +747,65 @@ Invoke-Source 'GitHub code search' {
 
 function Get-GitLabBlobIds {
     <#
-        Each path's blob id at one ref, by path. GitLab's code search answers a hit's project, ref and
-        path but no blob id, and the fork and mirror checks compare blob ids. A path the ref no longer
-        holds is left out. Fifty paths a request, so a busy fork costs one or two of the roughly 60
-        requests an hour gitlab.com allows (Get-GitLabWatchedHeads).
+        Each question's blob ids by path, keyed by the question's Key. A question names a Project, a
+        Ref and its Paths. GitLab's code search answers a hit's project, ref and path but no blob id,
+        and the fork and mirror checks compare blob ids. A path the ref no longer holds is left out.
+        GitLab scores a project's blobs at about 12 plus 2 a path against the 200 a request may cost
+        (measured 2026-11-05), so small forks share a request and a busy one goes 50 paths at a time.
+        Each request spends one of the roughly 60 an hour gitlab.com allows (Get-GitLabWatchedHeads).
     #>
-    param([string]$Project, [string]$Ref, [string[]]$Paths)
-    $oids = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([StringComparer]::Ordinal)
-    $wantedPaths = @($Paths)
-    for ($skip = 0; $skip -lt $wantedPaths.Count; $skip += 50) {
-        $chunk = @($wantedPaths | Select-Object -Skip $skip -First 50)
-        $query = "query { project(fullPath: $(ConvertTo-Json -Compress -InputObject $Project)) { repository { " +
-            "blobs(ref: $(ConvertTo-Json -Compress -InputObject $Ref), paths: $(ConvertTo-Json -Compress -InputObject $chunk)) { nodes { path oid } } } } }"
-        $answer = Invoke-SourceRequest -Uri 'https://gitlab.com/api/graphql' -Auth gitlab -Body (ConvertTo-Json -Compress -InputObject @{ query = $query })
-        if ($answer.Status -ne 200) { throw "the blob ids of $Project at $Ref answered HTTP $($answer.Status)" }
-        $document = ConvertFrom-SourceJson -Text $answer.Content -What "$Project blob ids"
-        $refused = @(Get-SourceProperty $document 'errors' | Where-Object { $_ } | ForEach-Object { [string]$_.message })
-        if ($refused.Count -gt 0) { throw "GitLab refused the question about $Project's blob ids: $($refused -join '; ')" }
-        $repository = Get-SourceProperty (Get-SourceProperty (Get-SourceProperty $document 'data') 'project') 'repository'
-        if ($null -eq $repository) { throw "GitLab answered the question about $Project's blob ids with no repository" }
-        foreach ($node in @(Get-JsonItems (Get-SourceProperty (Get-SourceProperty $repository 'blobs') 'nodes'))) {
-            $oids[[string]$node.path] = [string]$node.oid
+    param([object[]]$Questions)
+    $found = New-Object 'System.Collections.Generic.Dictionary[string,object]' ([StringComparer]::Ordinal)
+    $parts = New-Object System.Collections.Generic.List[object]
+    foreach ($asked in @($Questions)) {
+        $found[$asked.Key] = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([StringComparer]::Ordinal)
+        $wanted = @($asked.Paths)
+        for ($skip = 0; $skip -lt $wanted.Count; $skip += 50) {
+            $parts.Add([pscustomobject]@{ Key = $asked.Key; Project = $asked.Project; Ref = $asked.Ref
+                Paths = @($wanted | Select-Object -Skip $skip -First 50) })
         }
     }
-    return $oids
+    $next = 0
+    while ($next -lt $parts.Count) {
+        $batch = New-Object System.Collections.Generic.List[object]
+        $cost = 0
+        while ($next -lt $parts.Count) {
+            $partCost = 12 + 2 * @($parts[$next].Paths).Count
+            if ($batch.Count -gt 0 -and $cost + $partCost -gt 190) { break }
+            $batch.Add($parts[$next])
+            $cost += $partCost
+            $next++
+        }
+        $aliases = @(for ($index = 0; $index -lt $batch.Count; $index++) {
+            "b${index}: project(fullPath: $(ConvertTo-Json -Compress -InputObject $batch[$index].Project)) { repository { " +
+                "blobs(ref: $(ConvertTo-Json -Compress -InputObject $batch[$index].Ref), " +
+                "paths: $(ConvertTo-Json -Compress -InputObject @($batch[$index].Paths))) { nodes { path oid } } } }"
+        })
+        $query = "query { $($aliases -join ' ') }"
+        $answer = Invoke-SourceRequest -Uri 'https://gitlab.com/api/graphql' -Auth gitlab -Body (ConvertTo-Json -Compress -InputObject @{ query = $query })
+        if ($answer.Status -ne 200) { throw "the blob ids of $($batch[0].Project) and $($batch.Count - 1) more answered HTTP $($answer.Status)" }
+        $document = ConvertFrom-SourceJson -Text $answer.Content -What 'GitLab blob ids'
+        $refused = @(Get-SourceProperty $document 'errors' | Where-Object { $_ } | ForEach-Object { [string]$_.message })
+        if ($refused.Count -gt 0) { throw "GitLab refused the question about blob ids: $($refused -join '; ')" }
+        $data = Get-SourceProperty $document 'data'
+        for ($index = 0; $index -lt $batch.Count; $index++) {
+            $repository = Get-SourceProperty (Get-SourceProperty $data "b$index") 'repository'
+            if ($null -eq $repository) { throw "GitLab answered the question about $($batch[$index].Project)'s blob ids with no repository" }
+            foreach ($node in @(Get-JsonItems (Get-SourceProperty (Get-SourceProperty $repository 'blobs') 'nodes'))) {
+                $found[$batch[$index].Key][[string]$node.path] = [string]$node.oid
+            }
+        }
+    }
+    return $found
 }
 
 if ($searchGitLab) {
     Invoke-Source 'GitLab code search' {
         $projects = @{}
         $projectPaths = @{}
-        # Hits in a recorded fork or mirror, by project and ref, waiting for their blob ids.
-        $held = @{}
+        # Hits in a recorded fork or mirror, by project and ref, waiting for their blob ids. Refs and
+        # paths compare exactly, since git tells apart two that differ only by case.
+        $held = New-Object 'System.Collections.Generic.Dictionary[string,object]' ([StringComparer]::Ordinal)
         $hits = 0
         foreach ($package in $packages) {
             $result = Get-PagedItems -Uri ("https://gitlab.com/api/v4/search?scope=blobs&search=" + [Uri]::EscapeDataString("`"$package`"")) -Auth gitlab
@@ -804,12 +831,19 @@ if ($searchGitLab) {
                 Add-Candidate -Key $projects[$projectId] -Source 'GitLab code search' -Mentions @($package) -Path ([string]$item.path) -Blob $null
             }
         }
-        foreach ($group in @($held.Keys | Sort-Object)) {
+        $questions = @(foreach ($group in @($held.Keys | Sort-Object -CaseSensitive)) {
             $projectId, $ref = $group -split '\|', 2
-            $oids = Get-GitLabBlobIds -Project $projectPaths[$projectId] -Ref $ref -Paths @($held[$group] | ForEach-Object { $_.Path } | Sort-Object -Unique)
-            foreach ($hit in $held[$group]) {
+            $paths = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+            foreach ($hit in $held[$group]) { [void]$paths.Add($hit.Path) }
+            [pscustomobject]@{ Key = $group; Project = $projectPaths[$projectId]; Ref = $ref; Paths = @($paths) }
+        })
+        $blobIds = Get-GitLabBlobIds -Questions $questions
+        foreach ($asked in $questions) {
+            $projectKey = $projects[($asked.Key -split '\|', 2)[0]]
+            $oids = $blobIds[$asked.Key]
+            foreach ($hit in $held[$asked.Key]) {
                 $blob = if ($oids.ContainsKey($hit.Path)) { $oids[$hit.Path] } else { $null }
-                Add-Candidate -Key $projects[$projectId] -Source 'GitLab code search' -Mentions @($hit.Package) -Path $hit.Path -Blob $blob
+                Add-Candidate -Key $projectKey -Source 'GitLab code search' -Mentions @($hit.Package) -Path $hit.Path -Blob $blob
             }
         }
         "$hits hits in $(@($projects.Values | Where-Object { $_ } | Sort-Object -Unique).Count) projects"
