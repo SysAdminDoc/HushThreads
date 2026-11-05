@@ -308,9 +308,13 @@ public final class HushThreadsPause {
             } catch (Throwable ignored) {
                 // The crash belongs to the handler after this one.
             }
-            if (delegate != null) delegate.uncaughtException(thread, throwable);
-            // Still here: the handlers after this one let the process live on.
-            JavaCrashReport.survived(thread, saved);
+            try {
+                if (delegate != null) delegate.uncaughtException(thread, throwable);
+            } finally {
+                // Still here, whether the handlers after this one returned or threw: the process
+                // lives on.
+                JavaCrashReport.survived(thread, saved);
+            }
         }
     }
 

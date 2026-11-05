@@ -126,6 +126,9 @@ public final class SettingsEntry {
             if (Utils.settingsReady()) ReopenSettingsAfterRestart.reopenIfPending(SettingsEntry::reopenOn);
             // This build's receipt of its families and defaults, for the next build to compare.
             if (Utils.settingsReady()) SettingsUpgrade.onThreadsStarted();
+            // A crash kept later in the first minute lists the switches, as the export does, without
+            // the settings screen having opened first. Registering twice keeps one.
+            if (Utils.settingsReady()) PatchFamily.registerDiagnostics();
             // SettingsStatus rather than PatchFamily: a plain answer, with no settings read this early.
             if (SettingsStatus.returnRefresh()) ReturnRefresh.register(context);
         } catch (Exception ex) {

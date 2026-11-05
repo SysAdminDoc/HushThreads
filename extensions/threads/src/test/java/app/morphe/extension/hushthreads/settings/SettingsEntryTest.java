@@ -748,6 +748,25 @@ public class SettingsEntryTest {
                 application.getContentResolver().getPersistedUriPermissions().isEmpty());
     }
 
+    /**
+     * A crash kept in the first minute lists the switches. The settings screen registered them, so a
+     * start that crashed before anyone opened it kept a report with no [PATCHES] section.
+     */
+    @Test public void threadsStartingRegistersTheSwitchesACrashReportKeeps() throws Exception {
+        android.content.Context application = RuntimeEnvironment.getApplication();
+        app.morphe.extension.shared.settings.preference.ReportSectionsForTests.clear();
+        PatchFamily.inBuildForTests = java.util.EnumSet.of(PatchFamily.HIDE_ADS);
+        try {
+            org.junit.Assert.assertEquals("", app.morphe.extension.shared.settings.preference.ReportSectionsForTests.keptWithACrash());
+            SettingsEntry.onApplicationCreate(new android.content.ContextWrapper(application));
+            app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
+            String kept = app.morphe.extension.shared.settings.preference.ReportSectionsForTests.keptWithACrash();
+            assertTrue("the start registered no switches: " + kept, kept.startsWith("\n[PATCHES]\n"));
+        } finally {
+            PatchFamily.inBuildForTests = null;
+        }
+    }
+
     /** Takes Android's fragment state out before it's restored, as Threads' IgFragmentActivity does. */
     public static final class ThreadsLikeActivity extends Activity {
         @Override protected void onCreate(android.os.Bundle state) {

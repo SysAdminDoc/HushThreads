@@ -350,14 +350,14 @@ public final class LogBufferManager {
 
     /**
      * Every registered section with lines, each under its bracketed heading: Supported links into
-     * [appState], the patches' own into [patchState], or nowhere when that's null. Lines are
+     * [appState], the patches' own into [patchState], or nowhere when that one's null. Lines are
      * redacted except Supported links' "host -> state" ones, which name only public domains. A
      * section whose lines can't be read says so; one whose title can't be read stops the report.
      */
     private static void appendReportSections(StringBuilder appState, StringBuilder patchState) {
         for (ReportSection section : REPORT_SECTIONS) {
             boolean always = "SUPPORTED LINKS".equals(section.title());
-            if (!always && patchState == null) continue;
+            if (always ? appState == null : patchState == null) continue;
             List<String> lines;
             try {
                 lines = section.lines();
@@ -386,8 +386,28 @@ public final class LogBufferManager {
      */
     static String patchSectionsText() {
         StringBuilder patchState = new StringBuilder();
-        appendReportSections(new StringBuilder(), patchState);
+        appendReportSections(null, patchState);
         return patchState.toString();
+    }
+
+    /** The lines a kept crash report opens with, as {@link JavaCrashReport} writes them. */
+    private static final java.util.regex.Pattern CRASH_HEADER_LINE = java.util.regex.Pattern.compile(
+            "(schema|complete|app_version_code|patch_build): [\\w=;:.+ -]{0,400}");
+
+    /**
+     * A kept crash report as the export shows it. Its header stays as written, since the version
+     * code is a package fact and the patch build a literal the patcher embeds: the redactor read the
+     * long digit runs a hash can hold as content ids. The rest goes through the redactor again, for
+     * a report kept by an older build.
+     */
+    static String redactCrashReport(String report) {
+        int start = 0;
+        for (int line = 0; line < 4 && start < report.length(); line++) {
+            int end = report.indexOf('\n', start);
+            if (end < 0 || !CRASH_HEADER_LINE.matcher(report.substring(start, end)).matches()) break;
+            start = end + 1;
+        }
+        return report.substring(0, start) + DiagnosticRedactor.redact(report.substring(start));
     }
 
     public static String buildExportText() {
@@ -473,7 +493,7 @@ public final class LogBufferManager {
     private static Export buildExport() {
         Set<String> selected = LogExportFilterPreference.parse(BaseSettings.DEBUG_LOG_FILTERS.get());
         boolean includeAll = selected.isEmpty() || selected.contains("all");
-        String crash = DiagnosticRedactor.redact(readCrashReport(Utils.getContext()));
+        String crash = redactCrashReport(readCrashReport(Utils.getContext()));
         String npthCrash = DiagnosticRedactor.redact(readNpthCrashReport(Utils.getContext()));
 
         List<DiagnosticEvent> snapshot = new ArrayList<>(logBuffer);
@@ -870,6 +890,19 @@ public final class LogBufferManager {
         Utils.showToastShort(restorable
                 ? say(clearedMessage, L10n.t("Diagnostic data cleared. Tap again to put it back."))
                 : say(nothingToClearMessage, L10n.t("There's no diagnostic data to clear.")));
+    }
+
+    /**
+     * A Clear that took the Java crash [written] along puts back [replacement] on Undo instead:
+     * {@link JavaCrashReport} gives a report back when the process lived on past its exception.
+     */
+    static void replaceClearedCrash(String written, String replacement) {
+        synchronized (CLEAR_UNDO_LOCK) {
+            ClearSnapshot cleared = lastClear;
+            if (cleared == null || !cleared.javaCrash.equals(written)) return;
+            ClearSnapshot replaced = new ClearSnapshot(cleared.events, cleared.hooks, replacement, cleared.nativeCrash);
+            lastClear = replaced.isEmpty() ? null : replaced;
+        }
     }
 
     /** True while the clear row's next tap can restore what its previous tap removed. */

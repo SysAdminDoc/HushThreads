@@ -18,6 +18,8 @@ import androidx.annotation.Nullable;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.diagnostics.DiagnosticRedactor;
@@ -35,9 +37,10 @@ import app.morphe.extension.shared.diagnostics.DiagnosticRedactor;
  *
  * <p>The handler can sit in front of Threads' own, so it also sees an exception one of Threads'
  * handlers swallows. When the handlers after it return, the process lives on, and an exception off
- * the main thread puts the report back as it was ({@link #survived}), unless the report is no
- * longer the one it wrote: cleared, or replaced by a newer crash. One swallowed on the main thread
- * stays, since that thread is gone and Threads freezes.
+ * the main thread puts the report back as it was ({@link #survived}). A Clear or a newer crash that
+ * replaced it in the meantime gets that earlier report in its place, for Undo or for the newer one
+ * being swallowed in turn. One swallowed on the main thread stays, since that thread is gone and
+ * Threads freezes.
  */
 public final class JavaCrashReport {
     /** How much of the diagnostic event log goes in after the trace. */
@@ -46,14 +49,24 @@ public final class JavaCrashReport {
     /** The exception kept last, weakly: a handler Threads put on top of ours can hand it back. */
     private static volatile WeakReference<Throwable> lastSaved = new WeakReference<>(null);
 
-    /** One save, for {@link #survived}: what the report held before it and what it wrote. */
-    public static final class Saved {
-        final String before;
-        final String written;
+    /**
+     * Saves whose handlers haven't returned yet, guarded by {@link LogBufferManager#CLEAR_UNDO_LOCK}.
+     * Two threads can be inside the handlers at once. When one of them lives on, a save made over its
+     * report gives back what its report gave back, not the swallowed exception.
+     */
+    private static final List<Saved> OPEN = new ArrayList<>();
 
-        Saved(String before, String written) {
+    /** One save, for {@link #survived}: what the report gives back if it lives on, and what it wrote. */
+    public static final class Saved {
+        /** Changed under the lock when the save it was read from lives on. */
+        String before;
+        final String written;
+        final WeakReference<Throwable> throwable;
+
+        Saved(String before, String written, Throwable throwable) {
             this.before = before;
             this.written = written;
+            this.throwable = new WeakReference<>(throwable);
         }
     }
 
@@ -75,7 +88,9 @@ public final class JavaCrashReport {
                 String before = LogBufferManager.readCrashReport(context);
                 LogBufferManager.persistCrashReport(context, report);
                 // Read back rather than kept as built: a report past the ceiling is stored cut.
-                return new Saved(before, LogBufferManager.readCrashReport(context));
+                Saved saved = new Saved(before, LogBufferManager.readCrashReport(context), throwable);
+                OPEN.add(saved);
+                return saved;
             }
         } catch (Throwable ignored) {
             // Crash-time code must never get in the way of the handlers after this one.
@@ -86,15 +101,27 @@ public final class JavaCrashReport {
     /**
      * The handlers after ours returned for [thread]'s exception, so the process lives on. Off the
      * main thread, the report goes back to what it held before [saved], while it still holds what
-     * [saved] wrote. Never throws.
+     * [saved] wrote. A Clear that took the report along gets the same, so its Undo doesn't bring the
+     * swallowed exception back, and so does a save another thread made over it. Never throws.
      */
     public static void survived(@Nullable Thread thread, @Nullable Saved saved) {
         try {
-            Context context = Utils.getContext();
-            if (context == null || saved == null || thread == null || thread == Looper.getMainLooper().getThread()) return;
+            if (saved == null) return;
             synchronized (LogBufferManager.CLEAR_UNDO_LOCK) {
-                if (!LogBufferManager.readCrashReport(context).equals(saved.written)) return;
-                LogBufferManager.persistCrashReport(context, saved.before);
+                OPEN.remove(saved);
+                // The same exception handed in again later is a new crash to keep.
+                if (lastSaved.get() == saved.throwable.get()) lastSaved = new WeakReference<>(null);
+                Context context = Utils.getContext();
+                if (context == null || thread == null || thread == Looper.getMainLooper().getThread()) return;
+                String back = saved.before;
+                for (Saved open : OPEN) {
+                    if (open.before.equals(saved.written)) open.before = back;
+                }
+                if (LogBufferManager.readCrashReport(context).equals(saved.written)) {
+                    LogBufferManager.persistCrashReport(context, back);
+                } else {
+                    LogBufferManager.replaceClearedCrash(saved.written, back);
+                }
             }
         } catch (Throwable ignored) {
             // The exception's report stays; nothing else is lost.
@@ -144,5 +171,8 @@ public final class JavaCrashReport {
     /** Forgets the exception kept last, as in a new process. Called by the pause module's reset. */
     public static void resetForTests() {
         lastSaved = new WeakReference<>(null);
+        synchronized (LogBufferManager.CLEAR_UNDO_LOCK) {
+            OPEN.clear();
+        }
     }
 }
