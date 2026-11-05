@@ -22,11 +22,15 @@ import java.io.File
  * their JVM names, pinned to morphe-patcher 2.2.0. A bump that renames one fails here, naming it,
  * rather than leaving a test that never ran the patch. Nothing is written to disk: the context only
  * names its work folders until something compiles the dex, which no test here asks for.
+ *
+ * Fingerprint validation is on, as it is in verify-all-patches.ps1's `--validate` run: a fingerprint
+ * matched with `match()` that fits two methods throws instead of taking the first. `matchAll()` is
+ * unaffected, and so is a fingerprint that fits nothing.
  */
 internal object PatchContexts {
     fun of(classes: Collection<ClassDef>): BytecodePatchContext {
         val work = File(System.getProperty("java.io.tmpdir"), "hushthreads-patch-context")
-        val config = PatcherConfig(apkFile = File(work, "none.apk"), temporaryFilesPath = work)
+        val config = PatcherConfig(apkFile = File(work, "none.apk"), temporaryFilesPath = work, validate = true)
         val metadataType = Class.forName("app.morphe.patcher.PackageMetadata")
         val metadata = metadataType.getConstructor(
             String::class.java, String::class.java, String::class.java,
