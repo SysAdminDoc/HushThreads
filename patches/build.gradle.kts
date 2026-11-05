@@ -168,10 +168,10 @@ val buildIdentityInputTimes = snapshotInputTimes()
  *
  * <p>The plugin signs build/libs the same way, but pinBundleTimestamp rewrites the release copy
  * after that, so the release copy is signed here, after the pin and before its checksum. The key
- * is the Base64 raw private key in MORPHE_SIGNING_KEY or HUSHTHREADS_BUNDLE_SIGNING_KEY, the User
- * variable scripts/release/release.ps1 imports. It's never a file in the tree. Without it the
- * bundle stays unsigned, and the release index step refuses that. Any earlier comment is dropped
- * before hashing, so a rerun never signs stale bytes, and Ed25519 is deterministic, so a rebuild
+ * is the Base64 raw private key in HUSHTHREADS_BUNDLE_SIGNING_KEY, the User variable
+ * scripts/release/release.ps1 imports, or else MORPHE_SIGNING_KEY. It's never a file in the
+ * tree. Without it the bundle stays unsigned, and the release index step refuses that. Any
+ * earlier comment is dropped before hashing, so a rerun never signs stale bytes, and Ed25519 is deterministic, so a rebuild
  * gets the same bytes.
  */
 fun signBundle(bundle: File, privateKey: String?, publicKey: String) {
@@ -1098,9 +1098,10 @@ tasks {
     // test run did it again between the build and the index push. Nothing but buildAndroid
     // writes build/release. scripts/common.ps1 names the same path for every release script.
     val releaseBundleName = "patches-${project.version}.mpp"
-    // The plugin's own variable first, then the User variable the release run imports.
-    val bundleSigningKey = providers.environmentVariable("MORPHE_SIGNING_KEY")
-        .orElse(providers.environmentVariable("HUSHTHREADS_BUNDLE_SIGNING_KEY"))
+    // This repo's own variable first, then the plugin's shared one. Another repo's release sets
+    // MORPHE_SIGNING_KEY to its own key, and a shell that kept it would fail the key check here.
+    val bundleSigningKey = providers.environmentVariable("HUSHTHREADS_BUNDLE_SIGNING_KEY")
+        .orElse(providers.environmentVariable("MORPHE_SIGNING_KEY"))
     val verifyBundle = register<JavaExec>("verifyBundle") {
         group = "verification"
         description = "Check the Android bundle and its published patch list without rebuilding it"
