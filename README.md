@@ -105,7 +105,7 @@ HushThreads has 20 patches. Morphe Manager's default selection has all but three
 | `Save photos and videos` | Adds Save to a post's menu, below Copy link. It saves the photo or video to your gallery, every page of a carousel too, and on a text post it saves the video that post links or quotes. Good for keeping posts you like. On by default. Turn it off in HushThreads settings > Downloads. |
 | `Trust user-added certificates` | Lets Threads accept security certificates you installed yourself, such as for a work network or a debugging proxy. Meta's own checks stay, so a proxy can't read most traffic. It isn't selected by default. Works as soon as you patch it in, with no switch. |
 
-The switches on the Appearance page take effect after you restart Threads. A Restart row shows at the top of HushThreads settings when you flip one. Tap it and Threads reopens on the page you were on.
+The switches in the Appearance section take effect after you restart Threads. A Restart row shows at the top of HushThreads settings when you flip one. Tap it and Threads reopens in HushThreads settings.
 
 ## Settings
 
@@ -129,7 +129,7 @@ If you also patch Instagram with [HushGram](https://github.com/SysAdminDoc/HushG
 
 - **Threads says your password is wrong when it isn't.** Reset your Instagram password and sign in with the new one. That fixed it in [issue #3](https://github.com/SysAdminDoc/HushThreads/issues/3).
 - **A feature you used stopped after updating from v0.0.12 or older.** `Block background-return feed refresh`, `Disable screenshot detection`, `Disable video autoplay`, `Max image quality` and `Pure black dark mode` joined the default selection in v0.0.13 with their switches off. Turn yours back on in HushThreads settings.
-- **Instagram says "Sorry, we weren't able to load that website" when you tap a Threads post.** That message is Instagram's, not a patch you're missing. The regular Instagram app only hands posts over to a Threads signed by Meta, and a patched Threads carries your Morphe Manager key instead. Opening the post from inside Threads still works, and the Links page in HushThreads settings says so when it finds Meta's Instagram on your phone. Reported in [issue #8](https://github.com/SysAdminDoc/HushThreads/issues/8).
+- **Instagram says "Sorry, we weren't able to load that website" when you tap a Threads post.** That message is Instagram's, not a patch you're missing. The regular Instagram app only hands posts over to a Threads signed by Meta, and a patched Threads carries your Morphe Manager key instead. Opening the post from inside Threads still works, and the Links section in HushThreads settings says so when it finds Meta's Instagram on your phone. Reported in [issue #8](https://github.com/SysAdminDoc/HushThreads/issues/8).
 - **Android won't install the patched app.** Uninstall the stock Threads first. An update to your patched Threads needs the same signing key as the copy on your phone.
 - **Android says `INSTALL_FAILED_NO_MATCHING_ABIS`.** The Threads file you patched was built for a different processor. Get the variant in the [table above](#supported-threads-build) that matches your phone's CPU (most phones are arm64-v8a) and patch it again.
 - **Patching stops with a patch's name.** That usually means your Threads isn't the supported build. Check the Threads version name against the [table above](#supported-threads-build).
@@ -147,7 +147,7 @@ HushThreads doesn't collect anything and has no server. The patched app goes onl
 - **A save you ask for.** Tap Save in a post's menu and HushThreads fetches that post's photos or videos over HTTPS from Meta's media servers (`cdninstagram.com`, `fbcdn.net` and `fbsbx.com`), where Threads loads them from too. Any other address is refused. The request carries no cookie or password, even through a proxy, and any cookie the server sends back is dropped.
 - **The release check**, which is off until you turn it on. Then it asks `api.github.com` for the latest release at most once a day when Threads starts, and again when you tap Check now. The request sends `HushThreads/<version>` as its User-Agent and carries no cookies and nothing about you or your phone. GitHub sees your IP address, as any site you visit does.
 
-The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`, and Support HushThreads at the bottom of the settings home page links to `ko-fi.com`. Those open in your browser, and only when you tap one.
+The About section and the Licenses window link to `github.com`, `gitlab.com` and `www.gnu.org`, and Support HushThreads at the bottom of the settings home page links to `ko-fi.com`. Those open in your browser, and only when you tap one.
 
 `Disable analytics` points the analytics uploads it recognizes at `127.0.0.1`, on a port nothing listens on, so they fail on the phone. Other telemetry isn't covered. `Open links in browser` hands Android only the real address behind Threads' click tracker, with tags like `fbclid` removed. Links to Threads, Instagram, Facebook, Messenger and Meta stay in Threads, because sign-in and Accounts Center need its session. Ads go through the same check, from the link button or a swipe up in the photo viewer, and so do the links on a lead form.
 
@@ -159,7 +159,7 @@ Only trust a bundle from this repo's [Releases](https://github.com/SysAdminDoc/H
 73c9ad6e58c99120ff16b529ba4aa6164e7e220bb3fe017dc9522bfe17c7f891  patches-0.0.16.mpp
 ```
 
-On Windows, run `Get-FileHash -Algorithm SHA256 .\patches-0.0.16.mpp`. Inside the patched app, the About page in HushThreads settings shows the bundle's payload hash and the source it was built from.
+On Windows, run `Get-FileHash -Algorithm SHA256 .\patches-0.0.16.mpp`. Inside the patched app, the About section in HushThreads settings shows the bundle's payload hash and the source it was built from.
 
 Releases after v0.0.16 are signed too. Morphe Manager shows the signer when you add or update the source, and it should read `d0d2 eda0 b978 70da`. Manager remembers that key from then on and refuses an update signed by any other, or by none. The full public key is in [`morphe-signing.pub`](morphe-signing.pub).
 
