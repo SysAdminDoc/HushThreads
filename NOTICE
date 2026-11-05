@@ -62,8 +62,8 @@ the commit they came from, and provenance.json records every rule.
 Morphe: Project Name Restriction
 --------------------------------
 
-Carried by De-Vanced, Hushfeed, Andrew Liang's patches and FroggoMorphePatches
-from the Morphe patches template.
+Carried by De-Vanced, tiktok-patches-for-morphe, Hushfeed, Andrew Liang's
+patches and FroggoMorphePatches from the Morphe patches template.
 
 This license does not grant permission to use the name "Morphe", or any name, logo, or branding that is confusingly similar, as the name or primary identifying mark of any modified version, fork, or derivative work.
 
