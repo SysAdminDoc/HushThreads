@@ -17,6 +17,7 @@ import app.morphe.patches.threads.misc.extension.SETTINGS_STATUS
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Field
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
@@ -380,7 +381,7 @@ class HideAdsFixtureTest {
     }
 
     @Test
-    fun `a done answer whose class holds state of its own is refused`() {
+    fun `a done answer whose class isn't a bare singleton is refused`() {
         for (build in Fixtures.declaredBuilds()) {
             clearMatches()
             val injected = FixtureDex.methodsWhere(build, { true }) { it.isInjectedCheck() }.single()
@@ -394,19 +395,36 @@ class HideAdsFixtureTest {
             }
             val unitClass = classes.getValue(FEED_CACHE_HANDLER).methods.single { it.sameSignatureAs(declared) }
                 .instructions().takeLast(2).first().referenceText().substringBefore("->")
-            // Every write still hands back the same field, but its class now carries an instance
-            // field, which no bare singleton does. The class goes in changed: the patch reads it as
-            // loaded, never a mutable copy made after.
-            val holders = doneHolders(build, classes).map { holder ->
-                if (holder.type != unitClass) holder else ImmutableClassDef(holder.type, holder.accessFlags,
-                    holder.superclass, holder.interfaces, holder.sourceFile, holder.annotations, holder.staticFields,
-                    holder.instanceFields + ImmutableField(unitClass, "decoy", "I", AccessFlags.PRIVATE.value, null, null, null),
-                    holder.directMethods, holder.virtualMethods)
+            assertTrue("$unitClass is among the done holders", doneHolders(build, classes).any { it.type == unitClass })
+            // Every write still hands back the same field, but its class is changed one way at a
+            // time, each enough to make it something other than Unit. The class goes in changed: the
+            // patch reads it as loaded, never a mutable copy made after.
+            fun ClassDef.changed(
+                superclass: String? = this.superclass,
+                interfaces: List<String> = this.interfaces,
+                staticFields: List<Field> = this.staticFields.toList(),
+                instanceFields: List<Field> = this.instanceFields.toList(),
+            ): ClassDef = ImmutableClassDef(type, accessFlags, superclass, interfaces, sourceFile, annotations,
+                staticFields, instanceFields, directMethods, virtualMethods)
+            fun field(name: String, type: String, flags: Int) = ImmutableField(unitClass, name, type, flags, null, null, null)
+            val decoys = linkedMapOf<String, (ClassDef) -> ClassDef?>(
+                "an instance field" to { it.changed(instanceFields = it.instanceFields + field("decoy", "I", AccessFlags.PRIVATE.value)) },
+                "an enum's superclass, like the suspended marker's" to { it.changed(superclass = "Ljava/lang/Enum;") },
+                "an interface it stands in for" to { it.changed(interfaces = it.interfaces + "Ljava/io/Serializable;") },
+                "a second instance of itself" to {
+                    it.changed(staticFields = it.staticFields + field("second", unitClass,
+                        AccessFlags.PUBLIC.value or AccessFlags.STATIC.value or AccessFlags.FINAL.value))
+                },
+                "no class in the app" to { null },
+            )
+            for ((change, decoy) in decoys) {
+                clearMatches()
+                val holders = doneHolders(build, classes).mapNotNull { if (it.type != unitClass) it else decoy(it) }
+                val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item) + holders)
+                val error = assertThrows("$change passed for Unit on ${build.name}", PatchException::class.java) { applyAds(context) }
+                val expected = if (change == "no class in the app") "isn't in the app" else "isn't a bare singleton"
+                assertTrue("$change: ${error.message}", error.message.orEmpty().contains(expected))
             }
-            assertTrue("$unitClass is among ${holders.map { it.type }}", holders.any { it.type == unitClass })
-            val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item) + holders)
-            val error = assertThrows(PatchException::class.java) { applyAds(context) }
-            assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("isn't a bare singleton"))
         }
     }
 

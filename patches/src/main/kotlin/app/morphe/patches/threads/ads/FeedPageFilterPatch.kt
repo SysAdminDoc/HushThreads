@@ -137,8 +137,9 @@ private const val LIST = "Ljava/util/List;"
  * the one static field of its own type that each write loads straight into its return. The
  * coroutine's suspended marker is compared, never loaded and returned, and a write that returns
  * another call's answer has nothing of that shape there. Unit's class is a bare singleton (an
- * Object with that one static field and no instance fields), which the marker's enum isn't, so a
- * build whose writes all hand back some other shared field is refused rather than answering it.
+ * Object with that one static field, no instance fields and no interfaces). The marker's enum
+ * isn't, and neither are stateless objects like EmptyList, which implement what they stand in for,
+ * so a build whose writes all hand back some other shared field is refused rather than answering it.
  */
 internal fun BytecodePatchContext.doneAnswer(writes: List<Method>): String {
     val answers = writes.map { write ->
@@ -154,7 +155,8 @@ internal fun BytecodePatchContext.doneAnswer(writes: List<Method>): String {
         ?: throw PatchException("$PATCH: For You's one-item writes don't share one done answer: $answers")
     val type = done.substringBefore("->")
     val holder = classDefByOrNull(type)
-    val bare = holder != null && holder.superclass == "Ljava/lang/Object;" &&
+        ?: throw PatchException("$PATCH: For You's one-item writes answer $done, whose class isn't in the app")
+    val bare = holder.superclass == "Ljava/lang/Object;" && holder.interfaces.isEmpty() &&
         holder.fields.all { AccessFlags.STATIC.isSet(it.accessFlags) } &&
         holder.fields.count { it.type == type } == 1
     if (!bare) throw PatchException("$PATCH: For You's one-item writes answer $done, which isn't a bare singleton like Unit")
