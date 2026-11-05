@@ -291,12 +291,8 @@ function Assert-BuiltBundle {
     # checksum, a stamp pinned to the commit (a tree with changes stamps 0) and the classes.dex
     # Morphe Manager loads.
     param([string]$Bundle, [string]$Commit)
-    $folder = Split-Path -Parent $Bundle
-    foreach ($path in $Bundle, (Join-Path $folder $sbomName)) {
-        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "No $(Split-Path -Leaf $path) in $folder after :patches:buildAndroid." }
-    }
-    # bundle.sha256 and morphe-signing.pub's signature, so an unsigned bundle stops before the tag.
-    Invoke-ReleaseText -Arguments @('signed', '--version', $Version)
+    # bundle.sha256 and morphe-signing.pub's signature, read off the copy that's tagged and published.
+    Invoke-ReleaseText -Arguments @('signed', '--version', $Version, '--bundle', $Bundle)
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $zip = [IO.Compression.ZipFile]::OpenRead($Bundle)
     try {
@@ -473,10 +469,12 @@ try {
                     'patch list is stale. Nothing was built or tagged.')
             }
 
-            Step 'bundle'
+            Step "bundle, copied to $assets as it's checked, so a later build in the checkout can't swap it"
             Invoke-Gradle @(':patches:buildAndroid')
-            $bundle = Join-Path $releaseFolder $bundleName
-            Assert-BuiltBundle -Bundle $bundle -Commit $head
+            if (Test-Path -LiteralPath $assets) { Remove-Item -LiteralPath $assets -Recurse -Force }
+            New-Item -ItemType Directory -Force -Path $assets | Out-Null
+            Copy-Item -LiteralPath (Join-Path $releaseFolder $bundleName), (Join-Path $releaseFolder $sbomName) -Destination $assets
+            Assert-BuiltBundle -Bundle (Join-Path $assets $bundleName) -Commit $head
 
             $applied = Join-Path $root 'patches/build/fixture-apply'
             $work = Join-Path ([IO.Path]::GetTempPath()) ("hushthreads-release-$Version-" + [guid]::NewGuid().ToString('N'))
@@ -505,10 +503,7 @@ try {
             $receiptCommit = [string](Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json).release.commit
             if ($receiptCommit -ne $head) { throw "$receiptName names $receiptCommit, not $head." }
 
-            Step "assets in $assets"
-            if (Test-Path -LiteralPath $assets) { Remove-Item -LiteralPath $assets -Recurse -Force }
-            New-Item -ItemType Directory -Force -Path $assets | Out-Null
-            Copy-Item -LiteralPath $bundle, (Join-Path $releaseFolder $sbomName), $receiptPath -Destination $assets
+            Copy-Item -LiteralPath $receiptPath -Destination $assets
             $sums = foreach ($name in $bundleName, $sbomName, $receiptName) { '{0}  {1}' -f (Get-Sha256 (Join-Path $assets $name)), $name }
             [IO.File]::WriteAllText((Join-Path $assets 'SHA256SUMS.txt'), (($sums -join "`n") + "`n"), (New-Object Text.UTF8Encoding($false)))
             $sums | ForEach-Object { Step $_ }

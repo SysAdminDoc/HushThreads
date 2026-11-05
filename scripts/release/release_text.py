@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import argparse
 import base64
-import binascii
 import datetime
 import hashlib
 import json
@@ -137,8 +136,11 @@ def ed25519_verify(public: bytes, message: bytes, signature: bytes) -> bool:
     return point_encode(point_times(BASE, s)) == point_encode(point_add(nonce, point_times(key, h)))
 
 
-def bundle_signer(version: str) -> str:
+def bundle_signer(version: str, bundle: str | None = None) -> str:
     """The published key, once it's checked that this key signed the release bundle as it is now.
+
+    `bundle` is the copy release.ps1 tags and publishes, held to the bundle.sha256 the build
+    wrote beside the original. Without it, the original in patches/build/release is read.
 
     Morphe Manager pins the key named here when it first adds the source, and it refuses an
     update signed by another key or by none. So the index only ever names the key in
@@ -150,12 +152,13 @@ def bundle_signer(version: str) -> str:
     published = read(here("morphe-signing.pub")).strip()
     if not re.fullmatch(r"[A-Za-z0-9+/]{43}=", published):
         fail("morphe-signing.pub isn't a Base64 Ed25519 public key")
-    name = f"patches/build/release/patches-{version}.mpp"
-    path = here(name)
+    release = here("patches/build/release")
+    path = Path(bundle) if bundle else release / f"patches-{version}.mpp"
+    name = str(path) if bundle else f"patches/build/release/patches-{version}.mpp"
     if not path.is_file():
         fail(f"{name} is missing")
     data = path.read_bytes()
-    recorded = read(path.with_name("bundle.sha256")).strip().lower()
+    recorded = read(release / "bundle.sha256").strip().lower()
     if recorded != hashlib.sha256(data).hexdigest():
         fail(f"{name} doesn't match the bundle.sha256 the build wrote, so it changed after the build")
     # The end record is the last one whose comment reaches the end of the file, as signBundle finds it.
@@ -171,7 +174,7 @@ def bundle_signer(version: str) -> str:
         fail(f"{name} is signed by another key than morphe-signing.pub")
     try:
         signature = base64.b64decode(fields[2], validate=True)
-    except binascii.Error:
+    except ValueError:  # binascii.Error, or a field that isn't ASCII
         signature = b""
     message = b"MorpheSig1" + hashlib.sha256(data[:end + 20] + b"\x00\x00").digest()
     if not ed25519_verify(base64.b64decode(published), message, signature):
@@ -182,7 +185,7 @@ def bundle_signer(version: str) -> str:
 def signed(args) -> None:
     """Stops a release whose bundle isn't signed by the published key, before anything is tagged."""
     check_version(args.version)
-    key = bundle_signer(args.version)
+    key = bundle_signer(args.version, getattr(args, "bundle", None))
     print(f"[release] patches-{args.version}.mpp matches bundle.sha256 and morphe-signing.pub's key ({key}) signed it")
 
 
@@ -562,6 +565,7 @@ def main() -> None:
     command.set_defaults(run=description)
     command = commands.add_parser("signed")
     command.add_argument("--version", required=True)
+    command.add_argument("--bundle")
     command.set_defaults(run=signed)
     args = parser.parse_args()
     args.run(args)
