@@ -28,6 +28,8 @@ The latest release is [v0.0.16](https://github.com/SysAdminDoc/HushThreads/relea
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushThreads) | [Download a release](https://github.com/SysAdminDoc/HushThreads/releases/latest) | [Browse the patches](#patches)
 
+HushThreads only comes from this repo, github.com/SysAdminDoc/HushThreads, and you add it through Morphe Manager. It's a patch bundle for Android, so it never ships a Windows program or a ready-made APK, and a site offering either one under this name isn't mine.
+
 ## Install
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 2.4.0 or newer.
@@ -146,7 +148,7 @@ The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.o
 
 ## Verify a download
 
-Each release ships `SHA256SUMS.txt` beside the bundle, along with a CycloneDX SBOM and a release receipt recording the Threads build every patch was checked on. Compare the `.mpp` hash with your download. For v0.0.16 it's:
+Only trust a bundle from this repo's [Releases](https://github.com/SysAdminDoc/HushThreads/releases) page. Each release ships `SHA256SUMS.txt` beside the bundle, along with a CycloneDX SBOM and a release receipt recording the Threads build every patch was checked on. Compare the `.mpp` hash with your download. For v0.0.16 it's:
 
 ```text
 73c9ad6e58c99120ff16b529ba4aa6164e7e220bb3fe017dc9522bfe17c7f891  patches-0.0.16.mpp
