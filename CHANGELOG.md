@@ -39,6 +39,7 @@ Changes in the source build, then released versions.
 * **Tooling:** The source census can finish on GitLab again. It reads the watched paths of ReVanced's mirror through GitLab's GraphQL, a few questions for every branch at once, where it used to spend one of the roughly 60 hourly REST requests on each branch and path. Branches that share a head share one comparison. Forks GitLab has scheduled for deletion aren't counted, since a scanner keeps making and deleting them. A rate limit that resets more than five minutes out fails that source right away and says when to run again, so a run no longer sleeps for most of an hour.
 * **Tooling:** The source census report keeps two hits in a recorded repository apart when their paths differ only by case. It used to list one of them.
 * **Tooling:** The source census flags a recorded fork or copy when code search finds Threads files in it that its own lineage doesn't hold, even if another recorded source has them. Forks used to count as plain copies of their parent, so new Threads work in one passed a clean census unless an index listed it. GitHub's code search leaves most forks out, though, so this only reaches the ones it indexes. NexAlloy-XES, now gnadgnaoh/SexAlloy, is one it can't see. It has its own reviewed entry in the ledger now, with its files' blob ids pinned.
+* **Tooling:** A phone install doesn't stop halfway anymore when another session reads the phone's lease file at the same moment. It tries the file again for up to about four seconds before giving up.
 
 ## 0.0.16 (2026-10-23)
 
