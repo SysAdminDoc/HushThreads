@@ -150,8 +150,6 @@ Pause, backup and diagnostics	Pausa, copia de seguridad y diagnóstico
 Updates	Actualizaciones
 Jump to a section	Ir a una sección
 Go straight to one group of settings. Back returns to where you were.	Ve directo a un grupo de ajustes. Atrás te devuelve a donde estabas.
-Browse settings	Explorar ajustes
-More settings	Más ajustes
 No matching settings	No hay ajustes coincidentes
 %1$d setting found	%1$d ajuste encontrado
 %1$d settings found	%1$d ajustes encontrados
@@ -160,8 +158,6 @@ Search settings	Buscar ajustes
 Clear search	Borrar búsqueda
 Saves	Guardados
 No saves in progress.	No hay guardados en curso.
-Settings	Ajustes
-Your controls are active.	Tus controles están activos.
 Pause	Pausar
 Resume	Reanudar
 Undo	Deshacer
@@ -344,3 +340,25 @@ Adds a HushThreads row just above More settings in Threads' settings. Off, the r
 Open settings from the logo	Abrir la configuración desde el logotipo
 A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.	Mantener pulsado el logotipo de Threads en la parte superior del feed abre esta configuración. Si lo desactivas, mantenerlo pulsado no hace nada.
 Stays on, since it's the only way left into these settings.	Sigue activado porque es la única forma que queda de entrar en esta configuración.
+# context: the toggle under search that shows every section's rows on one page
+Show all settings as a list	Mostrar todos los ajustes en una lista
+# context: the same toggle while the list view shows, back to one button per section
+Show settings by category	Mostrar ajustes por categoría
+# context: what a screen reader says about a section button that is folded open
+Expanded	Expandido
+# context: what a screen reader says about a section button that is folded shut
+Collapsed	Contraído
+# context: the last section button: Report a problem, Restart Threads and the Ko-fi link
+Support	Ayuda
+# context: the line under the Support section button
+Reports, restart and app information	Informes, reinicio e información de la app
+# context: small heading over Report a problem and Restart Threads in Support
+Help and restart	Ayuda y reinicio
+# context: small heading over the Ko-fi link in Support
+Support the project	Apoya el proyecto
+# context: a row in Support that closes Threads and reopens it on the settings page
+Restart Threads	Reiniciar Threads
+Version %1$s	Versión %1$s
+Build %1$s (modified)	Compilación %1$s (modificada)
+Build %1$s (source known)	Compilación %1$s (origen conocido)
+Build %1$s (source unknown)	Compilación %1$s (origen desconocido)

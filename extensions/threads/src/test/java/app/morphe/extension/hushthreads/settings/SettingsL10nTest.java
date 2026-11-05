@@ -417,17 +417,32 @@ public class SettingsL10nTest {
             shown.add(cancel);
             choices.dismiss();
 
-            // Quick setups and Report a problem, which like the restart row only the home list holds.
+            // The rows only the main list draws: Quick setups, the section headers, and Support with
+            // its headings, Report a problem, Restart Threads and the Ko-fi row folded open, then the
+            // build line. The same list as one long list adds its headings.
+            page.navigation.navigate(SettingsNavigation.SUPPORT);
             android.widget.ListView home = dialog.getView().findViewById(android.R.id.list);
             int homeRows = 0;
             for (int i = 0; i < home.getCount(); i++) {
                 Preference row = (Preference) home.getItemAtPosition(i);
-                if (!SettingsNavigation.QUICK_SETUPS.equals(row.getKey()) && !SettingsNavigation.REPORT.equals(row.getKey())) continue;
-                shown.add(String.valueOf(row.getTitle()));
-                shown.add(String.valueOf(row.getSummary()));
-                homeRows++;
+                if (SettingsNavigation.QUICK_SETUPS.equals(row.getKey()) || SettingsNavigation.REPORT.equals(row.getKey())) homeRows++;
             }
-            assertEquals("Quick setups or Report a problem is missing from the home page", 2, homeRows);
+            assertEquals("Quick setups or Report a problem is missing from the main list", 2, homeRows);
+            addListed(dialog, shown);
+            page.navigation.showAsList(true);
+            addListed(dialog, shown);
+            page.navigation.showAsList(false);
+            page.navigation.navigate("");
+            // The toolbar: Pause, the view toggle and the search field.
+            android.view.View bar = dialog.getView();
+            shown.add(String.valueOf(((android.widget.TextView) bar.findViewWithTag(SettingsDialog.PAUSE_ACTION)).getText()));
+            android.view.View toggle = bar.findViewWithTag(SettingsDialog.VIEW_TOGGLE);
+            assertNotNull("the view toggle is missing", toggle);
+            shown.add(String.valueOf(toggle.getContentDescription()));
+            if (toggle instanceof android.widget.TextView) shown.add(String.valueOf(((android.widget.TextView) toggle).getText()));
+            android.widget.EditText search = findSearch(bar);
+            assertNotNull("the search field is missing", search);
+            shown.add(String.valueOf(search.getHint()));
 
             // Quick setups: each choice is its name and, on the next line, what it does. Then the
             // toast after a choice, for one change and for none.
@@ -650,6 +665,32 @@ public class SettingsL10nTest {
             return;
         }
         throw new AssertionError("no restart row with a change waiting");
+    }
+
+    /** Every row the main list holds right now, title and summary. */
+    private static void addListed(SettingsDialog dialog, Set<String> shown) {
+        android.widget.ListView list = dialog.getView().findViewById(android.R.id.list);
+        for (int i = 0; i < list.getCount(); i++) {
+            Object item = list.getItemAtPosition(i);
+            if (!(item instanceof Preference)) continue;
+            shown.add(String.valueOf(((Preference) item).getTitle()));
+            CharSequence summary = ((Preference) item).getSummary();
+            if (summary == null) continue;
+            // The build line is two catalog strings, one per line.
+            shown.addAll(Arrays.asList(String.valueOf(summary).split("\n")));
+        }
+    }
+
+    private static android.widget.EditText findSearch(android.view.View view) {
+        if (view instanceof android.widget.EditText) return (android.widget.EditText) view;
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                android.widget.EditText found = findSearch(group.getChildAt(i));
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 
     private static Preference find(List<Preference> rows, String key) {

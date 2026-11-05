@@ -113,14 +113,10 @@
     },
     {
       "paths": [
-        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ChoiceCards.java",
-        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/DialogChoices.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/FamilyNames.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ReleaseCheck.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ReleaseTransport.java",
-        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ScreenColors.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/Settings.java",
-        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsDialog.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsEntry.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsIcons.java",
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsStatus.java",
@@ -438,8 +434,7 @@
     },
     {
       "paths": [
-        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/HushThreadsPreferenceFragment.java",
-        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsNavigation.java"
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/HushThreadsPreferenceFragment.java"
       ],
       "origin": "ported",
       "upstream": "https://github.com/SysAdminDoc/Hushfacebook",
@@ -450,7 +445,64 @@
         "https://github.com/SapitoSucio/FroggoMorphePatches"
       ],
       "license": "GPL-3.0-only",
-      "changes": "Ported Hushfacebook 814acd23's overview disclosure for omitted default patches into the existing Threads settings pages. No Facebook pages, editable rows or feature families were copied. Added packaged bundle identity from Hushfacebook a788c516 while retaining these earlier Threads adaptations. The restart row, its count and the way the list keeps its place around it follow HushPinterest 44fb9338, with Threads' names."
+      "changes": "Ported Hushfacebook 814acd23's overview disclosure for omitted default patches into the existing Threads settings pages. No Facebook pages, editable rows or feature families were copied. Added packaged bundle identity from Hushfacebook a788c516 while retaining these earlier Threads adaptations. The restart row, its count and the way the list keeps its place around it follow HushPinterest 44fb9338, with Threads' names. The Subheading row, the room under the list and its link to the header column that folds over it follow Hushfacebook 837bac40e."
+    },
+    {
+      "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ChoiceCards.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/DialogChoices.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/HeaderColumn.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ScreenColors.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsDialog.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsNavigation.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ShimmerTitle.java"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/Hushfacebook",
+      "commit": "837bac40e866547bd2a2147c8eecf366aa0dddbe",
+      "via": [
+        "https://github.com/SysAdminDoc/hushfeed",
+        "https://github.com/andrewliang25/morphe-patches",
+        "https://github.com/SapitoSucio/FroggoMorphePatches"
+      ],
+      "license": "GPL-3.0-only",
+      "changes": "Hushfacebook's settings screen at 837bac40e, with Threads' names: the header that folds away over the list, the shimmering title, the search card with its list or category toggle, the toolbar's Pause button, sections that fold open on the one page, Support with Report a problem, Restart Threads and the Ko-fi link, the build line at the bottom, and Hushfacebook's colours and choice cards. HushThreads' own sections, Quick setups, the missing default patches line, the restart row with its live status, the long press and the Android 9 and 10 guards are kept from the earlier Threads screen."
+    },
+    {
+      "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SettingsHeader.java"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/Hushfacebook",
+      "commit": "837bac40e866547bd2a2147c8eecf366aa0dddbe",
+      "via": [
+        "https://github.com/SysAdminDoc/HushGram"
+      ],
+      "license": "GPL-3.0-only",
+      "changes": "HushGram's settings header as Hushfacebook carries it at 837bac40e: the centred logo, the name in a gradient title and the version line, in the column that folds away over the list. Here the logo is HushThreads' own from the drawable SettingsLogo.kt adds, and the version line names Threads."
+    },
+    {
+      "paths": [
+        "patches/src/main/kotlin/app/morphe/patches/threads/misc/settings/SettingsLogo.kt"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/Hushfacebook",
+      "commit": "837bac40e866547bd2a2147c8eecf366aa0dddbe",
+      "via": [
+        "https://github.com/SysAdminDoc/HushGram"
+      ],
+      "license": "GPL-3.0-only",
+      "changes": "Hushfacebook's settings logo patch at 837bac40e, which came from HushGram's app icon patch: the picture the patch carries goes into drawable-nodpi as hushthreads_settings_logo, refused before any write when it's already there, by a resource patch the settings patch depends on."
+    },
+    {
+      "paths": [
+        "patches/src/main/resources/app/morphe/patches/threads/misc/settings/settings_logo.png"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "HushThreads' own logo (assets/icon.png) at 256 px with clear corners, bundled so the settings header shows it on every patched build."
     },
     {
       "paths": [

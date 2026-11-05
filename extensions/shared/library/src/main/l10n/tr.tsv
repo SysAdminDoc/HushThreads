@@ -150,8 +150,6 @@ Pause, backup and diagnostics	Duraklatma, yedekleme ve tanılama
 Updates	Güncellemeler
 Jump to a section	Bir bölüme git
 Go straight to one group of settings. Back returns to where you were.	Doğrudan bir ayar grubuna git. Geri, bulunduğun yere döndürür.
-Browse settings	Ayarları keşfet
-More settings	Diğer ayarlar
 No matching settings	Eşleşen ayar yok
 %1$d setting found	%1$d ayar bulundu
 %1$d settings found	%1$d ayar bulundu
@@ -160,8 +158,6 @@ Search settings	Ayarlarda ara
 Clear search	Aramayı temizle
 Saves	Kaydetmeler
 No saves in progress.	Devam eden kaydetme yok.
-Settings	Ayarlar
-Your controls are active.	Ayarların etkin.
 Pause	Duraklat
 Resume	Devam et
 Undo	Geri al
@@ -344,3 +340,25 @@ Adds a HushThreads row just above More settings in Threads' settings. Off, the r
 Open settings from the logo	Ayarları logodan aç
 A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.	Akışın üstündeki Threads logosuna basılı tutmak bu ayarları açar. Kapalıyken basılı tutmak hiçbir şey yapmaz.
 Stays on, since it's the only way left into these settings.	Bu ayarlara açılan son yol olduğu için açık kalır.
+# context: the toggle under search that shows every section's rows on one page
+Show all settings as a list	Tüm ayarları liste olarak göster
+# context: the same toggle while the list view shows, back to one button per section
+Show settings by category	Ayarları kategoriye göre göster
+# context: what a screen reader says about a section button that is folded open
+Expanded	Genişletildi
+# context: what a screen reader says about a section button that is folded shut
+Collapsed	Daraltıldı
+# context: the last section button: Report a problem, Restart Threads and the Ko-fi link
+Support	Destek
+# context: the line under the Support section button
+Reports, restart and app information	Raporlar, yeniden başlatma ve uygulama bilgileri
+# context: small heading over Report a problem and Restart Threads in Support
+Help and restart	Yardım ve yeniden başlatma
+# context: small heading over the Ko-fi link in Support
+Support the project	Projeyi destekle
+# context: a row in Support that closes Threads and reopens it on the settings page
+Restart Threads	Threads'i yeniden başlat
+Version %1$s	Sürüm %1$s
+Build %1$s (modified)	Derleme %1$s (değiştirilmiş)
+Build %1$s (source known)	Derleme %1$s (kaynak biliniyor)
+Build %1$s (source unknown)	Derleme %1$s (kaynak bilinmiyor)

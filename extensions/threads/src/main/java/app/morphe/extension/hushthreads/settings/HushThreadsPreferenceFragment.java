@@ -201,6 +201,12 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
             // Set here rather than in initialize(), so a page whose initialize() failed, the
             // recovery page, is drawn on the same black.
             list.setBackgroundColor(ScreenColors.DEFAULT.background);
+            // Room under the last row, which scrolls through it, so the row clears the gesture bar.
+            int room = Math.round(24 * getResources().getDisplayMetrics().density);
+            list.setClipToPadding(false);
+            list.setPaddingRelative(list.getPaddingStart(), list.getPaddingTop(), list.getPaddingEnd(), room);
+            // The header over the list slides up under the bar as the rows scroll.
+            if (getParentFragment() instanceof SettingsDialog) ((SettingsDialog) getParentFragment()).followList(list);
         }
     }
 
@@ -866,7 +872,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                     ? L10n.f("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.", file, folder)
                     : L10n.f("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                     file, folder);
-            statusCard.setSummary(left + "\n" + L10n.f("Build %1$s", L10n.isolate(buildIdentitySummary())));
+            statusCard.setSummary(left);
             // Resume can be tapped on a category page too, where the card isn't in view.
             Utils.showToastLong(left);
             return;
@@ -888,29 +894,42 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         boolean pausedNext = HushThreadsPause.pausesNextStart(context);
         String status;
         if (!HushThreadsPause.isPaused()) {
-            String version = L10n.f("Version %1$s for Threads %2$s",
-                    L10n.isolate(Utils.getPatchesReleaseVersion()), L10n.isolate(Utils.getAppVersionName()));
-            status = pausedNext ? version + " " + L10n.t("HushThreads pauses when Threads restarts.") : version;
+            // The header names the versions and the build line sits under the list, so a card
+            // that shows for nothing but a newer release holds only that release's line.
+            status = pausedNext ? L10n.t("HushThreads pauses when Threads restarts.") : null;
         } else if (pausedNext) {
             status = pausedSummary(HushThreadsPause.reason(), context.getPackageName())
                     + " " + L10n.t("Tap to turn it back on.");
         } else {
             status = L10n.t("HushThreads turns back on when Threads restarts.");
         }
-        status += "\n" + L10n.f("Build %1$s", L10n.isolate(buildIdentitySummary()));
+        // The build is the line under everything else on the main list, so the card leaves it out.
         String release = ReleaseCheck.statusLine();
-        card.setSummary(release == null ? status : status + "\n" + release);
+        card.setSummary(status == null ? release : release == null ? status : status + "\n" + release);
     }
 
-    /** Keep the complete payload hash and source state here; About carries the full provenance. */
-    static String buildIdentitySummary() {
-        String identity = Utils.getPatchesBuildIdentity();
-        int source = identity.indexOf("; source=");
-        if (!identity.startsWith("sha256=") || source != "sha256=".length() + 64) return identity;
-        int end = identity.indexOf(';', source + 2);
-        int commit = identity.indexOf(':', source + 2);
-        if (commit >= 0 && (end < 0 || commit < end)) end = commit;
-        return end < 0 ? identity : identity.substring(0, end);
+    private static final java.util.regex.Pattern BUILD_IDENTITY = java.util.regex.Pattern.compile(
+            "sha256=([0-9a-f]{64}); source=(?:(clean|dirty):[0-9a-f]{40}; tree=[0-9a-f]{40}|(unknown)); inputs=[0-9a-f]{64}");
+
+    /**
+     * The line under everything on the main list: the version, then the build's first eight hash
+     * characters and whether its source is known. Only this line abbreviates the identity. About
+     * and exported diagnostics keep the original bytes. Ported from Hushfacebook 837bac40.
+     */
+    static String overviewBuildDetails() {
+        String value = Utils.getPatchesBuildIdentity();
+        java.util.regex.Matcher identity = BUILD_IDENTITY.matcher(value == null ? "" : value);
+        String build;
+        if (identity.matches()) {
+            String shortId = L10n.isolate(identity.group(1).substring(0, 8));
+            build = "dirty".equals(identity.group(2)) ? L10n.f("Build %1$s (modified)", shortId)
+                    : "clean".equals(identity.group(2)) ? L10n.f("Build %1$s (source known)", shortId)
+                    : L10n.f("Build %1$s (source unknown)", shortId);
+        } else {
+            String state = value == null || value.isEmpty() || "unknown".equals(value) ? "unknown" : "unverified";
+            build = L10n.f("Build %1$s", L10n.isolate(state));
+        }
+        return L10n.f("Version %1$s", L10n.isolate(Utils.getPatchesReleaseVersion())) + "\n" + build;
     }
 
     /**
@@ -1132,6 +1151,26 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         }
     }
 
+    /**
+     * A heading inside a section, drawn like a section title over the rows it names. It belongs to
+     * no category of its own, so the rows under it stay in their section's card.
+     */
+    static final class Subheading extends Preference {
+        Subheading(Context context) {
+            super(context);
+            setSelectable(false);
+            setPersistent(false);
+        }
+
+        @Override
+        protected void onBindView(View view) {
+            super.onBindView(view);
+            view.setAccessibilityHeading(true);
+            showAllText(view);
+            ScreenColors.heading(view);
+        }
+    }
+
     /** A row of text, which a screen reader calls a button when a tap does something. */
     static final class Row extends Preference implements ImmediateAction {
         /** Set on a row whose tap does what it says at once, which then goes without a chevron. */
@@ -1298,7 +1337,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
      * focus, so on its own a switch row said neither that it was a switch nor whether it was on.
      * A double tap goes through the list, the way a tap does, so the preference's own click runs.
      */
-    static final class RowSemantics extends View.AccessibilityDelegate {
+    static class RowSemantics extends View.AccessibilityDelegate {
         private final Preference preference;
         private final Class<? extends View> role;
 

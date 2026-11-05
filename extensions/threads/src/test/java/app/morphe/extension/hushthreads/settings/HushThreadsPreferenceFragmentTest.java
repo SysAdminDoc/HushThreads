@@ -10,6 +10,7 @@ package app.morphe.extension.hushthreads.settings;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
@@ -330,13 +331,14 @@ public class HushThreadsPreferenceFragmentTest {
             Preference card = rowsOf(controller).get(0);
             assertEquals("HushThreads is paused", String.valueOf(card.getTitle()));
             assertEquals(HushThreadsPreferenceFragment.pausedSummary(HushThreadsPause.Reason.CRASH_LOOP, pkg)
-                    + " Tap to turn it back on.\n" + L10n.f("Build %1$s", L10n.isolate("unknown")), String.valueOf(card.getSummary()));
+                    + " Tap to turn it back on.", String.valueOf(card.getSummary()));
         }
     }
 
     /**
-     * A version is a value set into a sentence, so both rows that show one isolate it: in a
-     * right-to-left sentence "450.0.0.51.78" then keeps the order it was written in.
+     * A version is a value set into a sentence, so the About row isolates it: in a right-to-left
+     * sentence "450.0.0.51.78" then keeps the order it was written in. The card leaves the
+     * versions to the header and About.
      */
     @Test
     public void theVersionRowsIsolateTheVersions() {
@@ -350,8 +352,8 @@ public class HushThreadsPreferenceFragmentTest {
             List<Preference> rows = rowsOf(controller);
             Preference card = rows.get(0);
             assertEquals("HushThreads is on", String.valueOf(card.getTitle()));
-            assertTrue(String.valueOf(card.getSummary()), String.valueOf(card.getSummary()).contains(L10n.isolate(threads)));
-            assertTrue(String.valueOf(card.getSummary()), String.valueOf(card.getSummary()).contains(L10n.isolate("unknown")));
+            // The card shows only with something to say; the header and About carry the versions.
+            assertNull(card.getSummary());
             Preference version = null;
             for (Preference row : rows) {
                 if ("Version".contentEquals(row.getTitle())) version = row;

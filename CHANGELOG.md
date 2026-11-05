@@ -4,6 +4,7 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* The HushThreads settings look like the other Hush packages' now. The logo and name sit at the top and scroll away under the top bar, each section opens in place on the main page instead of on a page of its own, and Pause moved to the top bar. A toggle under search shows every setting in one long list. Support at the bottom has Report a problem, a Restart Threads button and the Ko-fi link, and the build line sits under everything in small type.
 * Each way into HushThreads settings has its own switch under Pause, backup and diagnostics now, so you can take away the app icon shortcut, the row in Threads' settings or the long press on the logo. The last one that's on stays on, so there's always a way back in, and App info opens the settings whichever ones you keep. Asked for in #18.
 * **Tooling:** A release checks the bundle's signature before anything gets tagged. The bundle has to match the checksum the build wrote, and its signature has to verify against the key in `morphe-signing.pub`. One that changed after it was signed stops the release there instead of reaching Morphe Manager.
 * **Tooling:** Changelog entries don't open with a "Threads:" label anymore. HushThreads only patches Threads, so it repeated itself on every line. The release scripts stopped adding or asking for it, and they drop it from any bullet that still has one when a release is cut.

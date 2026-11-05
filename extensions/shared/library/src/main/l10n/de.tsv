@@ -150,8 +150,6 @@ Pause, backup and diagnostics	Pause, Sicherung und Diagnose
 Updates	Updates
 Jump to a section	Zu einem Abschnitt springen
 Go straight to one group of settings. Back returns to where you were.	Direkt zu einer Gruppe von Einstellungen. Zurück bringt dich dorthin, wo du warst.
-Browse settings	Einstellungen durchsuchen
-More settings	Weitere Einstellungen
 No matching settings	Keine passenden Einstellungen
 %1$d setting found	%1$d Einstellung gefunden
 %1$d settings found	%1$d Einstellungen gefunden
@@ -160,8 +158,6 @@ Search settings	Einstellungen suchen
 Clear search	Suche löschen
 Saves	Gespeicherte Medien
 No saves in progress.	Keine Speichervorgänge aktiv.
-Settings	Einstellungen
-Your controls are active.	Deine Einstellungen sind aktiv.
 Pause	Pausieren
 Resume	Fortsetzen
 Undo	Rückgängig
@@ -344,3 +340,25 @@ Adds a HushThreads row just above More settings in Threads' settings. Off, the r
 Open settings from the logo	Einstellungen über das Logo öffnen
 A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.	Langes Drücken auf das Threads-Logo oben im Feed öffnet diese Einstellungen. Aus passiert beim langen Drücken nichts.
 Stays on, since it's the only way left into these settings.	Bleibt an, weil es der letzte Weg zu diesen Einstellungen ist.
+# context: the toggle under search that shows every section's rows on one page
+Show all settings as a list	Alle Einstellungen als Liste zeigen
+# context: the same toggle while the list view shows, back to one button per section
+Show settings by category	Einstellungen nach Kategorie zeigen
+# context: what a screen reader says about a section button that is folded open
+Expanded	Ausgeklappt
+# context: what a screen reader says about a section button that is folded shut
+Collapsed	Eingeklappt
+# context: the last section button: Report a problem, Restart Threads and the Ko-fi link
+Support	Hilfe
+# context: the line under the Support section button
+Reports, restart and app information	Fehlerberichte, Neustart und App-Informationen
+# context: small heading over Report a problem and Restart Threads in Support
+Help and restart	Hilfe und Neustart
+# context: small heading over the Ko-fi link in Support
+Support the project	Projekt unterstützen
+# context: a row in Support that closes Threads and reopens it on the settings page
+Restart Threads	Threads neu starten
+Version %1$s	Version %1$s
+Build %1$s (modified)	Build %1$s (geändert)
+Build %1$s (source known)	Build %1$s (Quelle bekannt)
+Build %1$s (source unknown)	Build %1$s (Quelle unbekannt)

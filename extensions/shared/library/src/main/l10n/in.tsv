@@ -150,8 +150,6 @@ Pause, backup and diagnostics	Jeda, cadangan, dan diagnostik
 Updates	Pembaruan
 Jump to a section	Lompat ke bagian
 Go straight to one group of settings. Back returns to where you were.	Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.
-Browse settings	Jelajahi pengaturan
-More settings	Pengaturan lainnya
 No matching settings	Tidak ada pengaturan yang cocok
 %1$d setting found	%1$d pengaturan ditemukan
 %1$d settings found	%1$d pengaturan ditemukan
@@ -160,8 +158,6 @@ Search settings	Cari pengaturan
 Clear search	Hapus pencarian
 Saves	Penyimpanan
 No saves in progress.	Tidak ada penyimpanan yang berlangsung.
-Settings	Pengaturan
-Your controls are active.	Kontrol Anda aktif.
 Pause	Jeda
 Resume	Lanjutkan
 Undo	Urungkan
@@ -344,3 +340,25 @@ Adds a HushThreads row just above More settings in Threads' settings. Off, the r
 Open settings from the logo	Buka pengaturan dari logo
 A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.	Menekan lama logo Threads di bagian atas feed membuka pengaturan ini. Jika dimatikan, menekan lama tidak melakukan apa-apa.
 Stays on, since it's the only way left into these settings.	Tetap aktif karena ini satu-satunya jalan yang tersisa ke pengaturan ini.
+# context: the toggle under search that shows every section's rows on one page
+Show all settings as a list	Tampilkan semua pengaturan sebagai daftar
+# context: the same toggle while the list view shows, back to one button per section
+Show settings by category	Tampilkan pengaturan per kategori
+# context: what a screen reader says about a section button that is folded open
+Expanded	Diperluas
+# context: what a screen reader says about a section button that is folded shut
+Collapsed	Diciutkan
+# context: the last section button: Report a problem, Restart Threads and the Ko-fi link
+Support	Bantuan
+# context: the line under the Support section button
+Reports, restart and app information	Laporan, mulai ulang, dan informasi aplikasi
+# context: small heading over Report a problem and Restart Threads in Support
+Help and restart	Bantuan dan mulai ulang
+# context: small heading over the Ko-fi link in Support
+Support the project	Dukung proyek ini
+# context: a row in Support that closes Threads and reopens it on the settings page
+Restart Threads	Mulai ulang Threads
+Version %1$s	Versi %1$s
+Build %1$s (modified)	Build %1$s (diubah)
+Build %1$s (source known)	Build %1$s (sumber diketahui)
+Build %1$s (source unknown)	Build %1$s (sumber tidak diketahui)

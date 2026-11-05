@@ -20,8 +20,8 @@ types Hide ads also reads as ads are the ones MrxSiN's ThreadsHideAds named,
 and none of its code is used either. The notices below are reproduced from
 those projects. Morphe requires its text to be carried in derivative works
 and shown to the person using the software, so it is also reachable in the
-app itself: long-press Threads' launcher icon, open HushThreads, then More
-settings, About and Licenses.
+app itself: long-press Threads' launcher icon, open HushThreads, then About
+and Licenses.
 
 Saving photos and videos comes from HushGram, the Instagram sibling, which
 took Hushfacebook's save engine and fitted it to Meta's media model that
@@ -30,9 +30,13 @@ Threads shares.
 The Restart row in settings, and the way Threads reopens on the same settings
 page after it, come from HushPinterest, the Pinterest sibling.
 
+The settings screen's look, with the logo header that folds away, sections
+that open in place and the Pause button in the top bar, was designed for
+HushGram and comes here through Hushfacebook.
+
   HushThreads                 https://github.com/SysAdminDoc/HushThreads
   Hushfacebook                https://github.com/SysAdminDoc/Hushfacebook
-  Hushfacebook commits        814acd23d7b70d5d23abce6cb6c97767e16a051e, 88a7f512c1e97126ae6fb3cf05e3c152a39fb1fc
+  Hushfacebook commits        814acd23d7b70d5d23abce6cb6c97767e16a051e, 88a7f512c1e97126ae6fb3cf05e3c152a39fb1fc, 837bac40e866547bd2a2147c8eecf366aa0dddbe
   HushGram                    https://github.com/SysAdminDoc/HushGram
   HushPinterest               https://github.com/SysAdminDoc/HushPinterest
   Hushfeed                    https://github.com/SysAdminDoc/hushfeed
