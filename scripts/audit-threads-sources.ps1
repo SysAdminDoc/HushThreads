@@ -381,14 +381,27 @@ $selfKey = ConvertTo-SourceKey $ledgerDocument.self.repository
 $selfOwner = ($selfKey -split '/')[1]
 $known = @{}
 $knownBlobs = @{}
+# Each lineage's own blob ids, its entries' and their mirrors'. A recorded fork or mirror is held to
+# its own lineage: a file another lineage holds is still news in it.
+$lineageBlobs = @{}
+function Add-KnownBlob {
+    param([string]$Hash, [string]$Lineage)
+    $knownBlobs[$Hash] = $Lineage
+    if (-not $lineageBlobs.ContainsKey($Lineage)) { $lineageBlobs[$Lineage] = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase) }
+    [void]$lineageBlobs[$Lineage].Add($Hash)
+}
+function Test-LineageBlob {
+    param([string]$Hash, [string]$Lineage)
+    return $lineageBlobs.ContainsKey($Lineage) -and $lineageBlobs[$Lineage].Contains($Hash)
+}
 foreach ($entry in $entries) {
     $key = ConvertTo-SourceKey $entry.repository
     $known[$key] = [pscustomobject]@{ Kind = 'entry'; Lineage = [string]$entry.lineage; Entry = $entry; Record = $entry }
     $entryHost = (Split-SourceKey $key).Host
-    foreach ($hash in @(Get-SourceProperty $entry 'contentHashes' | Where-Object { $_ })) { $knownBlobs["$hash"] = [string]$entry.lineage }
+    foreach ($hash in @(Get-SourceProperty $entry 'contentHashes' | Where-Object { $_ })) { Add-KnownBlob -Hash "$hash" -Lineage ([string]$entry.lineage) }
     foreach ($mirror in @(Get-SourceProperty $entry 'mirrors' | Where-Object { $_ })) {
         $known[(ConvertTo-SourceKey $mirror.repository)] = [pscustomobject]@{ Kind = 'mirror'; Lineage = [string]$entry.lineage; Entry = $entry; Record = $mirror }
-        foreach ($hash in @(Get-SourceProperty $mirror 'blobs' | Where-Object { $_ })) { $knownBlobs["$hash"] = [string]$entry.lineage }
+        foreach ($hash in @(Get-SourceProperty $mirror 'blobs' | Where-Object { $_ })) { Add-KnownBlob -Hash "$hash" -Lineage ([string]$entry.lineage) }
     }
     foreach ($fork in @(Get-SourceProperty $entry 'forks' | Where-Object { $_ })) {
         $forkKey = "$entryHost/$fork".ToLowerInvariant()
@@ -781,7 +794,7 @@ function Test-KnownRepository {
                 -Evidence ([ordered]@{ sources = @($Candidate.Sources); features = @($Candidate.Features) })
         }
     } elseif ($Record.Kind -eq 'mirror') {
-        $diverged = @($Blobs | Where-Object { -not $knownBlobs.ContainsKey($_) })
+        $diverged = @($Blobs | Where-Object { -not (Test-LineageBlob -Hash $_ -Lineage $Record.Lineage) })
         if ($diverged.Count -gt 0) {
             Add-Finding -Kind 'mirror-changed' -Repository ([string]$Record.Record.repository) `
                 -Detail "a copy of $($Record.Lineage) now holds Threads files the lineage doesn't" `
@@ -790,11 +803,11 @@ function Test-KnownRepository {
     } else {
         if ($Record.Kind -eq 'fork') {
             # A fork is recorded by name only, as a copy of its lineage. Threads files code search
-            # finds in it that no lineage holds are its own work, which nobody has reviewed. One
-            # finding per fork, naming at most 20 of those files.
-            $diverged = @($Blobs | Where-Object { -not $knownBlobs.ContainsKey($_) })
+            # finds in it that its lineage doesn't hold are work nobody has reviewed there, even
+            # when another lineage holds them. One finding per fork, naming at most 20 of those files.
+            $diverged = @($Blobs | Where-Object { -not (Test-LineageBlob -Hash $_ -Lineage $Record.Lineage) })
             if ($diverged.Count -gt 0) {
-                $novelHits = @($Candidate.Hits | Where-Object { $diverged -contains $_.blob } | Sort-Object path -Unique)
+                $novelHits = @($Candidate.Hits | Where-Object { $diverged -contains $_.blob } | Sort-Object path -Unique -CaseSensitive)
                 Add-Finding -Kind 'fork-changed' -Repository "https://$Key" `
                     -Detail ("a recorded fork of $($Record.Lineage) holds $($novelHits.Count) Threads file(s) the lineage doesn't; " +
                         "review them, then add their blob ids to the entry's contentHashes or give the fork an entry of its own") `

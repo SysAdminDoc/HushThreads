@@ -941,6 +941,36 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     Reset-FixtureLedger
     $fakeForge.Answers = New-FakeAnswers
 
+    # A file only another lineage holds is still news in a recorded fork or copy of this one.
+    $blobBeta = '3b' * 20
+    $crossLedger = $fixtureLedgerText | ConvertFrom-Json
+    $crossLedger.entries[1].contentHashes = @($blobBeta)
+    $crossLedgerText = ($crossLedger | ConvertTo-Json -Depth 20) -replace "`r`n", "`n"
+    [IO.File]::WriteAllText($fixtureLedgerPath, $crossLedgerText, (New-Object Text.UTF8Encoding $false))
+    $fakeForge.Answers.searchHits = @($fakeForge.Answers.searchHits) + @(
+        @{ repository = @{ full_name = 'someone/alpha-patches' }; path = 'patches/Beta.kt'; sha = $blobBeta })
+    $fakeForge.Answers.searchHits[1].sha = $blobBeta
+    $cross = Invoke-Audit
+    $crossFork = @($cross.Report.findings | Where-Object { $_.kind -eq 'fork-changed' -and $_.repository -like '*someone/alpha-patches' })
+    $crossCopy = @($cross.Report.findings | Where-Object { $_.kind -eq 'mirror-changed' -and $_.repository -like '*copier/alpha-copy' })
+    Assert-True ($cross.ExitCode -eq 1 -and $crossFork.Count -eq 1 -and @($crossFork[0].evidence.hits).Count -eq 1 -and
+        $crossFork[0].evidence.hits[0].path -ceq 'patches/Beta.kt' -and $crossCopy.Count -eq 1) `
+        ("A recorded fork and copy of alpha holding beta's file weren't both reported: " +
+            (@($cross.Report.findings | ForEach-Object { "$($_.kind): $($_.repository) $($_.detail)" }) -join ' | '))
+    Assert-True ([IO.File]::ReadAllText($fixtureLedgerPath) -ceq $crossLedgerText) 'An audit with a fork holding another lineage''s file changed the ledger.'
+    Reset-FixtureLedger
+    $fakeForge.Answers = New-FakeAnswers
+
+    # Two paths that differ only by case are two files.
+    $fakeForge.Answers.searchHits = @($fakeForge.Answers.searchHits) + @(
+        @{ repository = @{ full_name = 'someone/alpha-patches' }; path = 'patches/Novel.kt'; sha = ('8e' * 20) }
+        @{ repository = @{ full_name = 'someone/alpha-patches' }; path = 'patches/novel.kt'; sha = ('8f' * 20) })
+    $caseResult = Invoke-Audit
+    $caseFinding = @($caseResult.Report.findings | Where-Object { $_.kind -eq 'fork-changed' })
+    Assert-True ($caseFinding.Count -eq 1 -and @($caseFinding[0].evidence.hits).Count -eq 2) `
+        "A recorded fork's two files differing only by case weren't both named: $(ConvertTo-Json -Compress -Depth 6 -InputObject $caseFinding)"
+    $fakeForge.Answers = New-FakeAnswers
+
     $fakeForge.Answers.alphaBranches.Content = "[{`"name`":`"trunk`",`"commit`":{`"sha`":`"$commitA1`"}}]"
     Assert-Drift 'branch-removed' '*alpha-patches*branch main is gone*' 'A pinned branch that was deleted'
     $fakeForge.Answers = New-FakeAnswers
