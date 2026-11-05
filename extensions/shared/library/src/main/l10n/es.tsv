@@ -362,3 +362,13 @@ Version %1$s	Versión %1$s
 Build %1$s (modified)	Compilación %1$s (modificada)
 Build %1$s (source known)	Compilación %1$s (origen conocido)
 Build %1$s (source unknown)	Compilación %1$s (origen desconocido)
+Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.	Pone la configuración de HushThreads en el menú que aparece al mantener pulsado el icono de Threads. Si lo desactivas, sale de ese menú y puedes seguir abriendo esta configuración desde la fila de HushThreads en la configuración de Threads o manteniendo pulsado el logotipo de Threads.
+# The Comments page: the section title, Filter comments' switch and summary, and the words and domains row with its dialog text and the Hide comments row.
+Comments	Comentarios
+Filter comments	Filtrar comentarios
+Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. Normal replies keep their order.	Las respuestas que coinciden con los patrones de abajo no aparecen entre las respuestas de una publicación, así que una respuesta de spam nunca se ve. Las respuestas normales mantienen su orden.
+Blocked words and domains	Palabras y dominios bloqueados
+One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.	Un patrón por línea o separados por comas. El dominio de una tienda como shopee.vn quita las respuestas que enlazan a él.
+One pattern a line, or separated by commas. Matched whatever the letter case.	Un patrón por línea o separados por comas. Se compara sin distinguir mayúsculas y minúsculas.
+Hide comments with links	Ocultar comentarios con enlaces
+Replies carrying any web address are left out, whatever the patterns say. Replies without one stay.	Las respuestas con una dirección web no aparecen, digan lo que digan los patrones. Las que no tienen ninguna se quedan.

@@ -362,3 +362,13 @@ Version %1$s	Versi %1$s
 Build %1$s (modified)	Build %1$s (diubah)
 Build %1$s (source known)	Build %1$s (sumber diketahui)
 Build %1$s (source unknown)	Build %1$s (sumber tidak diketahui)
+Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.	Menaruh pengaturan HushThreads di menu yang muncul saat ikon Threads ditekan lama. Jika dimatikan, pintasan itu hilang dari menu tersebut, dan Anda tetap bisa membuka pengaturan ini dari baris HushThreads di pengaturan Threads atau dengan menekan lama logo Threads.
+# The Comments page: the section title, Filter comments' switch and summary, and the words and domains row with its dialog text and the Hide comments row.
+Comments	Komentar
+Filter comments	Saring komentar
+Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. Normal replies keep their order.	Balasan yang cocok dengan pola di bawah tidak ditampilkan pada balasan sebuah postingan, jadi balasan spam tidak akan muncul. Balasan biasa tetap dalam urutannya.
+Blocked words and domains	Kata dan domain yang diblokir
+One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.	Satu pola per baris, atau dipisahkan koma. Domain toko seperti shopee.vn menghapus balasan yang menautkannya.
+One pattern a line, or separated by commas. Matched whatever the letter case.	Satu pola per baris, atau dipisahkan koma. Dicocokkan tanpa membedakan huruf besar-kecil.
+Hide comments with links	Sembunyikan komentar yang berisi tautan
+Replies carrying any web address are left out, whatever the patterns say. Replies without one stay.	Balasan yang memuat alamat web tidak ditampilkan, apa pun polanya. Balasan tanpa alamat web tetap ada.

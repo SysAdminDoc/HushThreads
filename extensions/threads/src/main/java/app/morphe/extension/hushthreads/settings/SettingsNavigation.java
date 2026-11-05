@@ -162,6 +162,7 @@ final class SettingsNavigation extends BaseAdapter {
         // What Threads users change most comes first.
         section("Feed", L10n.t("Feed"), feedDetail, SettingsIcons.FEED);
         section("Privacy", L10n.t("Privacy"), L10n.t("Tracking in links and analytics uploads"), SettingsIcons.BLOCK);
+        section("Comments", L10n.t("Comments"), null, SettingsIcons.CHAT);
         section("Downloads", L10n.t("Downloads"), L10n.t("Photos and videos you save from posts"), SettingsIcons.DOWNLOADS);
         section("Posts", L10n.t("Posts"), L10n.t("Copy text when you hold a post"), SettingsIcons.CHAT);
         section("Appearance", L10n.t("Appearance"), null, SettingsIcons.APPEARANCE);

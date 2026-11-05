@@ -362,3 +362,13 @@ Version %1$s	Sürüm %1$s
 Build %1$s (modified)	Derleme %1$s (değiştirilmiş)
 Build %1$s (source known)	Derleme %1$s (kaynak biliniyor)
 Build %1$s (source unknown)	Derleme %1$s (kaynak bilinmiyor)
+Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.	Threads simgesine basılı tutunca açılan menüye HushThreads ayarlarını koyar. Kapalıyken bu menüden çıkar. Bu ayarları yine Threads ayarlarındaki HushThreads satırından ya da Threads logosuna basılı tutarak açabilirsin.
+# The Comments page: the section title, Filter comments' switch and summary, and the words and domains row with its dialog text and the Hide comments row.
+Comments	Yorumlar
+Filter comments	Yorumları filtrele
+Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. Normal replies keep their order.	Aşağıdaki kalıplarla eşleşen yanıtlar bir gönderinin yanıtlarından çıkarılır, böylece spam bir yanıt hiç görünmez. Normal yanıtlar sırasını korur.
+Blocked words and domains	Engellenen sözcükler ve alan adları
+One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.	Her satıra bir kalıp veya virgülle ayırarak. shopee.vn gibi bir mağaza alan adı, ona bağlantı veren yanıtları çıkarır.
+One pattern a line, or separated by commas. Matched whatever the letter case.	Her satıra bir kalıp veya virgülle ayırarak. Büyük-küçük harf ayrımı yapılmadan eşleştirilir.
+Hide comments with links	Bağlantı içeren yorumları gizle
+Replies carrying any web address are left out, whatever the patterns say. Replies without one stay.	Bir web adresi taşıyan yanıtlar, kalıplar ne derse desin çıkarılır. Adresi olmayanlar kalır.

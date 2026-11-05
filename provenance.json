@@ -659,6 +659,17 @@
       ],
       "license": "GPL-3.0-only",
       "changes": "HushPinterest's Quick setups and Report a problem, moved from app.hushpinterest.extension to app.morphe.extension. QuickSetupKeys picks Threads' switches (Quiet: ads and suggested accounts; Privacy: usage reports, link tracking and screenshots), ReportProblemForm names HushThreads' repository and its bug form's field ids, and the no-browser message reuses the Ko-fi row's wording with the issues address. SettingsNavigation draws both rows on the home page and the fragment shows the choices with HushThreads' ChoiceCards."
+    },
+    {
+      "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/comments/**",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/CommentSettingsRows.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/comments/**"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "license": "GPL-3.0-only",
+      "changes": "Filter comments: an opened post's reply list, filtered before Threads parses it into rows, with each reply's text read through Threads' own post model."
     }
   ]
 }

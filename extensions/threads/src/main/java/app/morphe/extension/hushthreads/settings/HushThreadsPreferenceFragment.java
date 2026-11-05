@@ -20,6 +20,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -388,6 +389,22 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                         L10n.t("Hide screenshots from Threads"),
                         L10n.t("Threads isn't told when you take a screenshot, so it can't log it or react to it.")));
             }
+        }
+
+        if (build.contains(PatchFamily.FILTER_COMMENTS)) {
+            PreferenceCategory comments = category(screen, L10n.t("Comments"));
+            comments.addPreference(toggle(context, Settings.FILTER_COMMENTS, L10n.t("Filter comments"),
+                    L10n.t("Replies matching the patterns below are left out of a post's replies, so a "
+                        + "spam reply never shows. Normal replies keep their order.")));
+            EditTextPreference patterns = CommentSettingsRows.patternsRow(context);
+            comments.addPreference(patterns);
+            SwitchPreference links = toggle(context, Settings.HIDE_COMMENT_LINKS,
+                    L10n.t("Hide comments with links"),
+                    L10n.t("Replies carrying any web address are left out, whatever the patterns say. "
+                        + "Replies without one stay."));
+            comments.addPreference(links);
+            links.setDependency(Settings.FILTER_COMMENTS.key);
+            patterns.setDependency(Settings.FILTER_COMMENTS.key);
         }
 
         saves = null;
@@ -1085,6 +1102,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         preference.setSummary(summary);
         String icon = SettingsIcons.SETTINGS;
         if (setting == Settings.HIDE_ADS) icon = SettingsIcons.BLOCK;
+        else if (setting == Settings.FILTER_COMMENTS) icon = SettingsIcons.BLOCK;
+        else if (setting == Settings.HIDE_COMMENT_LINKS) icon = SettingsIcons.LINKS;
         else if (setting == Settings.HIDE_SUGGESTED_USERS) icon = SettingsIcons.PERSON;
         else if (setting == Settings.HIDE_SEARCH_SUGGESTIONS) icon = SettingsIcons.SEARCH;
         else if (setting == Settings.BLOCK_RETURN_REFRESH) icon = SettingsIcons.BOOKMARK;

@@ -95,6 +95,7 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.PURE_BLACK, "Pure black dark mode");
         ROW_TITLES.put(PatchFamily.HIDE_INSTAGRAM_BUTTON, "Hide the Instagram button");
         ROW_TITLES.put(PatchFamily.HIDE_GHOST_POST_BUBBLES, "Hide ghost post bubbles");
+        ROW_TITLES.put(PatchFamily.FILTER_COMMENTS, "Filter comments");
         ROW_TITLES.put(PatchFamily.REMOVE_AD_ID, "Advertising ID removed");
         ROW_TITLES.put(PatchFamily.RESTORE_TRUST, "Re-signed build fix");
         ROW_TITLES.put(PatchFamily.VERSION_CODE, "Version code raised");
@@ -208,6 +209,7 @@ public class HushThreadsPreferenceFragmentTest {
                         || build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.SCREENSHOT_DETECTION)) {
                     expected.add("Privacy");
                 }
+                if (build.contains(PatchFamily.FILTER_COMMENTS)) expected.add("Comments");
                 if (build.contains(PatchFamily.SAVE_MEDIA)) expected.add("Downloads");
                 if (build.contains(PatchFamily.PURE_BLACK) || build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)
                         || build.contains(PatchFamily.HIDE_GHOST_POST_BUBBLES)) {

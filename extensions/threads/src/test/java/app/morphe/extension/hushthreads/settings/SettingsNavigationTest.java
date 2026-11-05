@@ -97,12 +97,12 @@ public class SettingsNavigationTest {
      * The main list with nothing paused or waiting: Quick setups, a button for each of the ten
      * sections, Support and the build line. Every section folds open in place, one tap from here.
      */
-    private static final int HOME_ROWS = 13;
+    private static final int HOME_ROWS = 14;
 
     @Test public void homeAndEveryCategoryAreReachableWithoutRemovingTheModel() {
         assertNotNull(page.navigation);
         assertEquals(HOME_ROWS, list().getCount());
-        assertEquals(10, page.sections().size());
+        assertEquals(11, page.sections().size());
         int total = page.getPreferenceScreen().getRootAdapter().getCount();
         Map<String, Object> before = savedValues();
         assertFalse(titles().contains("More settings"));

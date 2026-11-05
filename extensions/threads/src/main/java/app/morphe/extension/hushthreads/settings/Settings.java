@@ -170,6 +170,23 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting CHECK_FOR_RELEASES =
             new BooleanSetting("hushthreads_check_releases", FALSE);
 
+    /**
+     * Replies matching one of {@link #FILTER_COMMENT_PATTERNS}'s lines are taken out of a post's
+     * replies before Threads builds its rows from them
+     * ({@link app.morphe.extension.hushthreads.comments.CommentFilter}). Off by default: a build
+     * patched with the defaults shows every reply until the switch is turned on.
+     */
+    public static final BooleanSetting FILTER_COMMENTS =
+            new BooleanSetting("hushthreads_filter_comments", FALSE);
+
+    /**
+     * A reply carrying a web address is taken out, whatever the patterns say
+     * ({@link app.morphe.extension.hushthreads.comments.CommentFilter}). The second switch of
+     * Filter comments.
+     */
+    public static final BooleanSetting HIDE_COMMENT_LINKS =
+            new BooleanSetting("hushthreads_hide_comment_links", FALSE);
+
     static {
         // Every switch above has loaded. One left at an earlier build's default gets that default
         // back here, before anything reads it. See SettingsUpgrade.

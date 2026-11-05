@@ -101,4 +101,8 @@ public final class SettingsStatus {
     public static boolean trustUserCertificates() {
         return false;
     }
+
+    public static boolean filterComments() {
+        return false;
+    }
 }

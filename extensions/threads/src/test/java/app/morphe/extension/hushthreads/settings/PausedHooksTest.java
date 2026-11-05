@@ -37,6 +37,8 @@ import app.morphe.extension.hushthreads.download.SavesForTests;
 import app.morphe.extension.hushthreads.feed.CopyText;
 import app.morphe.extension.hushthreads.feed.ImageQuality;
 import app.morphe.extension.hushthreads.feed.ReturnRefresh;
+import app.morphe.extension.hushthreads.comments.CommentFilter;
+import app.morphe.extension.hushthreads.comments.CommentSettings;
 import app.morphe.extension.hushthreads.feed.SwipeToSearch;
 import app.morphe.extension.hushthreads.feed.VideoAutoplay;
 import app.morphe.extension.hushthreads.misc.Analytics;
@@ -179,6 +181,15 @@ public class PausedHooksTest {
         // A ghost post bubble Threads would show, on a profile or in the feed's row, isn't shown.
         probes.put(PatchFamily.HIDE_GHOST_POST_BUBBLES, Arrays.asList(
                 () -> !GhostPostBubbles.showOnProfile(true), () -> !GhostPostBubbles.showTray(true)));
+        // A reply carrying a listed domain is taken out of the list Threads would parse.
+        probes.put(PatchFamily.FILTER_COMMENTS, Collections.singletonList(() -> {
+            CommentSettings.FILTER_COMMENT_PATTERNS.save("shopee.vn");
+            try {
+                return CommentFilter.removes("Buy it at shopee.vn/abc");
+            } finally {
+                CommentSettings.FILTER_COMMENT_PATTERNS.resetToDefault();
+            }
+        }));
         return probes;
     }
 
