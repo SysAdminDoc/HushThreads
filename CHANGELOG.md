@@ -4,6 +4,7 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* Each way into HushThreads settings has its own switch under Pause, backup and diagnostics now, so you can take away the app icon shortcut, the row in Threads' settings or the long press on the logo. The last one that's on stays on, so there's always a way back in, and App info opens the settings whichever ones you keep. Asked for in #18.
 * **Tooling:** Changelog entries don't open with a "Threads:" label anymore. HushThreads only patches Threads, so it repeated itself on every line. The release scripts stopped adding or asking for it, and they drop it from any bullet that still has one when a release is cut.
 * **Build:** A fresh checkout builds again. Dependency verification was missing the hash for junit-bom 5.13.1's module file, so Gradle stopped before compiling anything unless that file was already trusted locally.
 * **Tooling:** Release walks now bind the installed APK to its original patching inputs and bundle. Publication rechecks its manifest and embedded identity, complete screen coverage and a clean result. A retained install needs its patch receipt, and stale or incomplete receipts are refused.

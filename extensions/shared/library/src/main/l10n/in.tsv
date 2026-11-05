@@ -337,4 +337,10 @@ Not saved: the proxy wants a password. Try another network.	Tidak disimpan: prox
 The proxy wants a password. Try another network.	Proxy butuh kata sandi. Coba jaringan lain.
 # The switch on the Pause, backup and diagnostics page that adds or takes away the HushThreads settings shortcut in the menu a long press on Threads' launcher icon shows.
 Settings shortcut on the app icon	Pintasan pengaturan di ikon aplikasi
-Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.	Menaruh pengaturan HushThreads di menu yang muncul saat ikon Threads ditekan lama. Jika dimatikan, pintasan itu hilang dari menu tersebut, dan Anda tetap bisa membuka pengaturan ini dari baris HushThreads di pengaturan Threads atau dengan menekan lama logo Threads.
+Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.	Menaruh pengaturan HushThreads di menu yang muncul saat ikon Threads ditekan lama. Jika dimatikan, pintasan itu hilang dari menu tersebut.
+# The switches on the same page for the HushThreads row in Threads' own settings and for the long press on the Threads logo, then what a switch says while it's the last way in that's on, which can't be turned off
+Settings row in Threads' settings	Baris di pengaturan Threads
+Adds a HushThreads row just above More settings in Threads' settings. Off, the row is gone the next time you open Threads' settings.	Menambahkan baris HushThreads tepat di atas Pengaturan lainnya di pengaturan Threads. Jika dimatikan, baris itu hilang saat Anda membuka pengaturan Threads berikutnya.
+Open settings from the logo	Buka pengaturan dari logo
+A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.	Menekan lama logo Threads di bagian atas feed membuka pengaturan ini. Jika dimatikan, menekan lama tidak melakukan apa-apa.
+Stays on, since it's the only way left into these settings.	Tetap aktif karena ini satu-satunya jalan yang tersisa ke pengaturan ini.

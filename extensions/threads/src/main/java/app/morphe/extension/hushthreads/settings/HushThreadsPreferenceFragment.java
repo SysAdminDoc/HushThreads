@@ -46,6 +46,7 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -108,6 +109,10 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     /** The first row, which says whether HushThreads runs now and whether the next start changes that. */
     @Nullable
     private Preference statusCard;
+
+    /** The switches for the ways into these settings, on the Pause page. */
+    @Nullable
+    private WaysIn ways;
 
     /** The row that asks GitHub for the newest release now, and says what the last try found. */
     @Nullable
@@ -262,6 +267,13 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
     /** Shows what the switches are saved as, after an import wrote them. */
     void refreshSwitches() {
         updateUIToSettingValues();
+    }
+
+    /** The shared fragment enables each row it syncs, and the last way in stays greyed out. */
+    @Override
+    protected void updatePreferenceAvailability(Preference pref, Setting<?> setting) {
+        super.updatePreferenceAvailability(pref, setting);
+        if (ways != null && ways.has(pref)) ways.refresh();
     }
 
     @Override
@@ -482,18 +494,23 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 L10n.t("Turns off every HushThreads switch except Debug logging the next time Threads starts. What "
                     + "you chose when you patched stays, and your choices are saved.")), SettingsIcons.PAUSE));
         hushthreads.addPreference(mark(quickSetupsHomeRow(context), SettingsIcons.BUILD));
-        // The settings entry's own, so every build has it, and a pause leaves it as it is (HushFacebook#146).
-        SwitchPreference settingsShortcut = toggle(context, BaseSettings.SETTINGS_SHORTCUT,
-                L10n.t("Settings shortcut on the app icon"),
+        // A switch for each way into these settings this build has (HushFacebook#146). They're the
+        // settings entry's own, so a pause leaves them as they are.
+        ways = new WaysIn();
+        ways.add(hushthreads, context, BaseSettings.SETTINGS_SHORTCUT, L10n.t("Settings shortcut on the app icon"),
                 L10n.t("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that "
-                        + "menu, and you can still open these settings from the HushThreads row in Threads' settings "
-                        + "or with a long press on the Threads logo."));
-        settingsShortcut.setOnPreferenceChangeListener((preference, value) -> {
-            BaseSettings.SETTINGS_SHORTCUT.save((Boolean) value);
-            SettingsEntry.shortcutSwitchChanged(context);
-            return true;
-        });
-        hushthreads.addPreference(mark(settingsShortcut, SettingsIcons.OPENING));
+                        + "menu."), SettingsIcons.OPENING);
+        if (ThreadsSettingsRow.inBuild()) {
+            ways.add(hushthreads, context, BaseSettings.SETTINGS_ROW, L10n.t("Settings row in Threads' settings"),
+                    L10n.t("Adds a HushThreads row just above More settings in Threads' settings. Off, the row is gone "
+                            + "the next time you open Threads' settings."), SettingsIcons.SETTINGS);
+        }
+        if (ThreadsLogo.inBuild()) {
+            ways.add(hushthreads, context, BaseSettings.SETTINGS_LOGO_PRESS, L10n.t("Open settings from the logo"),
+                    L10n.t("A long press on the Threads logo at the top of the feed opens these settings. Off, the "
+                            + "long press does nothing."), SettingsIcons.FEED);
+        }
+        ways.refresh();
         String stays = PatchFamily.staysWhilePausedSummary(build);
         // Morphe Manager can export the patch choices and the signing key, not these switches.
         hushthreads.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.EXPORT,
@@ -1140,6 +1157,44 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
             showAllText(view);
             ScreenColors.row(view, this);
             view.setAccessibilityDelegate(isSelectable() ? new RowSemantics(this, Button.class) : null);
+        }
+    }
+
+    /**
+     * The switches for the ways into these settings. The last one that's on can't be turned off:
+     * its row is greyed out and says so, and a change that reaches it anyway is refused.
+     */
+    static final class WaysIn {
+        private final Map<BooleanSetting, SwitchPreference> rows = new LinkedHashMap<>();
+        private final Map<BooleanSetting, String> summaries = new LinkedHashMap<>();
+
+        void add(PreferenceCategory category, Context context, BooleanSetting way, String title, String summary,
+                 String icon) {
+            SwitchPreference row = toggle(context, way, title, summary);
+            row.setOnPreferenceChangeListener((preference, value) -> {
+                boolean on = (Boolean) value;
+                if (!on && SettingsEntry.isLastWayIn(way)) return false;
+                way.save(on);
+                if (way == BaseSettings.SETTINGS_SHORTCUT) SettingsEntry.shortcutSwitchChanged(context);
+                refresh();
+                return true;
+            });
+            rows.put(way, row);
+            summaries.put(way, summary);
+            category.addPreference(mark(row, icon));
+        }
+
+        boolean has(Preference row) {
+            return rows.containsValue(row);
+        }
+
+        void refresh() {
+            for (Map.Entry<BooleanSetting, SwitchPreference> entry : rows.entrySet()) {
+                boolean last = SettingsEntry.isLastWayIn(entry.getKey());
+                entry.getValue().setEnabled(!last);
+                entry.getValue().setSummary(last ? L10n.t("Stays on, since it's the only way left into these settings.")
+                        : summaries.get(entry.getKey()));
+            }
         }
     }
 

@@ -334,4 +334,10 @@ Not saved: the proxy wants a password. Try another network.	Não foi salvo: o pr
 The proxy wants a password. Try another network.	O proxy pede uma senha. Tente outra rede.
 # The switch on the Pause, backup and diagnostics page that adds or takes away the HushThreads settings shortcut in the menu a long press on Threads' launcher icon shows.
 Settings shortcut on the app icon	Atalho das configurações no ícone do app
-Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.	Coloca as configurações do HushThreads no menu que aparece ao tocar e segurar o ícone do Threads. Desligado, o atalho sai desse menu, e você ainda pode abrir estas configurações pela linha do HushThreads nas configurações do Threads ou tocando e segurando o logotipo do Threads.
+Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.	Coloca as configurações do HushThreads no menu que aparece ao tocar e segurar o ícone do Threads. Desligado, o atalho sai desse menu.
+# The switches on the same page for the HushThreads row in Threads' own settings and for the long press on the Threads logo, then what a switch says while it's the last way in that's on, which can't be turned off
+Settings row in Threads' settings	Linha nas configurações do Threads
+Adds a HushThreads row just above More settings in Threads' settings. Off, the row is gone the next time you open Threads' settings.	Adiciona uma linha do HushThreads logo acima de Mais configurações nas configurações do Threads. Desligado, a linha some na próxima vez que você abrir as configurações do Threads.
+Open settings from the logo	Abrir as configurações pelo logotipo
+A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.	Tocar e segurar o logotipo do Threads no topo do feed abre estas configurações. Desligado, tocar e segurar não faz nada.
+Stays on, since it's the only way left into these settings.	Fica ligado porque é o único caminho que resta para estas configurações.

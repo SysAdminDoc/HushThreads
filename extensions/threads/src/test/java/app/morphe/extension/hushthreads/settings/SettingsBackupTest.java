@@ -116,7 +116,7 @@ public class SettingsBackupTest {
                 BaseSettings.CAPTURE_JAVA_CRASHES, BaseSettings.MORPHE_LANGUAGE, BaseSettings.SHOW_MENU_ICONS,
                 BaseSettings.FIRST_TIME_APP_LAUNCHED, BaseSettings.EXPERIMENTAL_APP_CONFIRMED,
                 BaseSettings.CHECK_ENVIRONMENT_WARNINGS_ISSUED, BaseSettings.HIDE_QUICK_SETUPS,
-                BaseSettings.SETTINGS_SHORTCUT);
+                BaseSettings.SETTINGS_SHORTCUT, BaseSettings.SETTINGS_ROW, BaseSettings.SETTINGS_LOGO_PRESS);
     }
 
     private static final String EXPORT_ROW = "action_export_settings";

@@ -39,6 +39,7 @@ import app.morphe.extension.shared.L10n;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
+import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.shared.settings.preference.ReopenSettingsAfterRestart;
 
 /**
@@ -51,10 +52,11 @@ import app.morphe.extension.shared.settings.preference.ReopenSettingsAfterRestar
  * Threads activity reports its intent here from {@code onCreate} and {@code onNewIntent}, and the
  * next Threads activity to resume shows the screen as a full screen dialog. The shortcut is kept
  * first among Threads' own, because a launcher shows only the first few, and some launchers have no
- * shortcut menu at all. A switch on the Pause, backup and diagnostics page takes it out of that menu
- * and keeps it out ({@link BaseSettings#SETTINGS_SHORTCUT}). Inside Threads, a HushThreads row above More settings in Threads' own
+ * shortcut menu at all. Inside Threads, a HushThreads row above More settings in Threads' own
  * settings opens it over the screen in front ({@link ThreadsSettingsRow}), and so does a long press
- * on the Threads logo at the top of the home feed ({@link ThreadsLogo}).
+ * on the Threads logo at the top of the home feed ({@link ThreadsLogo}). Each of those three has a
+ * switch on the Pause, backup and diagnostics page, and one of them always stays on ({@link #wayOn}).
+ * App info's way in has none: it's Android's, and it's the one left if a launcher has no menu.
  */
 @SuppressWarnings("unused")
 public final class SettingsEntry {
@@ -175,7 +177,7 @@ public final class SettingsEntry {
             String longLabel = L10n.t(app, "HushThreads settings");
             // Set before the attempt, so a shortcut that can't be pushed isn't tried on every screen.
             publishedLabel = longLabel;
-            if (!BaseSettings.SETTINGS_SHORTCUT.get()) {
+            if (!shortcutOn()) {
                 removeShortcut(manager);
                 return;
             }
@@ -202,7 +204,7 @@ public final class SettingsEntry {
             ShortcutManager manager = app.getSystemService(ShortcutManager.class);
             if (manager == null) return;
             // Switched off, Threads' calls neither bring it back nor rank it.
-            if (!BaseSettings.SETTINGS_SHORTCUT.get()) {
+            if (!shortcutOn()) {
                 removeShortcut(manager);
                 return;
             }
@@ -520,6 +522,47 @@ public final class SettingsEntry {
             intent.setAction(Intent.ACTION_MAIN);
             request("Android's App info page");
         }
+    }
+
+    /** Whether the launcher shortcut is offered: its switch, or every way in this build switched off. */
+    static boolean shortcutOn() {
+        return wayOn(BaseSettings.SETTINGS_SHORTCUT);
+    }
+
+    /** Whether the row in Threads' settings is drawn: its switch, or every way in this build switched off. */
+    static boolean rowOn() {
+        return wayOn(BaseSettings.SETTINGS_ROW);
+    }
+
+    /** Whether a long press on the Threads logo opens the screen: its switch, or every way in this build off. */
+    static boolean logoPressOn() {
+        return wayOn(BaseSettings.SETTINGS_LOGO_PRESS);
+    }
+
+    /**
+     * One way in always stays: the screen won't turn the last one off, and a store that has every
+     * way in this build off anyway (an older build's, or one edited by hand) gets them all back.
+     * Before the settings are read, everything stays where it is.
+     */
+    private static boolean wayOn(BooleanSetting way) {
+        if (!Utils.settingsReady()) return true;
+        return way.get() || waysOn() == 0;
+    }
+
+    /**
+     * The ways in this build carries that are switched on. The launcher shortcut is in every build;
+     * the row and the logo's long press count only when the settings patch could put them in.
+     */
+    static int waysOn() {
+        int on = BaseSettings.SETTINGS_SHORTCUT.get() ? 1 : 0;
+        if (ThreadsSettingsRow.inBuild() && BaseSettings.SETTINGS_ROW.get()) on++;
+        if (ThreadsLogo.inBuild() && BaseSettings.SETTINGS_LOGO_PRESS.get()) on++;
+        return on;
+    }
+
+    /** Whether [way] is the last way in that's on, which the screen keeps on. */
+    static boolean isLastWayIn(BooleanSetting way) {
+        return way.get() && waysOn() <= 1;
     }
 
     /** The HushThreads row in Threads' own settings was tapped, over the screen in front. */

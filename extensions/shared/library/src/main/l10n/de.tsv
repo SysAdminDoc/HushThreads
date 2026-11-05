@@ -337,4 +337,10 @@ Not saved: the proxy wants a password. Try another network.	Nicht gespeichert: D
 The proxy wants a password. Try another network.	Der Proxy will ein Passwort. Wechsle das Netz.
 # The switch on the Pause, backup and diagnostics page that adds or takes away the HushThreads settings shortcut in the menu a long press on Threads' launcher icon shows.
 Settings shortcut on the app icon	Einstellungsverknüpfung am App-Symbol
-Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.	Zeigt die HushThreads-Einstellungen im Menü, das beim langen Drücken des Threads-Symbols erscheint. Aus verschwinden sie aus diesem Menü, und du kannst die Einstellungen weiter über die HushThreads-Zeile in den Threads-Einstellungen oder durch langes Drücken des Threads-Logos öffnen.
+Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.	Zeigt die HushThreads-Einstellungen im Menü, das beim langen Drücken des Threads-Symbols erscheint. Aus verschwinden sie aus diesem Menü.
+# The switches on the same page for the HushThreads row in Threads' own settings and for the long press on the Threads logo, then what a switch says while it's the last way in that's on, which can't be turned off
+Settings row in Threads' settings	Zeile in den Threads-Einstellungen
+Adds a HushThreads row just above More settings in Threads' settings. Off, the row is gone the next time you open Threads' settings.	Fügt in den Threads-Einstellungen direkt über Weitere Einstellungen eine HushThreads-Zeile hinzu. Aus ist die Zeile weg, wenn du die Threads-Einstellungen das nächste Mal öffnest.
+Open settings from the logo	Einstellungen über das Logo öffnen
+A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.	Langes Drücken auf das Threads-Logo oben im Feed öffnet diese Einstellungen. Aus passiert beim langen Drücken nichts.
+Stays on, since it's the only way left into these settings.	Bleibt an, weil es der letzte Weg zu diesen Einstellungen ist.

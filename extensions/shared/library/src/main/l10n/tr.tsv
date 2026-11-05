@@ -337,4 +337,10 @@ Not saved: the proxy wants a password. Try another network.	Kaydedilmedi: Proxy 
 The proxy wants a password. Try another network.	Proxy parola istiyor. Başka bir ağ dene.
 # The switch on the Pause, backup and diagnostics page that adds or takes away the HushThreads settings shortcut in the menu a long press on Threads' launcher icon shows.
 Settings shortcut on the app icon	Uygulama simgesinde ayarlar kısayolu
-Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.	Threads simgesine basılı tutunca açılan menüye HushThreads ayarlarını koyar. Kapalıyken bu menüden çıkar. Bu ayarları yine Threads ayarlarındaki HushThreads satırından ya da Threads logosuna basılı tutarak açabilirsin.
+Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.	Threads simgesine basılı tutunca açılan menüye HushThreads ayarlarını koyar. Kapalıyken bu menüden çıkar.
+# The switches on the same page for the HushThreads row in Threads' own settings and for the long press on the Threads logo, then what a switch says while it's the last way in that's on, which can't be turned off
+Settings row in Threads' settings	Threads ayarlarındaki satır
+Adds a HushThreads row just above More settings in Threads' settings. Off, the row is gone the next time you open Threads' settings.	Threads ayarlarında Diğer ayarlar'ın hemen üstüne bir HushThreads satırı ekler. Kapalıyken satır, Threads ayarlarını bir sonraki açtığında gider.
+Open settings from the logo	Ayarları logodan aç
+A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.	Akışın üstündeki Threads logosuna basılı tutmak bu ayarları açar. Kapalıyken basılı tutmak hiçbir şey yapmaz.
+Stays on, since it's the only way left into these settings.	Bu ayarlara açılan son yol olduğu için açık kalır.
