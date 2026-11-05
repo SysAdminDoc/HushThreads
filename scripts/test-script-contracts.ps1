@@ -6636,7 +6636,8 @@ Write-Host '[scripts] release root contracts passed'
 
 # --- release bundle path ---------------------------------------------------------------------
 #
-# Every release step reads the bundle from patches/build/release. The plugin's buildAndroid
+# The release bundle is built into patches/build/release (release.ps1 then works from its copy
+# in build/release-assets, which no later build can replace). The plugin's buildAndroid
 # finishes the bundle inside the jar task's own output, so a task run after it that reruns
 # :patches:jar put the plain jar back under the same name in build/libs: v0.43.0 shipped with no
 # classes.dex that way. buildAndroid copies the finished bundle to build/release, where nothing
@@ -6895,16 +6896,16 @@ if ((Get-Content -LiteralPath FLOW_FAIL -ErrorAction SilentlyContinue) -eq 'fact
 exit 0
 '@
     Write-FlowStub (Join-Path $flowRepo 'scripts/verify-all-patches.ps1') @'
-param([string]$Apk, [string]$DesktopJar, [string]$WorkDir, [string]$KeepIn)
+param([string]$Apk, [string]$Bundle, [string]$DesktopJar, [string]$WorkDir, [string]$KeepIn)
 Add-Content -LiteralPath FLOW_LOG -Value ("verify apk=$(Split-Path -Leaf $Apk) jar=$(Split-Path -Leaf $DesktopJar) keep=" +
-    $KeepIn.Replace('\', '/') + " priority=$env:BUILD_QUEUE_PRIORITY")
+    $KeepIn.Replace('\', '/') + ' bundle=' + $Bundle.Replace('\', '/') + " priority=$env:BUILD_QUEUE_PRIORITY")
 if ((Get-Content -LiteralPath FLOW_FAIL -ErrorAction SilentlyContinue) -eq 'verify') { exit 1 }
 exit 0
 '@
     Write-FlowStub (Join-Path $flowRepo 'scripts/build-release-receipt.ps1') @'
-param([string[]]$Fixture, [string]$WorkDir, [string]$AppliedDir, [string]$DesktopJar)
+param([string[]]$Fixture, [string]$Bundle, [string]$WorkDir, [string]$AppliedDir, [string]$DesktopJar)
 Add-Content -LiteralPath FLOW_LOG -Value ('receipt fixtures=' + (@($Fixture | ForEach-Object { Split-Path -Leaf $_ }) -join ',') +
-    ' applied=' + $AppliedDir.Replace('\', '/') + " priority=$env:BUILD_QUEUE_PRIORITY")
+    ' applied=' + $AppliedDir.Replace('\', '/') + ' bundle=' + $Bundle.Replace('\', '/') + " priority=$env:BUILD_QUEUE_PRIORITY")
 if ((Get-Content -LiteralPath FLOW_FAIL -ErrorAction SilentlyContinue) -eq 'receipt') { exit 1 }
 [IO.File]::WriteAllText((Join-Path FLOW_REPO 'release-receipt-1.2.3.json'), ('{"release":{"commit":"' + [IO.File]::ReadAllText(FLOW_HEAD).Trim() + '"}}'))
 exit 0
@@ -7170,15 +7171,16 @@ exit 0
     Assert-True (@(Read-FlowLog).Count -eq 0) 'A refused build still ran a step.'
 
     # A failing step stops build there, before any tag: the tests, a stale patch list, the bundle,
-    # a bundle stamped 0 or with no dex, the fixture run, the receipt.
+    # a bundle stamped 0 or with no dex, the fixture run, the receipt. The bundle's signature
+    # is read first, so a stamp or dex refusal comes after it.
     foreach ($case in @(
             @{ Step = 'tests'; Seen = 1; Says = '*did not pass*' },
             @{ Step = 'stale'; Seen = 2; Says = '*patch list is stale*' },
             @{ Step = 'bundle'; Seen = 3; Says = '*did not pass*' },
-            @{ Step = 'stamp'; Seen = 3; Says = "*stamped '0'*" },
-            @{ Step = 'dex'; Seen = 3; Says = '*no classes.dex*' },
-            @{ Step = 'verify'; Seen = 4; Says = '*did not pass on threads-450.0.0.51.78-arm64.apkm*' },
-            @{ Step = 'receipt'; Seen = 5; Says = '*build-release-receipt.ps1 did not pass*' })) {
+            @{ Step = 'stamp'; Seen = 4; Says = "*stamped '0'*" },
+            @{ Step = 'dex'; Seen = 4; Says = '*no classes.dex*' },
+            @{ Step = 'verify'; Seen = 5; Says = '*did not pass on threads-450.0.0.51.78-arm64.apkm*' },
+            @{ Step = 'receipt'; Seen = 6; Says = '*build-release-receipt.ps1 did not pass*' })) {
         Set-FlowFail $case.Step
         if ($case.Step -eq 'stamp') { New-FlowBundle -Stamp '0' } elseif ($case.Step -eq 'dex') { New-FlowBundle -Stamp $flowStamp -NoDex }
         Assert-Throws { Invoke-FlowStage -Stage build -Version 1.2.3 } $case.Says "Build carried on past a failing $($case.Step) step."
@@ -7201,12 +7203,12 @@ exit 0
     Assert-Throws { Invoke-FlowStage -Stage build -Version 1.2.3 } '*build-release-receipt.ps1 did not pass*' `
         'Build carried on past a failing receipt on two variants.'
     $flow = @(Read-FlowLog)
-    Assert-True ((Get-FlowSteps $flow) -eq 'gradle tests | gradle list | gradle bundle | verify | verify | receipt') `
+    Assert-True ((Get-FlowSteps $flow) -eq 'gradle tests | gradle list | gradle bundle | python signed | verify | verify | receipt') `
         "Build did not patch both variants of a build: $($flow -join ' | ')"
-    Assert-True ($flow[3] -like 'verify apk=threads-450.0.0.51.78-arm64.apkm *' -and $flow[4] -like 'verify apk=threads-450.0.0.51.78-x86_64.apkm *') `
+    Assert-True ($flow[4] -like 'verify apk=threads-450.0.0.51.78-arm64.apkm *' -and $flow[5] -like 'verify apk=threads-450.0.0.51.78-x86_64.apkm *') `
         "Build did not patch each variant by name: $($flow -join ' | ')"
-    Assert-True ($flow[5] -like 'receipt fixtures=threads-450.0.0.51.78-arm64.apkm,threads-450.0.0.51.78-x86_64.apkm applied=*') `
-        "Build's receipt did not read both variants: $($flow[5])"
+    Assert-True ($flow[6] -like 'receipt fixtures=threads-450.0.0.51.78-arm64.apkm,threads-450.0.0.51.78-x86_64.apkm applied=*') `
+        "Build's receipt did not read both variants: $($flow[6])"
     Remove-Item -LiteralPath $secondFixture -Force
     Set-FlowFail ''
     Read-QueueLog | Out-Null
@@ -7221,15 +7223,16 @@ exit 0
     [IO.File]::WriteAllText($oldBundle, 'old')
     Invoke-FlowStage -Stage build -Version 1.2.3
     $flow = @(Read-FlowLog)
-    Assert-True ((Get-FlowSteps $flow) -eq 'gradle tests | gradle list | gradle bundle | verify | receipt | push priority=release') `
-        "Build did not test, list, bundle, patch the fixture, write the receipt and push the tag in order: $($flow -join ' | ')"
+    Assert-True ((Get-FlowSteps $flow) -eq 'gradle tests | gradle list | gradle bundle | python signed | verify | receipt | push priority=release') `
+        "Build did not test, list, bundle, check its signature, patch the fixture, write the receipt and push the tag in order: $($flow -join ' | ')"
     Assert-True ($flow[0].EndsWith((' priority=release tasks= :extensions:threads:testDebugUnitTest --rerun :patches:test --rerun ' +
                 ':extensions:shared:library:lint :extensions:threads:lint '))) "Build's test run was not every test again with both lints: $($flow[0])"
-    Assert-True ($flow[3] -like ('verify apk=threads-450.0.0.51.78-arm64.apkm jar=morphe-desktop-1.0.0.jar ' +
-            'keep=*/patches/build/fixture-apply/threads-450.0.0.51.78-arm64.apkm priority=release')) `
-        "Build did not keep the fixture run where the receipt reads it: $($flow[3])"
-    Assert-True ($flow[4] -like 'receipt fixtures=threads-450.0.0.51.78-arm64.apkm applied=*/patches/build/fixture-apply priority=release') `
-        "Build's receipt did not read the kept run: $($flow[4])"
+    Assert-True ($flow[4] -like ('verify apk=threads-450.0.0.51.78-arm64.apkm jar=morphe-desktop-1.0.0.jar ' +
+            'keep=*/patches/build/fixture-apply/threads-450.0.0.51.78-arm64.apkm bundle=*/build/release-assets/1.2.3/patches-1.2.3.mpp priority=release')) `
+        "Build did not patch the tagged copy and keep the run where the receipt reads it: $($flow[4])"
+    Assert-True ($flow[5] -like ('receipt fixtures=threads-450.0.0.51.78-arm64.apkm applied=*/patches/build/fixture-apply ' +
+            'bundle=*/build/release-assets/1.2.3/patches-1.2.3.mpp priority=release')) `
+        "Build's receipt did not read the kept run of the tagged copy: $($flow[5])"
     $queued = @(Read-QueueLog)
     Assert-True (($queued -join ' | ') -eq 'hushthreads release verify threads-450.0.0.51.78-arm64.apkm | hushthreads release receipt') `
         "Build's fixture run and receipt did not each wait for a slot of the queue: $($queued -join ' | ')"
@@ -7249,7 +7252,7 @@ exit 0
     # Run again, build makes the same assets and leaves the tag, with nothing to push.
     Invoke-FlowStage -Stage build -Version 1.2.3
     Read-QueueLog | Out-Null
-    Assert-True ((Get-FlowSteps @(Read-FlowLog)) -eq 'gradle tests | gradle list | gradle bundle | verify | receipt') `
+    Assert-True ((Get-FlowSteps @(Read-FlowLog)) -eq 'gradle tests | gradle list | gradle bundle | python signed | verify | receipt') `
         'Build run again pushed a tag origin has.'
     Assert-True ([IO.File]::ReadAllText((Join-Path $flowAssets 'SHA256SUMS.txt')) -eq $flowSums) 'Build run again made other assets.'
     Assert-Throws { Invoke-FlowStage -Stage prepare -Version 1.2.3 } '*already exists*' 'Prepare ran again after v1.2.3 was tagged.'
