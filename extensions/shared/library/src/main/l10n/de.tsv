@@ -362,7 +362,6 @@ Version %1$s	Version %1$s
 Build %1$s (modified)	Build %1$s (geändert)
 Build %1$s (source known)	Build %1$s (Quelle bekannt)
 Build %1$s (source unknown)	Build %1$s (Quelle unbekannt)
-Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.	Zeigt die HushThreads-Einstellungen im Menü, das beim langen Drücken des Threads-Symbols erscheint. Aus verschwinden sie aus diesem Menü, und du kannst die Einstellungen weiter über die HushThreads-Zeile in den Threads-Einstellungen oder durch langes Drücken des Threads-Logos öffnen.
 # The Comments page: the section title, Filter comments' switch and summary, and the words and domains row with its dialog text and the Hide comments row.
 Comments	Kommentare
 Filter comments	Kommentare filtern

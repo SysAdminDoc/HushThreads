@@ -362,7 +362,6 @@ Version %1$s	Sürüm %1$s
 Build %1$s (modified)	Derleme %1$s (değiştirilmiş)
 Build %1$s (source known)	Derleme %1$s (kaynak biliniyor)
 Build %1$s (source unknown)	Derleme %1$s (kaynak bilinmiyor)
-Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.	Threads simgesine basılı tutunca açılan menüye HushThreads ayarlarını koyar. Kapalıyken bu menüden çıkar. Bu ayarları yine Threads ayarlarındaki HushThreads satırından ya da Threads logosuna basılı tutarak açabilirsin.
 # The Comments page: the section title, Filter comments' switch and summary, and the words and domains row with its dialog text and the Hide comments row.
 Comments	Yorumlar
 Filter comments	Yorumları filtrele

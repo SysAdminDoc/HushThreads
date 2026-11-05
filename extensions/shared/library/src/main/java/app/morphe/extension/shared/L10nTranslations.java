@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(658);
+        Map<String, String> table = new HashMap<>(656);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -420,15 +420,13 @@ public final class L10nTranslations {
                 "Datenschutz");
         table.put("Pure black dark mode",
                 "Rein schwarzer Dunkelmodus");
-        table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.",
-                "Zeigt die HushThreads-Einstellungen im Men\u00fc, das beim langen Dr\u00fccken des Threads-Symbols erscheint. Aus verschwinden sie aus diesem Men\u00fc, und du kannst die Einstellungen weiter \u00fcber die HushThreads-Zeile in den Threads-Einstellungen oder durch langes Dr\u00fccken des Threads-Logos \u00f6ffnen.");
         table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
                 "Zeigt die HushThreads-Einstellungen im Men\u00fc, das beim langen Dr\u00fccken des Threads-Symbols erscheint. Aus verschwinden sie aus diesem Men\u00fc.");
+        table.put("Puts every feature switch back the way it started.",
+                "Setzt jeden Funktionsschalter auf seinen Ausgangszustand zur\u00fcck.");
     }
 
     private static void fillDe3(Map<String, String> table) {
-        table.put("Puts every feature switch back the way it started.",
-                "Setzt jeden Funktionsschalter auf seinen Ausgangszustand zur\u00fcck.");
         table.put("Quick setups",
                 "Schnelleinstellungen");
         table.put("Quick setups hidden. Bring it back from Pause, backup and diagnostics.",
@@ -547,11 +545,11 @@ public final class L10nTranslations {
                 "Einstellungsverkn\u00fcpfung am App-Symbol");
         table.put("Share sheet entry removed",
                 "Eintrag im Teilen-Men\u00fc entfernt");
+        table.put("Show all settings as a list",
+                "Alle Einstellungen als Liste zeigen");
     }
 
     private static void fillDe4(Map<String, String> table) {
-        table.put("Show all settings as a list",
-                "Alle Einstellungen als Liste zeigen");
         table.put("Show settings by category",
                 "Einstellungen nach Kategorie zeigen");
         table.put("Shown. Tap to hide it.",
@@ -670,11 +668,11 @@ public final class L10nTranslations {
                 "Versuch ein anderes Wort oder l\u00f6sche die Suche.");
         table.put("Try again, or go back to Threads.",
                 "Versuche es noch einmal oder kehre zu Threads zur\u00fcck.");
+        table.put("Turn features on or off",
+                "Funktionen ein- oder ausschalten");
     }
 
     private static void fillDe5(Map<String, String> table) {
-        table.put("Turn features on or off",
-                "Funktionen ein- oder ausschalten");
         table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
                 "Schalte mehrere Schalter mit einem Tippen ein oder setze alle Schalter auf ihren Ausgangszustand zur\u00fcck. Halte diese Zeile gedr\u00fcckt, um sie auszublenden.");
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
@@ -734,7 +732,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(658);
+        Map<String, String> table = new HashMap<>(656);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1107,15 +1105,13 @@ public final class L10nTranslations {
                 "Privacidad");
         table.put("Pure black dark mode",
                 "Modo oscuro negro puro");
-        table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.",
-                "Pone la configuraci\u00f3n de HushThreads en el men\u00fa que aparece al mantener pulsado el icono de Threads. Si lo desactivas, sale de ese men\u00fa y puedes seguir abriendo esta configuraci\u00f3n desde la fila de HushThreads en la configuraci\u00f3n de Threads o manteniendo pulsado el logotipo de Threads.");
         table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
                 "Pone la configuraci\u00f3n de HushThreads en el men\u00fa que aparece al mantener pulsado el icono de Threads. Si lo desactivas, sale de ese men\u00fa.");
+        table.put("Puts every feature switch back the way it started.",
+                "Devuelve cada interruptor de funci\u00f3n a como estaba al principio.");
     }
 
     private static void fillEs3(Map<String, String> table) {
-        table.put("Puts every feature switch back the way it started.",
-                "Devuelve cada interruptor de funci\u00f3n a como estaba al principio.");
         table.put("Quick setups",
                 "Configuraci\u00f3n r\u00e1pida");
         table.put("Quick setups hidden. Bring it back from Pause, backup and diagnostics.",
@@ -1234,11 +1230,11 @@ public final class L10nTranslations {
                 "Acceso directo a la configuraci\u00f3n en el icono");
         table.put("Share sheet entry removed",
                 "Entrada del men\u00fa para compartir eliminada");
+        table.put("Show all settings as a list",
+                "Mostrar todos los ajustes en una lista");
     }
 
     private static void fillEs4(Map<String, String> table) {
-        table.put("Show all settings as a list",
-                "Mostrar todos los ajustes en una lista");
         table.put("Show settings by category",
                 "Mostrar ajustes por categor\u00eda");
         table.put("Shown. Tap to hide it.",
@@ -1357,11 +1353,11 @@ public final class L10nTranslations {
                 "Prueba otra palabra o borra la b\u00fasqueda.");
         table.put("Try again, or go back to Threads.",
                 "Int\u00e9ntalo de nuevo o vuelve a Threads.");
+        table.put("Turn features on or off",
+                "Activa o desactiva funciones");
     }
 
     private static void fillEs5(Map<String, String> table) {
-        table.put("Turn features on or off",
-                "Activa o desactiva funciones");
         table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
                 "Activa varios interruptores con un toque o devuelve todos los interruptores a como estaban al principio. Mant\u00e9n pulsada esta fila para ocultarla.");
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
@@ -1421,7 +1417,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(658);
+        Map<String, String> table = new HashMap<>(656);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1794,15 +1790,13 @@ public final class L10nTranslations {
                 "Privasi");
         table.put("Pure black dark mode",
                 "Mode gelap hitam pekat");
-        table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.",
-                "Menaruh pengaturan HushThreads di menu yang muncul saat ikon Threads ditekan lama. Jika dimatikan, pintasan itu hilang dari menu tersebut, dan Anda tetap bisa membuka pengaturan ini dari baris HushThreads di pengaturan Threads atau dengan menekan lama logo Threads.");
         table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
                 "Menaruh pengaturan HushThreads di menu yang muncul saat ikon Threads ditekan lama. Jika dimatikan, pintasan itu hilang dari menu tersebut.");
+        table.put("Puts every feature switch back the way it started.",
+                "Mengembalikan setiap sakelar fitur seperti semula.");
     }
 
     private static void fillIn3(Map<String, String> table) {
-        table.put("Puts every feature switch back the way it started.",
-                "Mengembalikan setiap sakelar fitur seperti semula.");
         table.put("Quick setups",
                 "Penyiapan cepat");
         table.put("Quick setups hidden. Bring it back from Pause, backup and diagnostics.",
@@ -1921,11 +1915,11 @@ public final class L10nTranslations {
                 "Pintasan pengaturan di ikon aplikasi");
         table.put("Share sheet entry removed",
                 "Entri lembar bagikan dihapus");
+        table.put("Show all settings as a list",
+                "Tampilkan semua pengaturan sebagai daftar");
     }
 
     private static void fillIn4(Map<String, String> table) {
-        table.put("Show all settings as a list",
-                "Tampilkan semua pengaturan sebagai daftar");
         table.put("Show settings by category",
                 "Tampilkan pengaturan per kategori");
         table.put("Shown. Tap to hide it.",
@@ -2044,11 +2038,11 @@ public final class L10nTranslations {
                 "Coba kata lain atau hapus pencarian.");
         table.put("Try again, or go back to Threads.",
                 "Coba lagi, atau kembali ke Threads.");
+        table.put("Turn features on or off",
+                "Aktifkan atau nonaktifkan fitur");
     }
 
     private static void fillIn5(Map<String, String> table) {
-        table.put("Turn features on or off",
-                "Aktifkan atau nonaktifkan fitur");
         table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
                 "Nyalakan sekumpulan sakelar dengan sekali ketuk, atau kembalikan semua sakelar seperti semula. Tekan lama baris ini untuk menyembunyikannya.");
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
@@ -2108,7 +2102,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(658);
+        Map<String, String> table = new HashMap<>(656);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2481,15 +2475,13 @@ public final class L10nTranslations {
                 "Privacidade");
         table.put("Pure black dark mode",
                 "Modo escuro preto puro");
-        table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.",
-                "Coloca as configura\u00e7\u00f5es do HushThreads no menu que aparece ao tocar e segurar o \u00edcone do Threads. Desligado, o atalho sai desse menu, e voc\u00ea ainda pode abrir estas configura\u00e7\u00f5es pela linha do HushThreads nas configura\u00e7\u00f5es do Threads ou tocando e segurando o logotipo do Threads.");
         table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
                 "Coloca as configura\u00e7\u00f5es do HushThreads no menu que aparece ao tocar e segurar o \u00edcone do Threads. Desligado, o atalho sai desse menu.");
+        table.put("Puts every feature switch back the way it started.",
+                "Volta cada op\u00e7\u00e3o de recurso ao estado inicial.");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
-        table.put("Puts every feature switch back the way it started.",
-                "Volta cada op\u00e7\u00e3o de recurso ao estado inicial.");
         table.put("Quick setups",
                 "Configura\u00e7\u00f5es r\u00e1pidas");
         table.put("Quick setups hidden. Bring it back from Pause, backup and diagnostics.",
@@ -2608,11 +2600,11 @@ public final class L10nTranslations {
                 "Atalho das configura\u00e7\u00f5es no \u00edcone do app");
         table.put("Share sheet entry removed",
                 "Entrada do menu de compartilhamento removida");
+        table.put("Show all settings as a list",
+                "Mostrar todas as configura\u00e7\u00f5es em lista");
     }
 
     private static void fillPt_rBR4(Map<String, String> table) {
-        table.put("Show all settings as a list",
-                "Mostrar todas as configura\u00e7\u00f5es em lista");
         table.put("Show settings by category",
                 "Mostrar configura\u00e7\u00f5es por categoria");
         table.put("Shown. Tap to hide it.",
@@ -2731,11 +2723,11 @@ public final class L10nTranslations {
                 "Tente outra palavra ou limpe a busca.");
         table.put("Try again, or go back to Threads.",
                 "Tente novamente ou volte para o Threads.");
+        table.put("Turn features on or off",
+                "Ative ou desative recursos");
     }
 
     private static void fillPt_rBR5(Map<String, String> table) {
-        table.put("Turn features on or off",
-                "Ative ou desative recursos");
         table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
                 "Ative um conjunto de op\u00e7\u00f5es com um toque ou volte todas as op\u00e7\u00f5es ao estado inicial. Toque e segure esta linha para ocult\u00e1-la.");
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
@@ -2795,7 +2787,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(658);
+        Map<String, String> table = new HashMap<>(656);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -3168,15 +3160,13 @@ public final class L10nTranslations {
                 "Gizlilik");
         table.put("Pure black dark mode",
                 "Saf siyah karanl\u0131k mod");
-        table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu, and you can still open these settings from the HushThreads row in Threads' settings or with a long press on the Threads logo.",
-                "Threads simgesine bas\u0131l\u0131 tutunca a\u00e7\u0131lan men\u00fcye HushThreads ayarlar\u0131n\u0131 koyar. Kapal\u0131yken bu men\u00fcden \u00e7\u0131kar. Bu ayarlar\u0131 yine Threads ayarlar\u0131ndaki HushThreads sat\u0131r\u0131ndan ya da Threads logosuna bas\u0131l\u0131 tutarak a\u00e7abilirsin.");
         table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
                 "Threads simgesine bas\u0131l\u0131 tutunca a\u00e7\u0131lan men\u00fcye HushThreads ayarlar\u0131n\u0131 koyar. Kapal\u0131yken bu men\u00fcden \u00e7\u0131kar.");
+        table.put("Puts every feature switch back the way it started.",
+                "Her \u00f6zellik anahtar\u0131n\u0131 ba\u015flang\u0131\u00e7taki h\u00e2line d\u00f6nd\u00fcr\u00fcr.");
     }
 
     private static void fillTr3(Map<String, String> table) {
-        table.put("Puts every feature switch back the way it started.",
-                "Her \u00f6zellik anahtar\u0131n\u0131 ba\u015flang\u0131\u00e7taki h\u00e2line d\u00f6nd\u00fcr\u00fcr.");
         table.put("Quick setups",
                 "H\u0131zl\u0131 kurulumlar");
         table.put("Quick setups hidden. Bring it back from Pause, backup and diagnostics.",
@@ -3295,11 +3285,11 @@ public final class L10nTranslations {
                 "Uygulama simgesinde ayarlar k\u0131sayolu");
         table.put("Share sheet entry removed",
                 "Payla\u015f\u0131m men\u00fcs\u00fc giri\u015fi kald\u0131r\u0131ld\u0131");
+        table.put("Show all settings as a list",
+                "T\u00fcm ayarlar\u0131 liste olarak g\u00f6ster");
     }
 
     private static void fillTr4(Map<String, String> table) {
-        table.put("Show all settings as a list",
-                "T\u00fcm ayarlar\u0131 liste olarak g\u00f6ster");
         table.put("Show settings by category",
                 "Ayarlar\u0131 kategoriye g\u00f6re g\u00f6ster");
         table.put("Shown. Tap to hide it.",
@@ -3418,11 +3408,11 @@ public final class L10nTranslations {
                 "Ba\u015fka bir kelime deneyin veya aramay\u0131 temizleyin.");
         table.put("Try again, or go back to Threads.",
                 "Tekrar dene veya Threads'e geri d\u00f6n.");
+        table.put("Turn features on or off",
+                "\u00d6zellikleri a\u00e7 veya kapat");
     }
 
     private static void fillTr5(Map<String, String> table) {
-        table.put("Turn features on or off",
-                "\u00d6zellikleri a\u00e7 veya kapat");
         table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
                 "Bir grup anahtar\u0131 tek dokunu\u015fla a\u00e7 veya t\u00fcm anahtarlar\u0131 ba\u015flang\u0131\u00e7taki h\u00e2line d\u00f6nd\u00fcr. Gizlemek i\u00e7in bu sat\u0131ra bas\u0131l\u0131 tut.");
         table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
