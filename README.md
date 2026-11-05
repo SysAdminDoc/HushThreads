@@ -159,6 +159,8 @@ Only trust a bundle from this repo's [Releases](https://github.com/SysAdminDoc/H
 
 On Windows, run `Get-FileHash -Algorithm SHA256 .\patches-0.0.16.mpp`. Inside the patched app, the About page in HushThreads settings shows the bundle's payload hash and the source it was built from.
 
+Releases after v0.0.16 are signed too. Morphe Manager shows the signer when you add or update the source, and it should read `d0d2 eda0 b978 70da`. Manager remembers that key from then on and refuses an update signed by any other, or by none. The full public key is in [`morphe-signing.pub`](morphe-signing.pub).
+
 ## Reporting a problem
 
 Use [Issues](https://github.com/SysAdminDoc/HushThreads/issues) for bugs and [Discussions](https://github.com/SysAdminDoc/HushThreads/discussions) for questions. Include your Threads version and version code, your Morphe Manager and HushThreads versions, how you installed it, and what you expected to happen. A diagnostic report from HushThreads' settings helps a lot. A report closes once you confirm the fix works, or after a few quiet days once I've asked you something or shipped a fix.

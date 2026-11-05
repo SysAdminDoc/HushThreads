@@ -337,8 +337,7 @@ function Assert-AssetSums {
 # The hook imports these from the user's registry the same way: a shell opened before they were
 # set doesn't have them. What this run sets or imports is put back at the end, so the shell isn't
 # left at release priority or holding a token it didn't have.
-$touched = @('HUSHTHREADS_FIXTURE_DIR', 'HUSHTHREADS_BUILD_WRAPPER', 'HUSHTHREADS_DESKTOP_JAR', 'HUSHTHREADS_WORKDIR',
-    'HUSHTHREADS_PYTHON', 'BUILD_QUEUE_SCRIPT', 'BUILD_QUEUE_PRIORITY', 'GITHUB_ACTOR', 'GITHUB_TOKEN')
+$touched = @('HUSHTHREADS_FIXTURE_DIR', 'HUSHTHREADS_BUILD_WRAPPER', 'HUSHTHREADS_DESKTOP_JAR', 'HUSHTHREADS_WORKDIR', 'HUSHTHREADS_PYTHON', 'HUSHTHREADS_BUNDLE_SIGNING_KEY', 'BUILD_QUEUE_SCRIPT', 'BUILD_QUEUE_PRIORITY', 'GITHUB_ACTOR', 'GITHUB_TOKEN')
 $before = @{}
 foreach ($name in $touched) { $before[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
 try {

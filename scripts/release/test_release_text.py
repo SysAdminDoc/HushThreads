@@ -38,6 +38,14 @@ HushThreads v0.0.12 has 17 patches. All but three are selected.
 USER_AGENT = 'headers.put("User-Agent", "HushThreads/0.0.12");\nassert(wire.contains("HushThreads/0.0.12\\r\\n"));\n'
 TOML = 'morphe-patcher = "1.15.1"\nmanager-floor = "1.34.0"\n'
 FORM = "      placeholder: Version 0.0.12 for Threads 450.0.0.51.78\n      placeholder: Morphe Manager 1.34.0\n"
+PUBLIC_KEY = "A" * 43 + "="
+OTHER_KEY = "B" * 43 + "="
+
+
+def zip_with_comment(comment: str) -> bytes:
+    """An empty zip, its end record carrying `comment`: all the index reads of a bundle."""
+    raw = comment.encode("ascii")
+    return b"PK\x05\x06" + bytes(16) + len(raw).to_bytes(2, "little") + raw
 
 
 def catalog(*builds: str, version: str = "v0.0.13", count: int = 2) -> str:
@@ -75,6 +83,8 @@ class ReleaseTextTest(unittest.TestCase):
         self.write("extensions/threads/build/test-results/testDebugUnitTest/TEST-b.xml", results(2))
         self.write("patches/build/test-results/test/TEST-c.xml", results(4))
         self.write("patches/build/test-results/fixtureTest/TEST-d.xml", results(1))
+        self.write("morphe-signing.pub", PUBLIC_KEY + "\n")
+        self.bundle(f"MorpheSig1 {PUBLIC_KEY} {'S' * 86}==")
         self.saved = release_text.ROOT
         release_text.ROOT = self.root
 
@@ -89,6 +99,11 @@ class ReleaseTextTest(unittest.TestCase):
 
     def read(self, name: str) -> str:
         return (self.root / name).read_text(encoding="utf-8")
+
+    def bundle(self, comment: str, version: str = "0.0.13") -> None:
+        path = self.root / f"patches/build/release/patches-{version}.mpp"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(zip_with_comment(comment))
 
     def run_command(self, command, **values):
         with contextlib.redirect_stdout(io.StringIO()) as printed:
@@ -196,7 +211,10 @@ class ReleaseTextTest(unittest.TestCase):
         self.run_command(release_text.index, version="0.0.13", created="2026-10-09T17:03:42",
                          summary=str(self.root / "summary.txt"))
         bundle = json.loads(self.read("patches-bundle.json"))
-        self.assertEqual(list(bundle), ["created_at", "description", "download_url", "signature_download_url", "version"])
+        self.assertEqual(list(bundle), ["created_at", "description", "download_url", "signature_download_url", "version",
+                                        "public_key"])
+        # Manager pins this key when it adds the source, so it's the key that signed the bundle.
+        self.assertEqual(bundle["public_key"], PUBLIC_KEY)
         self.assertEqual(bundle["version"], "0.0.13")
         self.assertEqual(bundle["created_at"], "2026-10-09T17:03:42")
         self.assertEqual(bundle["download_url"],
@@ -226,6 +244,16 @@ class ReleaseTextTest(unittest.TestCase):
         self.assertNotIn("90 patches", facts)
         self.assertNotIn("449.0.0.54.82", facts)
         self.assertIn("with 90 patches.", groups)
+
+    def test_index_refuses_a_bundle_the_published_key_did_not_sign(self):
+        self.run_command(release_text.cut, version="0.0.13", date="2026-10-09")
+        self.write("summary.txt", "x.\n")
+        values = dict(version="0.0.13", created="2026-10-09T17:03:42", summary=str(self.root / "summary.txt"))
+        self.bundle("")
+        self.refused(release_text.index, "isn't signed", **values)
+        self.bundle(f"MorpheSig1 {OTHER_KEY} {'S' * 86}==")
+        self.refused(release_text.index, "another key", **values)
+        self.assertEqual(json.loads(self.read("patches-bundle.json"))["version"], "0.0.12")
 
     def test_index_refuses_a_release_the_changelog_has_not_cut(self):
         self.write("summary.txt", "x.\n")

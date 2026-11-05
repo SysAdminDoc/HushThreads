@@ -68,6 +68,34 @@ def check_version(version: str) -> None:
         fail(f"{version} isn't X.Y.Z")
 
 
+def bundle_signer(version: str) -> str:
+    """The published key, once the release bundle's MorpheSig1 comment shows that key signed it.
+
+    Morphe Manager pins the key named here when it first adds the source, and it refuses an
+    update signed by another key or by none. So the index only ever names the key in
+    morphe-signing.pub, and only for a bundle that carries it. verifyBundle checked the signature
+    itself with the patcher's verifier when the bundle was built.
+    """
+    published = read(here("morphe-signing.pub")).strip()
+    if not re.fullmatch(r"[A-Za-z0-9+/]{43}=", published):
+        fail("morphe-signing.pub isn't a Base64 Ed25519 public key")
+    name = f"patches/build/release/patches-{version}.mpp"
+    path = here(name)
+    if not path.is_file():
+        fail(f"{name} is missing")
+    data = path.read_bytes()
+    end = data.rfind(b"PK\x05\x06", max(0, len(data) - 65557))
+    if end < 0 or end + 22 > len(data):
+        fail(f"{name} isn't a zip")
+    length = int.from_bytes(data[end + 20:end + 22], "little")
+    fields = data[end + 22:end + 22 + length].decode("ascii", "replace").split(" ")
+    if len(fields) != 3 or fields[0] != "MorpheSig1":
+        fail(f"{name} isn't signed. Build it again with HUSHTHREADS_BUNDLE_SIGNING_KEY set")
+    if fields[1] != published:
+        fail(f"{name} is signed by another key than morphe-signing.pub")
+    return published
+
+
 def swap(text: str, pattern: str, replacement: str, what: str, expected: int | None = 1) -> str:
     """Replaces every match, and fails unless there were `expected` of them (at least one for None)."""
     new, count = re.subn(pattern, replacement, text, flags=re.MULTILINE)
@@ -369,7 +397,8 @@ def index(args) -> None:
     bundle = json.loads(read(bundle_path))
     url = swap(str(bundle.get("download_url") or ""), r"/releases/download/v\d+\.\d+\.\d+/patches-\d+\.\d+\.\d+\.mpp$",
                f"/releases/download/v{version}/patches-{version}.mpp", "patches-bundle.json download_url")
-    bundle.update({"created_at": args.created, "description": description, "download_url": url, "version": version})
+    bundle.update({"created_at": args.created, "description": description, "download_url": url,
+                   "public_key": bundle_signer(version), "version": version})
     form_path = here(".github/ISSUE_TEMPLATE/bug_report.yml")
     form = swap(read(form_path), r"^([ \t]*placeholder:[ \t]*)Version \d+\.\d+\.\d+ for Threads \S+[ \t]*$",
                 rf"\g<1>Version {version} for Threads {target}", "bug report form version placeholder")
