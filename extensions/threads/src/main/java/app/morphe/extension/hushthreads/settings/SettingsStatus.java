@@ -82,6 +82,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean exactPostTimes() {
+        return false;
+    }
+
     public static boolean removeAdId() {
         return false;
     }

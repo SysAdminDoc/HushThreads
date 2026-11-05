@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(640);
+        Map<String, String> table = new HashMap<>(646);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -191,6 +191,8 @@ public final class L10nTranslations {
                 "Kurzen Bericht in die Zwischenablage kopieren.");
         table.put("Copy quick report",
                 "Kurzbericht kopieren");
+        table.put("Copy text and exact post times",
+                "Text kopieren und genaue Beitragszeiten");
         table.put("Copy text on long press",
                 "Text kopieren per langem Dr\u00fccken");
         table.put("Copy text when you hold a post",
@@ -299,11 +301,11 @@ public final class L10nTranslations {
                 "Fortschritt beim Speichern eines Fotos oder Videos, mit einem Button zum Abbrechen");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s ist erschienen. Aktualisiere es im Morphe Manager.");
-        table.put("HushThreads %1$s on Threads %2$s",
-                "HushThreads %1$s auf Threads %2$s");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("HushThreads %1$s on Threads %2$s",
+                "HushThreads %1$s auf Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "HushThreads %1$s ist f\u00fcr Threads %2$s gedacht.");
         table.put("HushThreads is on",
@@ -404,6 +406,8 @@ public final class L10nTranslations {
                 "Fotos werden in der gr\u00f6\u00dften Gr\u00f6\u00dfe geladen, die Threads hat, nicht in einer f\u00fcr deinen Bildschirm gew\u00e4hlten. Sie wirken sch\u00e4rfer und verbrauchen mehr Daten.");
         table.put("Posts",
                 "Beitr\u00e4ge");
+        table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
+                "Beitr\u00e4ge und Antworten zeigen Datum und Uhrzeit ihrer Ver\u00f6ffentlichung statt nur, wie lange das her ist, im 12- oder 24-Stunden-Format deines Telefons.");
         table.put("Privacy",
                 "Datenschutz");
         table.put("Pure black dark mode",
@@ -420,13 +424,13 @@ public final class L10nTranslations {
                 "Schnelleinstellungen auf der Startseite");
         table.put("Quiet",
                 "Ruhig");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Re-signed build fix",
                 "Fix f\u00fcr neu signierte Builds");
         table.put("Reading the settings file",
                 "Einstellungsdatei wird gelesen");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
                 "Zeichnet Patch-Aktivit\u00e4t auf und zeigt Fehler f\u00fcr einen Fehlerbericht. Im Alltag ausgeschaltet lassen.");
         table.put("Remove tracking from shared links",
@@ -533,6 +537,8 @@ public final class L10nTranslations {
                 "Alle Einstellungen als Liste zeigen");
         table.put("Show settings by category",
                 "Einstellungen nach Kategorie zeigen");
+        table.put("Show the date and time",
+                "Datum und Uhrzeit anzeigen");
         table.put("Shown. Tap to hide it.",
                 "Werden angezeigt. Tippe, um sie auszublenden.");
         table.put("Smallest",
@@ -541,15 +547,15 @@ public final class L10nTranslations {
                 "Manche Threads-Bildschirme pr\u00fcfen, wer die App signiert hat, und scheitern bei einer gepatchten. Dieser Fix l\u00e4sst sie wieder \u00f6ffnen.");
         table.put("Source code and issues",
                 "Quellcode und Issues");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
                 "Gesponserte Beitr\u00e4ge werden aus \u201eF\u00fcr dich\u201c, \u201eGefolgt\u201c und ge\u00f6ffneten Beitr\u00e4gen entfernt, bevor Threads sie zeigt, deshalb bleibt keine L\u00fccke.");
         table.put("Sponsored posts in For you and Following",
                 "Gesponserte Beitr\u00e4ge in \u201eF\u00fcr dich\u201c und \u201eGefolgt\u201c");
         table.put("Stays in while paused",
                 "Bleibt w\u00e4hrend der Pause aktiv");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Stays on, since it's the only way left into these settings.",
                 "Bleibt an, weil es der letzte Weg zu diesen Einstellungen ist.");
         table.put("Stop analytics uploads",
@@ -664,15 +670,15 @@ public final class L10nTranslations {
                 "Bis zum Fortsetzen verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv.");
         table.put("Updates",
                 "Updates");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Eigenen Zertifikaten wird vertraut");
         table.put("Version",
                 "Version");
         table.put("Version %1$s",
                 "Version %1$s");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("Version %1$s for Threads %2$s",
                 "Version %1$s f\u00fcr Threads %2$s");
         table.put("Version code raised",
@@ -716,7 +722,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(640);
+        Map<String, String> table = new HashMap<>(646);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -860,6 +866,8 @@ public final class L10nTranslations {
                 "Copia un informe breve en el portapapeles.");
         table.put("Copy quick report",
                 "Copiar informe r\u00e1pido");
+        table.put("Copy text and exact post times",
+                "Copiar texto y hora exacta de las publicaciones");
         table.put("Copy text on long press",
                 "Copiar texto al mantener pulsado");
         table.put("Copy text when you hold a post",
@@ -968,11 +976,11 @@ public final class L10nTranslations {
                 "El progreso de la foto o el video que est\u00e1s guardando, con un bot\u00f3n para cancelar");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "Ya sali\u00f3 HushThreads %1$s. Actual\u00edzalo en Morphe Manager.");
-        table.put("HushThreads %1$s on Threads %2$s",
-                "HushThreads %1$s en Threads %2$s");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("HushThreads %1$s on Threads %2$s",
+                "HushThreads %1$s en Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "HushThreads %1$s est\u00e1 pensado para Threads %2$s.");
         table.put("HushThreads is on",
@@ -1073,6 +1081,8 @@ public final class L10nTranslations {
                 "Las fotos se cargan en el tama\u00f1o m\u00e1s grande que tiene Threads, no en uno elegido para tu pantalla. Se ven m\u00e1s n\u00edtidas y usan m\u00e1s datos.");
         table.put("Posts",
                 "Publicaciones");
+        table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
+                "Las publicaciones y respuestas muestran la fecha y la hora en que se publicaron en lugar de cu\u00e1nto tiempo hace, en el formato de 12 o 24 horas de tu tel\u00e9fono.");
         table.put("Privacy",
                 "Privacidad");
         table.put("Pure black dark mode",
@@ -1089,13 +1099,13 @@ public final class L10nTranslations {
                 "Configuraci\u00f3n r\u00e1pida en la p\u00e1gina de inicio");
         table.put("Quiet",
                 "Tranquilo");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Re-signed build fix",
                 "Arreglo para la nueva firma");
         table.put("Reading the settings file",
                 "Leyendo el archivo de configuraci\u00f3n");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
                 "Registra la actividad de los parches y muestra errores para un informe. D\u00e9jalo desactivado en el uso normal.");
         table.put("Remove tracking from shared links",
@@ -1202,6 +1212,8 @@ public final class L10nTranslations {
                 "Mostrar todos los ajustes en una lista");
         table.put("Show settings by category",
                 "Mostrar ajustes por categor\u00eda");
+        table.put("Show the date and time",
+                "Mostrar la fecha y la hora");
         table.put("Shown. Tap to hide it.",
                 "Visible. Toca para ocultarla.");
         table.put("Smallest",
@@ -1210,15 +1222,15 @@ public final class L10nTranslations {
                 "Algunas pantallas de Threads comprueban qui\u00e9n firm\u00f3 la app y fallan en una parcheada. Esta correcci\u00f3n hace que vuelvan a abrirse.");
         table.put("Source code and issues",
                 "C\u00f3digo fuente e incidencias");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
                 "Las publicaciones patrocinadas salen de Para ti, Siguiendo y las publicaciones que abres antes de que Threads las muestre, as\u00ed que no queda ning\u00fan hueco.");
         table.put("Sponsored posts in For you and Following",
                 "Publicaciones patrocinadas en Para ti y Siguiendo");
         table.put("Stays in while paused",
                 "Se mantiene durante la pausa");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Stays on, since it's the only way left into these settings.",
                 "Sigue activado porque es la \u00fanica forma que queda de entrar en esta configuraci\u00f3n.");
         table.put("Stop analytics uploads",
@@ -1333,15 +1345,15 @@ public final class L10nTranslations {
                 "Hasta que reanudes, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene.");
         table.put("Updates",
                 "Actualizaciones");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Certificados del usuario de confianza");
         table.put("Version",
                 "Versi\u00f3n");
         table.put("Version %1$s",
                 "Versi\u00f3n %1$s");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("Version %1$s for Threads %2$s",
                 "Versi\u00f3n %1$s para Threads %2$s");
         table.put("Version code raised",
@@ -1385,7 +1397,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(640);
+        Map<String, String> table = new HashMap<>(646);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1529,6 +1541,8 @@ public final class L10nTranslations {
                 "Salin laporan singkat ke papan klip.");
         table.put("Copy quick report",
                 "Salin laporan singkat");
+        table.put("Copy text and exact post times",
+                "Salin teks dan waktu posting yang tepat");
         table.put("Copy text on long press",
                 "Salin teks dengan tekan lama");
         table.put("Copy text when you hold a post",
@@ -1637,11 +1651,11 @@ public final class L10nTranslations {
                 "Progres foto atau video yang sedang Anda simpan, dengan tombol untuk membatalkannya");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s sudah dirilis. Perbarui di Morphe Manager.");
-        table.put("HushThreads %1$s on Threads %2$s",
-                "HushThreads %1$s di Threads %2$s");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("HushThreads %1$s on Threads %2$s",
+                "HushThreads %1$s di Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "HushThreads %1$s ditujukan untuk Threads %2$s.");
         table.put("HushThreads is on",
@@ -1742,6 +1756,8 @@ public final class L10nTranslations {
                 "Foto dimuat dalam ukuran terbesar yang dimiliki Threads, bukan ukuran yang dipilih untuk layarmu. Foto terlihat lebih tajam dan memakai lebih banyak data.");
         table.put("Posts",
                 "Postingan");
+        table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
+                "Postingan dan balasan menampilkan tanggal dan waktu diposting, bukan berapa lama yang lalu, dalam format 12 atau 24 jam ponsel Anda.");
         table.put("Privacy",
                 "Privasi");
         table.put("Pure black dark mode",
@@ -1758,13 +1774,13 @@ public final class L10nTranslations {
                 "Penyiapan cepat di halaman utama");
         table.put("Quiet",
                 "Tenang");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Re-signed build fix",
                 "Perbaikan build yang ditandatangani ulang");
         table.put("Reading the settings file",
                 "Membaca file pengaturan");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
                 "Catat aktivitas patch dan tampilkan kesalahan untuk laporan bug. Matikan saat penggunaan biasa.");
         table.put("Remove tracking from shared links",
@@ -1871,6 +1887,8 @@ public final class L10nTranslations {
                 "Tampilkan semua pengaturan sebagai daftar");
         table.put("Show settings by category",
                 "Tampilkan pengaturan per kategori");
+        table.put("Show the date and time",
+                "Tampilkan tanggal dan waktu");
         table.put("Shown. Tap to hide it.",
                 "Ditampilkan. Ketuk untuk menyembunyikannya.");
         table.put("Smallest",
@@ -1879,15 +1897,15 @@ public final class L10nTranslations {
                 "Beberapa layar Threads memeriksa siapa yang menandatangani aplikasi dan gagal pada aplikasi yang ditambal. Perbaikan ini membuatnya terbuka lagi.");
         table.put("Source code and issues",
                 "Kode sumber dan laporan masalah");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
                 "Postingan bersponsor dihapus dari Untuk Anda, Mengikuti, dan postingan yang Anda buka sebelum Threads menampilkannya, jadi tidak ada celah kosong.");
         table.put("Sponsored posts in For you and Following",
                 "Postingan bersponsor di Untuk Anda dan Mengikuti");
         table.put("Stays in while paused",
                 "Tetap aktif saat dijeda");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Stays on, since it's the only way left into these settings.",
                 "Tetap aktif karena ini satu-satunya jalan yang tersisa ke pengaturan ini.");
         table.put("Stop analytics uploads",
@@ -2002,15 +2020,15 @@ public final class L10nTranslations {
                 "Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif.");
         table.put("Updates",
                 "Pembaruan");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Sertifikat pengguna dipercaya");
         table.put("Version",
                 "Versi");
         table.put("Version %1$s",
                 "Versi %1$s");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("Version %1$s for Threads %2$s",
                 "Versi %1$s untuk Threads %2$s");
         table.put("Version code raised",
@@ -2054,7 +2072,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(640);
+        Map<String, String> table = new HashMap<>(646);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2198,6 +2216,8 @@ public final class L10nTranslations {
                 "Copie um relat\u00f3rio curto para a \u00e1rea de transfer\u00eancia.");
         table.put("Copy quick report",
                 "Copiar relat\u00f3rio r\u00e1pido");
+        table.put("Copy text and exact post times",
+                "Copiar texto e hor\u00e1rio exato das publica\u00e7\u00f5es");
         table.put("Copy text on long press",
                 "Copiar texto ao tocar e segurar");
         table.put("Copy text when you hold a post",
@@ -2306,11 +2326,11 @@ public final class L10nTranslations {
                 "Indica o progresso do salvamento de uma foto ou v\u00eddeo, com um bot\u00e3o para cancel\u00e1-lo");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "O HushThreads %1$s est\u00e1 dispon\u00edvel. Atualize-o pelo Morphe Manager.");
-        table.put("HushThreads %1$s on Threads %2$s",
-                "HushThreads %1$s no Threads %2$s");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("HushThreads %1$s on Threads %2$s",
+                "HushThreads %1$s no Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "O HushThreads %1$s \u00e9 compat\u00edvel com o Threads %2$s.");
         table.put("HushThreads is on",
@@ -2411,6 +2431,8 @@ public final class L10nTranslations {
                 "As fotos carregam no maior tamanho que o Threads tem, n\u00e3o em um escolhido para a sua tela. Ficam mais n\u00edtidas e usam mais dados.");
         table.put("Posts",
                 "Publica\u00e7\u00f5es");
+        table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
+                "Publica\u00e7\u00f5es e respostas mostram a data e a hora em que foram publicadas, em vez de h\u00e1 quanto tempo, no formato de 12 ou 24 horas do seu celular.");
         table.put("Privacy",
                 "Privacidade");
         table.put("Pure black dark mode",
@@ -2427,13 +2449,13 @@ public final class L10nTranslations {
                 "Configura\u00e7\u00f5es r\u00e1pidas na p\u00e1gina inicial");
         table.put("Quiet",
                 "Tranquilo");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Re-signed build fix",
                 "Corre\u00e7\u00e3o para vers\u00e3o com nova assinatura");
         table.put("Reading the settings file",
                 "Lendo o arquivo de configura\u00e7\u00f5es");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
                 "Registra a atividade dos patches e mostra os erros para um relat\u00f3rio de problema. Mantenha desativado durante o uso normal.");
         table.put("Remove tracking from shared links",
@@ -2540,6 +2562,8 @@ public final class L10nTranslations {
                 "Mostrar todas as configura\u00e7\u00f5es em lista");
         table.put("Show settings by category",
                 "Mostrar configura\u00e7\u00f5es por categoria");
+        table.put("Show the date and time",
+                "Mostrar a data e a hora");
         table.put("Shown. Tap to hide it.",
                 "Vis\u00edveis. Toque para ocultar.");
         table.put("Smallest",
@@ -2548,15 +2572,15 @@ public final class L10nTranslations {
                 "Algumas telas do Threads verificam quem assinou o app e falham em um app com patches. Esta corre\u00e7\u00e3o faz com que abram de novo.");
         table.put("Source code and issues",
                 "C\u00f3digo-fonte e relatos de problemas");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
                 "As publica\u00e7\u00f5es patrocinadas saem de Para voc\u00ea, Seguindo e das publica\u00e7\u00f5es que voc\u00ea abre antes que o Threads as mostre, ent\u00e3o nenhum espa\u00e7o fica vazio.");
         table.put("Sponsored posts in For you and Following",
                 "Publica\u00e7\u00f5es patrocinadas em Para voc\u00ea e Seguindo");
         table.put("Stays in while paused",
                 "O que continua ativo na pausa");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Stays on, since it's the only way left into these settings.",
                 "Fica ligado porque \u00e9 o \u00fanico caminho que resta para estas configura\u00e7\u00f5es.");
         table.put("Stop analytics uploads",
@@ -2671,15 +2695,15 @@ public final class L10nTranslations {
                 "At\u00e9 voc\u00ea retomar, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo.");
         table.put("Updates",
                 "Atualiza\u00e7\u00f5es");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Certificados do usu\u00e1rio confi\u00e1veis");
         table.put("Version",
                 "Vers\u00e3o");
         table.put("Version %1$s",
                 "Vers\u00e3o %1$s");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("Version %1$s for Threads %2$s",
                 "Vers\u00e3o %1$s para o Threads %2$s");
         table.put("Version code raised",
@@ -2723,7 +2747,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(640);
+        Map<String, String> table = new HashMap<>(646);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2867,6 +2891,8 @@ public final class L10nTranslations {
                 "K\u0131sa raporu panoya kopyalar.");
         table.put("Copy quick report",
                 "H\u0131zl\u0131 raporu kopyala");
+        table.put("Copy text and exact post times",
+                "Metin kopyalama ve tam g\u00f6nderi saatleri");
         table.put("Copy text on long press",
                 "Uzun bas\u0131nca metni kopyala");
         table.put("Copy text when you hold a post",
@@ -2975,11 +3001,11 @@ public final class L10nTranslations {
                 "Kaydetti\u011fin foto\u011fraf veya videonun ilerleme durumu ve iptal etmek i\u00e7in bir d\u00fc\u011fme");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s \u00e7\u0131kt\u0131. Morphe Manager'da g\u00fcncelle.");
-        table.put("HushThreads %1$s on Threads %2$s",
-                "Threads %2$s \u00fczerinde HushThreads %1$s");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("HushThreads %1$s on Threads %2$s",
+                "Threads %2$s \u00fczerinde HushThreads %1$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "HushThreads %1$s, Threads %2$s i\u00e7in haz\u0131rland\u0131.");
         table.put("HushThreads is on",
@@ -3080,6 +3106,8 @@ public final class L10nTranslations {
                 "Foto\u011fraflar ekran\u0131na g\u00f6re se\u00e7ilen bir boyutta de\u011fil, Threads'te bulunan en b\u00fcy\u00fck boyutta y\u00fcklenir. Daha net g\u00f6r\u00fcn\u00fcr ve daha fazla veri kullan\u0131r.");
         table.put("Posts",
                 "G\u00f6nderiler");
+        table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
+                "G\u00f6nderiler ve yan\u0131tlar, ne kadar \u00f6nce payla\u015f\u0131ld\u0131klar\u0131 yerine payla\u015f\u0131ld\u0131klar\u0131 tarihi ve saati telefonunuzun 12 veya 24 saatlik bi\u00e7iminde g\u00f6sterir.");
         table.put("Privacy",
                 "Gizlilik");
         table.put("Pure black dark mode",
@@ -3096,13 +3124,13 @@ public final class L10nTranslations {
                 "Ana sayfada h\u0131zl\u0131 kurulumlar");
         table.put("Quiet",
                 "Sessiz");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Re-signed build fix",
                 "Yeniden imzalanm\u0131\u015f s\u00fcr\u00fcm d\u00fczeltmesi");
         table.put("Reading the settings file",
                 "Ayar dosyas\u0131 okunuyor");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
                 "Hata raporu i\u00e7in yama etkinli\u011fini kaydeder ve hatalar\u0131 g\u00f6sterir. Normal kullan\u0131mda kapal\u0131 b\u0131rak\u0131n.");
         table.put("Remove tracking from shared links",
@@ -3209,6 +3237,8 @@ public final class L10nTranslations {
                 "T\u00fcm ayarlar\u0131 liste olarak g\u00f6ster");
         table.put("Show settings by category",
                 "Ayarlar\u0131 kategoriye g\u00f6re g\u00f6ster");
+        table.put("Show the date and time",
+                "Tarihi ve saati g\u00f6ster");
         table.put("Shown. Tap to hide it.",
                 "G\u00f6steriliyor. Gizlemek i\u00e7in dokun.");
         table.put("Smallest",
@@ -3217,15 +3247,15 @@ public final class L10nTranslations {
                 "Baz\u0131 Threads ekranlar\u0131 uygulamay\u0131 kimin imzalad\u0131\u011f\u0131na bakar ve yamal\u0131 uygulamada a\u00e7\u0131lmaz. Bu d\u00fczeltme onlar\u0131 yeniden a\u00e7\u0131l\u0131r yapar.");
         table.put("Source code and issues",
                 "Kaynak kodu ve sorunlar");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
                 "Sponsorlu g\u00f6nderiler, Threads onlar\u0131 g\u00f6stermeden \u00f6nce Senin \u0130\u00e7in ve Takip Edilenler ak\u0131\u015flar\u0131ndan ve a\u00e7t\u0131\u011f\u0131n g\u00f6nderilerden \u00e7\u0131kar\u0131l\u0131r, b\u00f6ylece bo\u015fluk kalmaz.");
         table.put("Sponsored posts in For you and Following",
                 "Senin \u0130\u00e7in ve Takip Edilenler'deki sponsorlu g\u00f6nderiler");
         table.put("Stays in while paused",
                 "Duraklat\u0131lsa da devrede kal\u0131r");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Stays on, since it's the only way left into these settings.",
                 "Bu ayarlara a\u00e7\u0131lan son yol oldu\u011fu i\u00e7in a\u00e7\u0131k kal\u0131r.");
         table.put("Stop analytics uploads",
@@ -3340,15 +3370,15 @@ public final class L10nTranslations {
                 "Devam ettirene kadar Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r.");
         table.put("Updates",
                 "G\u00fcncellemeler");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Kullan\u0131c\u0131 sertifikalar\u0131na g\u00fcveniliyor");
         table.put("Version",
                 "S\u00fcr\u00fcm");
         table.put("Version %1$s",
                 "S\u00fcr\u00fcm %1$s");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("Version %1$s for Threads %2$s",
                 "Threads %2$s i\u00e7in %1$s s\u00fcr\u00fcm\u00fc");
         table.put("Version code raised",

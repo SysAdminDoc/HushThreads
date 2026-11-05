@@ -163,7 +163,8 @@ final class SettingsNavigation extends BaseAdapter {
         section("Feed", L10n.t("Feed"), feedDetail, SettingsIcons.FEED);
         section("Privacy", L10n.t("Privacy"), L10n.t("Tracking in links and analytics uploads"), SettingsIcons.BLOCK);
         section("Downloads", L10n.t("Downloads"), L10n.t("Photos and videos you save from posts"), SettingsIcons.DOWNLOADS);
-        section("Posts", L10n.t("Posts"), L10n.t("Copy text when you hold a post"), SettingsIcons.CHAT);
+        section("Posts", L10n.t("Posts"), PatchFamily.EXACT_POST_TIMES.inBuild()
+                ? L10n.t("Copy text and exact post times") : L10n.t("Copy text when you hold a post"), SettingsIcons.CHAT);
         section("Appearance", L10n.t("Appearance"), null, SettingsIcons.APPEARANCE);
         section("Links", L10n.t("Links"), null, SettingsIcons.LINKS);
         section("Updates", L10n.t("Updates"), null, SettingsIcons.UPDATES);

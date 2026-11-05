@@ -309,6 +309,17 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/PostTime.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/feed/posttime/ExactPostTimesPatch.kt"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Show exact post times: the static function that writes a post header's time asks the extension first thing, and while the switch is on the extension answers the date and time from Android's own date formatter, which the function returns instead of its relative text. Found by reading PostHeaderTimestamp and the formatter it calls in 454, with no outside code."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/profile/ProfileSuggestions.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/ads/ProfileSuggestedUsers.kt"
       ],

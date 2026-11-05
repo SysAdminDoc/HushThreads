@@ -300,6 +300,10 @@ Posts	Beiträge
 Copy text when you hold a post	Text kopieren, wenn du einen Beitrag gedrückt hältst
 Copy text on long press	Text kopieren per langem Drücken
 Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Hältst du den Text eines Beitrags gedrückt, öffnet sich Text kopieren, auch in einem geöffneten Beitrag. So bekommst du den ganzen Beitrag mit seinen Links, statt einzelne Wörter auszuwählen.
+# Show exact post times: the Posts heading's line on the main page when the patch is in the build, the switch and its summary. 3h and 2d stand for the short "how long ago" Threads shows on a post; say it the way this language's Threads does, or describe it.
+Copy text and exact post times	Text kopieren und genaue Beitragszeiten
+Show the date and time	Datum und Uhrzeit anzeigen
+Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.	Beiträge und Antworten zeigen Datum und Uhrzeit ihrer Veröffentlichung statt nur, wie lange das her ist, im 12- oder 24-Stunden-Format deines Telefons.
 # Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
 Quick setups	Schnelleinstellungen
 Quiet	Ruhig

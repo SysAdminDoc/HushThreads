@@ -297,6 +297,10 @@ Posts	Publicações
 Copy text when you hold a post	Copiar texto ao tocar e segurar uma publicação
 Copy text on long press	Copiar texto ao tocar e segurar
 Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Tocar e segurar o texto de uma publicação abre Copiar texto, até numa publicação aberta, para você copiar a publicação inteira com os links em vez de escolher palavras.
+# Show exact post times: the Posts heading's line on the main page when the patch is in the build, the switch and its summary. 3h and 2d stand for the short "how long ago" Threads shows on a post; say it the way this language's Threads does, or describe it.
+Copy text and exact post times	Copiar texto e horário exato das publicações
+Show the date and time	Mostrar a data e a hora
+Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.	Publicações e respostas mostram a data e a hora em que foram publicadas, em vez de há quanto tempo, no formato de 12 ou 24 horas do seu celular.
 # Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
 Quick setups	Configurações rápidas
 Quiet	Tranquilo

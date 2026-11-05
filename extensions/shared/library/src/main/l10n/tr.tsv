@@ -300,6 +300,10 @@ Posts	Gönderiler
 Copy text when you hold a post	Bir gönderiye basılı tutunca metni kopyala
 Copy text on long press	Uzun basınca metni kopyala
 Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Bir gönderinin metnine basılı tutunca, açtığın bir gönderide de Metni kopyala açılır. Böylece kelime seçmek yerine gönderinin tamamını bağlantılarıyla birlikte alırsın.
+# Show exact post times: the Posts heading's line on the main page when the patch is in the build, the switch and its summary. 3h and 2d stand for the short "how long ago" Threads shows on a post; say it the way this language's Threads does, or describe it.
+Copy text and exact post times	Metin kopyalama ve tam gönderi saatleri
+Show the date and time	Tarihi ve saati göster
+Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.	Gönderiler ve yanıtlar, ne kadar önce paylaşıldıkları yerine paylaşıldıkları tarihi ve saati telefonunuzun 12 veya 24 saatlik biçiminde gösterir.
 # Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
 Quick setups	Hızlı kurulumlar
 Quiet	Sessiz

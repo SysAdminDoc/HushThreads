@@ -188,7 +188,8 @@ public class SettingsBackupTest {
                 Settings.RETURN_REFRESH_NO_LIMIT, Settings.DISABLE_VIDEO_AUTOPLAY, Settings.MAX_IMAGE_QUALITY, Settings.DISABLE_SWIPE_TO_SEARCH,
                 Settings.SANITIZE_SHARING_LINKS, Settings.OPEN_LINKS_EXTERNALLY,
                 Settings.DISABLE_ANALYTICS, Settings.DISABLE_SCREENSHOT_DETECTION, Settings.PURE_BLACK,
-                Settings.HIDE_INSTAGRAM_BUTTON, Settings.HIDE_GHOST_POST_BUBBLES, Settings.SAVE_MEDIA, Settings.DOWNLOAD_COMPATIBLE,
+                Settings.HIDE_INSTAGRAM_BUTTON, Settings.HIDE_GHOST_POST_BUBBLES, Settings.EXACT_POST_TIMES, Settings.SAVE_MEDIA,
+                Settings.DOWNLOAD_COMPATIBLE,
                 Settings.COPY_TEXT),
                 SettingsBackup.ALLOWLIST);
     }

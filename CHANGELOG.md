@@ -4,6 +4,7 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* New `Show exact post times` patch. Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format, and TalkBack reads that same time out. It's in Manager's default selection, but its switch under Posts in HushThreads settings starts off.
 * The HushThreads settings look like the other Hush packages' now. The logo and name sit at the top and scroll away under the top bar, each section opens in place on the main page instead of on a page of its own, and Pause moved to the top bar. A toggle under search shows every setting in one long list. Support at the bottom has Report a problem, a Restart Threads button and the Ko-fi link, and the build line sits under everything in small type.
 * A section near the bottom of the settings opens with its first setting in view. Before, its settings went in below the edge of the screen, so it looked like the tap did nothing.
 * Each way into HushThreads settings has its own switch under Pause, backup and diagnostics now, so you can take away the app icon shortcut, the row in Threads' settings or the long press on the logo. The last one that's on stays on, so there's always a way back in, and App info opens the settings whichever ones you keep. The row only counts on a Threads build that can show it. Asked for in #18.

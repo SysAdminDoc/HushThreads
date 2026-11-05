@@ -431,6 +431,11 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         posts.addPreference(toggle(context, Settings.COPY_TEXT, L10n.t("Copy text on long press"),
                 L10n.t("Holding a post's text opens Copy text, on an opened post too, so you get the whole post "
                     + "with its links instead of picking out words.")));
+        if (build.contains(PatchFamily.EXACT_POST_TIMES)) {
+            posts.addPreference(toggle(context, Settings.EXACT_POST_TIMES, L10n.t("Show the date and time"),
+                    L10n.t("Posts and replies show the date and time they went up instead of 3h or 2d, "
+                        + "in your phone's 12 or 24-hour format.")));
+        }
 
         // In every build: Android checks Threads' links against Meta's signing key, which no
         // re-signed build has, whatever its patches.
@@ -1101,6 +1106,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         else if (setting == Settings.HIDE_INSTAGRAM_BUTTON) icon = SettingsIcons.CAMERA;
         else if (setting == Settings.HIDE_GHOST_POST_BUBBLES) icon = SettingsIcons.CHAT;
         else if (setting == Settings.COPY_TEXT) icon = SettingsIcons.CHAT;
+        else if (setting == Settings.EXACT_POST_TIMES) icon = SettingsIcons.CALENDAR;
         else if (setting == Settings.CHECK_FOR_RELEASES) icon = SettingsIcons.UPDATES;
         mark(preference, icon);
         return preference;

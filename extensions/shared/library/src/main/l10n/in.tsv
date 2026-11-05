@@ -300,6 +300,10 @@ Posts	Postingan
 Copy text when you hold a post	Salin teks saat Anda menekan lama postingan
 Copy text on long press	Salin teks dengan tekan lama
 Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	Menekan lama teks postingan membuka Salin teks, juga di postingan yang sedang dibuka, jadi Anda mendapat seluruh postingan beserta tautannya, bukan memilih kata satu per satu.
+# Show exact post times: the Posts heading's line on the main page when the patch is in the build, the switch and its summary. 3h and 2d stand for the short "how long ago" Threads shows on a post; say it the way this language's Threads does, or describe it.
+Copy text and exact post times	Salin teks dan waktu posting yang tepat
+Show the date and time	Tampilkan tanggal dan waktu
+Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.	Postingan dan balasan menampilkan tanggal dan waktu diposting, bukan berapa lama yang lalu, dalam format 12 atau 24 jam ponsel Anda.
 # Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
 Quick setups	Penyiapan cepat
 Quiet	Tenang

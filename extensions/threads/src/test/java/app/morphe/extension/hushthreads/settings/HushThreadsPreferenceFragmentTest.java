@@ -95,6 +95,7 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.PURE_BLACK, "Pure black dark mode");
         ROW_TITLES.put(PatchFamily.HIDE_INSTAGRAM_BUTTON, "Hide the Instagram button");
         ROW_TITLES.put(PatchFamily.HIDE_GHOST_POST_BUBBLES, "Hide ghost post bubbles");
+        ROW_TITLES.put(PatchFamily.EXACT_POST_TIMES, "Show the date and time");
         ROW_TITLES.put(PatchFamily.REMOVE_AD_ID, "Advertising ID removed");
         ROW_TITLES.put(PatchFamily.RESTORE_TRUST, "Re-signed build fix");
         ROW_TITLES.put(PatchFamily.VERSION_CODE, "Version code raised");
@@ -282,6 +283,9 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top "
                 + "of your feed. Restart Threads to see the change.",
                     String.valueOf(page.findPreference(Settings.HIDE_GHOST_POST_BUBBLES.key).getSummary()));
+            assertEquals("Show the date and time", String.valueOf(page.findPreference(Settings.EXACT_POST_TIMES.key).getTitle()));
+            assertEquals("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's "
+                + "12 or 24-hour format.", String.valueOf(page.findPreference(Settings.EXACT_POST_TIMES.key).getSummary()));
             // The patches that were always in Manager's default selection ship their switches on,
             // Search's half of Hide suggested users included.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS, Settings.HIDE_SEARCH_SUGGESTIONS,
@@ -289,10 +293,12 @@ public class HushThreadsPreferenceFragmentTest {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             // The ones that joined it later start off, so a default build looks like Threads, and so
-            // do Hide the Instagram button, Hide ghost post bubbles and Disable swipe to Search, which came after.
+            // do Hide the Instagram button, Hide ghost post bubbles, Disable swipe to Search and Show
+            // exact post times, which came after.
             for (BooleanSetting setting : Arrays.asList(Settings.BLOCK_RETURN_REFRESH, Settings.DISABLE_VIDEO_AUTOPLAY,
                     Settings.MAX_IMAGE_QUALITY, Settings.DISABLE_SCREENSHOT_DETECTION, Settings.PURE_BLACK,
-                    Settings.HIDE_INSTAGRAM_BUTTON, Settings.HIDE_GHOST_POST_BUBBLES, Settings.DISABLE_SWIPE_TO_SEARCH)) {
+                    Settings.HIDE_INSTAGRAM_BUTTON, Settings.HIDE_GHOST_POST_BUBBLES, Settings.DISABLE_SWIPE_TO_SEARCH,
+                    Settings.EXACT_POST_TIMES)) {
                 assertFalse(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             // The time limit holds until someone lifts it.

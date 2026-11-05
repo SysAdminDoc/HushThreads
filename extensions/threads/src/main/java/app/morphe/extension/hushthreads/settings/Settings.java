@@ -161,6 +161,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_copy_text", TRUE);
 
     /**
+     * A post's header shows the date and time it went up instead of "3h" or "2d", in the feed, an
+     * opened post and its replies ({@link app.morphe.extension.hushthreads.feed.PostTime}). A header
+     * already drawn keeps its text until it's drawn again, so no restart is needed.
+     */
+    public static final BooleanSetting EXACT_POST_TIMES =
+            new BooleanSetting("hushthreads_exact_post_times", FALSE);
+
+    /**
      * Once a day, when Threads starts, ask api.github.com whether a newer HushThreads release is
      * out, and say so on the settings screen ({@link ReleaseCheck}). It's the settings entry's own
      * switch rather than a patch's, so every build has it ({@link PatchFamily#ENTRY_SWITCHES}). Off
