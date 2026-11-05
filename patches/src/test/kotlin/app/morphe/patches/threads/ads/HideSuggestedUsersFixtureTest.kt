@@ -27,6 +27,7 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
@@ -96,8 +97,10 @@ class HideSuggestedUsersFixtureTest {
                 .filter { (load, ret) -> load.opcode == Opcode.SGET_OBJECT && ret.opcode == Opcode.RETURN_OBJECT }
                 .mapNotNull { (load, _) -> load.getReference<FieldReference>()?.takeIf { it.type == it.definingClass }?.definingClass }
                 .toSet()).values
-            val classes = (anchors + cache + forYou + done + item + kinds + rawParsers + wrappers.values + profile + search)
-                .distinctBy { it.type }
+            // The row Threads builds after a follow comes from builders that name it by a prefix.
+            val chaining = FixtureDex.classesWhere(build, { true }) { it.hasString(CHAINING_PREFIX) }
+            val classes = (anchors + cache + forYou + done + item + kinds + rawParsers + wrappers.values + profile + search +
+                chaining).distinctBy { it.type }
             return Vendor(build.name, classes, parser.type)
         }
 
@@ -124,6 +127,9 @@ class HideSuggestedUsersFixtureTest {
                 vendor.name, listOf("A0U", "A0L", "A0L", "A0r"),
                 listOf(targets.suggestedSlot, targets.kickstartSlot, targets.rawType, targets.content).map { it.name },
             )
+            // The row built after a follow keeps its id in the item's own public field, A14 on 454.
+            assertEquals(vendor.name, targets.media.definingClass to "A14",
+                targets.chainingId.definingClass to targets.chainingId.name)
             hideSuggestedUsersPatch.execute(context)
             val stubs = context.mutableClassDefBy(FEED_ADS).methods
             assertTrue(stubs.single { it.name == "isSuggestedUserItem" }.instructions().size > 2)
@@ -259,7 +265,7 @@ class HideSuggestedUsersFixtureTest {
     private data class Raw(val owner: String, val type: String?)
     private data class Wrapper(val owner: String, val raw: Raw?)
     private data class Card(val owner: String, val kind: Any, val slots: Map<String, Raw> = emptyMap(),
-                            val media: Any? = null, val content: Any? = null)
+                            val media: Any? = null, val content: Any? = null, val id: String? = null)
 
     /** Execute the generated DEX instructions so branch/register mistakes fail independently. */
     private fun evaluate(method: Method, targets: SuggestedTargets, input: Any?): Boolean {
@@ -315,6 +321,8 @@ class HideSuggestedUsersFixtureTest {
                         targets.media.toString() -> (arguments[0] as Card).media
                         targets.kind.toString() -> (arguments[0] as Card).kind
                         "Ljava/lang/String;->equals(Ljava/lang/Object;)Z" -> if (arguments[0] == arguments[1]) 1 else 0
+                        "Ljava/lang/String;->startsWith(Ljava/lang/String;)Z" ->
+                            if ((arguments[0] as String).startsWith(arguments[1] as String)) 1 else 0
                         else -> error("Unexpected generated call: $call")
                     }
                 }
@@ -326,8 +334,11 @@ class HideSuggestedUsersFixtureTest {
                 Opcode.IGET_OBJECT -> {
                     val field = instruction.getReference<FieldReference>()!!
                     registers[a] = when (val receiver = registers[b]) {
-                        is Card -> if (field.toString() == targets.content.toString()) receiver.content
-                            else receiver.slots[field.toString()]
+                        is Card -> when (field.toString()) {
+                            targets.content.toString() -> receiver.content
+                            targets.chainingId.toString() -> receiver.id
+                            else -> receiver.slots[field.toString()]
+                        }
                         is Wrapper -> {
                             assertEquals(targets.capturedRaw.toString(), field.toString())
                             assertEquals(field.definingClass, receiver.owner)
@@ -358,7 +369,7 @@ class HideSuggestedUsersFixtureTest {
     }
 
     @Test
-    fun generatedPredicateRejectsUnknownFallbackKindsMediaAndChainingPlaceholders() {
+    fun generatedPredicateRejectsUnknownFallbackKindsMediaAndSlotlessCards() {
         for (vendor in vendors) {
             val context = context(vendor)
             val targets = context.suggestedTargets()
@@ -383,6 +394,86 @@ class HideSuggestedUsersFixtureTest {
             assertFalse(evaluate(method, targets, null))
             assertFalse(evaluate(method, targets, Raw(targets.rawType.definingClass, SUGGESTED_USERS)))
             assertFalse(evaluate(method, targets, card("ordinary", targets.suggestedSlot, SUGGESTED_USERS)))
+        }
+    }
+
+    @Test
+    fun generatedPredicateHidesTheRowThreadsBuildsAfterAFollow() {
+        for (vendor in vendors) {
+            val context = context(vendor)
+            val targets = context.suggestedTargets()
+            hideSuggestedUsersPatch.execute(context)
+            val method = context.mutableClassDefBy(FEED_ADS).methods.single { it.name == "isSuggestedUserItem" }
+            val owner = targets.media.definingClass
+            val suggested = targets.suggestedKind.toString()
+            val post = "3712345678901234567"
+            // The placeholder and the filled-in row: SUGGESTED_USERS, no Media, no server slot, the prefixed id.
+            assertTrue(vendor.name, evaluate(method, targets, Card(owner, suggested, id = CHAINING_PREFIX + post)))
+            assertTrue(vendor.name, evaluate(method, targets, Card(owner, suggested, id = CHAINING_PREFIX)))
+            // Anything carrying Media is a post, whatever its id says.
+            assertFalse(vendor.name, evaluate(method, targets, Card(owner, suggested, media = Any(), id = CHAINING_PREFIX + post)))
+            // The prefix counts only on the SUGGESTED_USERS kind.
+            assertFalse(vendor.name, evaluate(method, targets, Card(owner, targets.kickstartKind.toString(), id = CHAINING_PREFIX + post)))
+            assertFalse(vendor.name, evaluate(method, targets, Card(owner, "ordinary", id = CHAINING_PREFIX + post)))
+            // Other ids go on to the server check, which a card with no slot fails.
+            for (id in listOf("", post, SUGGESTED_USERS, CHAINING_PREFIX.dropLast(1), "x$CHAINING_PREFIX$post")) {
+                assertFalse("${vendor.name} $id", evaluate(method, targets, Card(owner, suggested, id = id)))
+            }
+            // And a server card with an ordinary id still passes through its raw type check.
+            val raw = Raw(targets.rawType.definingClass, SUGGESTED_USERS)
+            assertTrue(vendor.name, evaluate(method, targets, Card(owner, suggested, mapOf(targets.suggestedSlot.toString() to raw),
+                content = Wrapper(targets.wrapper.definingClass, raw), id = post)))
+            assertFalse(vendor.name, evaluate(method, targets, Card(owner, suggested, mapOf(targets.suggestedSlot.toString() to raw),
+                content = Wrapper(targets.wrapper.definingClass, Raw(targets.rawType.definingClass, SUGGESTED_USERS)), id = post)))
+        }
+    }
+
+    private fun buildsItem(instruction: Instruction, targets: SuggestedTargets) =
+        instruction.getReference<MethodReference>()?.let { call ->
+            call.definingClass == targets.media.definingClass && call.name == "<init>" &&
+                targets.kind.returnType in call.parameterTypes.map(CharSequence::toString)
+        } == true
+
+    @Test
+    fun chainingRowKindFromAnotherSourceIsRefused() {
+        for (vendor in vendors) {
+            val context = context(vendor)
+            val targets = context.suggestedTargets()
+            val builder = vendor.classes.flatMap { it.methods }.first { method ->
+                method.hasString(CHAINING_PREFIX) && method.instructions().any { buildsItem(it, targets) }
+            }
+            val mutable = context.mutableClassDefBy(builder.definingClass).methods.single { it.toString() == builder.toString() }
+            val code = mutable.instructions()
+            val call = code.indices.single { buildsItem(code[it], targets) }
+            val types = code[call].getReference<MethodReference>()!!.parameterTypes.map(CharSequence::toString)
+            val kind = code[call].namedRegisters()[types.indexOf(targets.kind.returnType) + 1]
+            mutable.addInstructionsWithLabels(call, """
+                if-eqz v$kind, :original
+                sget-object v$kind, ${targets.kickstartKind}
+                :original
+                nop
+            """)
+            assertThrows(vendor.name, PatchException::class.java) { hideSuggestedUsersPatch.execute(context) }
+        }
+    }
+
+    @Test
+    fun overwrittenChainingRowIdIsRefused() {
+        for (vendor in vendors) {
+            val context = context(vendor)
+            val targets = context.suggestedTargets()
+            fun storesId(instruction: Instruction) = instruction.opcode == Opcode.IPUT_OBJECT &&
+                instruction.getReference<FieldReference>()?.toString() == targets.chainingId.toString()
+            val constructor = context.mutableClassDefBy(targets.chainingId.definingClass).methods.single { method ->
+                method.name == "<init>" && targets.kind.returnType in method.parameterTypes.map(CharSequence::toString) &&
+                    method.instructions().any(::storesId)
+            }
+            val code = constructor.instructions()
+            val store = code[code.indices.single { storesId(code[it]) }] as TwoRegisterInstruction
+            constructor.addInstructions(code.indices.single { storesId(code[it]) } + 1,
+                "const-string v${store.registerA}, \"$CHAINING_PREFIX\"\n" +
+                    "iput-object v${store.registerA}, v${store.registerB}, ${targets.chainingId}")
+            assertThrows(vendor.name, PatchException::class.java) { hideSuggestedUsersPatch.execute(context) }
         }
     }
 

@@ -305,7 +305,11 @@ public final class FeedAds {
         return false;
     }
 
-    /** A typed server suggestion card, excluding Media and unknown/fallback card types. */
+    /**
+     * A typed server suggestion card, or the suggested-accounts row Threads builds itself under a
+     * post after a follow (its id starts with "suggested_users_chaining_"). Media and
+     * unknown/fallback card types never match. The patch writes the check in.
+     */
     static boolean isSuggestedUserItem(Object item) {
         return false;
     }
