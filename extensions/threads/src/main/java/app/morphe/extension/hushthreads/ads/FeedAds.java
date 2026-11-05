@@ -31,6 +31,11 @@ import app.morphe.extension.shared.diagnostics.HookStatus;
  * method's page of items to {@link #filter} first and merges what comes back. Only selected,
  * enabled rules remove items, so unrelated feed items keep their original order.
  *
+ * <p>When two of Threads' flags are on, For You is kept in its spool cache instead, whose own merge
+ * puts each page into the spool's model pool without passing the one above. The patch hands that
+ * page to {@link #spoolPage}, which applies the same rules and also counts the page as the spool's,
+ * so an export shows which cache a phone's For You runs on.
+ *
  * <p>An item is an ad when the post it carries is one: Threads' own check reads the post's
  * "injected" data, the block the server attaches to a sponsored post, and this asks that same check.
  * A thread unit counts by its first post, which is the one the feed shows, the same post Threads'
@@ -80,6 +85,18 @@ public final class FeedAds {
      * HushThreads is paused or anything goes wrong. Never throws.
      */
     public static List<?> filter(List<?> items) {
+        return filter(items, false);
+    }
+
+    /**
+     * Injected at the start of the spool cache's merge, with For You's page it was given. The same
+     * as {@link #filter}, and each completed check also counts a spool page. Never throws.
+     */
+    public static List<?> spoolPage(List<?> items) {
+        return filter(items, true);
+    }
+
+    private static List<?> filter(List<?> items, boolean spool) {
         // The rule being asked when something throws. Null while walking the page itself, where a
         // failure belongs to every rule that was going to read it.
         Rule checking = null;
@@ -122,6 +139,7 @@ public final class FeedAds {
                 Rule rule = active.get(r);
                 // Count only completed checks, including pages the server sent without matches.
                 HookStatus.counted(rule.family, "feed pages checked");
+                if (spool) HookStatus.counted(rule.family, "spool feed pages checked");
                 HookStatus.counted(rule.family, "feed items checked", index);
                 if (removed[r] == 0) continue;
                 int count = removed[r];

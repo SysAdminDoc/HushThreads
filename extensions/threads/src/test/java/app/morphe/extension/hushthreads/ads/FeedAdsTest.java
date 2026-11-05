@@ -113,6 +113,23 @@ public class FeedAdsTest {
     }
 
     @Test
+    public void spoolPagesGetTheSameRulesAndCountAsTheSpoolsToo() {
+        ShadowFeedAds.Status.suggestions = true;
+        List<Object> page = Arrays.asList("followed", ShadowFeedAds.AD, ShadowFeedAds.SUGGESTED, "recommended");
+        assertEquals(Arrays.asList("followed", "recommended"), FeedAds.spoolPage(page));
+        List<Object> plain = Collections.singletonList("ordinary");
+        assertSame(plain, FeedAds.spoolPage(plain));
+        assertSame(plain, FeedAds.filter(plain));
+        assertNull(FeedAds.spoolPage(null));
+        assertEquals(Arrays.asList(
+                "Hide ads: invoked 4, 0 found, 0 missing. Counted: feed pages checked 3,"
+                        + " spool feed pages checked 2, feed items checked 6, ad posts taken out 1",
+                "Hide suggested users: invoked 4, 0 found, 0 missing. Counted: feed pages checked 3,"
+                        + " spool feed pages checked 2, feed items checked 6, suggestion cards taken out 1"),
+                HookStatus.report());
+    }
+
+    @Test
     public void emptyDisabledOmittedAndFailedChecksDoNotCountPages() {
         ShadowFeedAds.Status.suggestions = true;
         Settings.HIDE_ADS.save(false);

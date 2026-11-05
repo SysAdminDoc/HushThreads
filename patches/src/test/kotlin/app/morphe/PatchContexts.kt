@@ -24,8 +24,9 @@ import java.io.File
  * names its work folders until something compiles the dex, which no test here asks for.
  *
  * Fingerprint validation is on, as it is in verify-all-patches.ps1's `--validate` run: a fingerprint
- * matched with `match()` that fits two methods throws instead of taking the first. `matchAll()` is
- * unaffected, and so is a fingerprint that fits nothing.
+ * that fits two methods throws instead of taking the first, whether a patch reads it through
+ * `match()`, `method` or `methodOrNull`, so an optional hook that fits twice fails its patch too.
+ * `matchAll()` is unaffected, and so is a fingerprint that fits nothing.
  */
 internal object PatchContexts {
     fun of(classes: Collection<ClassDef>): BytecodePatchContext {

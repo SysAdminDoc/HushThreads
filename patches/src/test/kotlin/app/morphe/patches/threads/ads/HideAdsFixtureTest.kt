@@ -43,6 +43,12 @@ import java.io.File
 class HideAdsFixtureTest {
     private val feedAds = "$EXTENSION_PACKAGE/ads/FeedAds;"
 
+    private fun clearMatches() {
+        FeedPageMergeFingerprint.clearMatch()
+        SpoolFeedPageMergeFingerprint.clearMatch()
+        InjectedAdCheckFingerprint.clearMatch()
+    }
+
     private fun applyAds(context: BytecodePatchContext) {
         feedPageFilterPatch.execute(context)
         hideAdsPatch.execute(context)
@@ -51,18 +57,20 @@ class HideAdsFixtureTest {
     @Test
     fun `each declared build has one feed merge and one injected check, and the patch hooks both`() {
         for (build in Fixtures.declaredBuilds()) {
-            FeedPageMergeFingerprint.clearMatch()
-            InjectedAdCheckFingerprint.clearMatch()
+            clearMatches()
             val where = build.name
             val checks = FixtureDex.methodsWhere(build, { true }) { it.isInjectedCheck() }
             assertEquals("$where: static boolean methods reading the injected hash", 1, checks.size)
             val injected = checks.single()
 
-            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, MEDIA, injected.definingClass))
-            assertEquals("$where: the feed cache, Media and the injected check's class", 3, classes.size)
+            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, MEDIA, injected.definingClass))
+            assertEquals("$where: both feed caches, Media and the injected check's class", 4, classes.size)
             val merges = classes.getValue(FEED_CACHE).methods.filter { it.isFeedMerge() }
             assertEquals("$where: the feed cache's page merges", 1, merges.size)
             val merge = merges.single()
+            val spoolMerges = classes.getValue(SPOOL_FEED_CACHE).methods.filter { it.isSpoolMerge() }
+            assertEquals("$where: the spool cache's page merges", 1, spoolMerges.size)
+            val spoolMerge = spoolMerges.single()
 
             val getters = merge.instructions().mapNotNull { it.mediaGetter() }.distinct()
             assertEquals("$where: the merge has one distinct item getter: $getters", 1, getters.size)
@@ -95,6 +103,20 @@ class HideAdsFixtureTest {
             assertEquals(Opcode.MOVE_RESULT_OBJECT, head[1].opcode)
             assertEquals("$where: the filtered page goes back in p5", page, (head[1] as OneRegisterInstruction).registerA)
             assertEquals("$where: nothing else changed in the merge", merge.instructions().size + 2, head.size)
+
+            // The spool's merge takes the same items as its sixth parameter, p6.
+            val spoolPatched = context.mutableClassDefBy(SPOOL_FEED_CACHE).methods.single { it.sameSignatureAs(spoolMerge) }
+            val spoolHead = spoolPatched.instructions()
+            val spoolPage = spoolPatched.implementation!!.registerCount - (spoolMerge.parameterTypes.size + 1) + 6
+            val spoolFilter = spoolHead[0]
+            assertEquals("$where: the spool merge starts with the filter", Opcode.INVOKE_STATIC_RANGE, spoolFilter.opcode)
+            assertEquals("$feedAds->spoolPage(Ljava/util/List;)Ljava/util/List;", spoolFilter.referenceText())
+            assertEquals("$where: the filter reads the spool page, p6", spoolPage, (spoolFilter as RegisterRangeInstruction).startRegister)
+            assertEquals(1, spoolFilter.registerCount)
+            assertEquals(Opcode.MOVE_RESULT_OBJECT, spoolHead[1].opcode)
+            assertEquals("$where: the filtered page goes back in p6", spoolPage, (spoolHead[1] as OneRegisterInstruction).registerA)
+            assertEquals("$where: nothing else changed in the spool merge", spoolMerge.instructions().size + 2, spoolHead.size)
+            assertEquals("$where: the spool page is the List parameter", "Ljava/util/List;", spoolMerge.parameterTypes[5].toString())
 
             val stubs = context.mutableClassDefBy(feedAds).methods
             val itemMedia = stubs.single { it.name == "itemMedia" }.instructions()
@@ -139,10 +161,9 @@ class HideAdsFixtureTest {
     @Test
     fun `two distinct Media getters are rejected rather than choosing the first`() {
         for (build in Fixtures.declaredBuilds()) {
-            FeedPageMergeFingerprint.clearMatch()
-            InjectedAdCheckFingerprint.clearMatch()
+            clearMatches()
             val injected = FixtureDex.methodsWhere(build, { true }) { it.isInjectedCheck() }.single()
-            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, MEDIA, injected.definingClass))
+            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, MEDIA, injected.definingClass))
             val merge = classes.getValue(FEED_CACHE).methods.single { it.isFeedMerge() }
             val getter = merge.instructions().mapNotNull { it.mediaGetter() }.distinct().single()
             val item = FixtureDex.classes(build, setOf(getter.definingClass)).getValue(getter.definingClass)
@@ -164,7 +185,7 @@ class HideAdsFixtureTest {
     fun `repeated getters and unrelated prototypes do not create another target`() {
         for (build in Fixtures.declaredBuilds()) {
             val injected = FixtureDex.methodsWhere(build, { true }) { it.isInjectedCheck() }.single()
-            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, MEDIA, injected.definingClass))
+            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, MEDIA, injected.definingClass))
             val merge = classes.getValue(FEED_CACHE).methods.single { it.isFeedMerge() }
             val getter = merge.instructions().mapNotNull { it.mediaGetter() }.distinct().single()
             val item = FixtureDex.classes(build, setOf(getter.definingClass)).getValue(getter.definingClass)
@@ -173,8 +194,7 @@ class HideAdsFixtureTest {
                 "invoke-virtual/range { v0 .. v0 }, $getter",
                 "invoke-virtual { v0, v1 }, ${getter.definingClass}->decoyPost(Ljava/lang/String;)$MEDIA",
             )) {
-                FeedPageMergeFingerprint.clearMatch()
-                InjectedAdCheckFingerprint.clearMatch()
+                clearMatches()
                 val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item))
                 val mutable = context.mutableClassDefBy(FEED_CACHE).methods.single { it.sameSignatureAs(merge) }
                 mutable.addInstructions(0, "check-cast v0, ${getter.definingClass}\n$code")
@@ -189,7 +209,7 @@ class HideAdsFixtureTest {
     fun `discarding the injected result or bypassing it rejects the Media predicate`() {
         for (build in Fixtures.declaredBuilds()) {
             val injected = FixtureDex.methodsWhere(build, { true }) { it.isInjectedCheck() }.single()
-            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, MEDIA, injected.definingClass))
+            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, MEDIA, injected.definingClass))
             val merge = classes.getValue(FEED_CACHE).methods.single { it.isFeedMerge() }
             val getter = merge.instructions().mapNotNull { it.mediaGetter() }.distinct().single()
             val item = FixtureDex.classes(build, setOf(getter.definingClass)).getValue(getter.definingClass)
@@ -199,8 +219,7 @@ class HideAdsFixtureTest {
                     method.instructions().any { it.calls(injected.definingClass, injected.name) }
             }
             for (bypass in listOf(false, true)) {
-                FeedPageMergeFingerprint.clearMatch()
-                InjectedAdCheckFingerprint.clearMatch()
+                clearMatches()
                 val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item))
                 val mutable = context.mutableClassDefBy(MEDIA).methods.single { it.sameSignatureAs(predicate) }
                 val result = (predicate.instructions().last() as OneRegisterInstruction).registerA
@@ -226,6 +245,15 @@ class HideAdsFixtureTest {
             instructions().any {
                 it.calls(FEED_CACHE.removeSuffix(";") + "\$addAndSaveItemsFromFeedFetchSuccess\$2\$1;", "<init>")
             }
+
+    private fun Method.isSpoolMerge(): Boolean =
+        returnType == "Ljava/lang/Object;" && parameterTypes.size == 9 &&
+            parameterTypes[5] == "Ljava/util/List;" && parameterTypes[7] == "Lkotlin/jvm/functions/Function0;" &&
+            parameterTypes[8] == "Lkotlin/jvm/functions/Function3;" &&
+            instructions().any { (it as? ReferenceInstruction)?.reference.let { reference ->
+                reference is MethodReference &&
+                    reference.definingClass == "Lcom/instagram/barcelona/spool/core/modelpool/BcnSpoolModelPoolImpl;"
+            } }
 
     private fun Instruction.mediaGetter(): MethodReference? {
         if (opcode != Opcode.INVOKE_VIRTUAL) return null

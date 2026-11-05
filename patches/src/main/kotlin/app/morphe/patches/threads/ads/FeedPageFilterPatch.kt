@@ -29,7 +29,7 @@ internal const val FEED_ADS = "$EXTENSION_PACKAGE/ads/FeedAds;"
 // The shared hook fails for whichever feed patch was selected, so its messages name both.
 private const val PATCH = "Feed filter (Hide ads, Hide suggested users)"
 
-/** One pre-cache page boundary shared by independently selected feed patches. */
+/** The pre-cache page boundaries, the feed cache's merge and the spool cache's, shared by independently selected feed patches. */
 internal val feedPageFilterPatch = bytecodePatch {
     dependsOn(settingsPatch)
     dependsOn(threadsExtensionPatch)
@@ -67,6 +67,17 @@ internal val feedPageFilterPatch = bytecodePatch {
             """,
         )
 
+        // For You's spool cache merges its pages on its own, past the merge above, so its page gets
+        // the same filter first thing. It resumes the same way, from its own saved copy.
+        val spool = SpoolFeedPageMergeFingerprint.method
+        val spoolPage = spool.parameterRegister(5)
+        spool.addInstructions(
+            0,
+            """
+                invoke-static/range { $spoolPage .. $spoolPage }, $FEED_ADS->spoolPage(Ljava/util/List;)Ljava/util/List;
+                move-result-object $spoolPage
+            """,
+        )
     }
 }
 

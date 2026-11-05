@@ -88,7 +88,10 @@ class HideSuggestedUsersFixtureTest {
             // without those classes.
             val profile = ProfileSuggestionsFixture.classes(build)
             val search = SearchSuggestionsFixture.classes(build)
-            val classes = (anchors + cache + item + kinds + rawParsers + wrappers.values + profile + search).distinctBy { it.type }
+            // For You's spool cache gets the same page filter, so the shared hook needs its class too.
+            val spool = FixtureDex.classes(build, setOf(SPOOL_FEED_CACHE)).getValue(SPOOL_FEED_CACHE)
+            val classes = (anchors + cache + spool + item + kinds + rawParsers + wrappers.values + profile + search)
+                .distinctBy { it.type }
             return Vendor(build.name, classes, parser.type)
         }
 
@@ -98,6 +101,7 @@ class HideSuggestedUsersFixtureTest {
 
     private fun context(vendor: Vendor): BytecodePatchContext {
         FeedPageMergeFingerprint.clearMatch()
+        SpoolFeedPageMergeFingerprint.clearMatch()
         SuggestedModelFingerprint.clearMatch()
         SuggestedFeedParserFingerprint.clearMatch()
         return PatchContexts.of(ExtensionDex.classes() + vendor.classes).also { feedPageFilterPatch.execute(it) }
@@ -125,6 +129,8 @@ class HideSuggestedUsersFixtureTest {
                 it.getReference<MethodReference>()?.toString() == "$FEED_ADS->filter(Ljava/util/List;)Ljava/util/List;"
             }
             assertEquals(vendor.name, 1, calls)
+            // And For You's spool cache filters its page once.
+            assertEquals(vendor.name, 1, spoolCalls(context))
             // And on profiles, the carousel and the row each ask once.
             val profileHooks = vendor.classes.flatMap { context.mutableClassDefBy(it.type).methods }
                 .flatMap { it.instructions() }.mapNotNull { it.getReference<MethodReference>()?.toString() }
@@ -176,6 +182,7 @@ class HideSuggestedUsersFixtureTest {
             InjectedAdCheckFingerprint.clearMatch()
             hideAdsPatch.execute(adsOnly)
             assertEquals(vendor.name, 1, filterCalls(adsOnly))
+            assertEquals(vendor.name, 1, spoolCalls(adsOnly))
             assertEquals(vendor.name, 1, status(adsOnly, "hideAds"))
             assertEquals(vendor.name, 0, status(adsOnly, "hideSuggestedUsers"))
             assertTrue(vendor.name, stubSize(adsOnly, "isAd") > 2)
@@ -184,6 +191,7 @@ class HideSuggestedUsersFixtureTest {
             val suggestionsOnly = context(vendor)
             hideSuggestedUsersPatch.execute(suggestionsOnly)
             assertEquals(vendor.name, 1, filterCalls(suggestionsOnly))
+            assertEquals(vendor.name, 1, spoolCalls(suggestionsOnly))
             assertEquals(vendor.name, 0, status(suggestionsOnly, "hideAds"))
             assertEquals(vendor.name, 1, status(suggestionsOnly, "hideSuggestedUsers"))
             assertEquals(vendor.name, 2, stubSize(suggestionsOnly, "isAd"))
@@ -194,12 +202,18 @@ class HideSuggestedUsersFixtureTest {
             hideAdsPatch.execute(both)
             hideSuggestedUsersPatch.execute(both)
             assertEquals(vendor.name, 1, filterCalls(both))
+            assertEquals(vendor.name, 1, spoolCalls(both))
             assertEquals(vendor.name, 1, status(both, "hideAds"))
             assertEquals(vendor.name, 1, status(both, "hideSuggestedUsers"))
             assertTrue(vendor.name, stubSize(both, "isAd") > 2)
             assertTrue(vendor.name, stubSize(both, "isSuggestedUserItem") > 2)
         }
     }
+
+    private fun spoolCalls(context: BytecodePatchContext) = context.mutableClassDefBy(SPOOL_FEED_CACHE).methods
+        .flatMap { it.instructions() }.count {
+            it.getReference<MethodReference>()?.toString() == "$FEED_ADS->spoolPage(Ljava/util/List;)Ljava/util/List;"
+        }
 
     private data class Raw(val owner: String, val type: String?)
     private data class Wrapper(val owner: String, val raw: Raw?)
