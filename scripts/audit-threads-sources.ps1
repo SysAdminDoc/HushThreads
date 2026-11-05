@@ -847,7 +847,7 @@ foreach ($candidate in @($candidates.Values | Sort-Object Key)) {
         $record = $known[$key]
         if ($candidate.Hits.Count -gt 0) {
             $knownHits.Add([pscustomobject][ordered]@{ repository = "https://$key"; kind = $record.Kind; lineage = $record.Lineage
-                hits = @($candidate.Hits | Sort-Object path -Unique) })
+                hits = @($candidate.Hits | Sort-Object path -Unique -CaseSensitive) })
         }
         Test-KnownRepository -Candidate $candidate -Key $key -Record $record -Blobs $blobs
         continue
