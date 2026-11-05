@@ -3779,7 +3779,8 @@ public class DexDiff {
         Map<Integer, FeatureBlock> blocks = new HashMap<>();
         for (int read : reads) {
             int value = ((OneRegisterInstruction) body.get(read + 1)).getRegisterA();
-            blocks.put(read + 2, (now, at) -> featurePostLink(clean, now, at, value, post, fetchFlow, read + 2));
+            blocks.put(read + 2, (now, at) -> featureLowLink(now, at, value, fetchFlow, read + 2, "post link hook",
+                    (from, low) -> featureFetchLink(clean, now, from, low, post, fetchFlow, read + 2)));
         }
         featureBody(fetch, featureMethod(patched, featureSig(fetch)), 0, Map.of(), POST_LINK, null, blocks);
 
@@ -3801,7 +3802,8 @@ public class DexDiff {
             Map<Integer, FeatureBlock> holderBlocks = new HashMap<>();
             for (int read : holderReads) {
                 int value = ((OneRegisterInstruction) holder.get(read + 1)).getRegisterA();
-                holderBlocks.put(read + 2, (now, at) -> featureHolderLink(clean, now, at, value, self, held, holderFlow, read + 2));
+                holderBlocks.put(read + 2, (now, at) -> featureLowLink(now, at, value, holderFlow, read + 2, "holder link hook",
+                        (from, low) -> featureHolderLink(clean, now, from, low, self, held, holderFlow, read + 2)));
             }
             featureBody(m, featureMethod(patched, featureSig(m)), 0, Map.of(), POST_LINK, null, holderBlocks);
             calls.put(featureSig(m), holderReads.size());
@@ -3833,7 +3835,7 @@ public class DexDiff {
                 for (int call : fetches) {
                     int[] arguments = invokeRegisters(stock.get(call));
                     requireFeature(arguments[4] == key, featureSig(m) + " hands the plain fetch more than one continuation");
-                    resumed.put(call, (now, at) -> featureRemember(now, at, key, arguments[2]));
+                    resumed.put(call, (now, at) -> featureRemember(now, at, key, arguments[2], resumedFlow, call));
                 }
                 fetcher = true;
             } else if (m.getName().equals("invokeSuspend") && !AccessFlags.STATIC.isSet(m.getAccessFlags())
@@ -3852,7 +3854,7 @@ public class DexDiff {
                     requireFeature(resumedFlow.parameterOnEveryPath(cast + 1, key, self),
                             featureSig(m) + " loses its coroutine alias before remembering the post");
                     int kept = registerA(stock.get(cast));
-                    resumed.put(cast + 1, (now, at) -> featureRemember(now, at, key, kept));
+                    resumed.put(cast + 1, (now, at) -> featureRemember(now, at, key, kept, resumedFlow, cast + 1));
                 }
                 // The recall goes through this itself: 452 reuses the alias for an instance-of
                 // between the cast and the read.
@@ -3865,7 +3867,8 @@ public class DexDiff {
             remembers.put(featureSig(m), resumed.size());
             for (int read : stockReads) {
                 int value = registerA(stock.get(read + 1));
-                resumed.put(read + 2, (now, at) -> featureResumeLink(clean, now, at, value, recall, resumedFlow, read + 2));
+                resumed.put(read + 2, (now, at) -> featureLowLink(now, at, value, resumedFlow, read + 2, "resumed link hook",
+                        (from, low) -> featureResumeLink(clean, now, from, low, recall, resumedFlow, read + 2)));
             }
             featureBody(m, featureMethod(patched, featureSig(m)), 0, Map.of(), POST_LINK, null, resumed);
             recalls.put(featureSig(m), stockReads.size());
@@ -3902,11 +3905,64 @@ public class DexDiff {
         return true;
     }
 
-    /** The post going to the extension against the coroutine in [key], just before the share waits. */
-    private static int featureRemember(List<Instruction> body, int at, int key, int post) {
-        requireFeature(at < body.size() && isStaticInvoke(body.get(at).getOpcode()) && reference(body.get(at)).equals(REMEMBER_POST)
-                && Arrays.equals(invokeRegisters(body.get(at)), new int[]{key, post}), "missing or miswired " + REMEMBER_POST + " at instruction " + at);
-        return 1;
+    /**
+     * The post going to the extension against the coroutine in [key], just before [stock]'s
+     * instruction [site] waits. The call takes 4-bit registers, so each of the two above v15 is
+     * first copied, in that order, into a local nothing reads from the site on (#20).
+     */
+    private static int featureRemember(List<Instruction> body, int at, int key, int post, FeatureFlow stock, int site) {
+        List<Integer> high = java.util.stream.IntStream.of(key, post).filter(r -> r > 15).distinct().boxed().toList();
+        Map<Integer, Integer> low = new HashMap<>();
+        for (int n = 0; n < high.size(); n++) {
+            int from = high.get(n), k = at + n;
+            requireFeature(k < body.size() && body.get(k).getOpcode() == Opcode.MOVE_OBJECT_FROM16
+                    && ((TwoRegisterInstruction) body.get(k)).getRegisterB() == from, REMEMBER_POST + " doesn't copy v" + from + " down at instruction " + k);
+            int copy = registerA(body.get(k));
+            requireFeature(copy < 16 && copy != key && copy != post && !low.containsValue(copy),
+                    REMEMBER_POST + " copies v" + from + " into v" + copy + " at instruction " + k);
+            featureScratch(stock, site, REMEMBER_POST + " copy at instruction " + k, copy);
+            low.put(from, copy);
+        }
+        int call = at + high.size();
+        requireFeature(call < body.size() && isStaticInvoke(body.get(call).getOpcode()) && reference(body.get(call)).equals(REMEMBER_POST)
+                && Arrays.equals(invokeRegisters(body.get(call)), new int[]{low.getOrDefault(key, key), low.getOrDefault(post, post)}),
+                "missing or miswired " + REMEMBER_POST + " at instruction " + call);
+        return high.size() + 1;
+    }
+
+    /**
+     * [hook] on the link [stock] read into [value], in front of its instruction [site], answering the
+     * hook's length from where it starts and the register it gets the link in. The hook's calls take
+     * 4-bit registers, so a link above v15, and only such a link, goes down into a free local first
+     * and back up after (454's ARMv7 and x86 Share to Instagram).
+     */
+    private static int featureLowLink(List<Instruction> body, int at, int value, FeatureFlow stock, int site, String what,
+            java.util.function.IntBinaryOperator hook) {
+        if (value <= 15) return hook.applyAsInt(at, value);
+        requireFeature(at < body.size() && body.get(at).getOpcode() == Opcode.MOVE_OBJECT_FROM16
+                && ((TwoRegisterInstruction) body.get(at)).getRegisterB() == value, what + " doesn't copy the link in v" + value + " down at " + at);
+        int link = registerA(body.get(at));
+        requireFeature(link < 16, what + " copies the link into v" + link + ", above v15, at " + at);
+        featureScratch(stock, site, what + " at instruction " + at, link);
+        int back = at + 1 + hook.applyAsInt(at + 1, link);
+        requireFeature(back < body.size() && body.get(back).getOpcode() == Opcode.MOVE_OBJECT_FROM16 && registerA(body.get(back)) == value
+                && ((TwoRegisterInstruction) body.get(back)).getRegisterB() == link, what + " doesn't copy the link back into v" + value + " at " + back);
+        return back + 1 - at;
+    }
+
+    /**
+     * The fetch's hook on the link in [link]: the post the fetch stores, in [post], and copied into
+     * a free local first when it sits above v15, since the hook's getters name 4-bit registers.
+     */
+    private static int featureFetchLink(Map<String, List<Method>> clean, List<Instruction> body, int at, int link, int post,
+            FeatureFlow stock, int site) {
+        if (post <= 15) return featurePostLink(clean, body, at, link, post, stock, site);
+        requireFeature(at < body.size() && body.get(at).getOpcode() == Opcode.MOVE_OBJECT_FROM16
+                && ((TwoRegisterInstruction) body.get(at)).getRegisterB() == post, "post link hook doesn't copy the post in v" + post + " down at " + at);
+        int held = registerA(body.get(at));
+        requireFeature(held < 16 && held != link, "post link hook copies the post into v" + held + " at " + at);
+        featureScratch(stock, site, "post link hook at instruction " + at, held);
+        return 1 + featurePostLink(clean, body, at + 1, link, held, stock, site);
     }
 
     /**
