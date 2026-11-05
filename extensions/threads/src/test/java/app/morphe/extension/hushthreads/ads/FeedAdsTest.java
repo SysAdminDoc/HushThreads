@@ -149,7 +149,8 @@ public class FeedAdsTest {
         assertSame(broken, FeedAds.spoolPage(broken));
         String report = HookStatus.report().toString();
         assertTrue(report, !report.contains("Counted:"));
-        assertTrue(report, report.contains("'feed page' hook (it threw java.lang.IllegalStateException)"));
+        assertTrue(report, report.contains("'spool feed page' hook (it threw java.lang.IllegalStateException)"));
+        assertTrue(report, !report.contains("'feed page' hook"));
     }
 
     /** For You's other writes into either cache get the same rules, counted as writes rather than pages. */
@@ -194,7 +195,11 @@ public class FeedAdsTest {
         assertSame(broken, FeedAds.spoolWrite(broken));
         String report = HookStatus.report().toString();
         assertTrue(report, !report.contains("Counted:"));
-        assertTrue(report, report.contains("'feed page' hook (it threw java.lang.IllegalStateException)"));
+        // The report names only the first miss, so the list of every miss says which writes threw.
+        String misses = HookStatus.missing().toString();
+        assertTrue(misses, misses.contains("'For You cache write' hook (it threw java.lang.IllegalStateException)"));
+        assertTrue(misses, misses.contains("'spool cache write' hook (it threw java.lang.IllegalStateException)"));
+        assertTrue(misses, !misses.contains("'feed page' hook"));
     }
 
     /** For You's writes of one item get the same rules, and an item they take out isn't written. */
@@ -235,7 +240,10 @@ public class FeedAdsTest {
         assertFalse(FeedAds.spoolItem(ShadowFeedAds.BROKEN));
         String report = HookStatus.report().toString();
         assertTrue(report, !report.contains("Counted:"));
-        assertTrue(report, report.contains("'feed page' hook (it threw java.lang.IllegalStateException)"));
+        String misses = HookStatus.missing().toString();
+        assertTrue(misses, misses.contains("'For You item write' hook (it threw java.lang.IllegalStateException)"));
+        assertTrue(misses, misses.contains("'spool item write' hook (it threw java.lang.IllegalStateException)"));
+        assertTrue(misses, !misses.contains("'feed page' hook"));
     }
 
     /** An ad Threads inserts into a page it holds stays out. Anything else goes in. */
@@ -324,6 +332,8 @@ public class FeedAdsTest {
     public void anItemThatBreaksTheCheckKeepsTheWholePage() {
         List<Object> page = Arrays.asList(ShadowFeedAds.AD, ShadowFeedAds.BROKEN, "first");
         assertSame(page, FeedAds.filter(page));
+        assertTrue(HookStatus.report().toString(), HookStatus.report().toString()
+                .contains("'feed page' hook (it threw java.lang.IllegalStateException)"));
     }
 
     @Test

@@ -96,7 +96,7 @@ public final class FeedAds {
      * HushThreads is paused or anything goes wrong. Never throws.
      */
     public static List<?> filter(List<?> items) {
-        return filter(items, PAGES, null);
+        return filter(items, PAGES, null, "feed page");
     }
 
     /**
@@ -104,7 +104,7 @@ public final class FeedAds {
      * as {@link #filter}, and each completed check also counts a spool page. Never throws.
      */
     public static List<?> spoolPage(List<?> items) {
-        return filter(items, PAGES, SPOOL_PAGES);
+        return filter(items, PAGES, SPOOL_PAGES, "spool feed page");
     }
 
     /**
@@ -113,12 +113,12 @@ public final class FeedAds {
      * resumed write passes no list. Never throws.
      */
     public static List<?> forYouWrite(List<?> items) {
-        return filter(items, FOR_YOU_WRITES, null);
+        return filter(items, FOR_YOU_WRITES, null, "For You cache write");
     }
 
     /** The same as {@link #forYouWrite} for the spool cache's writes, each also counted as the spool's. Never throws. */
     public static List<?> spoolWrite(List<?> items) {
-        return filter(items, FOR_YOU_WRITES, SPOOL_WRITES);
+        return filter(items, FOR_YOU_WRITES, SPOOL_WRITES, "spool cache write");
     }
 
     /**
@@ -129,12 +129,12 @@ public final class FeedAds {
      * A resumed write passes no item, and that isn't a check. Never throws.
      */
     public static boolean forYouItem(Object item) {
-        return dropped(item, FOR_YOU_ITEMS, null);
+        return dropped(item, FOR_YOU_ITEMS, null, "For You item write");
     }
 
     /** The same as {@link #forYouItem} for the spool cache's writes, each also counted as the spool's. Never throws. */
     public static boolean spoolItem(Object item) {
-        return dropped(item, FOR_YOU_ITEMS, SPOOL_ITEMS);
+        return dropped(item, FOR_YOU_ITEMS, SPOOL_ITEMS, "spool item write");
     }
 
     private static final String PAGES = "feed pages checked";
@@ -145,13 +145,16 @@ public final class FeedAds {
     private static final String SPOOL_ITEMS = "spool item writes checked";
 
     /** One item through the page rules: whether they took it out. Kept on every failure, as a page is. */
-    private static boolean dropped(Object item, String checked, String spool) {
-        List<?> kept = filter(item == null ? null : Collections.singletonList(item), checked, spool);
+    private static boolean dropped(Object item, String checked, String spool, String hook) {
+        List<?> kept = filter(item == null ? null : Collections.singletonList(item), checked, spool, hook);
         return kept != null && kept.isEmpty();
     }
 
-    /** Counts each completed check as {@code checked}, and also as {@code spool} when that isn't null. */
-    private static List<?> filter(List<?> items, String checked, String spool) {
+    /**
+     * Counts each completed check as {@code checked}, and also as {@code spool} when that isn't
+     * null. A failure is reported against {@code hook}, so the report names the write that threw.
+     */
+    private static List<?> filter(List<?> items, String checked, String spool, String hook) {
         // The rule being asked when something throws. Null while walking the page itself, where a
         // failure belongs to every rule that was going to read it.
         Rule checking = null;
@@ -205,9 +208,9 @@ public final class FeedAds {
         } catch (Throwable t) {
             // One bad item keeps the whole page as Threads sent it rather than dropping posts blind.
             if (checking != null) {
-                HookStatus.threw(checking.family, "feed page", t);
+                HookStatus.threw(checking.family, hook, t);
             } else {
-                for (Rule rule : active) HookStatus.threw(rule.family, "feed page", t);
+                for (Rule rule : active) HookStatus.threw(rule.family, hook, t);
             }
             return items;
         }
