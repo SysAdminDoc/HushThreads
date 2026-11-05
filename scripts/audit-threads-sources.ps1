@@ -750,37 +750,57 @@ function Get-GitLabBlobIds {
         Each question's blob ids by path, keyed by the question's Key. A question names a Project, a
         Ref and its Paths. GitLab's code search answers a hit's project, ref and path but no blob id,
         and the fork and mirror checks compare blob ids. A path the ref no longer holds is left out.
-        GitLab scores a project's blobs at about 12 plus 2 a path against the 200 a request may cost
-        (measured 2026-11-05), so small forks share a request and a busy one goes 50 paths at a time.
-        Each request spends one of the roughly 60 an hour gitlab.com allows (Get-GitLabWatchedHeads).
+        GitLab scores a project's blobs at about 12 plus 2 a path (measured 2026-11-05) against the 200
+        a request may cost without a token and 250 with one, so small forks share a request and a
+        busy one goes 50 paths at a time. GitLab also refuses a query over 10,000 characters, so a
+        request stays under 9,000 and a fork with long paths gets smaller parts. Each request spends
+        one of the roughly 60 an hour gitlab.com allows (Get-GitLabWatchedHeads).
     #>
     param([object[]]$Questions)
+    $maxQuery = 9000
+    $aliasOf = {
+        param([int]$Index, [object]$Part)
+        "b${Index}: project(fullPath: $(ConvertTo-Json -Compress -InputObject $Part.Project)) { repository { " +
+            "blobs(ref: $(ConvertTo-Json -Compress -InputObject $Part.Ref), " +
+            "paths: $(ConvertTo-Json -Compress -InputObject @($Part.Paths))) { nodes { path oid } } } }"
+    }
     $found = New-Object 'System.Collections.Generic.Dictionary[string,object]' ([StringComparer]::Ordinal)
     $parts = New-Object System.Collections.Generic.List[object]
     foreach ($asked in @($Questions)) {
         $found[$asked.Key] = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([StringComparer]::Ordinal)
-        $wanted = @($asked.Paths)
-        for ($skip = 0; $skip -lt $wanted.Count; $skip += 50) {
-            $parts.Add([pscustomobject]@{ Key = $asked.Key; Project = $asked.Project; Ref = $asked.Ref
-                Paths = @($wanted | Select-Object -Skip $skip -First 50) })
+        $taking = New-Object System.Collections.Generic.List[string]
+        foreach ($wantedPath in @($asked.Paths)) {
+            $taking.Add([string]$wantedPath)
+            $trial = [pscustomobject]@{ Project = $asked.Project; Ref = $asked.Ref; Paths = $taking.ToArray() }
+            # 999 stands in for the widest alias index a request can hold
+            $tooLong = ('query { ' + (& $aliasOf 999 $trial) + ' }').Length -gt $maxQuery
+            if ($taking.Count -gt 50 -or ($tooLong -and $taking.Count -gt 1)) {
+                $taking.RemoveAt($taking.Count - 1)
+                $parts.Add([pscustomobject]@{ Key = $asked.Key; Project = $asked.Project; Ref = $asked.Ref; Paths = $taking.ToArray() })
+                $taking = New-Object System.Collections.Generic.List[string]
+                $taking.Add([string]$wantedPath)
+            }
+        }
+        if ($taking.Count -gt 0) {
+            $parts.Add([pscustomobject]@{ Key = $asked.Key; Project = $asked.Project; Ref = $asked.Ref; Paths = $taking.ToArray() })
         }
     }
     $next = 0
     while ($next -lt $parts.Count) {
         $batch = New-Object System.Collections.Generic.List[object]
+        $aliases = New-Object System.Collections.Generic.List[string]
         $cost = 0
+        $queryLength = 'query {  }'.Length
         while ($next -lt $parts.Count) {
             $partCost = 12 + 2 * @($parts[$next].Paths).Count
-            if ($batch.Count -gt 0 -and $cost + $partCost -gt 190) { break }
+            $alias = & $aliasOf $batch.Count $parts[$next]
+            if ($batch.Count -gt 0 -and ($cost + $partCost -gt 190 -or $queryLength + 1 + $alias.Length -gt $maxQuery)) { break }
             $batch.Add($parts[$next])
+            $aliases.Add($alias)
             $cost += $partCost
+            $queryLength += 1 + $alias.Length
             $next++
         }
-        $aliases = @(for ($index = 0; $index -lt $batch.Count; $index++) {
-            "b${index}: project(fullPath: $(ConvertTo-Json -Compress -InputObject $batch[$index].Project)) { repository { " +
-                "blobs(ref: $(ConvertTo-Json -Compress -InputObject $batch[$index].Ref), " +
-                "paths: $(ConvertTo-Json -Compress -InputObject @($batch[$index].Paths))) { nodes { path oid } } } }"
-        })
         $query = "query { $($aliases -join ' ') }"
         $answer = Invoke-SourceRequest -Uri 'https://gitlab.com/api/graphql' -Auth gitlab -Body (ConvertTo-Json -Compress -InputObject @{ query = $query })
         if ($answer.Status -ne 200) { throw "the blob ids of $($batch[0].Project) and $($batch.Count - 1) more answered HTTP $($answer.Status)" }
