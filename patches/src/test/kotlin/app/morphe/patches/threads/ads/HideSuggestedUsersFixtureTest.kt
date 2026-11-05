@@ -88,9 +88,10 @@ class HideSuggestedUsersFixtureTest {
             // without those classes.
             val profile = ProfileSuggestionsFixture.classes(build)
             val search = SearchSuggestionsFixture.classes(build)
-            // For You's spool cache gets the same page filter, so the shared hook needs its class too.
-            val spool = FixtureDex.classes(build, setOf(SPOOL_FEED_CACHE)).getValue(SPOOL_FEED_CACHE)
-            val classes = (anchors + cache + spool + item + kinds + rawParsers + wrappers.values + profile + search)
+            // For You's spool cache gets the same page filter, and both For You handlers' other writes
+            // do too, so the shared hook needs the spool, the feed cache's handler and their data source.
+            val forYou = FixtureDex.classes(build, setOf(SPOOL_FEED_CACHE, FEED_CACHE_HANDLER, FOR_YOU_LOCAL_SOURCE)).values
+            val classes = (anchors + cache + forYou + item + kinds + rawParsers + wrappers.values + profile + search)
                 .distinctBy { it.type }
             return Vendor(build.name, classes, parser.type)
         }
@@ -129,8 +130,9 @@ class HideSuggestedUsersFixtureTest {
                 it.getReference<MethodReference>()?.toString() == "$FEED_ADS->filter(Ljava/util/List;)Ljava/util/List;"
             }
             assertEquals(vendor.name, 1, calls)
-            // And For You's spool cache filters its page once.
+            // And For You's spool cache filters its page once, and each handler its four other writes.
             assertEquals(vendor.name, 1, spoolCalls(context))
+            assertEquals(vendor.name, listOf(4, 4), writeCalls(context))
             // And on profiles, the carousel and the row each ask once.
             val profileHooks = vendor.classes.flatMap { context.mutableClassDefBy(it.type).methods }
                 .flatMap { it.instructions() }.mapNotNull { it.getReference<MethodReference>()?.toString() }
@@ -184,6 +186,7 @@ class HideSuggestedUsersFixtureTest {
             hideAdsPatch.execute(adsOnly)
             assertEquals(vendor.name, 1, filterCalls(adsOnly))
             assertEquals(vendor.name, 1, spoolCalls(adsOnly))
+            assertEquals(vendor.name, listOf(4, 4), writeCalls(adsOnly))
             assertEquals(vendor.name, 2, insertCalls(adsOnly))
             assertEquals(vendor.name, 1, status(adsOnly, "hideAds"))
             assertEquals(vendor.name, 0, status(adsOnly, "hideSuggestedUsers"))
@@ -194,6 +197,7 @@ class HideSuggestedUsersFixtureTest {
             hideSuggestedUsersPatch.execute(suggestionsOnly)
             assertEquals(vendor.name, 1, filterCalls(suggestionsOnly))
             assertEquals(vendor.name, 1, spoolCalls(suggestionsOnly))
+            assertEquals(vendor.name, listOf(4, 4), writeCalls(suggestionsOnly))
             assertEquals(vendor.name, 0, insertCalls(suggestionsOnly))
             assertEquals(vendor.name, 0, status(suggestionsOnly, "hideAds"))
             assertEquals(vendor.name, 1, status(suggestionsOnly, "hideSuggestedUsers"))
@@ -206,6 +210,7 @@ class HideSuggestedUsersFixtureTest {
             hideSuggestedUsersPatch.execute(both)
             assertEquals(vendor.name, 1, filterCalls(both))
             assertEquals(vendor.name, 1, spoolCalls(both))
+            assertEquals(vendor.name, listOf(4, 4), writeCalls(both))
             assertEquals(vendor.name, 2, insertCalls(both))
             assertEquals(vendor.name, 1, status(both, "hideAds"))
             assertEquals(vendor.name, 1, status(both, "hideSuggestedUsers"))
@@ -218,6 +223,15 @@ class HideSuggestedUsersFixtureTest {
         .flatMap { it.instructions() }.count {
             it.getReference<MethodReference>()?.toString() == "$FEED_ADS->spoolPage(Ljava/util/List;)Ljava/util/List;"
         }
+
+    /** The feed cache handler's calls to the For You write filter, then the spool's to its own. The shared hook writes them. */
+    private fun writeCalls(context: BytecodePatchContext) = listOf(
+        FEED_CACHE_HANDLER to "forYouWrite", SPOOL_FEED_CACHE to "spoolWrite",
+    ).map { (handler, entry) ->
+        context.mutableClassDefBy(handler).methods.flatMap { it.instructions() }.count {
+            it.getReference<MethodReference>()?.toString() == "$FEED_ADS->$entry(Ljava/util/List;)Ljava/util/List;"
+        }
+    }
 
     /** Calls to the inserted-ad check across both For You handlers. Only Hide ads writes them. */
     private fun insertCalls(context: BytecodePatchContext) = listOf(FEED_CACHE_HANDLER, SPOOL_FEED_CACHE)

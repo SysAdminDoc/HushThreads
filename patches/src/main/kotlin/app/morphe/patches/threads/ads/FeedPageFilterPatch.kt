@@ -8,7 +8,10 @@
 package app.morphe.patches.threads.ads
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.threads.misc.extension.parameterRegister
 import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
@@ -29,7 +32,7 @@ internal const val FEED_ADS = "$EXTENSION_PACKAGE/ads/FeedAds;"
 // The shared hook fails for whichever feed patch was selected, so its messages name both.
 private const val PATCH = "Feed filter (Hide ads, Hide suggested users)"
 
-/** The pre-cache page boundaries, the feed cache's merge and the spool cache's, shared by independently selected feed patches. */
+/** The pre-cache page boundaries (the feed cache's merge, the spool cache's, and For You's other writes), shared by independently selected feed patches. */
 internal val feedPageFilterPatch = bytecodePatch {
     dependsOn(settingsPatch)
     dependsOn(threadsExtensionPatch)
@@ -78,6 +81,53 @@ internal val feedPageFilterPatch = bytecodePatch {
                 move-result-object $spoolPage
             """,
         )
+
+        // For You's data source writes feed items into either cache more ways than the merges (the
+        // refresh's write, the paging flow's, an append to the page it holds, a page it rebuilds),
+        // and none passes either filter above. Each handler's write takes its items first thing.
+        // The feed cache handler's hand straight on to the feed cache, and a resumed spool write is
+        // called again with no list.
+        forYouWrites(spool).forEach { (handler, write) ->
+            val items = write.parameterRegister(write.parameterTypes.indexOfFirst { it.toString() == LIST })
+            val entry = if (handler == SPOOL_FEED_CACHE) "spoolWrite" else "forYouWrite"
+            write.addInstructions(
+                0,
+                """
+                    invoke-static/range { $items .. $items }, $FEED_ADS->$entry(Ljava/util/List;)Ljava/util/List;
+                    move-result-object $items
+                """,
+            )
+        }
+    }
+}
+
+private const val LIST = "Ljava/util/List;"
+
+private fun Method.signature(): String = name + parameterTypes.joinToString("", "(", ")") + returnType
+
+/**
+ * For You's writes of feed items besides its page merge: each abstract method of
+ * [FOR_YOU_LOCAL_SOURCE] taking one list, other than the merge the spool's [merge] implements, as
+ * each For You handler implements it.
+ */
+internal fun BytecodePatchContext.forYouWrites(merge: Method): List<Pair<String, MutableMethod>> {
+    val declared = classDefBy(FOR_YOU_LOCAL_SOURCE).methods.filter { method ->
+        AccessFlags.ABSTRACT.isSet(method.accessFlags) && method.parameterTypes.count { it.toString() == LIST } == 1
+    }
+    val (merges, writes) = declared.partition { it.signature() == merge.signature() }
+    if (merges.size != 1) {
+        throw PatchException("$PATCH: $FOR_YOU_LOCAL_SOURCE doesn't declare the spool's merge ${merge.signature()}")
+    }
+    if (writes.isEmpty()) throw PatchException("$PATCH: $FOR_YOU_LOCAL_SOURCE declares no list writes besides its merge")
+    return listOf(FEED_CACHE_HANDLER, SPOOL_FEED_CACHE).flatMap { handler ->
+        val classDef = mutableClassDefBy(handler)
+        if (classDef.superclass != FOR_YOU_LOCAL_SOURCE) {
+            throw PatchException("$PATCH: $handler no longer extends $FOR_YOU_LOCAL_SOURCE")
+        }
+        writes.map { declaration ->
+            handler to classDef.methods.filter { it.signature() == declaration.signature() && it.implementation != null }
+                .singleOrPatchException("$PATCH: $handler's ${declaration.signature()}")
+        }
     }
 }
 

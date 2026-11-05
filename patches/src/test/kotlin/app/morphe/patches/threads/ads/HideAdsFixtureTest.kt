@@ -154,6 +154,35 @@ class HideAdsFixtureTest {
                 assertEquals("$where: nothing else changed in $handler's insert", insert.instructions().size + 5, hooked.size)
             }
 
+            // For You's other writes, the data source's abstract methods taking one list besides the
+            // merge, take their items through the filter first thing on both handlers.
+            val writes = classes.getValue(FOR_YOU_LOCAL_SOURCE).methods.filter { method ->
+                AccessFlags.ABSTRACT.isSet(method.accessFlags) && !method.sameSignatureAs(spoolMerge) &&
+                    method.parameterTypes.count { it.toString() == "Ljava/util/List;" } == 1
+            }
+            assertEquals("$where: For You's list writes besides the merge: ${writes.map { it.name }}", 4, writes.size)
+            for (handler in listOf(FEED_CACHE_HANDLER, SPOOL_FEED_CACHE)) {
+                val entry = if (handler == SPOOL_FEED_CACHE) "spoolWrite" else "forYouWrite"
+                for (write in writes) {
+                    val original = classes.getValue(handler).methods.single { it.sameSignatureAs(write) }
+                    val hooked = context.mutableClassDefBy(handler).methods.single { it.sameSignatureAs(write) }.instructions()
+                    assertTrue("$where: ${write.name} has no wide parameter", write.parameterTypes.none { it.toString() == "J" || it.toString() == "D" })
+                    val items = original.implementation!!.registerCount - (write.parameterTypes.size + 1) + 1 +
+                        write.parameterTypes.indexOfFirst { it.toString() == "Ljava/util/List;" }
+                    val take = hooked[0]
+                    assertEquals("$where: $handler's ${write.name} starts with the filter", Opcode.INVOKE_STATIC_RANGE, take.opcode)
+                    assertEquals("$feedAds->$entry(Ljava/util/List;)Ljava/util/List;", take.referenceText())
+                    assertEquals("$where: $handler's ${write.name} filters its list", items, (take as RegisterRangeInstruction).startRegister)
+                    assertEquals(1, take.registerCount)
+                    assertEquals(Opcode.MOVE_RESULT_OBJECT, hooked[1].opcode)
+                    assertEquals("$where: the filtered list goes back where it was", items, (hooked[1] as OneRegisterInstruction).registerA)
+                    assertEquals("$where: nothing else changed in $handler's ${write.name}", original.instructions().size + 2, hooked.size)
+                }
+            }
+            val feedHandlerMerge = context.mutableClassDefBy(FEED_CACHE_HANDLER).methods.single { it.sameSignatureAs(spoolMerge) }
+            assertTrue("$where: the feed cache handler's merge isn't hooked, its merge in the feed cache is",
+                feedHandlerMerge.instructions().none { (it as? ReferenceInstruction)?.reference.toString().startsWith(feedAds) })
+
             val stubs = context.mutableClassDefBy(feedAds).methods
             val itemMedia = stubs.single { it.name == "itemMedia" }.instructions()
             assertEquals(getter.definingClass, itemMedia.first { it.opcode == Opcode.INSTANCE_OF }.typeText())

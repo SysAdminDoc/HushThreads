@@ -152,6 +152,51 @@ public class FeedAdsTest {
         assertTrue(report, report.contains("'feed page' hook (it threw java.lang.IllegalStateException)"));
     }
 
+    /** For You's other writes into either cache get the same rules, counted as writes rather than pages. */
+    @Test
+    public void forYouWritesGetTheSameRulesAndCountApartFromPages() {
+        ShadowFeedAds.Status.suggestions = true;
+        List<Object> write = Arrays.asList(ShadowFeedAds.SUGGESTED, "followed", ShadowFeedAds.AD);
+        assertEquals(Collections.singletonList("followed"), FeedAds.spoolWrite(write));
+        assertEquals(Collections.singletonList("followed"), FeedAds.forYouWrite(write));
+        List<Object> plain = Collections.singletonList("ordinary");
+        assertSame(plain, FeedAds.spoolWrite(plain));
+        // A resumed write passes no list, and that isn't a check.
+        assertNull(FeedAds.forYouWrite(null));
+        assertNull(FeedAds.spoolWrite(null));
+        assertEquals(Arrays.asList(
+                "Hide ads: invoked 5, 0 found, 0 missing. Counted: For You cache writes checked 3,"
+                        + " spool cache writes checked 2, feed items checked 7, ad posts taken out 2",
+                "Hide suggested users: invoked 5, 0 found, 0 missing. Counted: For You cache writes checked 3,"
+                        + " spool cache writes checked 2, feed items checked 7, suggestion cards taken out 2"),
+                HookStatus.report());
+    }
+
+    /** With the switch off, paused, without settings or with the check broken, a For You write stays whole and uncounted. */
+    @Test
+    public void forYouWritesStayWholeWhenHideAdsCannotAnswer() throws Exception {
+        List<Object> write = Arrays.asList("first", ShadowFeedAds.AD);
+        Settings.HIDE_ADS.save(false);
+        assertSame(write, FeedAds.forYouWrite(write));
+        assertSame(write, FeedAds.spoolWrite(write));
+        Settings.HIDE_ADS.save(true);
+        SettingsContextRule.withoutContext(() -> assertSame(write, FeedAds.forYouWrite(write)));
+        java.lang.reflect.Method pause = Setting.class.getDeclaredMethod("setPausedForProcess", boolean.class);
+        pause.setAccessible(true);
+        try {
+            pause.invoke(null, true);
+            assertSame(write, FeedAds.spoolWrite(write));
+        } finally {
+            pause.invoke(null, false);
+        }
+        List<Object> broken = Arrays.asList(ShadowFeedAds.AD, ShadowFeedAds.BROKEN, "first");
+        assertSame(broken, FeedAds.forYouWrite(broken));
+        assertSame(broken, FeedAds.spoolWrite(broken));
+        String report = HookStatus.report().toString();
+        assertTrue(report, !report.contains("Counted:"));
+        assertTrue(report, report.contains("'feed page' hook (it threw java.lang.IllegalStateException)"));
+    }
+
     /** An ad Threads inserts into a page it holds stays out. Anything else goes in. */
     @Test
     public void insertedAdsStayOutAndOtherInsertsGoIn() {
