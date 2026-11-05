@@ -30,6 +30,22 @@
     },
     {
       "paths": [
+        "patches/src/main/kotlin/app/morphe/util/PatchListGenerator.kt"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/Hushfacebook",
+      "commit": "c15d4f7930505824789684d35039d3c78c8b0903",
+      "via": [
+        "https://github.com/SysAdminDoc/hushfeed",
+        "https://github.com/icysymmetra/tiktok-patches-for-morphe",
+        "https://github.com/RookieEnough/De-Vanced",
+        "https://github.com/MorpheApp/morphe-patches"
+      ],
+      "license": "GPL-3.0-only with the Morphe section 7 notices",
+      "changes": "Moved to morphe-patcher 2.0: the default flag in place of use, the per-target compatibility list read as it is, and the old compatiblePackages map rebuilt from it (stable targets only, unless a package declares nothing else) for Manager 1.x."
+    },
+    {
+      "paths": [
         "patches/src/main/kotlin/app/morphe/patches/shared/compat/**"
       ],
       "origin": "ported",
@@ -37,7 +53,8 @@
       "commit": "c15d4f7930505824789684d35039d3c78c8b0903",
       "via": [
         "https://github.com/SysAdminDoc/hushfeed",
-        "https://gitlab.com/ReVanced/revanced-patches",
+        "https://github.com/icysymmetra/tiktok-patches-for-morphe",
+        "https://github.com/RookieEnough/De-Vanced",
         "https://github.com/andrewliang25/morphe-patches"
       ],
       "license": "GPL-3.0-only",

@@ -11,9 +11,11 @@ HushThreads is built from Hushfacebook, its Facebook sibling. Its settings
 screen, diagnostics, shared extension library, build and release checks come
 from there, and through it from Hushfeed, which is built on
 icysymmetra/tiktok-patches-for-morphe, which is built on Morphe, which hard
-forked ReVanced. Some of the files Hushfacebook carries are rewritten from
-Andrew Liang's patches, which credit FroggoMorphePatches for some of their
-ideas and implementations. The Threads patches themselves are written here.
+forked ReVanced. The file that names the supported Threads builds and the
+patch list generator reached tiktok-patches-for-morphe from De-Vanced. Some
+of the files Hushfacebook carries are rewritten from Andrew Liang's patches,
+which credit FroggoMorphePatches for some of their ideas and implementations.
+The Threads patches themselves are written here.
 The place Hide ads takes ads out of the feed, the feed cache's merge, is the
 one zeldrisho/morphe-patches found. None of its code is used. The feed unit
 types Hide ads also reads as ads are the ones MrxSiN's ThreadsHideAds named,
@@ -45,13 +47,14 @@ HushGram and comes here through Hushfacebook.
   morphe-patches (zeldrisho)  https://github.com/zeldrisho/morphe-patches
   ThreadsHideAds (MrxSiN)     https://github.com/MrxSiN/ThreadsHideAds
   tiktok-patches-for-morphe   https://github.com/icysymmetra/tiktok-patches-for-morphe
+  De-Vanced                   https://github.com/RookieEnough/De-Vanced
   morphe-patches              https://github.com/MorpheApp/morphe-patches
   morphe-patches-library      https://github.com/MorpheApp/morphe-patches-library
   ReVanced                    https://gitlab.com/ReVanced/revanced-patches
 
 Hushfacebook, HushGram, HushPinterest, Andrew Liang's patches,
-FroggoMorphePatches, zeldrisho's patches and MrxSiN's ThreadsHideAds are
-licensed under the GNU General Public License v3.0.
+FroggoMorphePatches, zeldrisho's patches, MrxSiN's ThreadsHideAds and
+De-Vanced are licensed under the GNU General Public License v3.0.
 Files that came from another project keep a "Forked from" line naming it and
 the commit they came from, and provenance.json records every rule.
 

@@ -3,7 +3,11 @@
  * modified for HushThreads (Threads), 2026.
  *
  * Forked from:
- * https://gitlab.com/ReVanced/revanced-patches/-/blob/main/patches/src/main/kotlin/app/revanced/patches/shared/compat/AppCompatibilities.kt
+ * https://github.com/RookieEnough/De-Vanced/blob/9ac979883a6b6eeab5cefb4fc5d955073f2f2bc2/patches/src/main/kotlin/app/morphe/patches/shared/compat/AppCompatibilities.kt
+ * (GPL-3.0), by way of
+ * https://github.com/icysymmetra/tiktok-patches-for-morphe/blob/ebf6296845cb889608cdc6681348ccb2e550f2bc/patches/src/main/kotlin/app/morphe/patches/shared/compat/AppCompatibilities.kt
+ * and Hushfeed. Those copies cite a ReVanced path that never held this file; `AppTarget` and
+ * `ApkFileType` are Morphe's own API.
  *
  * Modified for Hushfacebook (Facebook), 2026. The Facebook target followed
  * https://github.com/andrewliang25/morphe-patches/blob/5db2e57e133aede5297c48b419168cf30fd89953/patches/src/main/kotlin/app/andrewliang/patches/shared/Constants.kt
