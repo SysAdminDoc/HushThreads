@@ -738,6 +738,9 @@ public class SettingsNavigationTest {
      * A tap on the restart row restarts at once, with no question first, and changes no saved
      * switch. A screen reader finds it as a button, and its double tap does what a tap does.
      */
+    /** A phone-sized screen: the row has to be on it, and Robolectric's default is one row short
+     * once a build carries an extra section. */
+    @org.robolectric.annotation.Config(qualifiers = "w411dp-h891dp")
     @Test public void theRestartRowRestartsAtOnceAndAScreenReaderFindsItAsAButton() {
         List<Context> restarted = new ArrayList<>();
         ReopenSettingsAfterRestart.setRestarterForTests(restarted::add);
