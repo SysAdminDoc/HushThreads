@@ -154,6 +154,8 @@ private const val INSERT_RESULT = "Ljava/lang/Integer;"
  * Threads places an ad through it apart from any page fetch, so the ad never meets the merges'
  * filter. Both handlers' inserts ask [FeedAds] first and, for an ad, answer the feed cache
  * handler's own code for having no page to put it in, which tells the caller nothing went in.
+ * Threads logs every code but success as an insert that didn't happen and moves on (it retries
+ * only one other code), so the ad reads as one Threads itself declined, never as one to try again.
  */
 private fun BytecodePatchContext.hookAdInserts(item: String) {
     val declared = classDefBy(FOR_YOU_LOCAL_SOURCE).methods.filter {

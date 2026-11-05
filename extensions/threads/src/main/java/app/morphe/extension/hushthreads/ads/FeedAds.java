@@ -39,7 +39,9 @@ import app.morphe.extension.shared.diagnostics.HookStatus;
  * <p>For You's data source also writes feed items into either cache four more ways that pass
  * neither merge: the refresh's write, the paging flow's, an append to the page it holds, and a page
  * it rebuilds. Each handler's write hands its items to {@link #forYouWrite} or {@link #spoolWrite}
- * first, which apply the same rules and count the writes apart from the pages.
+ * first, which apply the same rules and count the writes apart from the pages. Its writes of one
+ * item (one it adds, puts after a post or swaps in) ask {@link #forYouItem} or {@link #spoolItem}
+ * the same way, and an item the rules take out isn't written.
  *
  * <p>An item is an ad when the post it carries is one: Threads' own check reads the post's
  * "injected" data, the block the server attaches to a sponsored post, and this asks that same check.
@@ -119,10 +121,34 @@ public final class FeedAds {
         return filter(items, FOR_YOU_WRITES, SPOOL_WRITES);
     }
 
+    /**
+     * Injected at the start of For You's writes of one feed item into the feed cache: an item it
+     * adds, puts after a post or swaps in for one it holds. Answers true when a selected rule takes
+     * the item out, and the patch then answers the write's own "done" without writing it. False
+     * when every rule keeps it, all switches are off, HushThreads is paused or anything goes wrong.
+     * A resumed write passes no item, and that isn't a check. Never throws.
+     */
+    public static boolean forYouItem(Object item) {
+        return dropped(item, FOR_YOU_ITEMS, null);
+    }
+
+    /** The same as {@link #forYouItem} for the spool cache's writes, each also counted as the spool's. Never throws. */
+    public static boolean spoolItem(Object item) {
+        return dropped(item, FOR_YOU_ITEMS, SPOOL_ITEMS);
+    }
+
     private static final String PAGES = "feed pages checked";
     private static final String SPOOL_PAGES = "spool feed pages checked";
     private static final String FOR_YOU_WRITES = "For You cache writes checked";
     private static final String SPOOL_WRITES = "spool cache writes checked";
+    private static final String FOR_YOU_ITEMS = "For You item writes checked";
+    private static final String SPOOL_ITEMS = "spool item writes checked";
+
+    /** One item through the page rules: whether they took it out. Kept on every failure, as a page is. */
+    private static boolean dropped(Object item, String checked, String spool) {
+        List<?> kept = filter(item == null ? null : Collections.singletonList(item), checked, spool);
+        return kept != null && kept.isEmpty();
+    }
 
     /** Counts each completed check as {@code checked}, and also as {@code spool} when that isn't null. */
     private static List<?> filter(List<?> items, String checked, String spool) {

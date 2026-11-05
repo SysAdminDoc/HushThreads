@@ -187,6 +187,7 @@ class HideSuggestedUsersFixtureTest {
             assertEquals(vendor.name, 1, filterCalls(adsOnly))
             assertEquals(vendor.name, 1, spoolCalls(adsOnly))
             assertEquals(vendor.name, listOf(4, 4), writeCalls(adsOnly))
+            assertEquals(vendor.name, listOf(4, 4), itemCalls(adsOnly))
             assertEquals(vendor.name, 2, insertCalls(adsOnly))
             assertEquals(vendor.name, 1, status(adsOnly, "hideAds"))
             assertEquals(vendor.name, 0, status(adsOnly, "hideSuggestedUsers"))
@@ -198,6 +199,7 @@ class HideSuggestedUsersFixtureTest {
             assertEquals(vendor.name, 1, filterCalls(suggestionsOnly))
             assertEquals(vendor.name, 1, spoolCalls(suggestionsOnly))
             assertEquals(vendor.name, listOf(4, 4), writeCalls(suggestionsOnly))
+            assertEquals(vendor.name, listOf(4, 4), itemCalls(suggestionsOnly))
             assertEquals(vendor.name, 0, insertCalls(suggestionsOnly))
             assertEquals(vendor.name, 0, status(suggestionsOnly, "hideAds"))
             assertEquals(vendor.name, 1, status(suggestionsOnly, "hideSuggestedUsers"))
@@ -211,6 +213,7 @@ class HideSuggestedUsersFixtureTest {
             assertEquals(vendor.name, 1, filterCalls(both))
             assertEquals(vendor.name, 1, spoolCalls(both))
             assertEquals(vendor.name, listOf(4, 4), writeCalls(both))
+            assertEquals(vendor.name, listOf(4, 4), itemCalls(both))
             assertEquals(vendor.name, 2, insertCalls(both))
             assertEquals(vendor.name, 1, status(both, "hideAds"))
             assertEquals(vendor.name, 1, status(both, "hideSuggestedUsers"))
@@ -230,6 +233,15 @@ class HideSuggestedUsersFixtureTest {
     ).map { (handler, entry) ->
         context.mutableClassDefBy(handler).methods.flatMap { it.instructions() }.count {
             it.getReference<MethodReference>()?.toString() == "$FEED_ADS->$entry(Ljava/util/List;)Ljava/util/List;"
+        }
+    }
+
+    /** The feed cache handler's asks before a one-item write, then the spool's. The shared hook writes them too. */
+    private fun itemCalls(context: BytecodePatchContext) = listOf(
+        FEED_CACHE_HANDLER to "forYouItem", SPOOL_FEED_CACHE to "spoolItem",
+    ).map { (handler, entry) ->
+        context.mutableClassDefBy(handler).methods.flatMap { it.instructions() }.count {
+            it.getReference<MethodReference>()?.toString() == "$FEED_ADS->$entry(Ljava/lang/Object;)Z"
         }
     }
 

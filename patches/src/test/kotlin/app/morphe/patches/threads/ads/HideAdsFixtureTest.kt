@@ -9,6 +9,7 @@ import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
@@ -183,6 +184,62 @@ class HideAdsFixtureTest {
             assertTrue("$where: the feed cache handler's merge isn't hooked, its merge in the feed cache is",
                 feedHandlerMerge.instructions().none { (it as? ReferenceInstruction)?.reference.toString().startsWith(feedAds) })
 
+            // For You's writes of one item, the abstract methods taking the feed item first and
+            // answering an Object, ask first on both handlers and answer Unit for a dropped item.
+            val itemWrites = classes.getValue(FOR_YOU_LOCAL_SOURCE).methods.filter { method ->
+                AccessFlags.ABSTRACT.isSet(method.accessFlags) && method.returnType == "Ljava/lang/Object;" &&
+                    method.parameterTypes.firstOrNull()?.toString() == getter.definingClass
+            }
+            assertEquals("$where: For You's one-item writes: ${itemWrites.map { it.name }}", 4, itemWrites.size)
+            // A write that's done without suspending answers Kotlin's Unit, which some builds rename
+            // (the x86 build's is LX/BZ8;->A00). The feed cache handler's writes hand on to the feed
+            // cache and end on it: answer what came back if it's the suspended marker, else Unit.
+            val unit = classes.getValue(FEED_CACHE_HANDLER).methods.single { it.sameSignatureAs(itemWrites.first()) }
+                .instructions().takeLast(2).also { (load, ret) ->
+                    assertEquals("$where: the feed cache handler's ${itemWrites.first().name} ends on Unit",
+                        listOf(Opcode.SGET_OBJECT, Opcode.RETURN_OBJECT), listOf(load.opcode, ret.opcode))
+                }.first().referenceText()
+            // Unit's class is a bare singleton: an Object holding one static field of its own type,
+            // with nothing but its constructors and toString.
+            val unitClass = unit.substringBefore("->")
+            assertEquals("$where: $unit is of its own class", unitClass, unit.substringAfterLast(':'))
+            val unitDef = FixtureDex.classes(build, setOf(unitClass)).getValue(unitClass)
+            assertEquals("$where: $unitClass extends Object", "Ljava/lang/Object;", unitDef.superclass)
+            assertEquals("$where: $unitClass's fields", listOf(unit.substringAfter("->")), unitDef.fields.map { "${it.name}:${it.type}" })
+            assertTrue("$where: $unit is static", AccessFlags.STATIC.isSet(unitDef.fields.single().accessFlags))
+            assertTrue("$where: $unitClass's methods: ${unitDef.methods.map { it.name }}",
+                setOf("<clinit>", "<init>", "toString").containsAll(unitDef.methods.map { it.name }))
+            for (handler in listOf(FEED_CACHE_HANDLER, SPOOL_FEED_CACHE)) {
+                val entry = if (handler == SPOOL_FEED_CACHE) "spoolItem" else "forYouItem"
+                for (write in itemWrites) {
+                    val original = classes.getValue(handler).methods.single { it.sameSignatureAs(write) }
+                    val hooked = context.mutableClassDefBy(handler).methods.single { it.sameSignatureAs(write) }.instructions()
+                    assertTrue("$where: ${write.name} has no wide parameter", write.parameterTypes.none { it.toString() == "J" || it.toString() == "D" })
+                    // `this` and one register per parameter past the locals: the item is p1.
+                    val itemRegister = original.implementation!!.registerCount - (write.parameterTypes.size + 1) + 1
+                    val ask = hooked[0]
+                    assertEquals("$where: $handler's ${write.name} starts with the ask", Opcode.INVOKE_STATIC_RANGE, ask.opcode)
+                    assertEquals("$feedAds->$entry(Ljava/lang/Object;)Z", ask.referenceText())
+                    assertEquals("$where: $handler's ${write.name} asks about its item, p1", itemRegister, (ask as RegisterRangeInstruction).startRegister)
+                    assertEquals(1, ask.registerCount)
+                    assertEquals(listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.SGET_OBJECT, Opcode.RETURN_OBJECT),
+                        hooked.subList(1, 5).map { it.opcode })
+                    assertTrue("$where: $handler's ${write.name} borrows v0, a local", itemRegister > 1)
+                    assertEquals(listOf(0, 0, 0, 0), hooked.subList(1, 5).map { (it as OneRegisterInstruction).registerA })
+                    assertEquals("$where: $handler's ${write.name} answers the build's Unit", unit, hooked[3].referenceText())
+                    assertTrue("$where: $handler's ${write.name} returns that Unit itself when it's done",
+                        original.instructions().zipWithNext().any { (load, ret) ->
+                            load.opcode == Opcode.SGET_OBJECT && load.referenceText() == unit && ret.opcode == Opcode.RETURN_OBJECT &&
+                                (load as OneRegisterInstruction).registerA == (ret as OneRegisterInstruction).registerA
+                        })
+                    assertEquals("$where: $handler's ${write.name} ask jumps past the answer", 5, (hooked[2] as OffsetInstruction).codeOffset)
+                    assertEquals(original.instructions()[0].opcode, hooked[5].opcode)
+                    // The ask is nine code units, an odd count, so a payload's alignment nop can come or go.
+                    assertEquals("$where: nothing else changed in $handler's ${write.name}",
+                        original.instructions().code().size + 5, hooked.code().size)
+                }
+            }
+
             val stubs = context.mutableClassDefBy(feedAds).methods
             val itemMedia = stubs.single { it.name == "itemMedia" }.instructions()
             assertEquals(getter.definingClass, itemMedia.first { it.opcode == Opcode.INSTANCE_OF }.typeText())
@@ -296,6 +353,30 @@ class HideAdsFixtureTest {
         }
     }
 
+    @Test
+    fun `a one-item write that stops answering the build's Unit is refused`() {
+        for (build in Fixtures.declaredBuilds()) {
+            clearMatches()
+            val injected = FixtureDex.methodsWhere(build, { true }) { it.isInjectedCheck() }.single()
+            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, FEED_CACHE_HANDLER, FOR_YOU_LOCAL_SOURCE, MEDIA, injected.definingClass))
+            val merge = classes.getValue(FEED_CACHE).methods.single { it.isFeedMerge() }
+            val getter = merge.instructions().mapNotNull { it.mediaGetter() }.distinct().single()
+            val item = FixtureDex.classes(build, setOf(getter.definingClass)).getValue(getter.definingClass)
+            val declared = classes.getValue(FOR_YOU_LOCAL_SOURCE).methods.first { method ->
+                AccessFlags.ABSTRACT.isSet(method.accessFlags) && method.returnType == "Ljava/lang/Object;" &&
+                    method.parameterTypes.firstOrNull()?.toString() == getter.definingClass
+            }
+            val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item))
+            // The feed cache handler's write ends on its Unit; it answers another singleton instead.
+            val write = context.mutableClassDefBy(FEED_CACHE_HANDLER).methods.single { it.sameSignatureAs(declared) }
+            val at = write.instructions().lastIndex - 1
+            val register = (write.instructions()[at] as OneRegisterInstruction).registerA
+            write.replaceInstruction(at, "sget-object v$register, LX/Decoy;->A00:LX/Decoy;")
+            val error = assertThrows(PatchException::class.java) { applyAds(context) }
+            assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("don't share one done answer"))
+        }
+    }
+
     /** The fingerprint's shape, read by hand: static, boolean, one object, both hashes. */
     private fun Method.isInjectedCheck(): Boolean {
         if (!AccessFlags.STATIC.isSet(accessFlags) || returnType != "Z" || parameterTypes.size != 1) return false
@@ -361,6 +442,8 @@ class HideAdsFixtureTest {
     private fun Instruction.typeText(): String = ((this as ReferenceInstruction).reference as TypeReference).type
 
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
+
+    private fun List<Instruction>.code() = filter { it.opcode != Opcode.NOP }
 
     private fun Method.sameSignatureAs(other: Method) = name == other.name && returnType == other.returnType &&
         parameterTypes.map { it.toString() } == other.parameterTypes.map { it.toString() }
