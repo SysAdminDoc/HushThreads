@@ -506,7 +506,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         ways.add(hushthreads, context, BaseSettings.SETTINGS_SHORTCUT, L10n.t("Settings shortcut on the app icon"),
                 L10n.t("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that "
                         + "menu."), SettingsIcons.OPENING);
-        if (ThreadsSettingsRow.inBuild()) {
+        if (ThreadsSettingsRow.shows()) {
             ways.add(hushthreads, context, BaseSettings.SETTINGS_ROW, L10n.t("Settings row in Threads' settings"),
                     L10n.t("Adds a HushThreads row just above More settings in Threads' settings. Off, the row is gone "
                             + "the next time you open Threads' settings."), SettingsIcons.SETTINGS);
@@ -1214,7 +1214,9 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 boolean on = (Boolean) value;
                 if (!on && SettingsEntry.isLastWayIn(way)) return false;
                 way.save(on);
-                if (way == BaseSettings.SETTINGS_SHORTCUT) SettingsEntry.shortcutSwitchChanged(context);
+                // The shortcut is also published while every way is off, so any of the three can
+                // change whether it's in the launcher's menu.
+                SettingsEntry.shortcutSwitchChanged(context);
                 refresh();
                 return true;
             });

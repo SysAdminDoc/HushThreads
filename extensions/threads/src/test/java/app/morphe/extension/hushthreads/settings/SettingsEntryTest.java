@@ -351,6 +351,52 @@ public class SettingsEntryTest {
         assertTrue(SettingsEntry.rowOn());
     }
 
+    /**
+     * A Threads build the patch fits but that has none of the row's icons never draws the row, so
+     * it isn't a way back in: the page offers no switch for it, and with the logo off the shortcut
+     * is the last way in and stays on.
+     */
+    @Test public void aRowThreadsCantDrawIsntAWayIn() {
+        ThreadsSettingsRow.icon = 0;
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushThreadsPreferenceFragment page = new HushThreadsPreferenceFragment();
+            controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
+            assertNull("a switch for a row Threads can't draw", page.findPreference(BaseSettings.SETTINGS_ROW.key));
+            android.preference.SwitchPreference shortcut = way(page, BaseSettings.SETTINGS_SHORTCUT);
+            android.preference.SwitchPreference logo = way(page, BaseSettings.SETTINGS_LOGO_PRESS);
+
+            assertTrue(logo.getOnPreferenceChangeListener().onPreferenceChange(logo, false));
+            org.junit.Assert.assertFalse("the row that's never drawn counted as a way back in", shortcut.isEnabled());
+            org.junit.Assert.assertFalse("the shortcut went off with only the undrawn row left",
+                    shortcut.getOnPreferenceChangeListener().onPreferenceChange(shortcut, false));
+            assertTrue(BaseSettings.SETTINGS_SHORTCUT.savedValue());
+        } finally {
+            ThreadsSettingsRow.icon = -1;
+        }
+    }
+
+    /**
+     * All three stored off put the shortcut up as the way back in. Turning just the row on makes
+     * the row the way in, so the shortcut leaves the launcher's menu again.
+     */
+    @Test public void turningTheRowOnWhenAllWereOffTakesTheShortcutOut() throws Exception {
+        android.content.Context context = RuntimeEnvironment.getApplication();
+        android.content.pm.ShortcutManager manager = context.getSystemService(android.content.pm.ShortcutManager.class);
+        BaseSettings.SETTINGS_SHORTCUT.save(false);
+        BaseSettings.SETTINGS_ROW.save(false);
+        BaseSettings.SETTINGS_LOGO_PRESS.save(false);
+        SettingsEntry.publishShortcutNow(context);
+        assertNotNull("all three off left no shortcut", shortcut(manager, SettingsEntry.SHORTCUT_ID));
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushThreadsPreferenceFragment page = new HushThreadsPreferenceFragment();
+            controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
+            android.preference.SwitchPreference row = way(page, BaseSettings.SETTINGS_ROW);
+            assertTrue(row.getOnPreferenceChangeListener().onPreferenceChange(row, true));
+            app.morphe.extension.shared.Utils.awaitBackgroundTasksForTests();
+            assertNull("the shortcut stayed in the menu with the row on", shortcut(manager, SettingsEntry.SHORTCUT_ID));
+        }
+    }
+
     /** The switches are kept while paused, like the shortcut's: a pause doesn't bring the row or the long press back. */
     @Test public void aPauseLeavesTheRowAndTheLongPressAsTheirSwitchesSay() {
         BaseSettings.SETTINGS_ROW.save(false);

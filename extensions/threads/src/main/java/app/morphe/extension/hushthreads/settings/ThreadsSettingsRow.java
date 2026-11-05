@@ -46,6 +46,18 @@ public final class ThreadsSettingsRow {
         return forced != null ? forced : patchedIn();
     }
 
+    /**
+     * Whether the row can show up in Threads' settings: the patch put it in, and Threads has one
+     * of {@link #ICONS}. A build with none never draws it, so it isn't a way back into these
+     * settings and gets no switch. With no context yet the icon is unknown and the row counts.
+     * A test that says the row is in doesn't read Threads' icons, which a test app hasn't got.
+     */
+    static boolean shows() {
+        if (!inBuild()) return false;
+        if (icon < 0 && inBuildForTests == null) icon = lookUpIcon();
+        return icon != 0;
+    }
+
     /** Written by the settings patch to answer true once the row is in. */
     static boolean patchedIn() {
         return false;

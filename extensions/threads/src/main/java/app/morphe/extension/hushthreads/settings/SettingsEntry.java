@@ -551,11 +551,12 @@ public final class SettingsEntry {
 
     /**
      * The ways in this build carries that are switched on. The launcher shortcut is in every build;
-     * the row and the logo's long press count only when the settings patch could put them in.
+     * the row and the logo's long press count only when the settings patch could put them in, and
+     * the row only when Threads has an icon to draw it with.
      */
     static int waysOn() {
         int on = BaseSettings.SETTINGS_SHORTCUT.get() ? 1 : 0;
-        if (ThreadsSettingsRow.inBuild() && BaseSettings.SETTINGS_ROW.get()) on++;
+        if (ThreadsSettingsRow.shows() && BaseSettings.SETTINGS_ROW.get()) on++;
         if (ThreadsLogo.inBuild() && BaseSettings.SETTINGS_LOGO_PRESS.get()) on++;
         return on;
     }
