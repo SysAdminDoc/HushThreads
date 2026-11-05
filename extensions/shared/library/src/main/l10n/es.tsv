@@ -35,7 +35,7 @@ Debug logging	Registro de depuración
 Diagnostic data cleared. Tap again to put it back.	Se borraron los datos de diagnóstico. Toca de nuevo para restaurarlos.
 Diagnostic data put back.	Se restauraron los datos de diagnóstico.
 Diagnostic report copied to the clipboard.	Informe de diagnóstico copiado en el portapapeles.
-Clears the saved log and patch check results that a report would include.	Borra el registro guardado y los resultados de las comprobaciones de parches que incluiría un informe.
+Clears the saved log, patch check results and any kept crash that a report would include.	Borra el registro guardado, los resultados de las comprobaciones de parches y el fallo guardado que incluiría un informe.
 Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.	Todos los interruptores, salvo el Registro de depuración, funcionan como si estuvieran desactivados, y lo que se aplicó al parchear se mantiene. Tu configuración no cambia.
 Export diagnostic report	Exportar informe de diagnóstico
 Export settings	Exportar configuración

@@ -516,8 +516,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         hushthreads.addPreference(mark(export, SettingsIcons.LICENSE));
         ClearLogBufferPreference clear = new ClearRow(context);
         clear.setTitle(L10n.t("Clear diagnostic data"));
-        clear.setClearAndUndoSummaries(L10n.t("Clears the saved log and patch check results that a report would "
-            + "include."),
+        clear.setClearAndUndoSummaries(L10n.t("Clears the saved log, patch check results and any kept crash that "
+            + "a report would include."),
                 L10n.t("Diagnostic data cleared. Tap again to put it back."));
         hushthreads.addPreference(mark(clear, SettingsIcons.DELETE));
         // Keep the detailed patch-time exception list after the controls people come here for.

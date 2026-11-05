@@ -35,7 +35,7 @@ Debug logging	Debug-Protokollierung
 Diagnostic data cleared. Tap again to put it back.	Diagnosedaten gelöscht. Tippe erneut, um sie wiederherzustellen.
 Diagnostic data put back.	Diagnosedaten wiederhergestellt.
 Diagnostic report copied to the clipboard.	Diagnosebericht in die Zwischenablage kopiert.
-Clears the saved log and patch check results that a report would include.	Leert das gespeicherte Protokoll und die Patch-Prüfergebnisse, die ein Bericht enthalten würde.
+Clears the saved log, patch check results and any kept crash that a report would include.	Leert das gespeicherte Protokoll, die Patch-Prüfergebnisse und einen gespeicherten Absturz, die ein Bericht enthalten würde.
 Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.	Jeder Schalter außer der Debug-Protokollierung verhält sich, als wäre er aus, und was beim Patchen festgelegt wurde, bleibt aktiv. Deine Einstellungen bleiben, wie sie sind.
 Export diagnostic report	Diagnosebericht exportieren
 Export settings	Einstellungen exportieren

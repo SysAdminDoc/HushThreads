@@ -487,6 +487,19 @@
     },
     {
       "paths": [
+        "extensions/shared/library/src/main/java/app/morphe/extension/shared/settings/preference/JavaCrashReport.java"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/HushGram",
+      "commit": "19c67094935e2f27a27d053f7c3c438d67f6878e",
+      "via": [
+        "https://github.com/SysAdminDoc/Hushfacebook"
+      ],
+      "license": "GPL-3.0-only",
+      "changes": "HushGram's crash report, moved from app.hushgram.extension.shared to app.morphe.extension.shared with Threads' names. It writes the patch build identity as patch_build, the same line the export carries, and keeps only the patches' report sections, since Supported links says nothing about a crash."
+    },
+    {
+      "paths": [
         "extensions/shared/library/src/main/java/app/morphe/extension/shared/Utils.java",
         "patches/src/main/kotlin/app/morphe/patches/shared/misc/extension/SharedExtensionPatch.kt",
         "patches/src/main/kotlin/app/morphe/util/BundleVerifier.kt",
