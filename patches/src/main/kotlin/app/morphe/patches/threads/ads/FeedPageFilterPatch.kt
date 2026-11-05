@@ -136,9 +136,11 @@ private const val LIST = "Ljava/util/List;"
  * rename it (454's x86 build answers `LX/BZ8;->A00`, a class whose toString is "X.BZ8"), so it's
  * the one static field of its own type that each write loads straight into its return. The
  * coroutine's suspended marker is compared, never loaded and returned, and a write that returns
- * another call's answer has nothing of that shape there.
+ * another call's answer has nothing of that shape there. Unit's class is a bare singleton (an
+ * Object with that one static field and no instance fields), which the marker's enum isn't, so a
+ * build whose writes all hand back some other shared field is refused rather than answering it.
  */
-internal fun doneAnswer(writes: List<Method>): String {
+internal fun BytecodePatchContext.doneAnswer(writes: List<Method>): String {
     val answers = writes.map { write ->
         write.implementation!!.instructions.zipWithNext().mapNotNull { (load, ret) ->
             val field = load.getReference<FieldReference>()?.takeIf { it.type == it.definingClass }
@@ -148,8 +150,15 @@ internal fun doneAnswer(writes: List<Method>): String {
             }?.toString()
         }.toSet()
     }
-    return answers.reduce { shared, next -> shared intersect next }.singleOrNull()
+    val done = answers.reduce { shared, next -> shared intersect next }.singleOrNull()
         ?: throw PatchException("$PATCH: For You's one-item writes don't share one done answer: $answers")
+    val type = done.substringBefore("->")
+    val holder = classDefByOrNull(type)
+    val bare = holder != null && holder.superclass == "Ljava/lang/Object;" &&
+        holder.fields.all { AccessFlags.STATIC.isSet(it.accessFlags) } &&
+        holder.fields.count { it.type == type } == 1
+    if (!bare) throw PatchException("$PATCH: For You's one-item writes answer $done, which isn't a bare singleton like Unit")
+    return done
 }
 
 /**

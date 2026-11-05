@@ -91,7 +91,12 @@ class HideSuggestedUsersFixtureTest {
             // For You's spool cache gets the same page filter, and both For You handlers' other writes
             // do too, so the shared hook needs the spool, the feed cache's handler and their data source.
             val forYou = FixtureDex.classes(build, setOf(SPOOL_FEED_CACHE, FEED_CACHE_HANDLER, FOR_YOU_LOCAL_SOURCE)).values
-            val classes = (anchors + cache + forYou + item + kinds + rawParsers + wrappers.values + profile + search)
+            // Their one-item writes answer the build's Unit when done, and the hook reads its class's shape.
+            val done = FixtureDex.classes(build, forYou.flatMap { it.methods }.flatMap { it.instructions().zipWithNext() }
+                .filter { (load, ret) -> load.opcode == Opcode.SGET_OBJECT && ret.opcode == Opcode.RETURN_OBJECT }
+                .mapNotNull { (load, _) -> load.getReference<FieldReference>()?.takeIf { it.type == it.definingClass }?.definingClass }
+                .toSet()).values
+            val classes = (anchors + cache + forYou + done + item + kinds + rawParsers + wrappers.values + profile + search)
                 .distinctBy { it.type }
             return Vendor(build.name, classes, parser.type)
         }

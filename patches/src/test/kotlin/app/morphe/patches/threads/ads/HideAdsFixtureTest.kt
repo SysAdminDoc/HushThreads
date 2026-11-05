@@ -29,6 +29,8 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
+import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
+import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -90,7 +92,7 @@ class HideAdsFixtureTest {
             }
             assertEquals("$where: Media's own methods that ask the injected check", 1, askers.size)
 
-            val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item))
+            val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item) + doneHolders(build, classes))
             applyAds(context)
 
             val patched = context.mutableClassDefBy(FEED_CACHE).methods.single { it.sameSignatureAs(merge) }
@@ -289,7 +291,7 @@ class HideAdsFixtureTest {
             val merge = classes.getValue(FEED_CACHE).methods.single { it.isFeedMerge() }
             val getter = merge.instructions().mapNotNull { it.mediaGetter() }.distinct().single()
             val item = FixtureDex.classes(build, setOf(getter.definingClass)).getValue(getter.definingClass)
-            val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item))
+            val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item) + doneHolders(build, classes))
             val mutable = context.mutableClassDefBy(FEED_CACHE).methods.single { it.sameSignatureAs(merge) }
             mutable.addInstructions(
                 0,
@@ -317,7 +319,7 @@ class HideAdsFixtureTest {
                 "invoke-virtual { v0, v1 }, ${getter.definingClass}->decoyPost(Ljava/lang/String;)$MEDIA",
             )) {
                 clearMatches()
-                val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item))
+                val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item) + doneHolders(build, classes))
                 val mutable = context.mutableClassDefBy(FEED_CACHE).methods.single { it.sameSignatureAs(merge) }
                 mutable.addInstructions(0, "check-cast v0, ${getter.definingClass}\n$code")
                 applyAds(context)
@@ -342,7 +344,7 @@ class HideAdsFixtureTest {
             }
             for (bypass in listOf(false, true)) {
                 clearMatches()
-                val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item))
+                val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item) + doneHolders(build, classes))
                 val mutable = context.mutableClassDefBy(MEDIA).methods.single { it.sameSignatureAs(predicate) }
                 val result = (predicate.instructions().last() as OneRegisterInstruction).registerA
                 if (bypass) mutable.addInstructions(0, "const/4 v$result, 0x0\nreturn v$result")
@@ -366,7 +368,7 @@ class HideAdsFixtureTest {
                 AccessFlags.ABSTRACT.isSet(method.accessFlags) && method.returnType == "Ljava/lang/Object;" &&
                     method.parameterTypes.firstOrNull()?.toString() == getter.definingClass
             }
-            val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item))
+            val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item) + doneHolders(build, classes))
             // The feed cache handler's write ends on its Unit; it answers another singleton instead.
             val write = context.mutableClassDefBy(FEED_CACHE_HANDLER).methods.single { it.sameSignatureAs(declared) }
             val at = write.instructions().lastIndex - 1
@@ -374,6 +376,37 @@ class HideAdsFixtureTest {
             write.replaceInstruction(at, "sget-object v$register, LX/Decoy;->A00:LX/Decoy;")
             val error = assertThrows(PatchException::class.java) { applyAds(context) }
             assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("don't share one done answer"))
+        }
+    }
+
+    @Test
+    fun `a done answer whose class holds state of its own is refused`() {
+        for (build in Fixtures.declaredBuilds()) {
+            clearMatches()
+            val injected = FixtureDex.methodsWhere(build, { true }) { it.isInjectedCheck() }.single()
+            val classes = FixtureDex.classes(build, setOf(FEED_CACHE, SPOOL_FEED_CACHE, FEED_CACHE_HANDLER, FOR_YOU_LOCAL_SOURCE, MEDIA, injected.definingClass))
+            val merge = classes.getValue(FEED_CACHE).methods.single { it.isFeedMerge() }
+            val getter = merge.instructions().mapNotNull { it.mediaGetter() }.distinct().single()
+            val item = FixtureDex.classes(build, setOf(getter.definingClass)).getValue(getter.definingClass)
+            val declared = classes.getValue(FOR_YOU_LOCAL_SOURCE).methods.first { method ->
+                AccessFlags.ABSTRACT.isSet(method.accessFlags) && method.returnType == "Ljava/lang/Object;" &&
+                    method.parameterTypes.firstOrNull()?.toString() == getter.definingClass
+            }
+            val unitClass = classes.getValue(FEED_CACHE_HANDLER).methods.single { it.sameSignatureAs(declared) }
+                .instructions().takeLast(2).first().referenceText().substringBefore("->")
+            // Every write still hands back the same field, but its class now carries an instance
+            // field, which no bare singleton does. The class goes in changed: the patch reads it as
+            // loaded, never a mutable copy made after.
+            val holders = doneHolders(build, classes).map { holder ->
+                if (holder.type != unitClass) holder else ImmutableClassDef(holder.type, holder.accessFlags,
+                    holder.superclass, holder.interfaces, holder.sourceFile, holder.annotations, holder.staticFields,
+                    holder.instanceFields + ImmutableField(unitClass, "decoy", "I", AccessFlags.PRIVATE.value, null, null, null),
+                    holder.directMethods, holder.virtualMethods)
+            }
+            assertTrue("$unitClass is among ${holders.map { it.type }}", holders.any { it.type == unitClass })
+            val context = PatchContexts.of(ExtensionDex.classes() + classes.values + item + enumsOf(build, item) + holders)
+            val error = assertThrows(PatchException::class.java) { applyAds(context) }
+            assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("isn't a bare singleton"))
         }
     }
 
@@ -438,6 +471,17 @@ class HideAdsFixtureTest {
     /** The enum classes the item's fields hold, read from the build. Its unit type is one of them. */
     private fun enumsOf(build: File, item: ClassDef): Collection<ClassDef> =
         FixtureDex.classes(build, item.fields.map { it.type }.toSet()).values.filter { it.superclass == "Ljava/lang/Enum;" }
+
+    /**
+     * The classes the For You handlers hand straight back from a static field of their own type,
+     * read from the build. The build's Unit is one of them, and the patch reads its shape.
+     */
+    private fun doneHolders(build: File, classes: Map<String, ClassDef>): Collection<ClassDef> =
+        FixtureDex.classes(build, listOf(FEED_CACHE_HANDLER, SPOOL_FEED_CACHE).flatMap { classes.getValue(it).methods }
+            .flatMap { it.instructions().zipWithNext() }
+            .filter { (load, ret) -> load.opcode == Opcode.SGET_OBJECT && ret.opcode == Opcode.RETURN_OBJECT }
+            .map { (load, _) -> (load as ReferenceInstruction).reference as FieldReference }
+            .filter { it.type == it.definingClass }.map { it.definingClass }.toSet() - classes.keys).values
 
     private fun Instruction.typeText(): String = ((this as ReferenceInstruction).reference as TypeReference).type
 
