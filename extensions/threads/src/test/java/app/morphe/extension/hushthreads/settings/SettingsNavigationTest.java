@@ -364,6 +364,59 @@ public class SettingsNavigationTest {
         assertMainToolbar();
     }
 
+    /**
+     * A header at the bottom edge opens onto the start of its first row. Until the top scrolls away
+     * the list runs past the bottom of the screen, and on a phone Updates opened there with every
+     * row of it out of sight.
+     */
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    public void aHeaderAtTheBottomEdgeOpensOntoItsFirstRow() {
+        HeaderColumn column = (HeaderColumn) dialog.getView();
+        layout(column);
+        assertEquals("the top started scrolled away", 0, column.getScrollY());
+        assertTrue("the list fit above the bottom edge", column.hiddenBelow() > 0);
+        int bottom = column.getHeight() - column.getPaddingBottom();
+        int child = Math.round(72 * column.getResources().getDisplayMetrics().density);
+        String lowest = null;
+        for (int i = 0; i < list().getChildCount(); i++) {
+            View row = list().getChildAt(i);
+            String key = ((Preference) list().getItemAtPosition(list().getFirstVisiblePosition() + i)).getKey();
+            if (key != null && key.startsWith("section_") && shownTop(row) + row.getHeight() / 2 < bottom) lowest = key;
+        }
+        assertNotNull("no section header on screen", lowest);
+        View header = shownRow(lowest);
+        assertTrue("the lowest header left room for its row anyway", shownTop(header) + header.getHeight() + child > bottom);
+
+        tap(lowest);
+        layout(column);
+        header = shownRow(lowest);
+        assertTrue(lowest + " didn't open", page.navigation.isExpanded(lowest.substring("section_".length())));
+        assertTrue(lowest + " went up under the bar", shownTop(header) >= column.pinnedBottom());
+        assertTrue(lowest + " opened with its first row out of sight",
+                shownTop(header) + header.getHeight() + child <= bottom + 1);
+    }
+
+    /** Where [view] starts on screen, from the top of the settings column, after the top's scroll. */
+    private int shownTop(View view) {
+        View column = dialog.getView();
+        int top = 0;
+        for (View at = view; at != column; ) {
+            top += at.getTop();
+            at = (View) at.getParent();
+            top -= at.getScrollY();
+        }
+        return top;
+    }
+
+    /** The laid-out row of the item [key], which has to be on the list's page. */
+    private View shownRow(String key) {
+        for (int i = 0; i < list().getChildCount(); i++) {
+            Object item = list().getItemAtPosition(list().getFirstVisiblePosition() + i);
+            if (key.equals(((Preference) item).getKey())) return list().getChildAt(i);
+        }
+        throw new AssertionError("No laid-out row " + key);
+    }
+
     @Test public void noTimeLimitFollowsTheFeedPositionSwitchWithoutLosingItsChoice() {
         Settings.BLOCK_RETURN_REFRESH.save(false);
         Settings.RETURN_REFRESH_NO_LIMIT.save(true);
