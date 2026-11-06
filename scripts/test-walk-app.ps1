@@ -22,8 +22,8 @@ function Assert-WalkContract([bool]$Condition, [string]$Message) {
 # The settings sections come from SettingsNavigation.java, in the order the main page lists
 # their headers, with Support last.
 $sections = @(Get-WalkSections -Root $Root)
-Assert-WalkContract ($sections.Count -eq 11 -and $sections[0] -ceq 'Feed' -and $sections[-2] -ceq 'About' -and $sections[-1] -ceq 'Support' -and
-    $sections -ccontains 'Pause, backup and diagnostics') "Get-WalkSections read: $($sections -join ', ')"
+Assert-WalkContract ($sections.Count -eq 12 -and $sections[0] -ceq 'Feed' -and $sections[-2] -ceq 'About' -and $sections[-1] -ceq 'Support' -and
+    $sections[-4] -ceq 'Set when you patched' -and $sections[-3] -ceq 'Pause, backup and diagnostics') "Get-WalkSections read: $($sections -join ', ')"
 
 function New-WalkDump([string[]]$Rows) {
     $pkg = 'package="com.instagram.barcelona"'
