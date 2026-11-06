@@ -2475,6 +2475,8 @@ public class DexDiff {
     private static final String SUGGESTED_WIRE = "suggested_users";
     private static final String KICKSTART_WIRE = "text_app_suggested_users_kickstart_unit";
     private static final String STRING_EQUALS = "Ljava/lang/String;->equals(Ljava/lang/Object;)Z";
+    private static final String CHAINING_WIRE = "suggested_users_chaining_";
+    private static final String STRING_STARTS_WITH = "Ljava/lang/String;->startsWith(Ljava/lang/String;)Z";
     private static final String RECORDED_RAW = "hushthreadsSuggestedUsersRaw";
 
     private record FeatureUse(int index, int register) {}
@@ -3059,6 +3061,59 @@ public class DexDiff {
         }
     }
 
+    /**
+     * The id field of the row Threads builds on the phone after a follow. Stock methods that load
+     * [CHAINING_WIRE] hand the SUGGESTED_USERS kind, on every path, to one item constructor taking
+     * one kind and one String, and that constructor stores its String parameter in this field.
+     */
+    private static FieldReference featureChainingId(Map<String, List<Method>> clean, String item, String enumType, FieldReference suggestedKind) {
+        Set<String> constructors = new TreeSet<>();
+        for (List<Method> definitions : clean.values()) for (Method m : definitions) {
+            if (m.getImplementation() == null || !holds(m, CHAINING_WIRE)) continue;
+            FeatureFlow flow = new FeatureFlow(m);
+            List<Instruction> code = flow.layout.instructions;
+            for (int at = 0; at < code.size(); at++) {
+                Instruction call = code.get(at);
+                if (call.getOpcode() != Opcode.INVOKE_DIRECT && call.getOpcode() != Opcode.INVOKE_DIRECT_RANGE) continue;
+                MethodReference callee = (MethodReference) ((ReferenceInstruction) call).getReference();
+                if (!callee.getDefiningClass().equals(item) || !callee.getName().equals("<init>")) continue;
+                List<String> types = callee.getParameterTypes().stream().map(CharSequence::toString).toList();
+                if (java.util.Collections.frequency(types, enumType) != 1 || java.util.Collections.frequency(types, FEATURE_STRING) != 1) continue;
+                int word = 1;
+                for (int k = 0; k < types.indexOf(enumType); k++) word += slots(types.get(k));
+                int register = invokeRegisters(call)[word], site = at;
+                List<Integer> loads = new ArrayList<>();
+                for (int n = 0; n < code.size(); n++) if (code.get(n).getOpcode() == Opcode.SGET_OBJECT
+                        && reference(code.get(n)).equals(suggestedKind.toString()) && flow.uses(n, -1).contains(new FeatureUse(site, register))) loads.add(n);
+                if (loads.isEmpty()) continue;
+                int load = featureOne(loads, "SUGGESTED_USERS load for the chaining row in " + featureSig(m));
+                requireFeature(flow.sourceOnEveryPath(load, -1, at, register, false), "chaining row kind is not SUGGESTED_USERS on every path in " + featureSig(m));
+                constructors.add(featureSig(callee));
+            }
+        }
+        Method constructor = featureMethod(clean, featureOne(new ArrayList<>(constructors), "chaining row constructor"));
+        List<String> types = constructor.getParameterTypes().stream().map(CharSequence::toString).toList();
+        int thisRegister = constructor.getImplementation().getRegisterCount() - 1 - types.stream().mapToInt(DexDiff::slots).sum();
+        int parameterRegister = thisRegister + 1;
+        for (int n = 0; n < types.indexOf(FEATURE_STRING); n++) parameterRegister += slots(types.get(n));
+        FeatureFlow flow = new FeatureFlow(constructor);
+        int parameter = parameterRegister;
+        FieldReference field = featureOne(flow.uses(-1, parameter).stream().filter(use -> {
+            Instruction i = flow.layout.instructions.get(use.index());
+            return i.getOpcode() == Opcode.IPUT_OBJECT && ((TwoRegisterInstruction) i).getRegisterA() == use.register()
+                    && ((TwoRegisterInstruction) i).getRegisterB() == thisRegister;
+        }).map(use -> (FieldReference) ((ReferenceInstruction) flow.layout.instructions.get(use.index())).getReference())
+                .filter(f -> f.getDefiningClass().equals(item) && f.getType().equals(FEATURE_STRING)).distinct().toList(), "chaining row id field");
+        for (int n = 0; n < flow.layout.instructions.size(); n++) {
+            Instruction i = flow.layout.instructions.get(n);
+            if (i.getOpcode() != Opcode.IPUT_OBJECT || !reference(i).equals(field.toString())) continue;
+            requireFeature(flow.parameterOnEveryPath(n, ((TwoRegisterInstruction) i).getRegisterA(), parameter)
+                    && flow.parameterOnEveryPath(n, ((TwoRegisterInstruction) i).getRegisterB(), thisRegister),
+                    "chaining row id writer does not store the constructor's String on every path");
+        }
+        return field;
+    }
+
     /** Card fields are resolved from stock JSON keys, constructor arguments and enum allocation.
      * The generated predicate must then match every guard, receiver, branch and result register. */
     private static void featureSuggested(Map<String, List<Method>> clean, Map<String, List<Method>> patched,
@@ -3185,23 +3240,32 @@ public class DexDiff {
         featureField(before.get(item), activeContent, false);
         requireFeature(AccessFlags.FINAL.isSet(featureField(before.get(model), rawType, false).getAccessFlags()), "raw netego_type field is mutable");
         featurePreserveCards(before, after, patched, wrapper, recordedRaw);
+        FieldReference chainingId = featureChainingId(clean, item, enumType, suggestedKind);
+        featureField(before.get(item), chainingId, false);
         Method stub = featureMethod(patched, ADS + "isSuggestedUserItem(Ljava/lang/Object;)Z");
         List<Instruction> body = instructions(stub);
+        // A SUGGESTED_USERS item whose id starts with CHAINING_WIRE is the row built on the phone
+        // after a follow and returns true at 36; every other card keeps the server-slot proof.
         Opcode[] expected = { Opcode.INSTANCE_OF, Opcode.IF_EQZ, Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT,
                 Opcode.IF_NEZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.SGET_OBJECT, Opcode.IF_EQ, Opcode.SGET_OBJECT,
-                Opcode.IF_NE, Opcode.IGET_OBJECT, Opcode.CONST_STRING, Opcode.GOTO, Opcode.IGET_OBJECT, Opcode.CONST_STRING,
+                Opcode.IF_NE, Opcode.IGET_OBJECT, Opcode.CONST_STRING, Opcode.GOTO,
+                Opcode.IGET_OBJECT, Opcode.IF_EQZ, Opcode.CONST_STRING, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.IF_NEZ,
+                Opcode.IGET_OBJECT, Opcode.CONST_STRING,
                 Opcode.IF_EQZ, Opcode.IGET_OBJECT, Opcode.INSTANCE_OF, Opcode.IF_EQZ, Opcode.CHECK_CAST, Opcode.IGET_OBJECT,
-                Opcode.IF_NE, Opcode.IGET_OBJECT, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.RETURN, Opcode.CONST_4, Opcode.RETURN };
+                Opcode.IF_NE, Opcode.IGET_OBJECT, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.RETURN, Opcode.CONST_4, Opcode.RETURN,
+                Opcode.CONST_4, Opcode.RETURN };
         int[][] registers = { {0, 4}, {0}, {4}, {4}, {0}, {0}, {4}, {0}, {1}, {0, 1}, {1}, {0, 1}, {0, 4}, {1}, {},
-                {0, 4}, {1}, {0}, {2, 4}, {3, 2}, {3}, {2}, {2, 2}, {0, 2}, {0, 0}, {1, 0}, {0}, {0}, {0}, {0} };
+                {0, 4}, {0}, {1}, {0, 1}, {0}, {0},
+                {0, 4}, {1}, {0}, {2, 4}, {3, 2}, {3}, {2}, {2, 2}, {0, 2}, {0, 0}, {1, 0}, {0}, {0}, {0}, {0}, {0}, {0} };
         requireFeature(body.size() == expected.length && AccessFlags.STATIC.isSet(stub.getAccessFlags())
                 && stub.getImplementation().getRegisterCount() == 5 && stub.getImplementation().getTryBlocks().isEmpty(), "suggestion predicate is a stub or has a different declaration");
         Map<Integer, String> references = Map.ofEntries(Map.entry(0, item), Map.entry(2, item), Map.entry(3, featureSig(media)), Map.entry(6, featureSig(kind)),
                 Map.entry(8, suggestedKind.toString()), Map.entry(10, kickstartKind.toString()), Map.entry(12, kickstartSlot.toString()), Map.entry(13, KICKSTART_WIRE),
-                Map.entry(15, suggestedSlot.toString()), Map.entry(16, SUGGESTED_WIRE), Map.entry(18, activeContent.toString()), Map.entry(19, wrapperType),
-                Map.entry(21, wrapperType), Map.entry(22, recordedRaw.toString()), Map.entry(24, rawType.toString()), Map.entry(25, STRING_EQUALS));
+                Map.entry(15, chainingId.toString()), Map.entry(17, CHAINING_WIRE), Map.entry(18, STRING_STARTS_WITH),
+                Map.entry(21, suggestedSlot.toString()), Map.entry(22, SUGGESTED_WIRE), Map.entry(24, activeContent.toString()), Map.entry(25, wrapperType),
+                Map.entry(27, wrapperType), Map.entry(28, recordedRaw.toString()), Map.entry(30, rawType.toString()), Map.entry(31, STRING_EQUALS));
         Layout layout = new Layout(stub.getImplementation());
-        Map<Integer, Integer> branches = Map.of(1, 28, 5, 28, 9, 15, 11, 28, 14, 17, 17, 28, 20, 28, 23, 28);
+        Map<Integer, Integer> branches = Map.of(1, 34, 5, 34, 9, 15, 11, 34, 14, 23, 16, 21, 20, 36, 23, 34, 26, 34, 29, 34);
         for (int n = 0; n < body.size(); n++) {
             Instruction i = body.get(n);
             requireFeature(i.getOpcode() == expected[n] || expected[n] == Opcode.CONST_STRING && i.getOpcode() == Opcode.CONST_STRING_JUMBO,
@@ -3214,7 +3278,8 @@ public class DexDiff {
             if (branches.containsKey(n)) requireFeature(layout.addresses.get(n) + ((OffsetInstruction) i).getCodeOffset()
                     == layout.addresses.get(branches.get(n)), "suggestion predicate guard changed at " + n);
         }
-        requireFeature(((WideLiteralInstruction) body.get(28)).getWideLiteral() == 0, "unknown suggestion cards do not return false");
+        requireFeature(((WideLiteralInstruction) body.get(34)).getWideLiteral() == 0, "unknown suggestion cards do not return false");
+        requireFeature(((WideLiteralInstruction) body.get(36)).getWideLiteral() == 1, "chaining suggestion rows do not return true");
         featureHostCalls(patched, featureSig(stub), Map.of());
         featureSearchCarousel(clean, patched);
         featureProfileSuggestions(clean, patched);
