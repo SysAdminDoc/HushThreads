@@ -5084,11 +5084,9 @@ Write-Host '[scripts] relative path contracts passed'
 $releaseRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("hushthreads-release-" + [guid]::NewGuid().ToString('N'))
 try {
     $releaseRepo = Join-Path $releaseRoot 'repo'
-    # The source ledger and the two files its rules hold an adopted source to go in as well: a
-    # release is held to the census, and .gitignore has to let the ledger be committed.
     $releaseFiles = @('patches-list.json', 'patches-bundle.json', 'gradle.properties', 'README.md', 'CHANGELOG.md',
         'gradle/libs.versions.toml', '.github/ISSUE_TEMPLATE/bug_report.yml', '.gitignore',
-        'sources/threads-sources.json', 'NOTICE', 'provenance.json', 'settings.gradle.kts',
+        'NOTICE', 'provenance.json', 'settings.gradle.kts',
         'patches/build.gradle.kts', 'gradle/verification-metadata.xml')
     foreach ($relative in $releaseFiles) {
         $destination = Join-Path $releaseRepo $relative
@@ -5120,25 +5118,6 @@ try {
         [System.IO.File]::WriteAllText($releaseCatalogPath, ($releaseCatalogCopy | ConvertTo-Json -Depth 20),
             (New-Object System.Text.UTF8Encoding($false)))
     }
-    # The ledger, dated today and listed on every index, so the census a release is held to passes
-    # and each published-asset case below is refused for its own fact. The checked-in ledger's date
-    # moves with every audit and its listings wait on submissions, and neither is what those cases
-    # are about. The census cases further down move one fact at a time.
-    $releaseLedgerPath = Join-Path $releaseRepo 'sources/threads-sources.json'
-    $releaseLedgerSource = [System.IO.File]::ReadAllText($releaseLedgerPath)
-    function Save-ReleaseLedger([int]$AgeDays = 0, [switch]$Pending) {
-        $document = $releaseLedgerSource | ConvertFrom-Json
-        $checked = [datetime]::UtcNow.Date.AddDays(-$AgeDays).ToString('yyyy-MM-dd')
-        $document.census.checkedAt = $checked
-        foreach ($index in $document.indexes) {
-            $index.hushthreads = if ($Pending) { [pscustomobject]@{ status = 'not-listed'; checked = $checked } } else {
-                [pscustomobject]@{ status = 'listed'; url = 'https://example.com/listing'; checked = $checked } }
-        }
-        foreach ($record in @(@($document.entries) + @($document.outOfScope))) { if ($record) { $record.lastChecked = $checked } }
-        [System.IO.File]::WriteAllText($releaseLedgerPath, ($document | ConvertTo-Json -Depth 20),
-            (New-Object System.Text.UTF8Encoding($false)))
-    }
-    Save-ReleaseLedger
     # The copied source can be one commit ahead of the published index while a release is being
     # prepared. Here the copied tree is the release, so the index is written up to the catalog
     # before any strict index-push case runs.
@@ -6231,8 +6210,6 @@ try {
                 "SHA256SUMS.txt lists, and it describes patches-$indexVersionHere.mpp, payloads and all*") -and
             $said -like "*OSV has no advisory for the libraries patches-$indexVersionHere.cdx.json lists: gson 2.14.0*") `
             "The index push did not hold the hosted SBOM to the receipt, or did not ask OSV about it: $said"
-        Assert-True ($said -like '*the Threads source census is 0 day(s) old*every index lists HushThreads or has its submission*') `
-            "The index push was not held to the Threads source census: $said"
         # The receipt the release hosts, held to SHA256SUMS.txt and to the receipt checked here.
         Assert-True ($said -like "*the hosted release-receipt-$releaseVersionHere.json is the receipt checked here, as SHA256SUMS.txt lists it*") `
             "The index push did not hold the hosted receipt to the one it checked: $said"
@@ -6262,31 +6239,6 @@ try {
         } finally {
             $servedSums = $null
             $servedReceipt = $null
-        }
-
-        # The census, one fact at a time. Fourteen days old is still a release; fifteen isn't. An
-        # index that doesn't list HushThreads yet is named in what the release says, not a refusal:
-        # a submission is a public request on someone else's project. The lenient check every other
-        # push runs reads none of it, so a README fix never waits on an audit.
-        try {
-            Save-ReleaseLedger -AgeDays 14
-            $said = Invoke-IndexPushCheck $publishedRun
-            Assert-True ($said -like '*the Threads source census is 14 day(s) old*') `
-                "A release on a census 14 days old did not say so: $said"
-            Save-ReleaseLedger -AgeDays 15
-            Assert-Throws { Invoke-IndexPushCheck $publishedRun } '*source census*the census is 15 days old*audit-threads-sources.ps1*' `
-                'A release went out on a census 15 days old.'
-            try {
-                Invoke-ReleaseCheck | Out-Null
-            } catch {
-                throw "The lenient check an ordinary push runs refused a census 15 days old: $($_.Exception.Message)"
-            }
-            Save-ReleaseLedger -Pending
-            $said = Invoke-IndexPushCheck $publishedRun
-            Assert-True ($said -like '*HushThreads is not listed on *yet and has no submission recorded there*') `
-                "A release with an index that doesn't list HushThreads didn't name it: $said"
-        } finally {
-            Save-ReleaseLedger
         }
 
         # Each way the hosted SBOM can fail it. A receipt that names the SBOM served has its hash

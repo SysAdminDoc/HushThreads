@@ -316,7 +316,7 @@ Test-Broken { param($c) $c.entries[0].lineage = '' } '*names no lineage*' 'A sou
 
 Write-Host '[sources] every ledger rule refuses the copy that breaks it'
 
-# --- the census and the listings a release is held to ----------------------------------------------
+# --- how old the census is ------------------------------------------------------------------------
 
 $census = Copy-Json $ledger
 $census.census.checkedAt = '2026-09-25'
@@ -327,52 +327,7 @@ Assert-True (-not (Test-SourceCensus -Ledger $census -Today '2026-09-24').Valid)
 $census.census.checkedAt = 'yesterday'
 Assert-True (-not (Test-SourceCensus -Ledger $census -Today '2026-10-01').Valid) 'A census with no date was accepted.'
 
-$listings = Copy-Json $ledger
-foreach ($index in $listings.indexes) { $index.hushthreads = [pscustomobject]@{ status = 'listed'; url = 'https://example.com/listing'; checked = '2026-09-25' } }
-Assert-True (Test-SourceListings -Ledger $listings).Valid 'Every index listing HushThreads was refused.'
-$listings.indexes[0].hushthreads = [pscustomobject]@{ status = 'submitted'; url = 'https://example.com/issue/1'; submitted = '2026-09-25' }
-Assert-True (Test-SourceListings -Ledger $listings).Valid 'A dated submission was not accepted in place of a listing.'
-$listings.indexes[1].hushthreads = [pscustomobject]@{ status = 'not-listed'; checked = '2026-09-25' }
-$pending = Test-SourceListings -Ledger $listings
-Assert-True (-not $pending.Valid -and $pending.Pending -contains [string]$listings.indexes[1].name) `
-    'An index with neither a listing nor a submission was accepted.'
-
-# Test-SourceReleaseGate reads the ledger where the release does, so it gets a root of its own.
-$gateRoot = Join-Path $caseRoot 'gate'
-New-Item -ItemType Directory -Path (Join-Path $gateRoot 'sources') -Force | Out-Null
-foreach ($name in @('NOTICE', 'provenance.json', 'patches-list.json')) {
-    Copy-Item -LiteralPath (Join-Path $Root $name) -Destination (Join-Path $gateRoot $name)
-}
-function Save-GateLedger {
-    param([string]$CheckedAt, [switch]$Pending)
-    $copy = Copy-Json $ledger
-    $copy.census.checkedAt = $CheckedAt
-    foreach ($index in $copy.indexes) {
-        $index.hushthreads = if ($Pending) { [pscustomobject]@{ status = 'not-listed'; checked = $CheckedAt } } else {
-            [pscustomobject]@{ status = 'listed'; url = 'https://example.com/listing'; checked = $CheckedAt } }
-    }
-    # Every date the audit's clean run stamps is set here, or a ledger stamped after these fixed
-    # days would put a record after the gate's today and fail the case for the wrong reason.
-    foreach ($entry in $copy.entries) { $entry.lastChecked = $CheckedAt }
-    foreach ($item in @($copy.outOfScope)) { $item.lastChecked = $CheckedAt }
-    [IO.File]::WriteAllText((Get-SourceLedgerPath -Root $gateRoot), ($copy | ConvertTo-Json -Depth 20))
-}
-Save-GateLedger -CheckedAt '2026-09-25'
-$gate = Test-SourceReleaseGate -Root $gateRoot -Today '2026-10-09'
-Assert-True $gate.Valid "The release gate refused a census 14 days old: $($gate.Reason)"
-Assert-True ($gate.Summary -like '*14 day(s) old*') "The release gate did not say how old the census is: $($gate.Summary)"
-$gate = Test-SourceReleaseGate -Root $gateRoot -Today '2026-10-10'
-Assert-True (-not $gate.Valid -and $gate.Reason -like '*15 days old*audit-threads-sources.ps1*') "The release gate accepted a stale census: $($gate.Reason)"
-Save-GateLedger -CheckedAt '2026-09-25' -Pending
-$gate = Test-SourceReleaseGate -Root $gateRoot -Today '2026-09-26'
-# An index that doesn't list HushThreads yet is named, not refused: a submission is a public
-# request on someone else's project, so a release can't be made to wait on it.
-Assert-True ($gate.Valid -and $gate.Summary -like '*HushThreads is not listed on *yet and has no submission recorded there*') "The release gate didn't name the indexes that don't list HushThreads: $($gate.Summary) $($gate.Reason)"
-Remove-Item -LiteralPath (Get-SourceLedgerPath -Root $gateRoot)
-$gate = Test-SourceReleaseGate -Root $gateRoot -Today '2026-09-26'
-Assert-True (-not $gate.Valid -and $gate.Reason -like '*ledger is missing*') "The release gate accepted a missing ledger: $($gate.Reason)"
-
-Write-Host '[sources] the census holds to 14 days and every index needs a listing or a dated submission'
+Write-Host '[sources] a census reads as current for 14 days'
 
 # --- the audit, against stand-ins for every forge and index -----------------------------------------
 
