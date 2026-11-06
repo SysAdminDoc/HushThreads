@@ -2,7 +2,7 @@
 
 Changes in the source build, then released versions.
 
-## Unreleased
+## 0.0.17 (2026-11-05)
 
 * New `Show exact post times` patch. Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format, and TalkBack reads that same time out. It's in Manager's default selection, but its switch under Posts in HushThreads settings starts off.
 * New `Filter comments` patch, contributed by @Cuhosuaxemay in #21. Replies to a post that match words or domains you list are left out before Threads builds its rows from them, so a spam reply ending in a shop link never shows. A reply and the replies shown under it are checked as one. A second switch under it also hides any reply with a web link, and a bare site name like shopee.vn goes in your list instead. Both start off, the matching ignores letter case, and the replies that stay keep their order. The switches and the list are in a new Comments section in HushThreads settings.
