@@ -640,6 +640,28 @@ public class BadDexFixture {
     }
 
     /**
+     * An opened post's reply parser: the static method that reads the answer's reply list. Hooked,
+     * it hands that list to the extension's filter once; otherwise it returns as Threads wrote it.
+     */
+    private static ClassDef repliesParser(boolean hooked) {
+        List<Instruction> code = new ArrayList<>();
+        code.add(new ImmutableInstruction11n(Opcode.CONST_4, 0, 0));
+        if (hooked) {
+            code.add(invoke(COMMENTS_FILTER_REF, 0));
+            code.add(op(Opcode.MOVE_RESULT_OBJECT, 0));
+        }
+        code.add(op(Opcode.RETURN_OBJECT, 0));
+        return featureClass(REPLIES_HOST, OBJECT, List.of(), define(REPLIES_HOST, "parse", OBJECT, true,
+                body(7, code.toArray(new Instruction[0])), REPLIES_RESPONSE, REPLIES_HOST, OBJECT, OBJECT, "Z", "Z"));
+    }
+
+    /** The extension's filter, which answers the list it was handed when nothing matches. */
+    private static ClassDef commentsFilter() {
+        return featureClass(COMMENTS_FILTER, OBJECT, List.of(), define(COMMENTS_FILTER, "filter", SHORTCUT_LIST, true,
+                body(1, op(Opcode.RETURN_OBJECT, 0)), SHORTCUT_LIST));
+    }
+
+    /**
      * SoLoader's init, and an instance method beside it holding the same two messages, which the
      * rule's static shape has to tell apart. Hooked, the flags reach the extension before anything else runs.
      */
@@ -778,6 +800,11 @@ public class BadDexFixture {
     private static final String SIGNER_RESULT = "Lfixture/SignerResult;";
     private static final ImmutableMethodReference PAGE_FILTER = method(FEATURE_ADS, "filter", SHORTCUT_LIST, SHORTCUT_LIST);
     private static final ImmutableMethodReference PERMALINK_FILTER = method(FEATURE_ADS, "permalinkAds", SHORTCUT_LIST, SHORTCUT_LIST);
+    /** Filter comments: the opened post's reply parser, and the extension's own filter. */
+    private static final String REPLIES_HOST = "Lcom/instagram/barcelona/permalink/data/BarcelonaPermalinkRepository;";
+    private static final String REPLIES_RESPONSE = "Lcom/instagram/api/schemas/TextAppRepliesResponseIntf;";
+    private static final String COMMENTS_FILTER = "Lapp/morphe/extension/hushthreads/comments/CommentFilter;";
+    private static final ImmutableMethodReference COMMENTS_FILTER_REF = method(COMMENTS_FILTER, "filter", SHORTCUT_LIST, SHORTCUT_LIST);
     private static final ImmutableMethodReference LINK_SANITIZER = method(FEATURE_LINKS, "sanitizeShared", "Ljava/lang/String;", "Ljava/lang/String;");
     private static final String FEATURE_USER = "Lcom/instagram/user/model/User;";
     private static final String FEATURE_REPOSITORY = "Lcom/instagram/barcelona/share/permalink/data/PermalinkRepository;";
@@ -3241,7 +3268,10 @@ public class BadDexFixture {
         boolean links = patched && selected.contains("sanitizeSharingLinks");
         boolean browser = patched && selected.contains("openLinksExternally");
         boolean analytics = patched && selected.contains("disableAnalytics");
+        boolean comments = patched && selected.contains("filterComments");
         boolean trust = patched && selected.contains("restoreTrust");
+        classes.add(repliesParser(comments));
+        if (patched) classes.add(commentsFilter());
         List<Instruction> merge = new ArrayList<>();
         if (feed && !fault.equals("feed-missing")) {
             merge.add(invoke(fault.equals("feed-replaced") ? method("Ljava/util/Collections;", "unmodifiableList", SHORTCUT_LIST, SHORTCUT_LIST) : PAGE_FILTER,
@@ -3483,7 +3513,7 @@ public class BadDexFixture {
 
         List<Method> flags = new ArrayList<>();
         for (String flag : List.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
-                "returnRefresh", "disableVideoAutoplay", "pureBlack", "saveMedia")) {
+                "returnRefresh", "disableVideoAutoplay", "pureBlack", "saveMedia", "filterComments")) {
             if ((fault.equals("status-missing") || fault.equals("historical-missing-ad-status")) && flag.equals("hideAds")) continue;
             // The published bundles came before Open links in browser, Block background-return feed refresh, Disable video
             // autoplay, Pure black dark mode and Save photos and videos.
@@ -3721,7 +3751,7 @@ public class BadDexFixture {
 
         Map<String, List<ClassDef>> dexes = new LinkedHashMap<>();
         Set<String> allFeatures = Set.of("hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
-                "returnRefresh", "disableVideoAutoplay", "pureBlack", "saveMedia", "settingsRow");
+                "returnRefresh", "disableVideoAutoplay", "pureBlack", "saveMedia", "filterComments", "settingsRow");
         dexes.put("features-clean", featureBuild(false, Set.of(), 0, ""));
         dexes.put("features-good", featureBuild(true, allFeatures, 7, ""));
         dexes.put("features-omitted", featureBuild(true, Set.of(), 0, ""));

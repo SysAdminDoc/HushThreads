@@ -366,3 +366,13 @@ Version %1$s	Versión %1$s
 Build %1$s (modified)	Compilación %1$s (modificada)
 Build %1$s (source known)	Compilación %1$s (origen conocido)
 Build %1$s (source unknown)	Compilación %1$s (origen desconocido)
+# The Comments page: the section title, Filter comments' switch and summary, and the words and domains row with its dialog text and the Hide comments row.
+Comments	Comentarios
+Spam replies by words or links	Respuestas de spam por palabras o enlaces
+Filter comments	Filtrar comentarios
+Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.	Las respuestas que coinciden con los patrones de abajo no aparecen entre las respuestas de una publicación, así que una respuesta de spam nunca se ve. Una respuesta y las que se ven debajo de ella se revisan y se quitan juntas. Las respuestas normales mantienen su orden.
+Blocked words and domains	Palabras y dominios bloqueados
+One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.	Un patrón por línea o separados por comas. El dominio de una tienda como shopee.vn quita las respuestas que enlazan a él.
+One pattern a line, or separated by commas. Matched whatever the letter case.	Un patrón por línea o separados por comas. Se compara sin distinguir mayúsculas y minúsculas.
+Hide comments with links	Ocultar comentarios con enlaces
+Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.	Las respuestas con un enlace web no aparecen, digan lo que digan los patrones. Añade un nombre de sitio suelto como shopee.vn como patrón.

@@ -200,7 +200,7 @@ public class DexDiff {
     private static final String OUTSIDE_FIRST_CALL = "first-call-outside";
     private static final Set<String> THREADS_FEATURES = Set.of(
             "hideAds", "hideSuggestedUsers", "sanitizeSharingLinks", "openLinksExternally", "disableAnalytics", "restoreTrust",
-            "returnRefresh", "disableVideoAutoplay", "pureBlack", "saveMedia", "settingsRow");
+            "returnRefresh", "disableVideoAutoplay", "pureBlack", "saveMedia", "filterComments", "settingsRow");
 
     private static final class Contract {
         final String kind;
@@ -1969,6 +1969,13 @@ public class DexDiff {
     private static final String FEED = "Lcom/instagram/barcelona/feed/data/cache/BarcelonaFeedCache;";
     private static final String MEDIA = "Lcom/instagram/feed/media/Media;";
     private static final String ADS = "Lapp/morphe/extension/hushthreads/ads/FeedAds;->";
+    /** Filter comments: its own class, the opened post's reply parser, and the schema interfaces it reads. */
+    private static final String COMMENTS = "Lapp/morphe/extension/hushthreads/comments/CommentFilter;->";
+    private static final String REPLIES_PARSER_HOST = "Lcom/instagram/barcelona/permalink/data/BarcelonaPermalinkRepository;";
+    private static final String REPLIES_RESPONSE = "Lcom/instagram/api/schemas/TextAppRepliesResponseIntf;";
+    private static final String THREAD = "Lcom/instagram/api/schemas/ThreadIntf;";
+    private static final String THREAD_ITEM = "Lcom/instagram/api/schemas/ThreadItemIntf;";
+    private static final String MEDIA_EXT = "Lcom/instagram/feed/media/MediaExtKt;";
     private static final String FILTER_PAGE = ADS + "filter(Ljava/util/List;)Ljava/util/List;";
     private static final String PERMALINK_ADS = ADS + "permalinkAds(Ljava/util/List;)Ljava/util/List;";
     private static final String PERMALINK_AD_FETCHER = "Lcom/instagram/barcelona/sponsored/permalink/ThreadsPermalinkAdFetcher;";
@@ -6722,6 +6729,7 @@ public class DexDiff {
             case "disableVideoAutoplay": featureOmittedVideoAutoplay(clean, patched); break;
             case "pureBlack": featureOmittedPureBlack(clean, patched); break;
             case "saveMedia": featureOmittedSaveMedia(clean, patched); break;
+            case "filterComments": featureOmittedComments(patched); break;
             case "settingsRow": featureOmittedSettingsRow(clean, patched); break;
             default: throw new IllegalArgumentException("Unknown omitted feature " + feature);
         }
@@ -6734,6 +6742,43 @@ public class DexDiff {
                 featurePreserveTargets(clean, patched, m -> m.getDefiningClass().equals(FEED));
             }
         }
+    }
+
+    /**
+     * Left out, Filter comments leaves the opened post's reply parser as Threads wrote it: the
+     * host calls nothing of the extension.
+     */
+    private static void featureOmittedComments(Map<String, List<Method>> patched) {
+        featureHostCalls(patched, COMMENTS + "filter(Ljava/util/List;)Ljava/util/List;", Map.of());
+    }
+
+    /**
+     * Filter comments hands the reply list the opened post's parser reads to its own filter, once,
+     * and the four reads it writes into the extension answer Threads' own getters: the reply's
+     * posts, a post's media, a media's text and its caption.
+     */
+    private static void featureComments(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        requireFeature(featureConstant(patched, "filterComments", "Z") == 1, "filter comments switch isn't on");
+        Method parser = featureTarget(clean, m -> m.getDefiningClass().equals(REPLIES_PARSER_HOST)
+                && m.getReturnType().startsWith("L") && m.getParameterTypes().size() == 6
+                && m.getParameterTypes().get(0).equals(REPLIES_RESPONSE)
+                && m.getParameterTypes().get(1).equals(REPLIES_PARSER_HOST), "opened post's reply parser");
+        featureHostCalls(patched, COMMENTS + "filter(Ljava/util/List;)Ljava/util/List;", Map.of(featureSig(parser), 1));
+        // The reads are checked where this build's extension carries them; an older one has none.
+        if (patched.containsKey(COMMENTS + "threadItems(Ljava/lang/Object;)Ljava/util/List;")) {
+            featureStubCalls(patched, COMMENTS + "threadItems(Ljava/lang/Object;)Ljava/util/List;", THREAD);
+            featureStubCalls(patched, COMMENTS + "itemMedia(Ljava/lang/Object;)Ljava/lang/Object;", THREAD_ITEM);
+            featureStubCalls(patched, COMMENTS + "mediaText(Ljava/lang/Object;)Ljava/lang/String;", MEDIA);
+            featureStubCalls(patched, COMMENTS + "mediaCaption(Ljava/lang/Object;)Ljava/lang/String;", MEDIA_EXT);
+        }
+    }
+
+    /** Whether the extension's stub [signature] still calls something on [definingClass], as the patch wrote it. */
+    private static void featureStubCalls(Map<String, List<Method>> patched, String signature, String definingClass) {
+        Method stub = featureMethod(patched, signature);
+        boolean calls = instructions(stub).stream().map(DexDiff::reference)
+                .anyMatch(r -> r.startsWith(definingClass + "->"));
+        requireFeature(calls, signature + " doesn't call " + definingClass);
     }
 
     private static List<String> checkThreadsFeatures(File cleanApk, File patchedApk, Set<String> rules,
@@ -6815,6 +6860,7 @@ public class DexDiff {
                     case "disableVideoAutoplay": featureVideoAutoplay(clean, patched); break;
                     case "pureBlack": featurePureBlack(clean, patched); break;
                     case "saveMedia": featureSaveMedia(clean, patched, cleanApk, patchedApk); break;
+                    case "filterComments": featureComments(clean, patched); break;
                     default: throw new IllegalArgumentException("Unknown feature " + feature);
                 }
                 System.out.println("[diff] threads-feature " + feature + ": verified");

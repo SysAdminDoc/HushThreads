@@ -94,15 +94,21 @@ public class SettingsNavigationTest {
     }
 
     /**
-     * The main list with nothing paused or waiting: Quick setups, a button for each of the ten
+     * The main list with nothing paused or waiting: Quick setups, a button for each of the eleven
      * sections, Support and the build line. Every section folds open in place, one tap from here.
      */
-    private static final int HOME_ROWS = 13;
+    private static final int HOME_ROWS = 14;
+
+    /** The Comments header says what the section holds, as Privacy's and Downloads' do. */
+    @Test public void theCommentsHeaderSaysWhatItHolds() {
+        Preference header = (Preference) list().getItemAtPosition(position("section_Comments"));
+        assertEquals("Spam replies by words or links", String.valueOf(header.getSummary()));
+    }
 
     @Test public void homeAndEveryCategoryAreReachableWithoutRemovingTheModel() {
         assertNotNull(page.navigation);
         assertEquals(HOME_ROWS, list().getCount());
-        assertEquals(10, page.sections().size());
+        assertEquals(11, page.sections().size());
         int total = page.getPreferenceScreen().getRootAdapter().getCount();
         Map<String, Object> before = savedValues();
         assertFalse(titles().contains("More settings"));
@@ -737,7 +743,12 @@ public class SettingsNavigationTest {
     /**
      * A tap on the restart row restarts at once, with no question first, and changes no saved
      * switch. A screen reader finds it as a button, and its double tap does what a tap does.
+     *
+     * <p>It runs on a phone-sized screen, since the row has to be on screen to be tapped and
+     * Robolectric's default screen is shorter than any phone's, one row short once the main list
+     * holds eleven sections.
      */
+    @org.robolectric.annotation.Config(qualifiers = "w411dp-h891dp")
     @Test public void theRestartRowRestartsAtOnceAndAScreenReaderFindsItAsAButton() {
         List<Context> restarted = new ArrayList<>();
         ReopenSettingsAfterRestart.setRestarterForTests(restarted::add);

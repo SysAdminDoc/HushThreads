@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(646);
+        Map<String, String> table = new HashMap<>(664);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -136,6 +136,8 @@ public final class L10nTranslations {
                 "Zur\u00fcck zum Standard");
         table.put("Best",
                 "Beste");
+        table.put("Blocked words and domains",
+                "Gesperrte W\u00f6rter und Domains");
         table.put("Blocked: %1$s. Not found in this build: %2$s.",
                 "Blockiert: %1$s. In diesem Build nicht gefunden: %2$s.");
         table.put("Build %1$s",
@@ -176,13 +178,15 @@ public final class L10nTranslations {
                 "Diagnosedaten l\u00f6schen");
         table.put("Clear search",
                 "Suche l\u00f6schen");
-        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
-                "Leert das gespeicherte Protokoll, die Patch-Pr\u00fcfergebnisse und einen gespeicherten Absturz, die ein Bericht enthalten w\u00fcrde.");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
+                "Leert das gespeicherte Protokoll, die Patch-Pr\u00fcfergebnisse und einen gespeicherten Absturz, die ein Bericht enthalten w\u00fcrde.");
         table.put("Collapsed",
                 "Eingeklappt");
+        table.put("Comments",
+                "Kommentare");
         table.put("Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
                 "Kopiere einen Kurzbericht oder speichere den vollst\u00e4ndigen Bericht im eigenen Downloadordner von Threads. Links, IDs, Cookies und Anmeldetokens werden ausgelassen. Pr\u00fcfe ihn vor dem Teilen auf andere private Angaben.");
         table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
@@ -259,6 +263,8 @@ public final class L10nTranslations {
                 "Dateiname");
         table.put("File name set to %1$s.",
                 "Dateiname auf %1$s gesetzt.");
+        table.put("Filter comments",
+                "Kommentare filtern");
         table.put("Folder name",
                 "Ordnername");
         table.put("Folder set to %1$s.",
@@ -283,6 +289,8 @@ public final class L10nTranslations {
                 "Ausgeblendet. Tippe, um sie wieder anzuzeigen.");
         table.put("Hide ads",
                 "Werbung ausblenden");
+        table.put("Hide comments with links",
+                "Kommentare mit Links ausblenden");
         table.put("Hide follow suggestions in Search",
                 "Vorschl\u00e4ge zum Folgen in der Suche ausblenden");
         table.put("Hide ghost post bubbles",
@@ -293,6 +301,9 @@ public final class L10nTranslations {
                 "Vorgeschlagene Nutzer ausblenden");
         table.put("Hide the Instagram button",
                 "Instagram-Button ausblenden");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "Blendet Werbung und die Karten mit vorgeschlagenen Konten zum Folgen aus.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -301,9 +312,6 @@ public final class L10nTranslations {
                 "Fortschritt beim Speichern eines Fotos oder Videos, mit einem Button zum Abbrechen");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s ist erschienen. Aktualisiere es im Morphe Manager.");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("HushThreads %1$s on Threads %2$s",
                 "HushThreads %1$s auf Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
@@ -380,6 +388,10 @@ public final class L10nTranslations {
                 "OK");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Pr\u00fcft einmal am Tag beim Start von Threads auf GitHub, ob es ein neueres HushThreads gibt, und sagt es dir hier. Es wird nichts heruntergeladen.");
+        table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
+                "Ein Muster pro Zeile oder durch Kommas getrennt. Die Domain eines Shops wie shopee.vn nimmt die Antworten heraus, die darauf verlinken.");
+        table.put("One pattern a line, or separated by commas. Matched whatever the letter case.",
+                "Ein Muster pro Zeile oder durch Kommas getrennt. Gepr\u00fcft unabh\u00e4ngig von Gro\u00df- und Kleinschreibung.");
         table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
                 "Nur einige Webadressen von Threads sind f\u00fcr diese App ausgew\u00e4hlt, und Links zu den \u00fcbrigen \u00f6ffnen sich woanders. Tippe, um sie in den Android-Einstellungen auszuw\u00e4hlen.");
         table.put("Open HushThreads settings",
@@ -412,6 +424,9 @@ public final class L10nTranslations {
                 "Datenschutz");
         table.put("Pure black dark mode",
                 "Rein schwarzer Dunkelmodus");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
                 "Zeigt die HushThreads-Einstellungen im Men\u00fc, das beim langen Dr\u00fccken des Threads-Symbols erscheint. Aus verschwinden sie aus diesem Men\u00fc.");
         table.put("Puts every feature switch back the way it started.",
@@ -424,9 +439,6 @@ public final class L10nTranslations {
                 "Schnelleinstellungen auf der Startseite");
         table.put("Quiet",
                 "Ruhig");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Re-signed build fix",
                 "Fix f\u00fcr neu signierte Builds");
         table.put("Reading the settings file",
@@ -439,6 +451,10 @@ public final class L10nTranslations {
                 "Entfernt die Karten, die Konten zum Folgen vorschlagen, in deinem Feed und in Profilen. Normale Beitr\u00e4ge und Reposts bleiben.");
         table.put("Reopen the post and save again.",
                 "\u00d6ffne den Beitrag erneut und speichere noch einmal.");
+        table.put("Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.",
+                "Antworten, die zu den Mustern unten passen, fehlen bei den Antworten eines Beitrags, sodass eine Spam-Antwort nie erscheint. Eine Antwort und die Antworten darunter werden zusammen gepr\u00fcft und fehlen zusammen. Normale Antworten behalten ihre Reihenfolge.");
+        table.put("Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.",
+                "Antworten mit einem Weblink fehlen, unabh\u00e4ngig von den Mustern. Einen blo\u00dfen Seitennamen wie shopee.vn f\u00fcgst du als Muster hinzu.");
         table.put("Report a problem",
                 "Problem melden");
         table.put("Reports, restart and app information",
@@ -531,6 +547,9 @@ public final class L10nTranslations {
                 "Zeile in den Threads-Einstellungen");
         table.put("Settings shortcut on the app icon",
                 "Einstellungsverkn\u00fcpfung am App-Symbol");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Share sheet entry removed",
                 "Eintrag im Teilen-Men\u00fc entfernt");
         table.put("Show all settings as a list",
@@ -547,9 +566,8 @@ public final class L10nTranslations {
                 "Manche Threads-Bildschirme pr\u00fcfen, wer die App signiert hat, und scheitern bei einer gepatchten. Dieser Fix l\u00e4sst sie wieder \u00f6ffnen.");
         table.put("Source code and issues",
                 "Quellcode und Issues");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
+        table.put("Spam replies by words or links",
+                "Spam-Antworten nach W\u00f6rtern oder Links");
         table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
                 "Gesponserte Beitr\u00e4ge werden aus \u201eF\u00fcr dich\u201c, \u201eGefolgt\u201c und ge\u00f6ffneten Beitr\u00e4gen entfernt, bevor Threads sie zeigt, deshalb bleibt keine L\u00fccke.");
         table.put("Sponsored posts in For you and Following",
@@ -652,6 +670,9 @@ public final class L10nTranslations {
                 "Threads braucht unter Android 9 die Speicher-Berechtigung, um zu speichern. Schalte sie in den App-Infos von Threads unter Berechtigungen ein und speichere dann noch einmal.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Die Webadressen von Threads sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("Tracking in links and analytics uploads",
                 "Tracking in Links und Analyse-Uploads");
         table.put("Try a different word or clear the search.",
@@ -670,9 +691,6 @@ public final class L10nTranslations {
                 "Bis zum Fortsetzen verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv.");
         table.put("Updates",
                 "Updates");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Eigenen Zertifikaten wird vertraut");
         table.put("Version",
@@ -722,7 +740,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(646);
+        Map<String, String> table = new HashMap<>(664);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -811,6 +829,8 @@ public final class L10nTranslations {
                 "Volver a los valores predeterminados");
         table.put("Best",
                 "La mejor");
+        table.put("Blocked words and domains",
+                "Palabras y dominios bloqueados");
         table.put("Blocked: %1$s. Not found in this build: %2$s.",
                 "Bloqueados: %1$s. No encontrados en esta versi\u00f3n: %2$s.");
         table.put("Build %1$s",
@@ -851,13 +871,15 @@ public final class L10nTranslations {
                 "Borrar datos de diagn\u00f3stico");
         table.put("Clear search",
                 "Borrar b\u00fasqueda");
-        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
-                "Borra el registro guardado, los resultados de las comprobaciones de parches y el fallo guardado que incluir\u00eda un informe.");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
+                "Borra el registro guardado, los resultados de las comprobaciones de parches y el fallo guardado que incluir\u00eda un informe.");
         table.put("Collapsed",
                 "Contra\u00eddo");
+        table.put("Comments",
+                "Comentarios");
         table.put("Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
                 "Copia un informe r\u00e1pido o guarda el completo en la propia carpeta de descargas de Threads. Se omiten enlaces, ID, cookies y tokens de inicio de sesi\u00f3n. Revisa si queda otro texto privado antes de compartirlo.");
         table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
@@ -934,6 +956,8 @@ public final class L10nTranslations {
                 "Nombre de archivo");
         table.put("File name set to %1$s.",
                 "Nombre de archivo establecido en %1$s.");
+        table.put("Filter comments",
+                "Filtrar comentarios");
         table.put("Folder name",
                 "Nombre de carpeta");
         table.put("Folder set to %1$s.",
@@ -958,6 +982,8 @@ public final class L10nTranslations {
                 "Oculta. Toca para volver a mostrarla.");
         table.put("Hide ads",
                 "Ocultar anuncios");
+        table.put("Hide comments with links",
+                "Ocultar comentarios con enlaces");
         table.put("Hide follow suggestions in Search",
                 "Ocultar sugerencias para seguir en Buscar");
         table.put("Hide ghost post bubbles",
@@ -968,6 +994,9 @@ public final class L10nTranslations {
                 "Ocultar usuarios sugeridos");
         table.put("Hide the Instagram button",
                 "Ocultar el bot\u00f3n de Instagram");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "Oculta los anuncios y las tarjetas que sugieren cuentas para seguir.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -976,9 +1005,6 @@ public final class L10nTranslations {
                 "El progreso de la foto o el video que est\u00e1s guardando, con un bot\u00f3n para cancelar");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "Ya sali\u00f3 HushThreads %1$s. Actual\u00edzalo en Morphe Manager.");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("HushThreads %1$s on Threads %2$s",
                 "HushThreads %1$s en Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
@@ -1055,6 +1081,10 @@ public final class L10nTranslations {
                 "Aceptar");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Una vez al d\u00eda, al abrir Threads, busca en GitHub un HushThreads m\u00e1s nuevo y te avisa aqu\u00ed. No se descarga nada.");
+        table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
+                "Un patr\u00f3n por l\u00ednea o separados por comas. El dominio de una tienda como shopee.vn quita las respuestas que enlazan a \u00e9l.");
+        table.put("One pattern a line, or separated by commas. Matched whatever the letter case.",
+                "Un patr\u00f3n por l\u00ednea o separados por comas. Se compara sin distinguir may\u00fasculas y min\u00fasculas.");
         table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
                 "Solo algunas direcciones web de Threads est\u00e1n seleccionadas para esta app, y los enlaces a las dem\u00e1s se abren en otro sitio. Toca para seleccionarlas en los ajustes de Android.");
         table.put("Open HushThreads settings",
@@ -1087,6 +1117,9 @@ public final class L10nTranslations {
                 "Privacidad");
         table.put("Pure black dark mode",
                 "Modo oscuro negro puro");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
                 "Pone la configuraci\u00f3n de HushThreads en el men\u00fa que aparece al mantener pulsado el icono de Threads. Si lo desactivas, sale de ese men\u00fa.");
         table.put("Puts every feature switch back the way it started.",
@@ -1099,9 +1132,6 @@ public final class L10nTranslations {
                 "Configuraci\u00f3n r\u00e1pida en la p\u00e1gina de inicio");
         table.put("Quiet",
                 "Tranquilo");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Re-signed build fix",
                 "Arreglo para la nueva firma");
         table.put("Reading the settings file",
@@ -1114,6 +1144,10 @@ public final class L10nTranslations {
                 "Quita las tarjetas que sugieren cuentas para seguir, en tu feed y en los perfiles. Las publicaciones normales y los reposts se quedan.");
         table.put("Reopen the post and save again.",
                 "Vuelve a abrir la publicaci\u00f3n y gu\u00e1rdala otra vez.");
+        table.put("Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.",
+                "Las respuestas que coinciden con los patrones de abajo no aparecen entre las respuestas de una publicaci\u00f3n, as\u00ed que una respuesta de spam nunca se ve. Una respuesta y las que se ven debajo de ella se revisan y se quitan juntas. Las respuestas normales mantienen su orden.");
+        table.put("Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.",
+                "Las respuestas con un enlace web no aparecen, digan lo que digan los patrones. A\u00f1ade un nombre de sitio suelto como shopee.vn como patr\u00f3n.");
         table.put("Report a problem",
                 "Informar de un problema");
         table.put("Reports, restart and app information",
@@ -1206,6 +1240,9 @@ public final class L10nTranslations {
                 "Fila en la configuraci\u00f3n de Threads");
         table.put("Settings shortcut on the app icon",
                 "Acceso directo a la configuraci\u00f3n en el icono");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Share sheet entry removed",
                 "Entrada del men\u00fa para compartir eliminada");
         table.put("Show all settings as a list",
@@ -1222,9 +1259,8 @@ public final class L10nTranslations {
                 "Algunas pantallas de Threads comprueban qui\u00e9n firm\u00f3 la app y fallan en una parcheada. Esta correcci\u00f3n hace que vuelvan a abrirse.");
         table.put("Source code and issues",
                 "C\u00f3digo fuente e incidencias");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
+        table.put("Spam replies by words or links",
+                "Respuestas de spam por palabras o enlaces");
         table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
                 "Las publicaciones patrocinadas salen de Para ti, Siguiendo y las publicaciones que abres antes de que Threads las muestre, as\u00ed que no queda ning\u00fan hueco.");
         table.put("Sponsored posts in For you and Following",
@@ -1327,6 +1363,9 @@ public final class L10nTranslations {
                 "En Android 9, Threads necesita el permiso de Almacenamiento para guardar. Act\u00edvalo en la informaci\u00f3n de la app de Threads, en Permisos, y vuelve a guardar.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Las direcciones web de Threads est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("Tracking in links and analytics uploads",
                 "Seguimiento en enlaces y env\u00edo de anal\u00edticas");
         table.put("Try a different word or clear the search.",
@@ -1345,9 +1384,6 @@ public final class L10nTranslations {
                 "Hasta que reanudes, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene.");
         table.put("Updates",
                 "Actualizaciones");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Certificados del usuario de confianza");
         table.put("Version",
@@ -1397,7 +1433,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(646);
+        Map<String, String> table = new HashMap<>(664);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1486,6 +1522,8 @@ public final class L10nTranslations {
                 "Kembali ke bawaan");
         table.put("Best",
                 "Terbaik");
+        table.put("Blocked words and domains",
+                "Kata dan domain yang diblokir");
         table.put("Blocked: %1$s. Not found in this build: %2$s.",
                 "Diblokir: %1$s. Tidak ditemukan di build ini: %2$s.");
         table.put("Build %1$s",
@@ -1526,13 +1564,15 @@ public final class L10nTranslations {
                 "Hapus data diagnostik");
         table.put("Clear search",
                 "Hapus pencarian");
-        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
-                "Menghapus log tersimpan, hasil pemeriksaan patch, dan crash tersimpan yang akan dimuat dalam laporan.");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
+                "Menghapus log tersimpan, hasil pemeriksaan patch, dan crash tersimpan yang akan dimuat dalam laporan.");
         table.put("Collapsed",
                 "Diciutkan");
+        table.put("Comments",
+                "Komentar");
         table.put("Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
                 "Salin laporan singkat atau simpan laporan lengkap di folder unduhan milik Threads. Tautan, ID, cookie, dan token masuk dihilangkan. Periksa teks pribadi lainnya sebelum membagikannya.");
         table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
@@ -1609,6 +1649,8 @@ public final class L10nTranslations {
                 "Nama file");
         table.put("File name set to %1$s.",
                 "Nama file diatur menjadi %1$s.");
+        table.put("Filter comments",
+                "Saring komentar");
         table.put("Folder name",
                 "Nama folder");
         table.put("Folder set to %1$s.",
@@ -1633,6 +1675,8 @@ public final class L10nTranslations {
                 "Disembunyikan. Ketuk untuk menampilkannya lagi.");
         table.put("Hide ads",
                 "Sembunyikan iklan");
+        table.put("Hide comments with links",
+                "Sembunyikan komentar yang berisi tautan");
         table.put("Hide follow suggestions in Search",
                 "Sembunyikan saran ikuti di Pencarian");
         table.put("Hide ghost post bubbles",
@@ -1643,6 +1687,9 @@ public final class L10nTranslations {
                 "Sembunyikan pengguna yang disarankan");
         table.put("Hide the Instagram button",
                 "Sembunyikan tombol Instagram");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "Menyembunyikan iklan dan kartu yang menyarankan akun untuk diikuti.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -1651,9 +1698,6 @@ public final class L10nTranslations {
                 "Progres foto atau video yang sedang Anda simpan, dengan tombol untuk membatalkannya");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s sudah dirilis. Perbarui di Morphe Manager.");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("HushThreads %1$s on Threads %2$s",
                 "HushThreads %1$s di Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
@@ -1730,6 +1774,10 @@ public final class L10nTranslations {
                 "Oke");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Sekali sehari, saat Threads dibuka, memeriksa GitHub untuk HushThreads yang lebih baru dan memberi tahu Anda di sini. Tidak ada yang diunduh.");
+        table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
+                "Satu pola per baris, atau dipisahkan koma. Domain toko seperti shopee.vn menghapus balasan yang menautkannya.");
+        table.put("One pattern a line, or separated by commas. Matched whatever the letter case.",
+                "Satu pola per baris, atau dipisahkan koma. Dicocokkan tanpa membedakan huruf besar-kecil.");
         table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
                 "Hanya sebagian alamat web Threads yang dipilih untuk aplikasi ini, dan tautan ke alamat lainnya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.");
         table.put("Open HushThreads settings",
@@ -1762,6 +1810,9 @@ public final class L10nTranslations {
                 "Privasi");
         table.put("Pure black dark mode",
                 "Mode gelap hitam pekat");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
                 "Menaruh pengaturan HushThreads di menu yang muncul saat ikon Threads ditekan lama. Jika dimatikan, pintasan itu hilang dari menu tersebut.");
         table.put("Puts every feature switch back the way it started.",
@@ -1774,9 +1825,6 @@ public final class L10nTranslations {
                 "Penyiapan cepat di halaman utama");
         table.put("Quiet",
                 "Tenang");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Re-signed build fix",
                 "Perbaikan build yang ditandatangani ulang");
         table.put("Reading the settings file",
@@ -1789,6 +1837,10 @@ public final class L10nTranslations {
                 "Menghapus kartu yang menyarankan akun untuk diikuti, di feed Anda dan di profil. Postingan biasa dan repost tetap ada.");
         table.put("Reopen the post and save again.",
                 "Buka kembali postingan dan simpan lagi.");
+        table.put("Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.",
+                "Balasan yang cocok dengan pola di bawah tidak ditampilkan pada balasan sebuah postingan, jadi balasan spam tidak akan muncul. Sebuah balasan dan balasan yang tampil di bawahnya diperiksa dan disembunyikan bersama. Balasan biasa tetap dalam urutannya.");
+        table.put("Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.",
+                "Balasan yang memuat tautan web tidak ditampilkan, apa pun polanya. Tambahkan nama situs saja seperti shopee.vn sebagai pola.");
         table.put("Report a problem",
                 "Laporkan masalah");
         table.put("Reports, restart and app information",
@@ -1881,6 +1933,9 @@ public final class L10nTranslations {
                 "Baris di pengaturan Threads");
         table.put("Settings shortcut on the app icon",
                 "Pintasan pengaturan di ikon aplikasi");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Share sheet entry removed",
                 "Entri lembar bagikan dihapus");
         table.put("Show all settings as a list",
@@ -1897,9 +1952,8 @@ public final class L10nTranslations {
                 "Beberapa layar Threads memeriksa siapa yang menandatangani aplikasi dan gagal pada aplikasi yang ditambal. Perbaikan ini membuatnya terbuka lagi.");
         table.put("Source code and issues",
                 "Kode sumber dan laporan masalah");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
+        table.put("Spam replies by words or links",
+                "Balasan spam berdasarkan kata atau tautan");
         table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
                 "Postingan bersponsor dihapus dari Untuk Anda, Mengikuti, dan postingan yang Anda buka sebelum Threads menampilkannya, jadi tidak ada celah kosong.");
         table.put("Sponsored posts in For you and Following",
@@ -2002,6 +2056,9 @@ public final class L10nTranslations {
                 "Di Android 9, Threads memerlukan izin Penyimpanan untuk menyimpan. Aktifkan di info aplikasi Threads pada bagian Izin, lalu simpan lagi.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Alamat web Threads dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("Tracking in links and analytics uploads",
                 "Pelacakan di tautan dan unggahan analitik");
         table.put("Try a different word or clear the search.",
@@ -2020,9 +2077,6 @@ public final class L10nTranslations {
                 "Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif.");
         table.put("Updates",
                 "Pembaruan");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Sertifikat pengguna dipercaya");
         table.put("Version",
@@ -2072,7 +2126,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(646);
+        Map<String, String> table = new HashMap<>(664);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2161,6 +2215,8 @@ public final class L10nTranslations {
                 "Voltar ao padr\u00e3o");
         table.put("Best",
                 "A melhor");
+        table.put("Blocked words and domains",
+                "Palavras e dom\u00ednios bloqueados");
         table.put("Blocked: %1$s. Not found in this build: %2$s.",
                 "Bloqueados: %1$s. N\u00e3o encontrados nesta vers\u00e3o: %2$s.");
         table.put("Build %1$s",
@@ -2201,13 +2257,15 @@ public final class L10nTranslations {
                 "Limpar dados de diagn\u00f3stico");
         table.put("Clear search",
                 "Limpar busca");
-        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
-                "Apaga o registro salvo, os resultados das verifica\u00e7\u00f5es dos patches e a falha guardada que um relat\u00f3rio incluiria.");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
+                "Apaga o registro salvo, os resultados das verifica\u00e7\u00f5es dos patches e a falha guardada que um relat\u00f3rio incluiria.");
         table.put("Collapsed",
                 "Recolhido");
+        table.put("Comments",
+                "Coment\u00e1rios");
         table.put("Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
                 "Copie um relat\u00f3rio r\u00e1pido ou salve o relat\u00f3rio completo na pasta de downloads do pr\u00f3prio Threads. Links, IDs, cookies e tokens de login s\u00e3o omitidos. Verifique se h\u00e1 outros textos privados antes de compartilhar.");
         table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
@@ -2284,6 +2342,8 @@ public final class L10nTranslations {
                 "Nome do arquivo");
         table.put("File name set to %1$s.",
                 "Nome do arquivo definido como %1$s.");
+        table.put("Filter comments",
+                "Filtrar coment\u00e1rios");
         table.put("Folder name",
                 "Nome da pasta");
         table.put("Folder set to %1$s.",
@@ -2308,6 +2368,8 @@ public final class L10nTranslations {
                 "Ocultas. Toque para mostrar de novo.");
         table.put("Hide ads",
                 "Ocultar an\u00fancios");
+        table.put("Hide comments with links",
+                "Ocultar coment\u00e1rios com links");
         table.put("Hide follow suggestions in Search",
                 "Ocultar sugest\u00f5es para seguir na pesquisa");
         table.put("Hide ghost post bubbles",
@@ -2318,6 +2380,9 @@ public final class L10nTranslations {
                 "Ocultar usu\u00e1rios sugeridos");
         table.put("Hide the Instagram button",
                 "Ocultar o bot\u00e3o do Instagram");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "Oculta os an\u00fancios e os cart\u00f5es que sugerem contas para seguir.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -2326,9 +2391,6 @@ public final class L10nTranslations {
                 "Indica o progresso do salvamento de uma foto ou v\u00eddeo, com um bot\u00e3o para cancel\u00e1-lo");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "O HushThreads %1$s est\u00e1 dispon\u00edvel. Atualize-o pelo Morphe Manager.");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("HushThreads %1$s on Threads %2$s",
                 "HushThreads %1$s no Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
@@ -2405,6 +2467,10 @@ public final class L10nTranslations {
                 "OK");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Uma vez por dia, quando o Threads abre, procura no GitHub um HushThreads mais novo e avisa voc\u00ea aqui. Nada \u00e9 baixado.");
+        table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
+                "Um padr\u00e3o por linha, ou separados por v\u00edrgulas. O dom\u00ednio de uma loja como shopee.vn remove as respostas que apontam para ele.");
+        table.put("One pattern a line, or separated by commas. Matched whatever the letter case.",
+                "Um padr\u00e3o por linha, ou separados por v\u00edrgulas. Comparado sem diferenciar mai\u00fasculas de min\u00fasculas.");
         table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
                 "S\u00f3 alguns endere\u00e7os web do Threads est\u00e3o selecionados para este app, e os links para os outros abrem em outro lugar. Toque para selecion\u00e1-los nas configura\u00e7\u00f5es do Android.");
         table.put("Open HushThreads settings",
@@ -2437,6 +2503,9 @@ public final class L10nTranslations {
                 "Privacidade");
         table.put("Pure black dark mode",
                 "Modo escuro preto puro");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
                 "Coloca as configura\u00e7\u00f5es do HushThreads no menu que aparece ao tocar e segurar o \u00edcone do Threads. Desligado, o atalho sai desse menu.");
         table.put("Puts every feature switch back the way it started.",
@@ -2449,9 +2518,6 @@ public final class L10nTranslations {
                 "Configura\u00e7\u00f5es r\u00e1pidas na p\u00e1gina inicial");
         table.put("Quiet",
                 "Tranquilo");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Re-signed build fix",
                 "Corre\u00e7\u00e3o para vers\u00e3o com nova assinatura");
         table.put("Reading the settings file",
@@ -2464,6 +2530,10 @@ public final class L10nTranslations {
                 "Remove os cart\u00f5es que sugerem contas para seguir, no seu feed e nos perfis. Publica\u00e7\u00f5es comuns e reposts continuam.");
         table.put("Reopen the post and save again.",
                 "Abra a publica\u00e7\u00e3o novamente e salve outra vez.");
+        table.put("Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.",
+                "As respostas que correspondem aos padr\u00f5es abaixo ficam de fora das respostas de uma publica\u00e7\u00e3o, ent\u00e3o uma resposta de spam nunca aparece. Uma resposta e as respostas mostradas abaixo dela s\u00e3o verificadas e ficam de fora juntas. As respostas normais mant\u00eam a ordem.");
+        table.put("Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.",
+                "As respostas com um link da web ficam de fora, o que quer que os padr\u00f5es digam. Adicione um nome de site sozinho, como shopee.vn, como padr\u00e3o.");
         table.put("Report a problem",
                 "Relatar um problema");
         table.put("Reports, restart and app information",
@@ -2556,6 +2626,9 @@ public final class L10nTranslations {
                 "Linha nas configura\u00e7\u00f5es do Threads");
         table.put("Settings shortcut on the app icon",
                 "Atalho das configura\u00e7\u00f5es no \u00edcone do app");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Share sheet entry removed",
                 "Entrada do menu de compartilhamento removida");
         table.put("Show all settings as a list",
@@ -2572,9 +2645,8 @@ public final class L10nTranslations {
                 "Algumas telas do Threads verificam quem assinou o app e falham em um app com patches. Esta corre\u00e7\u00e3o faz com que abram de novo.");
         table.put("Source code and issues",
                 "C\u00f3digo-fonte e relatos de problemas");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("Spam replies by words or links",
+                "Respostas de spam por palavras ou links");
         table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
                 "As publica\u00e7\u00f5es patrocinadas saem de Para voc\u00ea, Seguindo e das publica\u00e7\u00f5es que voc\u00ea abre antes que o Threads as mostre, ent\u00e3o nenhum espa\u00e7o fica vazio.");
         table.put("Sponsored posts in For you and Following",
@@ -2677,6 +2749,9 @@ public final class L10nTranslations {
                 "No Android 9, o Threads precisa da permiss\u00e3o de Armazenamento para salvar. Ative-a nas informa\u00e7\u00f5es do app Threads, em Permiss\u00f5es, e salve de novo.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Os endere\u00e7os web do Threads est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("Tracking in links and analytics uploads",
                 "Rastreamento em links e envio de dados de an\u00e1lise");
         table.put("Try a different word or clear the search.",
@@ -2695,9 +2770,6 @@ public final class L10nTranslations {
                 "At\u00e9 voc\u00ea retomar, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo.");
         table.put("Updates",
                 "Atualiza\u00e7\u00f5es");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Certificados do usu\u00e1rio confi\u00e1veis");
         table.put("Version",
@@ -2747,7 +2819,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(646);
+        Map<String, String> table = new HashMap<>(664);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2836,6 +2908,8 @@ public final class L10nTranslations {
                 "Varsay\u0131lanlara d\u00f6n");
         table.put("Best",
                 "En iyi");
+        table.put("Blocked words and domains",
+                "Engellenen s\u00f6zc\u00fckler ve alan adlar\u0131");
         table.put("Blocked: %1$s. Not found in this build: %2$s.",
                 "Engellenen: %1$s. Bu s\u00fcr\u00fcmde bulunamayan: %2$s.");
         table.put("Build %1$s",
@@ -2876,13 +2950,15 @@ public final class L10nTranslations {
                 "Tan\u0131lama verilerini temizle");
         table.put("Clear search",
                 "Aramay\u0131 temizle");
-        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
-                "Bir raporun i\u00e7erece\u011fi kay\u0131tl\u0131 g\u00fcnl\u00fc\u011f\u00fc, yama kontrol sonu\u00e7lar\u0131n\u0131 ve saklanan \u00e7\u00f6kme kayd\u0131n\u0131 temizler.");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
+                "Bir raporun i\u00e7erece\u011fi kay\u0131tl\u0131 g\u00fcnl\u00fc\u011f\u00fc, yama kontrol sonu\u00e7lar\u0131n\u0131 ve saklanan \u00e7\u00f6kme kayd\u0131n\u0131 temizler.");
         table.put("Collapsed",
                 "Daralt\u0131ld\u0131");
+        table.put("Comments",
+                "Yorumlar");
         table.put("Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
                 "K\u0131sa raporu kopyala veya tam raporu Threads'in kendi \u0130ndirilenler klas\u00f6r\u00fcne kaydet. Ba\u011flant\u0131lar, kimlikler, \u00e7erezler ve oturum belirte\u00e7leri \u00e7\u0131kar\u0131l\u0131r. Payla\u015fmadan \u00f6nce ba\u015fka \u00f6zel bilgi olup olmad\u0131\u011f\u0131na bak.");
         table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
@@ -2959,6 +3035,8 @@ public final class L10nTranslations {
                 "Dosya ad\u0131");
         table.put("File name set to %1$s.",
                 "Dosya ad\u0131 %1$s olarak ayarland\u0131.");
+        table.put("Filter comments",
+                "Yorumlar\u0131 filtrele");
         table.put("Folder name",
                 "Klas\u00f6r ad\u0131");
         table.put("Folder set to %1$s.",
@@ -2983,6 +3061,8 @@ public final class L10nTranslations {
                 "Gizli. Yeniden g\u00f6stermek i\u00e7in dokun.");
         table.put("Hide ads",
                 "Reklamlar\u0131 gizle");
+        table.put("Hide comments with links",
+                "Ba\u011flant\u0131 i\u00e7eren yorumlar\u0131 gizle");
         table.put("Hide follow suggestions in Search",
                 "Aramada takip \u00f6nerilerini gizle");
         table.put("Hide ghost post bubbles",
@@ -2993,6 +3073,9 @@ public final class L10nTranslations {
                 "\u00d6nerilen kullan\u0131c\u0131lar\u0131 gizle");
         table.put("Hide the Instagram button",
                 "Instagram d\u00fc\u011fmesini gizle");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "Reklamlar\u0131 ve takip edilecek hesap \u00f6neren kartlar\u0131 gizler.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -3001,9 +3084,6 @@ public final class L10nTranslations {
                 "Kaydetti\u011fin foto\u011fraf veya videonun ilerleme durumu ve iptal etmek i\u00e7in bir d\u00fc\u011fme");
         table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
                 "HushThreads %1$s \u00e7\u0131kt\u0131. Morphe Manager'da g\u00fcncelle.");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("HushThreads %1$s on Threads %2$s",
                 "Threads %2$s \u00fczerinde HushThreads %1$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
@@ -3080,6 +3160,10 @@ public final class L10nTranslations {
                 "Tamam");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "G\u00fcnde bir kez, Threads a\u00e7\u0131l\u0131rken GitHub'da daha yeni bir HushThreads olup olmad\u0131\u011f\u0131na bakar ve burada s\u00f6yler. Hi\u00e7bir \u015fey indirilmez.");
+        table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
+                "Her sat\u0131ra bir kal\u0131p veya virg\u00fclle ay\u0131rarak. shopee.vn gibi bir ma\u011faza alan ad\u0131, ona ba\u011flant\u0131 veren yan\u0131tlar\u0131 \u00e7\u0131kar\u0131r.");
+        table.put("One pattern a line, or separated by commas. Matched whatever the letter case.",
+                "Her sat\u0131ra bir kal\u0131p veya virg\u00fclle ay\u0131rarak. B\u00fcy\u00fck-k\u00fc\u00e7\u00fck harf ayr\u0131m\u0131 yap\u0131lmadan e\u015fle\u015ftirilir.");
         table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
                 "Threads'in web adreslerinden yaln\u0131zca baz\u0131lar\u0131 bu uygulama i\u00e7in se\u00e7ili ve di\u011ferlerinin ba\u011flant\u0131lar\u0131 ba\u015fka yerde a\u00e7\u0131l\u0131r. Android ayarlar\u0131nda se\u00e7mek i\u00e7in dokunun.");
         table.put("Open HushThreads settings",
@@ -3112,6 +3196,9 @@ public final class L10nTranslations {
                 "Gizlilik");
         table.put("Pure black dark mode",
                 "Saf siyah karanl\u0131k mod");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
                 "Threads simgesine bas\u0131l\u0131 tutunca a\u00e7\u0131lan men\u00fcye HushThreads ayarlar\u0131n\u0131 koyar. Kapal\u0131yken bu men\u00fcden \u00e7\u0131kar.");
         table.put("Puts every feature switch back the way it started.",
@@ -3124,9 +3211,6 @@ public final class L10nTranslations {
                 "Ana sayfada h\u0131zl\u0131 kurulumlar");
         table.put("Quiet",
                 "Sessiz");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Re-signed build fix",
                 "Yeniden imzalanm\u0131\u015f s\u00fcr\u00fcm d\u00fczeltmesi");
         table.put("Reading the settings file",
@@ -3139,6 +3223,10 @@ public final class L10nTranslations {
                 "Takip edilecek hesaplar \u00f6neren kartlar\u0131 ak\u0131\u015f\u0131n\u0131zdan ve profillerden kald\u0131r\u0131r. Normal g\u00f6nderiler ve yeniden payla\u015f\u0131mlar kal\u0131r.");
         table.put("Reopen the post and save again.",
                 "G\u00f6nderiyi yeniden a\u00e7\u0131p tekrar kaydet.");
+        table.put("Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.",
+                "A\u015fa\u011f\u0131daki kal\u0131plarla e\u015fle\u015fen yan\u0131tlar bir g\u00f6nderinin yan\u0131tlar\u0131ndan \u00e7\u0131kar\u0131l\u0131r, b\u00f6ylece spam bir yan\u0131t hi\u00e7 g\u00f6r\u00fcnmez. Bir yan\u0131t ve alt\u0131nda g\u00f6sterilen yan\u0131tlar birlikte denetlenir ve birlikte \u00e7\u0131kar\u0131l\u0131r. Normal yan\u0131tlar s\u0131ras\u0131n\u0131 korur.");
+        table.put("Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.",
+                "Web ba\u011flant\u0131s\u0131 i\u00e7eren yan\u0131tlar, kal\u0131plar ne derse desin \u00e7\u0131kar\u0131l\u0131r. shopee.vn gibi yal\u0131n bir site ad\u0131n\u0131 kal\u0131p olarak ekleyin.");
         table.put("Report a problem",
                 "Sorun bildir");
         table.put("Reports, restart and app information",
@@ -3231,6 +3319,9 @@ public final class L10nTranslations {
                 "Threads ayarlar\u0131ndaki sat\u0131r");
         table.put("Settings shortcut on the app icon",
                 "Uygulama simgesinde ayarlar k\u0131sayolu");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Share sheet entry removed",
                 "Payla\u015f\u0131m men\u00fcs\u00fc giri\u015fi kald\u0131r\u0131ld\u0131");
         table.put("Show all settings as a list",
@@ -3247,9 +3338,8 @@ public final class L10nTranslations {
                 "Baz\u0131 Threads ekranlar\u0131 uygulamay\u0131 kimin imzalad\u0131\u011f\u0131na bakar ve yamal\u0131 uygulamada a\u00e7\u0131lmaz. Bu d\u00fczeltme onlar\u0131 yeniden a\u00e7\u0131l\u0131r yapar.");
         table.put("Source code and issues",
                 "Kaynak kodu ve sorunlar");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
+        table.put("Spam replies by words or links",
+                "Kelimeye veya ba\u011flant\u0131ya g\u00f6re spam yan\u0131tlar");
         table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
                 "Sponsorlu g\u00f6nderiler, Threads onlar\u0131 g\u00f6stermeden \u00f6nce Senin \u0130\u00e7in ve Takip Edilenler ak\u0131\u015flar\u0131ndan ve a\u00e7t\u0131\u011f\u0131n g\u00f6nderilerden \u00e7\u0131kar\u0131l\u0131r, b\u00f6ylece bo\u015fluk kalmaz.");
         table.put("Sponsored posts in For you and Following",
@@ -3352,6 +3442,9 @@ public final class L10nTranslations {
                 "Android 9'da Threads'in kaydetmek i\u00e7in Depolama iznine ihtiyac\u0131 var. Threads'in uygulama bilgilerinde \u0130zinler b\u00f6l\u00fcm\u00fcnden bu izni a\u00e7, sonra tekrar kaydet.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Threads'in web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("Tracking in links and analytics uploads",
                 "Ba\u011flant\u0131lardaki izleme ve analiz y\u00fcklemeleri");
         table.put("Try a different word or clear the search.",
@@ -3370,9 +3463,6 @@ public final class L10nTranslations {
                 "Devam ettirene kadar Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r.");
         table.put("Updates",
                 "G\u00fcncellemeler");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("User certificates trusted",
                 "Kullan\u0131c\u0131 sertifikalar\u0131na g\u00fcveniliyor");
         table.put("Version",

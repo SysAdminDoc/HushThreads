@@ -366,3 +366,13 @@ Version %1$s	Sürüm %1$s
 Build %1$s (modified)	Derleme %1$s (değiştirilmiş)
 Build %1$s (source known)	Derleme %1$s (kaynak biliniyor)
 Build %1$s (source unknown)	Derleme %1$s (kaynak bilinmiyor)
+# The Comments page: the section title, Filter comments' switch and summary, and the words and domains row with its dialog text and the Hide comments row.
+Comments	Yorumlar
+Spam replies by words or links	Kelimeye veya bağlantıya göre spam yanıtlar
+Filter comments	Yorumları filtrele
+Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.	Aşağıdaki kalıplarla eşleşen yanıtlar bir gönderinin yanıtlarından çıkarılır, böylece spam bir yanıt hiç görünmez. Bir yanıt ve altında gösterilen yanıtlar birlikte denetlenir ve birlikte çıkarılır. Normal yanıtlar sırasını korur.
+Blocked words and domains	Engellenen sözcükler ve alan adları
+One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.	Her satıra bir kalıp veya virgülle ayırarak. shopee.vn gibi bir mağaza alan adı, ona bağlantı veren yanıtları çıkarır.
+One pattern a line, or separated by commas. Matched whatever the letter case.	Her satıra bir kalıp veya virgülle ayırarak. Büyük-küçük harf ayrımı yapılmadan eşleştirilir.
+Hide comments with links	Bağlantı içeren yorumları gizle
+Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.	Web bağlantısı içeren yanıtlar, kalıplar ne derse desin çıkarılır. shopee.vn gibi yalın bir site adını kalıp olarak ekleyin.

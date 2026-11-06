@@ -366,3 +366,13 @@ Version %1$s	Versi %1$s
 Build %1$s (modified)	Build %1$s (diubah)
 Build %1$s (source known)	Build %1$s (sumber diketahui)
 Build %1$s (source unknown)	Build %1$s (sumber tidak diketahui)
+# The Comments page: the section title, Filter comments' switch and summary, and the words and domains row with its dialog text and the Hide comments row.
+Comments	Komentar
+Spam replies by words or links	Balasan spam berdasarkan kata atau tautan
+Filter comments	Saring komentar
+Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.	Balasan yang cocok dengan pola di bawah tidak ditampilkan pada balasan sebuah postingan, jadi balasan spam tidak akan muncul. Sebuah balasan dan balasan yang tampil di bawahnya diperiksa dan disembunyikan bersama. Balasan biasa tetap dalam urutannya.
+Blocked words and domains	Kata dan domain yang diblokir
+One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.	Satu pola per baris, atau dipisahkan koma. Domain toko seperti shopee.vn menghapus balasan yang menautkannya.
+One pattern a line, or separated by commas. Matched whatever the letter case.	Satu pola per baris, atau dipisahkan koma. Dicocokkan tanpa membedakan huruf besar-kecil.
+Hide comments with links	Sembunyikan komentar yang berisi tautan
+Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.	Balasan yang memuat tautan web tidak ditampilkan, apa pun polanya. Tambahkan nama situs saja seperti shopee.vn sebagai pola.

@@ -70,10 +70,10 @@ public class SectionJumpTest {
             assertTrue(header.getKey(), header.getKey().startsWith("section_"));
             titles.add(header.getTitle().toString());
         }
-        assertEquals(java.util.Arrays.asList("Feed", "Privacy", "Downloads", "Posts", "Appearance", "Links",
+        assertEquals(java.util.Arrays.asList("Feed", "Privacy", "Comments", "Downloads", "Posts", "Appearance", "Links",
                 "Updates", "Set when you patched", "Pause, backup and diagnostics", "About"), titles);
-        assertEquals(SettingsNavigation.SUPPORT, ((Preference) list.getItemAtPosition(11)).getKey());
-        assertEquals("Support closes the list, and the build line sits under it", 13, list.getCount());
+        assertEquals(SettingsNavigation.SUPPORT, ((Preference) list.getItemAtPosition(12)).getKey());
+        assertEquals("Support closes the list, and the build line sits under it", 14, list.getCount());
         assertFalse(titles.contains("More settings"));
         assertFalse(titles.contains("Browse settings"));
     }
@@ -89,7 +89,7 @@ public class SectionJumpTest {
         assertTrue(page.jumpTo(privacy));
         relayout(list);
         assertTrue(page.navigation.isExpanded("Privacy"));
-        assertEquals(13 + ((android.preference.PreferenceCategory) privacy).getPreferenceCount(), list.getCount());
+        assertEquals(14 + ((android.preference.PreferenceCategory) privacy).getPreferenceCount(), list.getCount());
         int header = -1;
         for (int i = 0; i < list.getCount(); i++) {
             if ("section_Privacy".equals(((Preference) list.getItemAtPosition(i)).getKey())) header = i;

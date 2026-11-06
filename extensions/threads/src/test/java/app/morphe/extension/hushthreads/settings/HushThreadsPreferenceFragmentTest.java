@@ -96,6 +96,7 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_INSTAGRAM_BUTTON, "Hide the Instagram button");
         ROW_TITLES.put(PatchFamily.HIDE_GHOST_POST_BUBBLES, "Hide ghost post bubbles");
         ROW_TITLES.put(PatchFamily.EXACT_POST_TIMES, "Show the date and time");
+        ROW_TITLES.put(PatchFamily.FILTER_COMMENTS, "Filter comments");
         ROW_TITLES.put(PatchFamily.REMOVE_AD_ID, "Advertising ID removed");
         ROW_TITLES.put(PatchFamily.RESTORE_TRUST, "Re-signed build fix");
         ROW_TITLES.put(PatchFamily.VERSION_CODE, "Version code raised");
@@ -209,6 +210,7 @@ public class HushThreadsPreferenceFragmentTest {
                         || build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.SCREENSHOT_DETECTION)) {
                     expected.add("Privacy");
                 }
+                if (build.contains(PatchFamily.FILTER_COMMENTS)) expected.add("Comments");
                 if (build.contains(PatchFamily.SAVE_MEDIA)) expected.add("Downloads");
                 if (build.contains(PatchFamily.PURE_BLACK) || build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)
                         || build.contains(PatchFamily.HIDE_GHOST_POST_BUBBLES)) {
@@ -286,6 +288,16 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Show the date and time", String.valueOf(page.findPreference(Settings.EXACT_POST_TIMES.key).getTitle()));
             assertEquals("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's "
                 + "12 or 24-hour format.", String.valueOf(page.findPreference(Settings.EXACT_POST_TIMES.key).getSummary()));
+            // A reply is matched with the posts shown under it, and a bare domain with no path isn't
+            // a link, so both summaries say so.
+            assertEquals("Replies matching the patterns below are left out of a post's replies, so a spam reply never "
+                + "shows. A reply and the replies shown under it are checked and left out as one. Normal replies "
+                + "keep their order.", String.valueOf(page.findPreference(Settings.FILTER_COMMENTS.key).getSummary()));
+            assertEquals("Replies with a web link are left out, whatever the patterns say. Add a bare site name such "
+                + "as shopee.vn as a pattern.", String.valueOf(page.findPreference(Settings.HIDE_COMMENT_LINKS.key).getSummary()));
+            // The patterns dialog names its own Save, so it isn't left to Android's OK in the phone's language.
+            assertEquals("Save", String.valueOf(((android.preference.EditTextPreference) page.findPreference(
+                    app.morphe.extension.hushthreads.comments.CommentSettings.FILTER_COMMENT_PATTERNS.key)).getPositiveButtonText()));
             // The patches that were always in Manager's default selection ship their switches on,
             // Search's half of Hide suggested users included.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS, Settings.HIDE_SEARCH_SUGGESTIONS,
