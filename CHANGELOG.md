@@ -2,6 +2,10 @@
 
 Changes in the source build, then released versions.
 
+## Unreleased
+
+* With `Show exact post times` on and a large font, a post's time stays in one piece. Under a long name it used to break after the month or the day, with "Nov" on one line and "5, 2:30 AM" on the next. Now the whole time moves under the name when it doesn't fit beside it.
+
 ## 0.0.17 (2026-11-05)
 
 * New `Show exact post times` patch. Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format, and TalkBack reads that same time out. It's in Manager's default selection, but its switch under Posts in HushThreads settings starts off.

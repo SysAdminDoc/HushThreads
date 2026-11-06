@@ -44,6 +44,12 @@ public final class PostTime {
     private static final double EARLIEST = 1e9;
     private static final double LATEST = 1e10;
 
+    /** The spaces a date can carry, and the no-break space that takes the place of each. */
+    private static final char SPACE = ' ';
+    private static final char NO_BREAK_SPACE = (char) 0x00A0;
+    private static final char THIN_SPACE = (char) 0x2009;
+    private static final char NARROW_NO_BREAK_SPACE = (char) 0x202F;
+
     private PostTime() { }
 
     /**
@@ -90,8 +96,19 @@ public final class PostTime {
         }
     }
 
+    @Nullable
     private static String format(Context context, double seconds) {
-        return DateUtils.formatDateTime(context, Math.round(seconds * 1000d), FLAGS);
+        String text = DateUtils.formatDateTime(context, Math.round(seconds * 1000d), FLAGS);
+        return text == null ? null : unbroken(text);
+    }
+
+    /**
+     * [text] with every space a line can break at swapped for one it can't. A header too narrow
+     * for the name and the time then moves the whole time under the name, where at a large font
+     * it used to split after "Nov" or "4,".
+     */
+    static String unbroken(String text) {
+        return text.replace(SPACE, NO_BREAK_SPACE).replace(THIN_SPACE, NARROW_NO_BREAK_SPACE);
     }
 
     /** Why the switch doesn't apply now, or null when it's on. Reads no setting before they're ready. */

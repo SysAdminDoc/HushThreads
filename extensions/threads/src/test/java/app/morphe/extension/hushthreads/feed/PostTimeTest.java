@@ -64,8 +64,17 @@ public class PostTimeTest {
         return time.getTimeInMillis() / 1000d;
     }
 
+    /** Android's own text for [seconds], with the no-break spaces the header carries. */
     private String android(double seconds, int flags) {
-        return DateUtils.formatDateTime(context, (long) (seconds * 1000), PostTime.FLAGS | flags);
+        return PostTime.unbroken(DateUtils.formatDateTime(context, (long) (seconds * 1000), PostTime.FLAGS | flags));
+    }
+
+    /** The first character a line could break at in [text], or -1 when it has none. */
+    private static int breakableSpace(String text) {
+        for (int i = 0; i < text.length(); i++) {
+            if (Character.isWhitespace(text.charAt(i))) return i;
+        }
+        return -1;
     }
 
     /** The switch starts off, so a default build keeps "3h" and "2d" until it's turned on. */
@@ -95,6 +104,27 @@ public class PostTimeTest {
         assertEquals(android(seconds, DateUtils.FORMAT_12HOUR), twelve);
         assertTrue(twelve, twelve.contains("3:30"));
         assertNotEquals(day, twelve);
+    }
+
+    /**
+     * The time never splits across two lines: this year's and an older post's, in either clock
+     * format, carry no space a line can break at, so a time that doesn't fit beside a long name
+     * moves under it whole. TalkBack gets the same text.
+     */
+    @Test public void theTimeStaysInOnePiece() {
+        double thisYear = afternoon(Calendar.getInstance().get(Calendar.YEAR));
+        for (String clock : new String[]{"12", "24"}) {
+            System.putString(context.getContentResolver(), System.TIME_12_24, clock);
+            for (double seconds : new double[]{afternoon(2020), thisYear}) {
+                String shown = PostTime.exact(context, seconds);
+                assertNotNull(shown);
+                assertEquals(clock + "-hour " + shown, -1, breakableSpace(shown));
+                assertTrue(shown, shown.indexOf((char) 0x00A0) >= 0 || shown.indexOf((char) 0x202F) >= 0);
+                assertEquals(shown, PostTime.spoken("Threads' own", context, seconds));
+            }
+        }
+        assertEquals("Nov" + (char) 0x00A0 + "4," + (char) 0x00A0 + "10:25" + (char) 0x202F + "PM",
+                PostTime.unbroken("Nov 4, 10:25" + (char) 0x2009 + "PM"));
     }
 
     /** Off, Threads writes the time itself. */
