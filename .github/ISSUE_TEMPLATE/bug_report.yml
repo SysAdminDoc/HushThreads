@@ -78,6 +78,7 @@ body:
         - Disable screenshot detection
         - Disable swipe to Search
         - Disable video autoplay
+        - Filter comments
         - Hide ads
         - Hide ghost post bubbles
         - Hide suggested users
