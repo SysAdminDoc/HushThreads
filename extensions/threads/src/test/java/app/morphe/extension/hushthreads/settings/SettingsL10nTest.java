@@ -210,7 +210,8 @@ public class SettingsL10nTest {
      */
     @Test
     public void inEveryShippedLanguageNothingOnTheScreenStaysEnglish() throws Exception {
-        String[][] languages = {{"de", "de"}, {"es", "es"}, {"in-rID", "in"}, {"pt-rBR", "pt-rbr"}, {"tr", "tr"}};
+        String[][] languages = {{"de", "de"}, {"es", "es"}, {"in-rID", "in"}, {"it", "it"}, {"ko", "ko"},
+                {"pt-rBR", "pt-rbr"}, {"tr", "tr"}, {"zh-rTW", "zh-rtw"}};
         for (String[] language : languages) {
             RuntimeEnvironment.setQualifiers("+" + language[0]);
             Map<String, String> table = TranslationsForTests.of(language[1]);
@@ -293,8 +294,8 @@ public class SettingsL10nTest {
                 + "again and leave out that patch.";
         String other = "%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, "
                 + "patch again and leave out the patch in brackets after it.";
-        String[][] languages = {{"en", null}, {"de", "de"}, {"es", "es"}, {"in-rID", "in"}, {"pt-rBR", "pt-rbr"},
-                {"tr", "tr"}};
+        String[][] languages = {{"en", null}, {"de", "de"}, {"es", "es"}, {"in-rID", "in"}, {"it", "it"},
+                {"ko", "ko"}, {"pt-rBR", "pt-rbr"}, {"tr", "tr"}, {"zh-rTW", "zh-rtw"}};
         for (String[] language : languages) {
             RuntimeEnvironment.setQualifiers("+" + language[0]);
             Map<String, String> table = language[1] == null ? null : TranslationsForTests.of(language[1]);
@@ -302,8 +303,10 @@ public class SettingsL10nTest {
             String single = PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.REMOVE_AD_ID));
             String item = row(table, PatchFamily.REMOVE_AD_ID.staysWhilePaused);
             assertNotNull(single);
+            // Hangul and Han have no capitals, so a letter with no case starts the sentence as it is.
+            int first = single.codePointAt(0);
             assertTrue(language[0] + " doesn't start with a capital: " + single,
-                    Character.isUpperCase(single.codePointAt(0)));
+                    Character.isUpperCase(first) || Character.getType(first) == Character.OTHER_LETTER);
             assertTrue(language[0] + " lost its item: " + single,
                     single.toLowerCase(Locale.ROOT).contains(item.toLowerCase(Locale.ROOT).substring(1)));
             // One item takes the language's own form for one: Indonesian has none and takes the other.
@@ -342,7 +345,7 @@ public class SettingsL10nTest {
                 + ").", "Remove the advertising ID"));
 
         List<String> repeats = new ArrayList<>();
-        for (String language : new String[]{"en", "de", "es", "in-rID", "pt-rBR", "tr"}) {
+        for (String language : new String[]{"en", "de", "es", "in-rID", "it", "ko", "pt-rBR", "tr", "zh-rTW"}) {
             RuntimeEnvironment.setQualifiers("+" + language);
             for (PatchFamily family : PatchFamily.values()) {
                 if (family.staysWhilePaused == null) continue;

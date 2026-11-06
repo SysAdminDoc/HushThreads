@@ -36,7 +36,12 @@ The settings screen's look, with the logo header that folds away, sections
 that open in place and the Pause button in the top bar, was designed for
 HushGram and comes here through Hushfacebook.
 
+The Traditional Chinese translation started from the one NikolaJyun made in
+their HushThreads fork. Rows HushThreads shares with HushGram came from
+HushGram's Italian, Korean and Chinese tables.
+
   HushThreads                 https://github.com/SysAdminDoc/HushThreads
+  HushThreads (NikolaJyun)    https://github.com/NikolaJyun/HushThreads
   Hushfacebook                https://github.com/SysAdminDoc/Hushfacebook
   Hushfacebook commits        814acd23d7b70d5d23abce6cb6c97767e16a051e, 88a7f512c1e97126ae6fb3cf05e3c152a39fb1fc, 837bac40e866547bd2a2147c8eecf366aa0dddbe
   HushGram                    https://github.com/SysAdminDoc/HushGram
@@ -52,9 +57,10 @@ HushGram and comes here through Hushfacebook.
   morphe-patches-library      https://github.com/MorpheApp/morphe-patches-library
   ReVanced                    https://gitlab.com/ReVanced/revanced-patches
 
-Hushfacebook, HushGram, HushPinterest, Andrew Liang's patches,
-FroggoMorphePatches, zeldrisho's patches, MrxSiN's ThreadsHideAds and
-De-Vanced are licensed under the GNU General Public License v3.0.
+Hushfacebook, HushGram, HushPinterest, NikolaJyun's HushThreads fork,
+Andrew Liang's patches, FroggoMorphePatches, zeldrisho's patches, MrxSiN's
+ThreadsHideAds and De-Vanced are licensed under the GNU General Public
+License v3.0.
 Files that came from another project keep a "Forked from" line naming it and
 the commit they came from, and provenance.json records every rule.
 

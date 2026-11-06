@@ -21,7 +21,7 @@ public final class L10nTranslations {
     }
 
     /** The language tags with a table, lower case. */
-    static final String[] LANGUAGES = {"de", "es", "in", "pt-rbr", "tr"};
+    static final String[] LANGUAGES = {"de", "es", "in", "it", "ko", "pt-rbr", "tr", "zh-rtw"};
 
     /**
      * The table for one language tag, or null when nothing was translated into it.
@@ -37,10 +37,16 @@ public final class L10nTranslations {
             case "in":
             case "id":
                 return buildIn();
+            case "it":
+                return buildIt();
+            case "ko":
+                return buildKo();
             case "pt-rbr":
                 return buildPt_rBR();
             case "tr":
                 return buildTr();
+            case "zh-rtw":
+                return buildZh_rTW();
             default:
                 return null;
         }
@@ -2125,6 +2131,1392 @@ public final class L10nTranslations {
                 "kepercayaan pada sertifikat pengguna");
     }
 
+    private static Map<String, String> buildIt() {
+        Map<String, String> table = new HashMap<>(664);
+        fillIt0(table);
+        fillIt1(table);
+        fillIt2(table);
+        fillIt3(table);
+        fillIt4(table);
+        fillIt5(table);
+        return table;
+    }
+
+    private static void fillIt0(Map<String, String> table) {
+        table.put("%1$d default patch isn't in this build",
+                "%1$d patch predefinita non \u00e8 in questa build");
+        table.put("%1$d default patches aren't in this build",
+                "%1$d patch predefinite non sono in questa build");
+        table.put("%1$d item in that file isn't a setting this version of HushThreads knows, so it'll be left out.",
+                "%1$d elemento in quel file non \u00e8 un'impostazione che questa versione di HushThreads conosce, quindi verr\u00e0 escluso.");
+        table.put("%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.",
+                "%1$d elementi in quel file non sono impostazioni che questa versione di HushThreads conosce, quindi verranno esclusi.");
+        table.put("%1$d saved in lower quality than on Threads.",
+                "%1$d salvati a qualit\u00e0 inferiore rispetto a Threads.");
+        table.put("%1$d saves stopped. Reopen the post and save again.",
+                "%1$d salvataggi interrotti. Riapri il post e salva di nuovo.");
+        table.put("%1$d saves were interrupted",
+                "%1$d salvataggi sono stati interrotti");
+        table.put("%1$d setting found",
+                "%1$d impostazione trovata");
+        table.put("%1$d settings found",
+                "%1$d impostazioni trovate");
+        table.put("%1$d switch will change.",
+                "Cambier\u00e0 %1$d interruttore.");
+        table.put("%1$d switches will change.",
+                "Cambieranno %1$d interruttori.");
+        table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
+                "%1$s diventa la data e l'ora del salvataggio, %2$s il numero del video su Threads, %3$s chi l'ha pubblicato e %4$s il giorno di pubblicazione. Ci\u00f2 che un salvataggio non conosce viene omesso, e un nome senza nessuno di questi riceve la data. Se il nome \u00e8 gi\u00e0 nella cartella, l'ora del salvataggio viene aggiunta in fondo. I caratteri non validi diventano trattini bassi. Lascia vuoto per usare il predefinito, %5$s.");
+        table.put("%1$s of %2$s",
+                "%1$s di %2$s");
+        table.put("%1$s so far",
+                "%1$s finora");
+        table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
+                "%1$s. \u00c8 stato impostato durante la patch, quindi Pausa non pu\u00f2 disattivarlo. Per escluderlo, applica di nuovo la patch senza quella patch.");
+        table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
+                "%1$s. Sono stati impostati durante la patch, quindi Pausa non pu\u00f2 disattivarli. Per escluderne uno, applica di nuovo la patch senza la patch indicata tra parentesi dopo di esso.");
+        table.put("%1$s. This action will be available when it finishes.",
+                "%1$s. Questa azione sar\u00e0 disponibile quando termina.");
+        table.put("A diagnostic report is already being saved.",
+                "Un report diagnostico \u00e8 gi\u00e0 in fase di salvataggio.");
+        table.put("A file named %1$s in %2$s paused HushThreads.",
+                "Un file chiamato %1$s in %2$s ha messo in pausa HushThreads.");
+        table.put("A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.",
+                "Una pressione prolungata sul logo di Threads in cima al feed apre queste impostazioni. Se disattivato, la pressione prolungata non fa nulla.");
+        table.put("A save stopped. Reopen the post and save again.",
+                "Un salvataggio si \u00e8 interrotto. Riapri il post e salva di nuovo.");
+        table.put("A save was interrupted",
+                "Un salvataggio \u00e8 stato interrotto");
+        table.put("A sideways swipe on your feed no longer slides into Search. The Search button still opens it. Restart Threads to see the change.",
+                "Uno scorrimento laterale sul feed non porta pi\u00f9 in Cerca. Il pulsante Cerca la apre ancora. Riavvia Threads per vedere la modifica.");
+        table.put("About",
+                "Informazioni");
+        table.put("Adds Save to a post's menu. A post with several photos or videos saves them all. Off or paused, you get Threads' normal menu.",
+                "Aggiunge Salva al menu di un post. Un post con pi\u00f9 foto o video li salva tutti. Disattivato o in pausa, hai il menu normale di Threads.");
+        table.put("Adds a HushThreads row just above More settings in Threads' settings. Off, the row is gone the next time you open Threads' settings.",
+                "Aggiunge una riga HushThreads subito sopra Altre impostazioni nelle impostazioni di Threads. Se disattivato, la riga sparisce la prossima volta che apri le impostazioni di Threads.");
+        table.put("Ads and suggested accounts in your feed",
+                "Annunci e account suggeriti nel tuo feed");
+        table.put("Advertising ID removed",
+                "ID pubblicitario rimosso");
+        table.put("Analytics address coverage",
+                "Copertura degli indirizzi di analisi");
+        table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
+                "Android 11 e versioni precedenti non indicano quali link si aprono qui. Tocca per aprire le impostazioni di questa app, poi Apri per impostazione predefinita.");
+        table.put("Android didn't say which links open here. Tap to check in Android's settings.",
+                "Android non ha indicato quali link si aprono qui. Tocca per controllare nelle impostazioni di Android.");
+        table.put("Android only sends Threads links to an app signed by Meta. Selecting the addresses sends their links here instead. Your other link settings stay as they are.",
+                "Android invia i link di Threads solo a un'app firmata da Meta. Selezionando gli indirizzi, i loro link arrivano invece qui. Le altre impostazioni dei link restano come sono.");
+        table.put("Android verified this app for Threads' web addresses, so their links open here.",
+                "Android ha verificato questa app per gli indirizzi web di Threads, quindi i loro link si aprono qui.");
+        table.put("Android's settings for this app didn't open. Open App info from Threads' icon, then Open by default.",
+                "Le impostazioni di Android per questa app non si sono aperte. Apri Informazioni app dall'icona di Threads, poi Apri per impostazione predefinita.");
+        table.put("Appearance",
+                "Aspetto");
+        table.put("Asks GitHub for the newest release right now, even with the switch above off.",
+                "Chiede subito a GitHub la versione pi\u00f9 recente, anche con l'interruttore qui sopra disattivato.");
+        table.put("Back",
+                "Indietro");
+        table.put("Back to defaults",
+                "Ripristina predefiniti");
+        table.put("Best",
+                "Massima");
+        table.put("Blocked words and domains",
+                "Parole e domini bloccati");
+        table.put("Blocked: %1$s. Not found in this build: %2$s.",
+                "Bloccati: %1$s. Non trovati in questa build: %2$s.");
+        table.put("Build %1$s",
+                "Build %1$s");
+        table.put("Build %1$s (modified)",
+                "Build %1$s (modificata)");
+        table.put("Build %1$s (source known)",
+                "Build %1$s (origine nota)");
+        table.put("Build %1$s (source unknown)",
+                "Build %1$s (origine sconosciuta)");
+        table.put("Cancel",
+                "Annulla");
+        table.put("Cancel saving this carousel",
+                "Annulla il salvataggio di questo carosello");
+        table.put("Cancel saving this photo",
+                "Annulla il salvataggio di questa foto");
+        table.put("Cancel saving this video",
+                "Annulla il salvataggio di questo video");
+        table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "Carosello annullato. Salvati %1$d. Non riusciti %2$d. Saltati %3$d.");
+        table.put("Changed %1$d setting",
+                "%1$d impostazione modificata");
+        table.put("Changed %1$d settings",
+                "%1$d impostazioni modificate");
+        table.put("Changing these",
+                "Come cambiarli");
+        table.put("Check for new HushThreads releases",
+                "Cerca nuove versioni di HushThreads");
+        table.put("Check now",
+                "Controlla ora");
+        table.put("Checking GitHub now.",
+                "Controllo su GitHub in corso.");
+        table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
+                "Scegli un nome di cartella sotto Movies e Pictures. I caratteri non validi diventano trattini bassi. Lascia vuoto per usare la cartella predefinita, %1$s.");
+        table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
+                "Scegli un file di impostazioni. Prima di importare qualsiasi cosa, vedrai quanti interruttori cambia.");
+        table.put("Clear diagnostic data",
+                "Cancella i dati diagnostici");
+        table.put("Clear search",
+                "Cancella la ricerca");
+    }
+
+    private static void fillIt1(Map<String, String> table) {
+        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
+                "Cancella il log salvato, i risultati del controllo delle patch e qualsiasi crash conservato che un report includerebbe.");
+        table.put("Collapsed",
+                "Compressa");
+        table.put("Comments",
+                "Commenti");
+        table.put("Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
+                "Copia un report rapido o salva quello completo nella cartella Download di Threads. Link, ID, cookie e token di accesso vengono esclusi. Controlla che non contenga altro testo privato prima di condividerlo.");
+        table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
+                "Copia un report rapido o salva quello completo in Download/Morphe. Link, ID, cookie e token di accesso vengono esclusi. Controlla che non contenga altro testo privato prima di condividerlo.");
+        table.put("Copy a short report to the clipboard.",
+                "Copia un report breve negli appunti.");
+        table.put("Copy quick report",
+                "Copia report rapido");
+        table.put("Copy text and exact post times",
+                "Copia testo e orari esatti dei post");
+        table.put("Copy text on long press",
+                "Copia testo con pressione prolungata");
+        table.put("Copy text when you hold a post",
+                "Copia il testo tenendo premuto un post");
+        table.put("Copying to the gallery",
+                "Copia nella galleria in corso");
+        table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
+                "Impossibile importare le impostazioni e impossibile ripristinare quelle che avevi. Controlla gli interruttori in questa schermata.");
+        table.put("Couldn't import the settings. Nothing was changed.",
+                "Impossibile importare le impostazioni. Non \u00e8 cambiato nulla.");
+        table.put("Couldn't open that file. Nothing was changed.",
+                "Impossibile aprire quel file. Non \u00e8 cambiato nulla.");
+        table.put("Couldn't open the file picker. Try again.",
+                "Impossibile aprire il selettore di file. Riprova.");
+        table.put("Couldn't put back the diagnostic data. Try again.",
+                "Impossibile ripristinare i dati diagnostici. Riprova.");
+        table.put("Couldn't reach GitHub. Try again later.",
+                "Impossibile raggiungere GitHub. Riprova pi\u00f9 tardi.");
+        table.put("Couldn't save the settings file. Try again.",
+                "Impossibile salvare il file di impostazioni. Riprova.");
+        table.put("Couldn't start that. Try again in a moment.",
+                "Impossibile avviarlo. Riprova tra un momento.");
+        table.put("Couldn't start the report export. Try again shortly.",
+                "Impossibile avviare l'esportazione del report. Riprova tra poco.");
+        table.put("Couldn't turn HushThreads back on. Try again.",
+                "Impossibile riattivare HushThreads. Riprova.");
+        table.put("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.",
+                "La modalit\u00e0 scura usa il nero puro invece del grigio scuro. Attiva la modalit\u00e0 scura in Threads per vederlo. Riavvia Threads per vedere la modifica.");
+        table.put("Debug logging",
+                "Log di debug");
+        table.put("Diagnostic data cleared. Tap again to put it back.",
+                "Dati diagnostici cancellati. Tocca di nuovo per ripristinarli.");
+        table.put("Diagnostic data put back.",
+                "Dati diagnostici ripristinati.");
+        table.put("Diagnostic report copied to the clipboard.",
+                "Report diagnostico copiato negli appunti.");
+        table.put("Download failed. Try again in a moment.",
+                "Download non riuscito. Riprova tra un momento.");
+        table.put("Download quality",
+                "Qualit\u00e0 del download");
+        table.put("Downloading",
+                "Download in corso");
+        table.put("Downloads",
+                "Download");
+        table.put("Each video saves at %1$s or the closest quality below it. A video with nothing that low saves at the closest quality above.",
+                "Ogni video viene salvato a %1$s o alla qualit\u00e0 pi\u00f9 vicina sotto. Un video senza niente di cos\u00ec basso viene salvato alla qualit\u00e0 pi\u00f9 vicina sopra.");
+        table.put("Each video saves at its lowest quality, for the smallest file.",
+                "Ogni video viene salvato alla qualit\u00e0 pi\u00f9 bassa, per il file pi\u00f9 piccolo.");
+        table.put("Each video saves at the best quality the player streams.",
+                "Ogni video viene salvato alla qualit\u00e0 migliore trasmessa dal player.");
+        table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
+                "Tutti gli interruttori tranne Log di debug agiscono come se fossero disattivati, e ci\u00f2 che \u00e8 stato impostato durante la patch resta attivo. Le tue impostazioni restano invariate.");
+        table.put("Example without post details",
+                "Esempio senza dettagli del post");
+        table.put("Expanded",
+                "Espansa");
+        table.put("Export diagnostic report",
+                "Esporta report diagnostico");
+        table.put("Export settings",
+                "Esporta impostazioni");
+        table.put("Feed",
+                "Feed");
+        table.put("File name",
+                "Nome del file");
+        table.put("File name set to %1$s.",
+                "Nome del file impostato su %1$s.");
+        table.put("Filter comments",
+                "Filtra commenti");
+        table.put("Folder name",
+                "Nome della cartella");
+        table.put("Folder set to %1$s.",
+                "Cartella impostata su %1$s.");
+        table.put("Full report saved to %1$s",
+                "Report completo salvato in %1$s");
+        table.put("Full size photos",
+                "Foto a dimensione piena");
+        table.put("GPL-3.0, with the notices of the projects this is built on",
+                "GPL-3.0, con le note dei progetti su cui si basa");
+        table.put("GitHub is turning away checks from this network for now. Try again later.",
+                "Per ora GitHub rifiuta i controlli da questa rete. Riprova pi\u00f9 tardi.");
+        table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
+                "GitHub ha risposto con qualcosa che HushThreads non riesce a leggere. Riprova pi\u00f9 tardi.");
+        table.put("Go straight to one group of settings. Back returns to where you were.",
+                "Vai direttamente a un gruppo di impostazioni. Indietro ti riporta dov'eri.");
+        table.put("Help and restart",
+                "Aiuto e riavvio");
+        table.put("Helps if WhatsApp, an editor like CapCut or InShot, or a gallery plays your saved video without sound. May lower quality.",
+                "Utile se WhatsApp, un editor come CapCut o InShot, o una galleria riproduce il video salvato senza audio. Pu\u00f2 ridurre la qualit\u00e0.");
+        table.put("Hidden. Tap to show it again.",
+                "Nascoste. Tocca per mostrarle di nuovo.");
+        table.put("Hide ads",
+                "Nascondi gli annunci");
+        table.put("Hide comments with links",
+                "Nascondi commenti con link");
+        table.put("Hide follow suggestions in Search",
+                "Nascondi i suggerimenti da seguire in Cerca");
+        table.put("Hide ghost post bubbles",
+                "Nascondi le bolle dei post fantasma");
+        table.put("Hide screenshots from Threads",
+                "Nascondi gli screenshot a Threads");
+        table.put("Hide suggested users",
+                "Nascondi gli utenti suggeriti");
+        table.put("Hide the Instagram button",
+                "Nascondi il pulsante di Instagram");
+    }
+
+    private static void fillIt2(Map<String, String> table) {
+        table.put("Hides ads and the cards that suggest accounts to follow.",
+                "Nasconde gli annunci e le schede che suggeriscono account da seguire.");
+        table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
+                "Tenendo premuto il testo di un post si apre Copia testo, anche in un post aperto, cos\u00ec copi l'intero post con i suoi link invece di selezionare parole.");
+        table.put("How far a photo or video you're saving has got, with a button to cancel it",
+                "A che punto \u00e8 il salvataggio di una foto o di un video, con un pulsante per annullarlo");
+        table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
+                "\u00c8 uscito HushThreads %1$s. Aggiornalo in Morphe Manager.");
+        table.put("HushThreads %1$s on Threads %2$s",
+                "HushThreads %1$s su Threads %2$s");
+        table.put("HushThreads %1$s targets Threads %2$s.",
+                "HushThreads %1$s \u00e8 pensato per Threads %2$s.");
+        table.put("HushThreads is on",
+                "HushThreads \u00e8 attivo");
+        table.put("HushThreads is paused",
+                "HushThreads \u00e8 in pausa");
+        table.put("HushThreads pauses when Threads restarts.",
+                "HushThreads va in pausa quando Threads si riavvia.");
+        table.put("HushThreads saves",
+                "Salvataggi di HushThreads");
+        table.put("HushThreads settings",
+                "Impostazioni di HushThreads");
+        table.put("HushThreads settings couldn't open",
+                "Impossibile aprire le impostazioni di HushThreads");
+        table.put("HushThreads turns back on when Threads restarts.",
+                "HushThreads si riattiva quando Threads si riavvia.");
+        table.put("Import",
+                "Importa");
+        table.put("Import settings",
+                "Importa impostazioni");
+        table.put("Importing settings",
+                "Importazione delle impostazioni");
+        table.put("Instagram won't open posts here",
+                "Instagram non apre i post qui");
+        table.put("It targets Threads %1$s.",
+                "\u00c8 pensato per Threads %1$s.");
+        table.put("Joining the picture and sound",
+                "Unione di immagine e audio");
+        table.put("Jump to a section",
+                "Vai a una sezione");
+        table.put("Keep feed position on return",
+                "Mantieni la posizione nel feed al ritorno");
+        table.put("Last carousel save",
+                "Ultimo salvataggio di un carosello");
+        table.put("Licenses",
+                "Licenze");
+        table.put("Link expired. Reopen the post and try again",
+                "Link scaduto. Riapri il post e riprova");
+        table.put("Links",
+                "Link");
+        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
+                "I link che tocchi si aprono nel browser o nell'app del sito, saltando il tracciamento dei link di Threads. Le pagine di Threads e Instagram si aprono ancora in Threads.");
+        table.put("No app on this phone can open the link. The address is %1$s.",
+                "Nessuna app su questo telefono pu\u00f2 aprire il link. L'indirizzo \u00e8 %1$s.");
+        table.put("No matching settings",
+                "Nessuna impostazione corrispondente");
+        table.put("No saves in progress.",
+                "Nessun salvataggio in corso.");
+        table.put("No swipe into Search",
+                "Niente scorrimento verso Cerca");
+        table.put("No time limit",
+                "Nessun limite di tempo");
+        table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
+                "Nessuno degli indirizzi web di Threads \u00e8 selezionato per questa app, quindi i loro link si aprono altrove. Tocca per selezionarli nelle impostazioni di Android.");
+        table.put("Not in this build: %1$s. Morphe Manager selects it by default. Patch again with it selected to get what it does.",
+                "Non in questa build: %1$s. Morphe Manager la seleziona per impostazione predefinita. Applica di nuovo la patch con questa selezionata per avere ci\u00f2 che fa.");
+        table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
+                "Non in questa build: %1$s. Morphe Manager le seleziona per impostazione predefinita. Applica di nuovo la patch con queste selezionate per avere ci\u00f2 che fanno.");
+        table.put("Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "Non salvato: su Android 9 Threads ha bisogno del permesso Archiviazione per salvare. Attivalo nelle informazioni dell'app Threads, in Autorizzazioni, poi salva di nuovo.");
+        table.put("Not saved: a carousel can have at most %1$d pages",
+                "Non salvato: un carosello pu\u00f2 avere al massimo %1$d pagine");
+        table.put("Not saved: that isn't a Threads photo or video",
+                "Non salvato: non \u00e8 una foto o un video di Threads");
+        table.put("Not saved: the download was too slow. Try a faster connection.",
+                "Non salvato: download troppo lento. Prova una rete pi\u00f9 veloce.");
+        table.put("Not saved: the file is over 512 MB",
+                "Non salvato: il file supera i 512 MB");
+        table.put("Not saved: the proxy wants a password. Try another network.",
+                "Non salvato: il proxy chiede una password. Prova un'altra rete.");
+        table.put("OK",
+                "OK");
+        table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
+                "Una volta al giorno, all'avvio di Threads, controlla su GitHub se c'\u00e8 un HushThreads pi\u00f9 recente e te lo dice qui. Non viene scaricato nulla.");
+        table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
+                "Un modello per riga, o separati da virgole. Il dominio di un negozio come shopee.vn esclude le risposte che vi rimandano.");
+        table.put("One pattern a line, or separated by commas. Matched whatever the letter case.",
+                "Un modello per riga, o separati da virgole. Il confronto ignora maiuscole e minuscole.");
+        table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
+                "Solo alcuni indirizzi web di Threads sono selezionati per questa app e i link agli altri si aprono altrove. Tocca per selezionarli nelle impostazioni di Android.");
+        table.put("Open HushThreads settings",
+                "Apri le impostazioni di HushThreads");
+        table.put("Open links in your browser",
+                "Apri i link nel browser");
+        table.put("Open settings from the logo",
+                "Apri le impostazioni dal logo");
+        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
+                "L'apertura dei link supportati \u00e8 disattivata per questa app nelle impostazioni di Android. Tocca per attivarla.");
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "Apre una segnalazione su GitHub con le tue versioni e impostazioni gi\u00e0 compilate. Aggiungi cos'\u00e8 successo.");
+        table.put("Page %1$d of %2$d",
+                "Pagina %1$d di %2$d");
+        table.put("Pause",
+                "Pausa");
+        table.put("Pause HushThreads",
+                "Metti in pausa HushThreads");
+        table.put("Pause, backup and diagnostics",
+                "Pausa, backup e diagnostica");
+        table.put("Photos and videos you save from posts",
+                "Foto e video che salvi dai post");
+        table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
+                "Le foto si caricano alla dimensione pi\u00f9 grande che Threads ha, non a una scelta per il tuo schermo. Sono pi\u00f9 nitide e usano pi\u00f9 dati.");
+        table.put("Posts",
+                "Post");
+        table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
+                "I post e le risposte mostrano la data e l'ora di pubblicazione invece di 3 h o 2 g, nel formato a 12 o 24 ore del telefono.");
+        table.put("Privacy",
+                "Privacy");
+        table.put("Pure black dark mode",
+                "Modalit\u00e0 scura con nero puro");
+    }
+
+    private static void fillIt3(Map<String, String> table) {
+        table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
+                "Mette le impostazioni di HushThreads nel menu che compare tenendo premuta l'icona di Threads. Se disattivato, esce da quel menu.");
+        table.put("Puts every feature switch back the way it started.",
+                "Riporta ogni interruttore delle funzioni allo stato iniziale.");
+        table.put("Quick setups",
+                "Configurazioni rapide");
+        table.put("Quick setups hidden. Bring it back from Pause, backup and diagnostics.",
+                "Configurazioni rapide nascoste. Riattivale da Pausa, backup e diagnostica.");
+        table.put("Quick setups on the home page",
+                "Configurazioni rapide nella pagina principale");
+        table.put("Quiet",
+                "Tranquillo");
+        table.put("Re-signed build fix",
+                "Correzione per build rifirmate");
+        table.put("Reading the settings file",
+                "Lettura del file di impostazioni");
+        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
+                "Registra l'attivit\u00e0 delle patch e mostra gli errori per una segnalazione di bug. Lascia disattivato durante l'uso normale.");
+        table.put("Remove tracking from shared links",
+                "Rimuovi il tracciamento dai link condivisi");
+        table.put("Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.",
+                "Rimuove le schede che suggeriscono account da seguire, nel feed e sui profili. I post normali e i repost restano.");
+        table.put("Reopen the post and save again.",
+                "Riapri il post e salva di nuovo.");
+        table.put("Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.",
+                "Le risposte che corrispondono ai modelli qui sotto vengono escluse dalle risposte di un post, cos\u00ec una risposta spam non compare mai. Una risposta e le risposte mostrate sotto di essa vengono controllate ed escluse insieme. Le risposte normali mantengono il loro ordine.");
+        table.put("Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.",
+                "Le risposte con un link web vengono escluse, qualunque cosa dicano i modelli. Aggiungi un semplice nome di sito come shopee.vn come modello.");
+        table.put("Report a problem",
+                "Segnala un problema");
+        table.put("Reports, restart and app information",
+                "Report, riavvio e informazioni sull'app");
+        table.put("Restart Threads",
+                "Riavvia Threads");
+        table.put("Restart Threads to apply %1$d changes",
+                "Riavvia Threads per applicare %1$d modifiche");
+        table.put("Restart Threads to apply this change",
+                "Riavvia Threads per applicare questa modifica");
+        table.put("Restore diagnostic data",
+                "Ripristina i dati diagnostici");
+        table.put("Resume",
+                "Riprendi");
+        table.put("Retry",
+                "Riprova");
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "Tornando su Threads entro dieci minuti resti dov'eri. Puoi ancora trascinare verso il basso per aggiornare.");
+        table.put("Save",
+                "Salva");
+        table.put("Save all",
+                "Salva tutto");
+        table.put("Save cancelled",
+                "Salvataggio annullato");
+        table.put("Save folder",
+                "Cartella di salvataggio");
+        table.put("Save full report",
+                "Salva il report completo");
+        table.put("Save photo",
+                "Salva foto");
+        table.put("Save photos and videos",
+                "Salva foto e video");
+        table.put("Save the full report in Download/Morphe.",
+                "Salva il report completo in Download/Morphe.");
+        table.put("Save the full report in Threads' own Downloads folder.",
+                "Salva il report completo nella cartella Download di Threads.");
+        table.put("Save video",
+                "Salva video");
+        table.put("Save videos other apps can open",
+                "Salva video apribili da altre app");
+        table.put("Save your switches to a file. Pause and Debug logging aren't included, and neither is the release check.",
+                "Salva i tuoi interruttori in un file. Pausa e Log di debug non sono inclusi, e nemmeno il controllo delle nuove versioni.");
+        table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "Salvati %1$d. Falliti %2$d. Saltati %3$d.");
+        table.put("Saved to %1$s",
+                "Salvato in %1$s");
+        table.put("Saved to %1$s in lower quality than on Threads",
+                "Salvato in %1$s con qualit\u00e0 inferiore a Threads");
+        table.put("Saved to the gallery",
+                "Salvato nella galleria");
+        table.put("Saved to the gallery in lower quality than on Threads",
+                "Salvato nella galleria a qualit\u00e0 inferiore rispetto a Threads");
+        table.put("Saved. Restart Threads to apply this change.",
+                "Salvato. Riavvia Threads per applicare la modifica.");
+        table.put("Saves",
+                "Salvataggi");
+        table.put("Saving a carousel",
+                "Salvataggio di un carosello");
+        table.put("Saving a photo",
+                "Salvataggio di una foto");
+        table.put("Saving a video",
+                "Salvataggio di un video");
+        table.put("Saving the settings file",
+                "Salvataggio del file di impostazioni");
+        table.put("Saving...",
+                "Salvataggio...");
+        table.put("Saving... To cancel, open Downloads in HushThreads settings.",
+                "Salvataggio... Per annullare, apri Download in HushThreads.");
+        table.put("Search settings",
+                "Cerca nelle impostazioni");
+        table.put("Selecting links by hand",
+                "Selezionare i link a mano");
+        table.put("Set when you patched",
+                "Impostato durante la patch");
+        table.put("Settings couldn't open",
+                "Impossibile aprire le impostazioni");
+        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
+                "Impossibile aggiornare del tutto le impostazioni. Riapri le impostazioni e riprova.");
+        table.put("Settings exported.",
+                "Impostazioni esportate.");
+        table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
+                "Impostazioni esportate. L'app che contiene il file non ha permesso a HushThreads di rileggerlo, quindi non \u00e8 stato controllato.");
+        table.put("Settings imported.",
+                "Impostazioni importate.");
+        table.put("Settings imported. %1$d switch changed.",
+                "Impostazioni importate. \u00c8 cambiato %1$d interruttore.");
+        table.put("Settings imported. %1$d switches changed.",
+                "Impostazioni importate. Sono cambiati %1$d interruttori.");
+        table.put("Settings row in Threads' settings",
+                "Riga nelle impostazioni di Threads");
+        table.put("Settings shortcut on the app icon",
+                "Scorciatoia alle impostazioni sull'icona dell'app");
+    }
+
+    private static void fillIt4(Map<String, String> table) {
+        table.put("Share sheet entry removed",
+                "Voce del menu di condivisione rimossa");
+        table.put("Show all settings as a list",
+                "Mostra tutte le impostazioni come elenco");
+        table.put("Show settings by category",
+                "Mostra le impostazioni per categoria");
+        table.put("Show the date and time",
+                "Mostra data e ora");
+        table.put("Shown. Tap to hide it.",
+                "Visibili. Tocca per nasconderle.");
+        table.put("Smallest",
+                "Minima");
+        table.put("Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.",
+                "Alcune schermate di Threads controllano chi ha firmato l'app e non funzionano su un'app con patch. Questa correzione le fa aprire di nuovo.");
+        table.put("Source code and issues",
+                "Codice sorgente e segnalazioni");
+        table.put("Spam replies by words or links",
+                "Risposte spam per parole o link");
+        table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
+                "I post sponsorizzati vengono tolti da Per te, Seguiti e dai post che apri prima che Threads li mostri, quindi non resta nessuno spazio vuoto.");
+        table.put("Sponsored posts in For you and Following",
+                "Post sponsorizzati in Per te e Seguiti");
+        table.put("Stays in while paused",
+                "Resta attivo in pausa");
+        table.put("Stays on, since it's the only way left into these settings.",
+                "Resta attivo, perch\u00e9 \u00e8 l'unico modo rimasto per entrare in queste impostazioni.");
+        table.put("Stop analytics uploads",
+                "Blocca l'invio dei dati di analisi");
+        table.put("Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.",
+                "Blocca gran parte dei report di utilizzo e toglie il tracciamento dai link che condividi. Inoltre Threads non viene avvisato dei tuoi screenshot.");
+        table.put("Stops most usage reports from reaching Meta. Some may still get through. Turn this off to send them as before.",
+                "Impedisce alla maggior parte dei report di utilizzo di raggiungere Meta. Alcuni potrebbero comunque passare. Disattivalo per inviarli come prima.");
+        table.put("Suggested accounts in your feed",
+                "Account suggeriti nel tuo feed");
+        table.put("Support",
+                "Supporto");
+        table.put("Support HushThreads",
+                "Supporta HushThreads");
+        table.put("Support the project",
+                "Sostieni il progetto");
+        table.put("Supported links",
+                "Link supportati");
+        table.put("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.",
+                "Toglie la riga dei suggerimenti da seguire dalla schermata Cerca. Le tue ricerche e gli argomenti restano.");
+        table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
+                "Toglie il pulsante di Instagram dalla parte alta dei profili, il tuo e quelli degli altri. Riavvia Threads per vedere la modifica.");
+        table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
+                "Toglie le bolle dei post fantasma dalle immagini del profilo, sui profili e nella riga in cima al feed. Riavvia Threads per vedere la modifica.");
+        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
+                "Toglie i tag di tracciamento come xmt e slof dai link dei post che copi o condividi. Un link breve di condivisione diventa il link diretto del post.");
+        table.put("Tap to play videos",
+                "Tocca per riprodurre i video");
+        table.put("Tap to see which.",
+                "Tocca per vedere quali.");
+        table.put("Tap to turn it back on.",
+                "Tocca per riattivarlo.");
+        table.put("That file is too large to be a settings file. Nothing was changed.",
+                "Quel file \u00e8 troppo grande per essere un file di impostazioni. Non \u00e8 cambiato nulla.");
+        table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
+                "Quel file non \u00e8 testo leggibile, quindi potrebbe essersi danneggiato durante il trasferimento. Non \u00e8 cambiato nulla.");
+        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
+                "Quel file elenca un'impostazione due volte, quindi non si sa quale valore usare. Non \u00e8 cambiato nulla.");
+        table.put("That isn't a HushThreads settings file. Nothing was changed.",
+                "Non \u00e8 un file di impostazioni di HushThreads. Non \u00e8 cambiato nulla.");
+        table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
+                "Quel file di impostazioni contiene un valore che HushThreads non riesce a leggere. Non \u00e8 cambiato nulla.");
+        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
+                "Quel file di impostazioni \u00e8 danneggiato o scaricato solo in parte. Non \u00e8 cambiato nulla.");
+        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
+                "Quel file di impostazioni \u00e8 stato scritto da un HushThreads pi\u00f9 recente di questo. Non \u00e8 cambiato nulla.");
+        table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
+                "L'app che contiene quel file ci sta mettendo troppo, quindi HushThreads ha smesso di aspettare. Non \u00e8 cambiato nulla.");
+        table.put("The app holding the last settings file still hasn't answered. Try again later.",
+                "L'app che contiene l'ultimo file di impostazioni non ha ancora risposto. Riprova pi\u00f9 tardi.");
+        table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
+                "L'app che contiene il file di impostazioni ci sta mettendo troppo, quindi HushThreads ha smesso di aspettare. Quell'app potrebbe comunque finire di salvarlo, quindi controlla il file prima di farci affidamento.");
+        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
+                "Impossibile salvare ancora il report diagnostico. Riprova tra un attimo.");
+        table.put("The diagnostic report couldn't be saved. Try again.",
+                "Impossibile salvare il report diagnostico. Riprova.");
+        table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
+                "Impossibile rimuovere il file %1$s. Eliminalo da %2$s per riattivare HushThreads.");
+        table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
+                "Impossibile rimuovere il file %1$s. Eliminalo da %2$s, poi tocca di nuovo Riprendi.");
+        table.put("The newest HushThreads release is %1$s.",
+                "La versione pi\u00f9 recente di HushThreads \u00e8 la %1$s.");
+        table.put("The proxy wants a password. Try another network.",
+                "Il proxy chiede una password. Prova un'altra rete.");
+        table.put("The setting couldn't finish updating. Its saved value is shown.",
+                "Non \u00e8 stato possibile completare l'aggiornamento dell'impostazione. Viene mostrato il valore salvato.");
+        table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
+                "Il file di impostazioni \u00e8 stato salvato, ma rileggendolo non corrisponde a quanto scritto. Salvalo di nuovo come nuovo file.");
+        table.put("The version number is set as high as Android allows, so Google Play won't offer Meta's updates over this build. Threads still sees its real version. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.",
+                "Il numero di versione \u00e8 impostato al massimo consentito da Android, quindi Google Play non proporr\u00e0 gli aggiornamenti di Meta sopra questa build. Threads vede comunque la sua versione reale. Per tornare a Threads originale, disinstalla prima questa, cosa che elimina i dati di Threads su questo telefono. Anche le build successive di HushThreads hanno bisogno di Change version code, altrimenti non si installano sopra questa.");
+        table.put("There's no diagnostic data to clear.",
+                "Non ci sono dati diagnostici da cancellare.");
+        table.put("There's no diagnostic data to put back.",
+                "Non ci sono dati diagnostici da ripristinare.");
+        table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
+                "Si scelgono in Morphe Manager quando applichi la patch e Pausa non le disattiva. Applica di nuovo la patch per cambiarle.");
+        table.put("This build didn't record which report types it covers. Patch again to see them.",
+                "Questa build non ha registrato quali tipi di report copre. Applica di nuovo la patch per vederli.");
+        table.put("This phone has no file picker, so there's no way to choose a file here.",
+                "Questo telefono non ha un selettore di file, quindi qui non \u00e8 possibile scegliere un file.");
+        table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
+                "Threads accetta i certificati di sicurezza che hai aggiunto al telefono. I suoi controlli sui certificati di Meta restano invariati, quindi un proxy non pu\u00f2 comunque leggere gran parte del suo traffico.");
+        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
+                "Threads non pu\u00f2 leggere l'ID pubblicitario del telefono. Il relativo permesso \u00e8 stato rimosso da questa build.");
+        table.put("Threads closes and reopens on this page.",
+                "Threads si chiude e si riapre su questa pagina.");
+        table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
+                "Threads si \u00e8 chiuso o bloccato entro un minuto dall'avvio tre volte di fila, quindi HushThreads si \u00e8 messo in pausa da solo.");
+        table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
+                "Threads non compare quando condividi da altre app. La condivisione da Threads verso altre app funziona ancora.");
+        table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
+                "Threads non viene avvisato quando fai uno screenshot, quindi non pu\u00f2 registrarlo n\u00e9 reagire.");
+        table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "Su Android 9 Threads ha bisogno del permesso Archiviazione per salvare. Attivalo nelle informazioni dell'app Threads, in Autorizzazioni, poi salva di nuovo.");
+        table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
+                "Gli indirizzi web di Threads sono selezionati per questa app nelle impostazioni di Android, quindi i loro link si aprono qui.");
+    }
+
+    private static void fillIt5(Map<String, String> table) {
+        table.put("Tracking in links and analytics uploads",
+                "Tracciamento nei link e invio delle analisi");
+        table.put("Try a different word or clear the search.",
+                "Prova un'altra parola o cancella la ricerca.");
+        table.put("Try again, or go back to Threads.",
+                "Riprova, oppure torna a Threads.");
+        table.put("Turn features on or off",
+                "Attiva o disattiva le funzioni");
+        table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
+                "Attiva un gruppo di interruttori con un tocco o riporta ogni interruttore allo stato iniziale. Tieni premuto per nascondere questa riga.");
+        table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
+                "Disattiva tutti gli interruttori di HushThreads tranne Log di debug al prossimo avvio di Threads. Ci\u00f2 che hai scelto durante la patch resta e le tue scelte vengono salvate.");
+        table.put("Undo",
+                "Annulla");
+        table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
+                "Finch\u00e9 non riprendi, ogni interruttore tranne Log di debug agisce come se fosse disattivato. Le modifiche fatte durante la patch restano attive.");
+        table.put("Updates",
+                "Aggiornamenti");
+        table.put("User certificates trusted",
+                "Certificati utente considerati attendibili");
+        table.put("Version",
+                "Versione");
+        table.put("Version %1$s",
+                "Versione %1$s");
+        table.put("Version %1$s for Threads %2$s",
+                "Versione %1$s per Threads %2$s");
+        table.put("Version code raised",
+                "Codice di versione aumentato");
+        table.put("Video file name",
+                "Nome del file video");
+        table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
+                "I video si chiamano %1$s. Le foto si chiamano sempre %2$s seguito da data e ora.");
+        table.put("Videos go to %1$s and photos to %2$s.",
+                "I video vanno in %1$s e le foto in %2$s.");
+        table.put("Videos in your feed",
+                "Video nel tuo feed");
+        table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
+                "I video nel feed aspettano un tocco invece di partire mentre scorri.");
+        table.put("Where you left off in your feed",
+                "Dove ti eri fermato nel feed");
+        table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
+                "Con l'interruttore qui sopra attivo, resti dov'eri per quanto tempo tu stia via. Trascinare per aggiornare e un nuovo avvio caricano comunque nuovi post.");
+        table.put("You have the newest HushThreads release.",
+                "Hai la versione pi\u00f9 recente di HushThreads.");
+        table.put("You paused HushThreads.",
+                "Hai messo in pausa HushThreads.");
+        table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.",
+                "Il tuo Instagram \u00e8 firmato da Meta e apre post e profili di Threads solo in un Threads firmato da Meta. Toccandone uno in Instagram compare un errore che dice che non \u00e8 stato possibile caricare il sito web. I post che apri direttamente in Threads funzionano come al solito.");
+        table.put("Your choices are saved. Tap Resume, then restart Threads.",
+                "Le tue scelte sono salvate. Tocca Riprendi, poi riavvia Threads.");
+        table.put("Your switches already match that file, so nothing will change.",
+                "I tuoi interruttori corrispondono gi\u00e0 a quel file, quindi non cambier\u00e0 nulla.");
+        table.put("none",
+                "nessuno");
+        table.put("the raised version code",
+                "il codice versione aumentato");
+        table.put("the re-signed build fix",
+                "la correzione per le build rifirmate");
+        table.put("the removed advertising ID permission",
+                "il permesso dell'ID pubblicitario rimosso");
+        table.put("the removed share sheet entry",
+                "la voce del menu di condivisione rimossa");
+        table.put("the user certificate trust",
+                "l'attendibilit\u00e0 dei certificati utente");
+    }
+
+    private static Map<String, String> buildKo() {
+        Map<String, String> table = new HashMap<>(664);
+        fillKo0(table);
+        fillKo1(table);
+        fillKo2(table);
+        fillKo3(table);
+        fillKo4(table);
+        fillKo5(table);
+        return table;
+    }
+
+    private static void fillKo0(Map<String, String> table) {
+        table.put("%1$d default patch isn't in this build",
+                "\uae30\ubcf8 \ud328\uce58 %1$d\uac1c\uac00 \uc774 \ube4c\ub4dc\uc5d0 \uc5c6\uc74c");
+        table.put("%1$d default patches aren't in this build",
+                "\uae30\ubcf8 \ud328\uce58 %1$d\uac1c\uac00 \uc774 \ube4c\ub4dc\uc5d0 \uc5c6\uc74c");
+        table.put("%1$d item in that file isn't a setting this version of HushThreads knows, so it'll be left out.",
+                "\uc774 \ud30c\uc77c\uc758 \ud56d\ubaa9 %1$d\uac1c\ub294 \uc774 \ubc84\uc804\uc758 HushThreads\uac00 \uc54c\uc9c0 \ubabb\ud558\ub294 \uc124\uc815\uc774\ubbc0\ub85c \uc81c\uc678\ub429\ub2c8\ub2e4.");
+        table.put("%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.",
+                "\uc774 \ud30c\uc77c\uc758 \ud56d\ubaa9 %1$d\uac1c\ub294 \uc774 \ubc84\uc804\uc758 HushThreads\uac00 \uc54c\uc9c0 \ubabb\ud558\ub294 \uc124\uc815\uc774\ubbc0\ub85c \uc81c\uc678\ub429\ub2c8\ub2e4.");
+        table.put("%1$d saved in lower quality than on Threads.",
+                "%1$d\uac1c\uac00 Threads\ubcf4\ub2e4 \ub0ae\uc740 \ud654\uc9c8\ub85c \uc800\uc7a5\ub418\uc5c8\uc2b5\ub2c8\ub2e4.");
+        table.put("%1$d saves stopped. Reopen the post and save again.",
+                "\uc800\uc7a5 %1$d\uac1c\uac00 \uc911\ub2e8\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \uac8c\uc2dc\ubb3c\uc744 \ub2e4\uc2dc \uc5f4\uace0 \ub2e4\uc2dc \uc800\uc7a5\ud558\uc138\uc694.");
+        table.put("%1$d saves were interrupted",
+                "\uc800\uc7a5 \uc791\uc5c5 %1$d\uac1c\uac00 \uc911\ub2e8\ub418\uc5c8\uc2b5\ub2c8\ub2e4");
+        table.put("%1$d setting found",
+                "\uc124\uc815 %1$d\uac1c \ucc3e\uc74c");
+        table.put("%1$d settings found",
+                "\uc124\uc815 %1$d\uac1c \ucc3e\uc74c");
+        table.put("%1$d switch will change.",
+                "\uc2a4\uc704\uce58 %1$d\uac1c\uac00 \ubc14\ub01d\ub2c8\ub2e4.");
+        table.put("%1$d switches will change.",
+                "\uc2a4\uc704\uce58 %1$d\uac1c\uac00 \ubc14\ub01d\ub2c8\ub2e4.");
+        table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
+                "%1$s\ub294 \uc800\uc7a5\ud55c \ub0a0\uc9dc\uc640 \uc2dc\uac04, %2$s\ub294 Threads\uc5d0\uc11c \ub3d9\uc601\uc0c1\uc758 \ubc88\ud638, %3$s\ub294 \uac8c\uc2dc\ud55c \uc0ac\ub78c, %4$s\ub294 \uac8c\uc2dc\ub41c \ub0a0\uc9dc\uac00 \ub429\ub2c8\ub2e4. \uc800\uc7a5\ud560 \ub54c \uc54c \uc218 \uc5c6\ub294 \uc815\ubcf4\ub294 \ube60\uc9c0\uba70, \uc774 \uc911 \uc544\ubb34\uac83\ub3c4 \uc5c6\ub294 \uc774\ub984\uc5d0\ub294 \ub0a0\uc9dc\uac00 \ubd99\uc2b5\ub2c8\ub2e4. \uac19\uc740 \uc774\ub984\uc774 \uc774\ubbf8 \ud3f4\ub354\uc5d0 \uc788\uc73c\uba74 \uc800\uc7a5\ud55c \uc2dc\uac04\uc774 \ub05d\uc5d0 \ubd99\uc2b5\ub2c8\ub2e4. \uc0ac\uc6a9\ud560 \uc218 \uc5c6\ub294 \ubb38\uc790\ub294 \ubc11\uc904\ub85c \ubc14\ub01d\ub2c8\ub2e4. \ube44\uc6cc \ub450\uba74 \uae30\ubcf8\uac12\uc778 %5$s\ub97c \uc0ac\uc6a9\ud569\ub2c8\ub2e4.");
+        table.put("%1$s of %2$s",
+                "%2$s \uc911 %1$s");
+        table.put("%1$s so far",
+                "\ud604\uc7ac\uae4c\uc9c0 %1$s");
+        table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
+                "%1$s. \ud328\uce58\ud560 \ub54c \uc801\uc6a9\ub418\uc5b4 \uc77c\uc2dc \uc815\uc9c0\ub85c\ub294 \ub04c \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uc774 \uae30\ub2a5\uc774 \uc6d0\uc778\uc778\uc9c0 \ud655\uc778\ud558\ub824\uba74 \ud574\ub2f9 \ud328\uce58\ub97c \ube7c\uace0 \ub2e4\uc2dc \ud328\uce58\ud558\uc138\uc694.");
+        table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
+                "%1$s. \ud328\uce58\ud560 \ub54c \uc801\uc6a9\ub418\uc5b4 \uc77c\uc2dc \uc815\uc9c0\ub85c\ub294 \ub04c \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uc6d0\uc778\uc778\uc9c0 \ud655\uc778\ud558\ub824\uba74 \ub4a4\uc758 \uad04\ud638\uc5d0 \ud45c\uc2dc\ub41c \ud328\uce58\ub97c \ube7c\uace0 \ub2e4\uc2dc \ud328\uce58\ud558\uc138\uc694.");
+        table.put("%1$s. This action will be available when it finishes.",
+                "%1$s. \ub05d\ub098\uba74 \uc774 \uc791\uc5c5\uc744 \uc0ac\uc6a9\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.");
+        table.put("A diagnostic report is already being saved.",
+                "\uc9c4\ub2e8 \ubcf4\uace0\uc11c\ub97c \uc774\ubbf8 \uc800\uc7a5\ud558\uace0 \uc788\uc2b5\ub2c8\ub2e4.");
+        table.put("A file named %1$s in %2$s paused HushThreads.",
+                "%2$s\uc5d0 \uc788\ub294 %1$s \ud30c\uc77c \ub54c\ubb38\uc5d0 HushThreads\uac00 \uc77c\uc2dc \uc815\uc9c0\ub418\uc5c8\uc2b5\ub2c8\ub2e4.");
+        table.put("A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.",
+                "\ud53c\ub4dc \uc0c1\ub2e8\uc758 Threads \ub85c\uace0\ub97c \uae38\uac8c \ub204\ub974\uba74 \uc774 \uc124\uc815\uc774 \uc5f4\ub9bd\ub2c8\ub2e4. \ub044\uba74 \uae38\uac8c \ub20c\ub7ec\ub3c4 \uc544\ubb34 \uc77c\ub3c4 \uc77c\uc5b4\ub098\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
+        table.put("A save stopped. Reopen the post and save again.",
+                "\uc800\uc7a5\uc774 \uc911\ub2e8\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \uac8c\uc2dc\ubb3c\uc744 \ub2e4\uc2dc \uc5f4\uace0 \ub2e4\uc2dc \uc800\uc7a5\ud558\uc138\uc694.");
+        table.put("A save was interrupted",
+                "\uc800\uc7a5 \uc791\uc5c5\uc774 \uc911\ub2e8\ub418\uc5c8\uc2b5\ub2c8\ub2e4");
+        table.put("A sideways swipe on your feed no longer slides into Search. The Search button still opens it. Restart Threads to see the change.",
+                "\ud53c\ub4dc\uc5d0\uc11c \uc606\uc73c\ub85c \uc2a4\uc640\uc774\ud504\ud574\ub3c4 \ub354 \uc774\uc0c1 \uac80\uc0c9\uc73c\ub85c \ub118\uc5b4\uac00\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. \uac80\uc0c9 \ubc84\ud2bc\uc73c\ub85c\ub294 \uacc4\uc18d \uc5f4 \uc218 \uc788\uc2b5\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("About",
+                "\uc815\ubcf4");
+        table.put("Adds Save to a post's menu. A post with several photos or videos saves them all. Off or paused, you get Threads' normal menu.",
+                "\uac8c\uc2dc\ubb3c \uba54\ub274\uc5d0 \uc800\uc7a5\uc744 \ucd94\uac00\ud569\ub2c8\ub2e4. \uc0ac\uc9c4\uc774\ub098 \ub3d9\uc601\uc0c1\uc774 \uc5ec\ub7ec \uac1c\uc778 \uac8c\uc2dc\ubb3c\uc740 \ubaa8\ub450 \uc800\uc7a5\ub429\ub2c8\ub2e4. \uaebc\uc838 \uc788\uac70\ub098 \uc77c\uc2dc \uc815\uc9c0 \uc911\uc774\uba74 Threads\uc758 \uae30\ubcf8 \uba54\ub274\uac00 \ud45c\uc2dc\ub429\ub2c8\ub2e4.");
+        table.put("Adds a HushThreads row just above More settings in Threads' settings. Off, the row is gone the next time you open Threads' settings.",
+                "Threads \uc124\uc815\uc758 \ucd94\uac00 \uc124\uc815 \ubc14\ub85c \uc704\uc5d0 HushThreads \ud589\uc744 \ucd94\uac00\ud569\ub2c8\ub2e4. \ub044\uba74 \ub2e4\uc74c\uc5d0 Threads \uc124\uc815\uc744 \uc5f4 \ub54c \ud589\uc774 \uc0ac\ub77c\uc9d1\ub2c8\ub2e4.");
+        table.put("Ads and suggested accounts in your feed",
+                "\ud53c\ub4dc\uc758 \uad11\uace0\uc640 \ucd94\ucc9c \uacc4\uc815");
+        table.put("Advertising ID removed",
+                "\uad11\uace0 ID \uc81c\uac70\ub428");
+        table.put("Analytics address coverage",
+                "\ubd84\uc11d \uc8fc\uc18c \uc801\uc6a9 \ubc94\uc704");
+        table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
+                "Android 11 \uc774\ud558\uc5d0\uc11c\ub294 \uc5b4\ub5a4 \ub9c1\ud06c\uac00 \uc5ec\uae30\uc11c \uc5f4\ub9ac\ub294\uc9c0 \uc54c\ub824 \uc8fc\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. \ud0ed\ud574\uc11c \uc774 \uc571\uc758 \uc124\uc815\uc744 \uc5f0 \ub2e4\uc74c \uae30\ubcf8\uc73c\ub85c \uc5f4\uae30\ub97c \uc120\ud0dd\ud558\uc138\uc694.");
+        table.put("Android didn't say which links open here. Tap to check in Android's settings.",
+                "Android\uac00 \uc5b4\ub5a4 \ub9c1\ud06c\uac00 \uc5ec\uae30\uc11c \uc5f4\ub9ac\ub294\uc9c0 \uc54c\ub824 \uc8fc\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4. \ud0ed\ud574\uc11c Android \uc124\uc815\uc5d0\uc11c \ud655\uc778\ud558\uc138\uc694.");
+        table.put("Android only sends Threads links to an app signed by Meta. Selecting the addresses sends their links here instead. Your other link settings stay as they are.",
+                "Android\ub294 Threads \ub9c1\ud06c\ub97c Meta\uac00 \uc11c\uba85\ud55c \uc571\uc5d0\ub9cc \ubcf4\ub0c5\ub2c8\ub2e4. \uc8fc\uc18c\ub97c \uc120\ud0dd\ud558\uba74 \ud574\ub2f9 \ub9c1\ud06c\uac00 \ub300\uc2e0 \uc5ec\uae30\ub85c \uc635\ub2c8\ub2e4. \ub2e4\ub978 \ub9c1\ud06c \uc124\uc815\uc740 \uadf8\ub300\ub85c \uc720\uc9c0\ub429\ub2c8\ub2e4.");
+        table.put("Android verified this app for Threads' web addresses, so their links open here.",
+                "Android\uac00 \uc774 \uc571\uc744 Threads \uc6f9 \uc8fc\uc18c\uc6a9\uc73c\ub85c \uc778\uc99d\ud588\uc73c\ubbc0\ub85c \ud574\ub2f9 \ub9c1\ud06c\ub294 \uc5ec\uae30\uc11c \uc5f4\ub9bd\ub2c8\ub2e4.");
+        table.put("Android's settings for this app didn't open. Open App info from Threads' icon, then Open by default.",
+                "\uc774 \uc571\uc758 Android \uc124\uc815\uc774 \uc5f4\ub9ac\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4. Threads \uc544\uc774\ucf58\uc5d0\uc11c \uc571 \uc815\ubcf4\ub97c \uc5f0 \ub2e4\uc74c \uae30\ubcf8\uc73c\ub85c \uc5f4\uae30\ub97c \uc120\ud0dd\ud558\uc138\uc694.");
+        table.put("Appearance",
+                "\ubaa8\uc591");
+        table.put("Asks GitHub for the newest release right now, even with the switch above off.",
+                "\uc704 \uc2a4\uc704\uce58\uac00 \uaebc\uc838 \uc788\uc5b4\ub3c4 \uc9c0\uae08 \ubc14\ub85c GitHub\uc5d0 \ucd5c\uc2e0 \ub9b4\ub9ac\uc2a4\ub97c \ud655\uc778\ud569\ub2c8\ub2e4.");
+        table.put("Back",
+                "\ub4a4\ub85c");
+        table.put("Back to defaults",
+                "\uae30\ubcf8\uac12\uc73c\ub85c \ub418\ub3cc\ub9ac\uae30");
+        table.put("Best",
+                "\ucd5c\uc0c1");
+        table.put("Blocked words and domains",
+                "\ucc28\ub2e8\ud560 \ub2e8\uc5b4\uc640 \ub3c4\uba54\uc778");
+        table.put("Blocked: %1$s. Not found in this build: %2$s.",
+                "\ucc28\ub2e8\ub428: %1$s. \uc774 \ube4c\ub4dc\uc5d0\uc11c \ucc3e\uc9c0 \ubabb\ud568: %2$s.");
+        table.put("Build %1$s",
+                "\ube4c\ub4dc %1$s");
+        table.put("Build %1$s (modified)",
+                "\ube4c\ub4dc %1$s (\uc218\uc815\ub428)");
+        table.put("Build %1$s (source known)",
+                "\ube4c\ub4dc %1$s (\ucd9c\ucc98 \ud655\uc778\ub428)");
+        table.put("Build %1$s (source unknown)",
+                "\ube4c\ub4dc %1$s (\ucd9c\ucc98 \uc54c \uc218 \uc5c6\uc74c)");
+        table.put("Cancel",
+                "\ucde8\uc18c");
+        table.put("Cancel saving this carousel",
+                "\uc774 \uce90\ub7ec\uc140 \uc800\uc7a5 \ucde8\uc18c");
+        table.put("Cancel saving this photo",
+                "\uc774 \uc0ac\uc9c4 \uc800\uc7a5 \ucde8\uc18c");
+        table.put("Cancel saving this video",
+                "\uc774 \ub3d9\uc601\uc0c1 \uc800\uc7a5 \ucde8\uc18c");
+        table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "\uce90\ub7ec\uc140 \ucde8\uc18c\ub428. \uc800\uc7a5 %1$d\uac1c. \uc2e4\ud328 %2$d\uac1c. \uac74\ub108\ub700 %3$d\uac1c.");
+        table.put("Changed %1$d setting",
+                "\uc124\uc815 %1$d\uac1c \ubcc0\uacbd\ub428");
+        table.put("Changed %1$d settings",
+                "\uc124\uc815 %1$d\uac1c \ubcc0\uacbd\ub428");
+        table.put("Changing these",
+                "\ubcc0\uacbd \ubc29\ubc95");
+        table.put("Check for new HushThreads releases",
+                "\uc0c8 HushThreads \ub9b4\ub9ac\uc2a4 \ud655\uc778");
+        table.put("Check now",
+                "\uc9c0\uae08 \ud655\uc778");
+        table.put("Checking GitHub now.",
+                "\uc9c0\uae08 GitHub\ub97c \ud655\uc778\ud558\ub294 \uc911\uc785\ub2c8\ub2e4.");
+        table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
+                "Movies\uc640 Pictures \uc544\ub798\uc5d0 \uc4f8 \ud3f4\ub354 \uc774\ub984\uc744 \uc815\ud558\uc138\uc694. \uc0ac\uc6a9\ud560 \uc218 \uc5c6\ub294 \ubb38\uc790\ub294 \ubc11\uc904\ub85c \ubc14\ub01d\ub2c8\ub2e4. \ube44\uc6cc \ub450\uba74 \uae30\ubcf8 \ud3f4\ub354\uc778 %1$s\ub97c \uc0ac\uc6a9\ud569\ub2c8\ub2e4.");
+        table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
+                "\uc124\uc815 \ud30c\uc77c\uc744 \uc120\ud0dd\ud558\uc138\uc694. \uac00\uc838\uc624\uae30 \uc804\uc5d0 \uc2a4\uc704\uce58\uac00 \uba87 \uac1c \ubc14\ub00c\ub294\uc9c0 \ubcf4\uc5ec \uc90d\ub2c8\ub2e4.");
+        table.put("Clear diagnostic data",
+                "\uc9c4\ub2e8 \ub370\uc774\ud130 \uc9c0\uc6b0\uae30");
+        table.put("Clear search",
+                "\uac80\uc0c9 \uc9c0\uc6b0\uae30");
+    }
+
+    private static void fillKo1(Map<String, String> table) {
+        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
+                "\ubcf4\uace0\uc11c\uc5d0 \ud3ec\ud568\ub420 \uc800\uc7a5\ub41c \ub85c\uadf8, \ud328\uce58 \ud655\uc778 \uacb0\uacfc, \ubcf4\uad00\ub41c \ucda9\ub3cc \uae30\ub85d\uc744 \uc9c0\uc6c1\ub2c8\ub2e4.");
+        table.put("Collapsed",
+                "\uc811\ud798");
+        table.put("Comments",
+                "\ub313\uae00");
+        table.put("Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
+                "\uac04\ub2e8\ud55c \ubcf4\uace0\uc11c\ub97c \ubcf5\uc0ac\ud558\uac70\ub098 \uc804\uccb4 \ubcf4\uace0\uc11c\ub97c Threads \uc790\uccb4 \ub2e4\uc6b4\ub85c\ub4dc \ud3f4\ub354\uc5d0 \uc800\uc7a5\ud569\ub2c8\ub2e4. \ub9c1\ud06c, ID, \ucfe0\ud0a4, \ub85c\uadf8\uc778 \ud1a0\ud070\uc740 \uc81c\uc678\ub429\ub2c8\ub2e4. \uacf5\uc720\ud558\uae30 \uc804\uc5d0 \ub2e4\ub978 \uac1c\uc778\uc801\uc778 \ub0b4\uc6a9\uc774 \uc5c6\ub294\uc9c0 \ud655\uc778\ud558\uc138\uc694.");
+        table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
+                "\uac04\ub2e8\ud55c \ubcf4\uace0\uc11c\ub97c \ubcf5\uc0ac\ud558\uac70\ub098 \uc804\uccb4 \ubcf4\uace0\uc11c\ub97c Download/Morphe\uc5d0 \uc800\uc7a5\ud569\ub2c8\ub2e4. \ub9c1\ud06c, ID, \ucfe0\ud0a4, \ub85c\uadf8\uc778 \ud1a0\ud070\uc740 \uc81c\uc678\ub429\ub2c8\ub2e4. \uacf5\uc720\ud558\uae30 \uc804\uc5d0 \ub2e4\ub978 \uac1c\uc778\uc801\uc778 \ub0b4\uc6a9\uc774 \uc5c6\ub294\uc9c0 \ud655\uc778\ud558\uc138\uc694.");
+        table.put("Copy a short report to the clipboard.",
+                "\uac04\ub2e8\ud55c \ubcf4\uace0\uc11c\ub97c \ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ud569\ub2c8\ub2e4.");
+        table.put("Copy quick report",
+                "\ube60\ub978 \ubcf4\uace0\uc11c \ubcf5\uc0ac");
+        table.put("Copy text and exact post times",
+                "\ud14d\uc2a4\ud2b8 \ubcf5\uc0ac\uc640 \uc815\ud655\ud55c \uac8c\uc2dc \uc2dc\uac04");
+        table.put("Copy text on long press",
+                "\uae38\uac8c \ub20c\ub7ec \ud14d\uc2a4\ud2b8 \ubcf5\uc0ac");
+        table.put("Copy text when you hold a post",
+                "\uac8c\uc2dc\ubb3c\uc744 \uae38\uac8c \ub20c\ub7ec \ud14d\uc2a4\ud2b8 \ubcf5\uc0ac");
+        table.put("Copying to the gallery",
+                "\uac24\ub7ec\ub9ac\uc5d0 \ubcf5\uc0ac\ud558\ub294 \uc911");
+        table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
+                "\uc124\uc815\uc744 \uac00\uc838\uc624\uc9c0 \ubabb\ud588\uace0 \uae30\uc874 \uc124\uc815\ub3c4 \ubcf5\uc6d0\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc774 \ud654\uba74\uc758 \uc2a4\uc704\uce58\ub97c \ud655\uc778\ud558\uc138\uc694.");
+        table.put("Couldn't import the settings. Nothing was changed.",
+                "\uc124\uc815\uc744 \uac00\uc838\uc624\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+        table.put("Couldn't open that file. Nothing was changed.",
+                "\uadf8 \ud30c\uc77c\uc744 \uc5f4\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+        table.put("Couldn't open the file picker. Try again.",
+                "\ud30c\uc77c \uc120\ud0dd\uae30\ub97c \uc5f4\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Couldn't put back the diagnostic data. Try again.",
+                "\uc9c4\ub2e8 \ub370\uc774\ud130\ub97c \ubcf5\uc6d0\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Couldn't reach GitHub. Try again later.",
+                "GitHub\uc5d0 \uc5f0\uacb0\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \ub098\uc911\uc5d0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Couldn't save the settings file. Try again.",
+                "\uc124\uc815 \ud30c\uc77c\uc744 \uc800\uc7a5\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Couldn't start that. Try again in a moment.",
+                "\uc2dc\uc791\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Couldn't start the report export. Try again shortly.",
+                "\ubcf4\uace0\uc11c \ub0b4\ubcf4\ub0b4\uae30\ub97c \uc2dc\uc791\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Couldn't turn HushThreads back on. Try again.",
+                "HushThreads\ub97c \ub2e4\uc2dc \ucf1c\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.",
+                "\ub2e4\ud06c \ubaa8\ub4dc\uc5d0\uc11c \uc5b4\ub450\uc6b4 \ud68c\uc0c9 \ub300\uc2e0 \uc644\uc804\ud55c \uac80\uc740\uc0c9\uc744 \uc0ac\uc6a9\ud569\ub2c8\ub2e4. \ubcf4\ub824\uba74 Threads\uc5d0\uc11c \ub2e4\ud06c \ubaa8\ub4dc\ub97c \ucf1c\uc138\uc694. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Debug logging",
+                "\ub514\ubc84\uadf8 \ub85c\uadf8");
+        table.put("Diagnostic data cleared. Tap again to put it back.",
+                "\uc9c4\ub2e8 \ub370\uc774\ud130\ub97c \uc9c0\uc6e0\uc2b5\ub2c8\ub2e4. \ubcf5\uc6d0\ud558\ub824\uba74 \ub2e4\uc2dc \ud0ed\ud558\uc138\uc694.");
+        table.put("Diagnostic data put back.",
+                "\uc9c4\ub2e8 \ub370\uc774\ud130\ub97c \ubcf5\uc6d0\ud588\uc2b5\ub2c8\ub2e4.");
+        table.put("Diagnostic report copied to the clipboard.",
+                "\uc9c4\ub2e8 \ubcf4\uace0\uc11c\ub97c \ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ud588\uc2b5\ub2c8\ub2e4.");
+        table.put("Download failed. Try again in a moment.",
+                "\ub2e4\uc6b4\ub85c\ub4dc\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Download quality",
+                "\ub2e4\uc6b4\ub85c\ub4dc \ud654\uc9c8");
+        table.put("Downloading",
+                "\ub2e4\uc6b4\ub85c\ub4dc\ud558\ub294 \uc911");
+        table.put("Downloads",
+                "\ub2e4\uc6b4\ub85c\ub4dc");
+        table.put("Each video saves at %1$s or the closest quality below it. A video with nothing that low saves at the closest quality above.",
+                "\uac01 \ub3d9\uc601\uc0c1\uc740 %1$s \ub610\ub294 \uadf8\ubcf4\ub2e4 \ub0ae\uc740 \ud654\uc9c8 \uc911 \uac00\uc7a5 \uac00\uae4c\uc6b4 \ud654\uc9c8\ub85c \uc800\uc7a5\ub429\ub2c8\ub2e4. \uadf8\ub9cc\ud07c \ub0ae\uc740 \ud654\uc9c8\uc774 \uc5c6\ub294 \ub3d9\uc601\uc0c1\uc740 \uadf8\ubcf4\ub2e4 \ub192\uc740 \ud654\uc9c8 \uc911 \uac00\uc7a5 \uac00\uae4c\uc6b4 \ud654\uc9c8\ub85c \uc800\uc7a5\ub429\ub2c8\ub2e4.");
+        table.put("Each video saves at its lowest quality, for the smallest file.",
+                "\uac01 \ub3d9\uc601\uc0c1\uc740 \ud30c\uc77c\uc774 \uac00\uc7a5 \uc791\ub3c4\ub85d \uac00\uc7a5 \ub0ae\uc740 \ud654\uc9c8\ub85c \uc800\uc7a5\ub429\ub2c8\ub2e4.");
+        table.put("Each video saves at the best quality the player streams.",
+                "\uac01 \ub3d9\uc601\uc0c1\uc740 \ud50c\ub808\uc774\uc5b4\uac00 \uc2a4\ud2b8\ub9ac\ubc0d\ud558\ub294 \uac00\uc7a5 \ub192\uc740 \ud654\uc9c8\ub85c \uc800\uc7a5\ub429\ub2c8\ub2e4.");
+        table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
+                "\ub514\ubc84\uadf8 \ub85c\uadf8\ub97c \uc81c\uc678\ud55c \ubaa8\ub4e0 \uc2a4\uc704\uce58\uac00 \uaebc\uc9c4 \uac83\ucc98\ub7fc \uc791\ub3d9\ud558\uba70, \ud328\uce58\ud560 \ub54c \uc801\uc6a9\ub41c \ub0b4\uc6a9\uc740 \uadf8\ub300\ub85c \uc720\uc9c0\ub429\ub2c8\ub2e4. \uc124\uc815\uc740 \ubc14\ub00c\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
+        table.put("Example without post details",
+                "\uac8c\uc2dc\ubb3c \uc815\ubcf4\uac00 \uc5c6\ub294 \uc608\uc2dc");
+        table.put("Expanded",
+                "\ud3bc\uccd0\uc9d0");
+        table.put("Export diagnostic report",
+                "\uc9c4\ub2e8 \ubcf4\uace0\uc11c \ub0b4\ubcf4\ub0b4\uae30");
+        table.put("Export settings",
+                "\uc124\uc815 \ub0b4\ubcf4\ub0b4\uae30");
+        table.put("Feed",
+                "\ud53c\ub4dc");
+        table.put("File name",
+                "\ud30c\uc77c \uc774\ub984");
+        table.put("File name set to %1$s.",
+                "\ud30c\uc77c \uc774\ub984\uc744 %1$s(\uc73c)\ub85c \uc124\uc815\ud588\uc2b5\ub2c8\ub2e4.");
+        table.put("Filter comments",
+                "\ub313\uae00 \ud544\ud130");
+        table.put("Folder name",
+                "\ud3f4\ub354 \uc774\ub984");
+        table.put("Folder set to %1$s.",
+                "\ud3f4\ub354\ub97c %1$s(\uc73c)\ub85c \uc124\uc815\ud588\uc2b5\ub2c8\ub2e4.");
+        table.put("Full report saved to %1$s",
+                "\uc804\uccb4 \ubcf4\uace0\uc11c\uac00 %1$s\uc5d0 \uc800\uc7a5\ub418\uc5c8\uc2b5\ub2c8\ub2e4");
+        table.put("Full size photos",
+                "\uc6d0\ubcf8 \ud06c\uae30 \uc0ac\uc9c4");
+        table.put("GPL-3.0, with the notices of the projects this is built on",
+                "GPL-3.0 \ub77c\uc774\uc120\uc2a4\ub97c \uc801\uc6a9\ud558\uba70, \uc774 \ud504\ub85c\uadf8\ub7a8\uc774 \uae30\ubc18\uc73c\ub85c \uc0ac\uc6a9\ud558\ub294 \ud504\ub85c\uc81d\ud2b8\uc758 \uace0\uc9c0 \uc0ac\ud56d\uc744 \ud3ec\ud568\ud569\ub2c8\ub2e4");
+        table.put("GitHub is turning away checks from this network for now. Try again later.",
+                "GitHub\uac00 \uc9c0\uae08\uc740 \uc774 \ub124\ud2b8\uc6cc\ud06c\uc758 \ud655\uc778 \uc694\uccad\uc744 \uac70\ubd80\ud558\uace0 \uc788\uc2b5\ub2c8\ub2e4. \ub098\uc911\uc5d0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
+                "GitHub\uac00 HushThreads\uac00 \uc77d\uc744 \uc218 \uc5c6\ub294 \uc751\ub2f5\uc744 \ubcf4\ub0c8\uc2b5\ub2c8\ub2e4. \ub098\uc911\uc5d0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Go straight to one group of settings. Back returns to where you were.",
+                "\uc124\uc815 \uadf8\ub8f9 \ud558\ub098\ub85c \ubc14\ub85c \uc774\ub3d9\ud569\ub2c8\ub2e4. \ub4a4\ub85c\ub97c \ub204\ub974\uba74 \uc6d0\ub798 \uc704\uce58\ub85c \ub3cc\uc544\uac11\ub2c8\ub2e4.");
+        table.put("Help and restart",
+                "\ub3c4\uc6c0\ub9d0 \ubc0f \ub2e4\uc2dc \uc2dc\uc791");
+        table.put("Helps if WhatsApp, an editor like CapCut or InShot, or a gallery plays your saved video without sound. May lower quality.",
+                "WhatsApp, CapCut\uc774\ub098 InShot \uac19\uc740 \ud3b8\uc9d1\uae30 \ub610\ub294 \uac24\ub7ec\ub9ac\uc5d0\uc11c \uc800\uc7a5\ud55c \ub3d9\uc601\uc0c1\uc774 \uc18c\ub9ac \uc5c6\uc774 \uc7ac\uc0dd\ub420 \ub54c \ub3c4\uc6c0\uc774 \ub429\ub2c8\ub2e4. \ud654\uc9c8\uc774 \ub0ae\uc544\uc9c8 \uc218 \uc788\uc2b5\ub2c8\ub2e4.");
+        table.put("Hidden. Tap to show it again.",
+                "\uc228\uaca8\uc9d0. \ub2e4\uc2dc \ud45c\uc2dc\ud558\ub824\uba74 \ud0ed\ud558\uc138\uc694.");
+        table.put("Hide ads",
+                "\uad11\uace0 \uc228\uae30\uae30");
+        table.put("Hide comments with links",
+                "\ub9c1\ud06c\uac00 \uc788\ub294 \ub313\uae00 \uc228\uae30\uae30");
+        table.put("Hide follow suggestions in Search",
+                "\uac80\uc0c9\uc5d0\uc11c \ud314\ub85c\uc6b0 \ucd94\ucc9c \uc228\uae30\uae30");
+        table.put("Hide ghost post bubbles",
+                "\uace0\uc2a4\ud2b8 \uac8c\uc2dc\ubb3c \ub9d0\ud48d\uc120 \uc228\uae30\uae30");
+        table.put("Hide screenshots from Threads",
+                "Threads\uc5d0 \uc2a4\ud06c\ub9b0\uc0f7 \uc228\uae30\uae30");
+        table.put("Hide suggested users",
+                "\ucd94\ucc9c \uc0ac\uc6a9\uc790 \uc228\uae30\uae30");
+        table.put("Hide the Instagram button",
+                "Instagram \ubc84\ud2bc \uc228\uae30\uae30");
+    }
+
+    private static void fillKo2(Map<String, String> table) {
+        table.put("Hides ads and the cards that suggest accounts to follow.",
+                "\uad11\uace0\uc640 \ud314\ub85c\uc6b0\ud560 \uacc4\uc815\uc744 \ucd94\ucc9c\ud558\ub294 \uce74\ub4dc\ub97c \uc228\uae41\ub2c8\ub2e4.");
+        table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
+                "\uac8c\uc2dc\ubb3c\uc758 \ud14d\uc2a4\ud2b8\ub97c \uae38\uac8c \ub204\ub974\uba74 \uc5f4\ub9b0 \uac8c\uc2dc\ubb3c\uc5d0\uc11c\ub3c4 \ud14d\uc2a4\ud2b8 \ubcf5\uc0ac\uac00 \uc5f4\ub9ac\ubbc0\ub85c \ub2e8\uc5b4\ub97c \uace8\ub77c\ub0b4\ub294 \ub300\uc2e0 \ub9c1\ud06c\ub97c \ud3ec\ud568\ud55c \uac8c\uc2dc\ubb3c \uc804\uccb4\ub97c \ubcf5\uc0ac\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.");
+        table.put("How far a photo or video you're saving has got, with a button to cancel it",
+                "\uc800\uc7a5 \uc911\uc778 \uc0ac\uc9c4 \ub610\ub294 \ub3d9\uc601\uc0c1\uc758 \uc9c4\ud589 \uc0c1\ud669\uc744 \ubcf4\uc5ec\uc8fc\uba70, \ucde8\uc18c\ud560 \uc218 \uc788\ub294 \ubc84\ud2bc\uc744 \ud45c\uc2dc\ud569\ub2c8\ub2e4");
+        table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
+                "HushThreads %1$s\uc774(\uac00) \ub098\uc654\uc2b5\ub2c8\ub2e4. Morphe Manager\uc5d0\uc11c \uc5c5\ub370\uc774\ud2b8\ud558\uc138\uc694.");
+        table.put("HushThreads %1$s on Threads %2$s",
+                "Threads %2$s\uc758 HushThreads %1$s");
+        table.put("HushThreads %1$s targets Threads %2$s.",
+                "HushThreads %1$s\ub294 Threads %2$s\uc6a9\uc785\ub2c8\ub2e4.");
+        table.put("HushThreads is on",
+                "HushThreads \uc2e4\ud589 \uc911");
+        table.put("HushThreads is paused",
+                "HushThreads \uc77c\uc2dc \uc815\uc9c0\ub428");
+        table.put("HushThreads pauses when Threads restarts.",
+                "Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uba74 HushThreads\uac00 \uc77c\uc2dc \uc815\uc9c0\ub429\ub2c8\ub2e4.");
+        table.put("HushThreads saves",
+                "HushThreads \uc800\uc7a5 \uc791\uc5c5");
+        table.put("HushThreads settings",
+                "HushThreads \uc124\uc815");
+        table.put("HushThreads settings couldn't open",
+                "HushThreads \uc124\uc815\uc744 \uc5f4 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4");
+        table.put("HushThreads turns back on when Threads restarts.",
+                "Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uba74 HushThreads\uac00 \ub2e4\uc2dc \ucf1c\uc9d1\ub2c8\ub2e4.");
+        table.put("Import",
+                "\uac00\uc838\uc624\uae30");
+        table.put("Import settings",
+                "\uc124\uc815 \uac00\uc838\uc624\uae30");
+        table.put("Importing settings",
+                "\uc124\uc815\uc744 \uac00\uc838\uc624\ub294 \uc911");
+        table.put("Instagram won't open posts here",
+                "Instagram\uc5d0\uc11c \uac8c\uc2dc\ubb3c\uc774 \uc5ec\uae30\uc11c \uc5f4\ub9ac\uc9c0 \uc54a\uc74c");
+        table.put("It targets Threads %1$s.",
+                "Threads %1$s\uc6a9\uc785\ub2c8\ub2e4.");
+        table.put("Joining the picture and sound",
+                "\uc601\uc0c1\uacfc \uc18c\ub9ac\ub97c \ud569\uce58\ub294 \uc911");
+        table.put("Jump to a section",
+                "\uc139\uc158\uc73c\ub85c \uc774\ub3d9");
+        table.put("Keep feed position on return",
+                "\ub3cc\uc544\uc62c \ub54c \ud53c\ub4dc \uc704\uce58 \uc720\uc9c0");
+        table.put("Last carousel save",
+                "\ub9c8\uc9c0\ub9c9 \uce90\ub7ec\uc140 \uc800\uc7a5");
+        table.put("Licenses",
+                "\ub77c\uc774\uc120\uc2a4");
+        table.put("Link expired. Reopen the post and try again",
+                "\ub9c1\ud06c\uac00 \ub9cc\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \uac8c\uc2dc\ubb3c\uc744 \ub2e4\uc2dc \uc5f4\uace0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694");
+        table.put("Links",
+                "\ub9c1\ud06c");
+        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
+                "\ud0ed\ud55c \ub9c1\ud06c\uac00 Threads\uc758 \ub9c1\ud06c \ucd94\uc801\uc744 \uac74\ub108\ub6f0\uace0 \ube0c\ub77c\uc6b0\uc800\ub098 \ud574\ub2f9 \uc0ac\uc774\ud2b8\uc758 \uc571\uc5d0\uc11c \uc5f4\ub9bd\ub2c8\ub2e4. Threads\uc640 Instagram \ud398\uc774\uc9c0\ub294 \uacc4\uc18d Threads\uc5d0\uc11c \uc5f4\ub9bd\ub2c8\ub2e4.");
+        table.put("No app on this phone can open the link. The address is %1$s.",
+                "\uc774 \ud734\ub300\uc804\ud654\uc5d0\ub294 \uc774 \ub9c1\ud06c\ub97c \uc5f4 \uc218 \uc788\ub294 \uc571\uc774 \uc5c6\uc2b5\ub2c8\ub2e4. \uc8fc\uc18c\ub294 %1$s\uc785\ub2c8\ub2e4.");
+        table.put("No matching settings",
+                "\uc77c\uce58\ud558\ub294 \uc124\uc815\uc774 \uc5c6\uc2b5\ub2c8\ub2e4");
+        table.put("No saves in progress.",
+                "\uc9c4\ud589 \uc911\uc778 \uc800\uc7a5 \uc791\uc5c5\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.");
+        table.put("No swipe into Search",
+                "\uac80\uc0c9\uc73c\ub85c \uc2a4\uc640\uc774\ud504\ud558\uc9c0 \uc54a\uae30");
+        table.put("No time limit",
+                "\uc2dc\uac04 \uc81c\ud55c \uc5c6\uc74c");
+        table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
+                "\uc774 \uc571\uc5d0 \uc120\ud0dd\ub41c Threads \uc6f9 \uc8fc\uc18c\uac00 \uc5c6\uc5b4\uc11c \ud574\ub2f9 \ub9c1\ud06c\uac00 \ub2e4\ub978 \uacf3\uc5d0\uc11c \uc5f4\ub9bd\ub2c8\ub2e4. \ud0ed\ud574\uc11c Android \uc124\uc815\uc5d0\uc11c \uc120\ud0dd\ud558\uc138\uc694.");
+        table.put("Not in this build: %1$s. Morphe Manager selects it by default. Patch again with it selected to get what it does.",
+                "\uc774 \ube4c\ub4dc\uc5d0 \uc5c6\uc74c: %1$s. Morphe Manager\uc5d0\uc11c \uae30\ubcf8\uc73c\ub85c \uc120\ud0dd\ub418\ub294 \ud328\uce58\uc785\ub2c8\ub2e4. \uc774 \uae30\ub2a5\uc744 \uc4f0\ub824\uba74 \uc774 \ud328\uce58\ub97c \uc120\ud0dd\ud558\uace0 \ub2e4\uc2dc \ud328\uce58\ud558\uc138\uc694.");
+        table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
+                "\uc774 \ube4c\ub4dc\uc5d0 \uc5c6\uc74c: %1$s. Morphe Manager\uc5d0\uc11c \uae30\ubcf8\uc73c\ub85c \uc120\ud0dd\ub418\ub294 \ud328\uce58\uc785\ub2c8\ub2e4. \uc774 \uae30\ub2a5\uc744 \uc4f0\ub824\uba74 \uc774 \ud328\uce58\ub4e4\uc744 \uc120\ud0dd\ud558\uace0 \ub2e4\uc2dc \ud328\uce58\ud558\uc138\uc694.");
+        table.put("Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "\uc800\uc7a5\ub418\uc9c0 \uc54a\uc74c: Android 9\uc5d0\uc11c \uc800\uc7a5\ud558\ub824\uba74 Threads\uc5d0 \uc800\uc7a5\uacf5\uac04 \uad8c\ud55c\uc774 \ud544\uc694\ud569\ub2c8\ub2e4. Threads \uc571 \uc815\ubcf4\uc758 \uad8c\ud55c\uc5d0\uc11c \ucf20 \ub2e4\uc74c \ub2e4\uc2dc \uc800\uc7a5\ud558\uc138\uc694.");
+        table.put("Not saved: a carousel can have at most %1$d pages",
+                "\uc800\uc7a5\ub418\uc9c0 \uc54a\uc74c: \uce90\ub7ec\uc140\uc740 \ucd5c\ub300 %1$d\ud398\uc774\uc9c0\uae4c\uc9c0 \uac00\ub2a5\ud569\ub2c8\ub2e4");
+        table.put("Not saved: that isn't a Threads photo or video",
+                "\uc800\uc7a5\ub418\uc9c0 \uc54a\uc74c: Threads \uc0ac\uc9c4\uc774\ub098 \ub3d9\uc601\uc0c1\uc774 \uc544\ub2d9\ub2c8\ub2e4");
+        table.put("Not saved: the download was too slow. Try a faster connection.",
+                "\uc800\uc7a5\ub418\uc9c0 \uc54a\uc74c: \ub2e4\uc6b4\ub85c\ub4dc\uac00 \ub108\ubb34 \ub290\ub9bd\ub2c8\ub2e4. \ub354 \ube60\ub978 \uc5f0\uacb0\ub85c \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Not saved: the file is over 512 MB",
+                "\uc800\uc7a5\ub418\uc9c0 \uc54a\uc74c: \ud30c\uc77c \ud06c\uae30\uac00 512MB\ub97c \ucd08\uacfc\ud568");
+        table.put("Not saved: the proxy wants a password. Try another network.",
+                "\uc800\uc7a5\ub418\uc9c0 \uc54a\uc74c: \ud504\ub85d\uc2dc \ube44\ubc00\ubc88\ud638 \ud544\uc694. \ub2e4\ub978 \ub124\ud2b8\uc6cc\ud06c\ub97c \uc4f0\uc138\uc694.");
+        table.put("OK",
+                "\ud655\uc778");
+        table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
+                "\ud558\ub8e8\uc5d0 \ud55c \ubc88 Threads\ub97c \uc2dc\uc791\ud560 \ub54c GitHub\uc5d0\uc11c \uc0c8 HushThreads\uac00 \uc788\ub294\uc9c0 \ud655\uc778\ud558\uace0 \uc5ec\uae30\uc5d0 \uc54c\ub824 \uc90d\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ub2e4\uc6b4\ub85c\ub4dc\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
+        table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
+                "\ud55c \uc904\uc5d0 \ud328\ud134 \ud558\ub098\uc529, \ub610\ub294 \uc27c\ud45c\ub85c \uad6c\ubd84\ud574 \uc785\ub825\ud569\ub2c8\ub2e4. shopee.vn \uac19\uc740 \uc1fc\ud551\ubab0 \ub3c4\uba54\uc778\uc744 \ub123\uc73c\uba74 \uadf8\uacf3\uc73c\ub85c \uc5f0\uacb0\ub418\ub294 \ub2f5\uae00\uc774 \ube60\uc9d1\ub2c8\ub2e4.");
+        table.put("One pattern a line, or separated by commas. Matched whatever the letter case.",
+                "\ud55c \uc904\uc5d0 \ud328\ud134 \ud558\ub098\uc529, \ub610\ub294 \uc27c\ud45c\ub85c \uad6c\ubd84\ud574 \uc785\ub825\ud569\ub2c8\ub2e4. \ub300\uc18c\ubb38\uc790\ub294 \uad6c\ubd84\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
+        table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
+                "\uc774 \uc571\uc5d0 \uc77c\ubd80 Threads \uc6f9 \uc8fc\uc18c\ub9cc \uc120\ud0dd\ub418\uc5b4 \uc788\uc5b4\uc11c \ub098\uba38\uc9c0 \ub9c1\ud06c\ub294 \ub2e4\ub978 \uacf3\uc5d0\uc11c \uc5f4\ub9bd\ub2c8\ub2e4. \ud0ed\ud574\uc11c Android \uc124\uc815\uc5d0\uc11c \uc120\ud0dd\ud558\uc138\uc694.");
+        table.put("Open HushThreads settings",
+                "HushThreads \uc124\uc815 \uc5f4\uae30");
+        table.put("Open links in your browser",
+                "\ub9c1\ud06c\ub97c \ube0c\ub77c\uc6b0\uc800\uc5d0\uc11c \uc5f4\uae30");
+        table.put("Open settings from the logo",
+                "\ub85c\uace0\uc5d0\uc11c \uc124\uc815 \uc5f4\uae30");
+        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
+                "Android \uc124\uc815\uc5d0\uc11c \uc774 \uc571\uc758 \uc9c0\uc6d0\ub418\ub294 \ub9c1\ud06c \uc5f4\uae30\uac00 \uaebc\uc838 \uc788\uc2b5\ub2c8\ub2e4. \ud0ed\ud574\uc11c \ucf1c\uc138\uc694.");
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "\ubc84\uc804\uacfc \uc124\uc815\uc774 \ubbf8\ub9ac \ucc44\uc6cc\uc9c4 GitHub \uc2e0\uace0\ub97c \uc5fd\ub2c8\ub2e4. \ubb34\uc2a8 \uc77c\uc774 \uc788\uc5c8\ub294\uc9c0 \uc801\uc5b4 \uc8fc\uc138\uc694.");
+        table.put("Page %1$d of %2$d",
+                "%2$d \ud398\uc774\uc9c0 \uc911 %1$d \ud398\uc774\uc9c0");
+        table.put("Pause",
+                "\uc77c\uc2dc \uc815\uc9c0");
+        table.put("Pause HushThreads",
+                "HushThreads \uc77c\uc2dc \uc815\uc9c0");
+        table.put("Pause, backup and diagnostics",
+                "\uc77c\uc2dc \uc815\uc9c0, \ubc31\uc5c5 \ubc0f \uc9c4\ub2e8");
+        table.put("Photos and videos you save from posts",
+                "\uac8c\uc2dc\ubb3c\uc5d0\uc11c \uc800\uc7a5\ud558\ub294 \uc0ac\uc9c4\uacfc \ub3d9\uc601\uc0c1");
+        table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
+                "\ud654\uba74\uc5d0 \ub9de\ucd98 \ud06c\uae30\uac00 \uc544\ub2c8\ub77c Threads\uac00 \uac00\uc9c4 \uac00\uc7a5 \ud070 \ud06c\uae30\ub85c \uc0ac\uc9c4\uc744 \ubd88\ub7ec\uc635\ub2c8\ub2e4. \ub354 \uc120\uba85\ud558\uc9c0\ub9cc \ub370\uc774\ud130\ub97c \ub354 \ub9ce\uc774 \uc0ac\uc6a9\ud569\ub2c8\ub2e4.");
+        table.put("Posts",
+                "\uac8c\uc2dc\ubb3c");
+        table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
+                "\uac8c\uc2dc\ubb3c\uacfc \ub2f5\uae00\uc5d0 3\uc2dc\uac04\uc774\ub098 2\uc77c \ub300\uc2e0 \uac8c\uc2dc\ub41c \ub0a0\uc9dc\uc640 \uc2dc\uac04\uc774 \ud734\ub300\uc804\ud654\uc758 12\uc2dc\uac04 \ub610\ub294 24\uc2dc\uac04 \ud615\uc2dd\uc73c\ub85c \ud45c\uc2dc\ub429\ub2c8\ub2e4.");
+        table.put("Privacy",
+                "\uac1c\uc778\uc815\ubcf4 \ubcf4\ud638");
+        table.put("Pure black dark mode",
+                "\uc644\uc804\ud55c \uac80\uc740\uc0c9 \ub2e4\ud06c \ubaa8\ub4dc");
+    }
+
+    private static void fillKo3(Map<String, String> table) {
+        table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
+                "Threads \uc544\uc774\ucf58\uc744 \uae38\uac8c \ub204\ub974\uba74 \ub098\uc624\ub294 \uba54\ub274\uc5d0 HushThreads \uc124\uc815\uc744 \ub123\uc2b5\ub2c8\ub2e4. \ub044\uba74 \uadf8 \uba54\ub274\uc5d0\uc11c \ube60\uc9d1\ub2c8\ub2e4.");
+        table.put("Puts every feature switch back the way it started.",
+                "\ubaa8\ub4e0 \uae30\ub2a5 \uc2a4\uc704\uce58\ub97c \ucc98\uc74c \uc0c1\ud0dc\ub85c \ub418\ub3cc\ub9bd\ub2c8\ub2e4.");
+        table.put("Quick setups",
+                "\ube60\ub978 \uc124\uc815");
+        table.put("Quick setups hidden. Bring it back from Pause, backup and diagnostics.",
+                "\ube60\ub978 \uc124\uc815\uc744 \uc228\uacbc\uc2b5\ub2c8\ub2e4. \uc77c\uc2dc \uc815\uc9c0, \ubc31\uc5c5 \ubc0f \uc9c4\ub2e8\uc5d0\uc11c \ub2e4\uc2dc \ud45c\uc2dc\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.");
+        table.put("Quick setups on the home page",
+                "\ud648 \ud398\uc774\uc9c0\uc758 \ube60\ub978 \uc124\uc815");
+        table.put("Quiet",
+                "\uc870\uc6a9\ud788");
+        table.put("Re-signed build fix",
+                "\uc7ac\uc11c\uba85 \ube4c\ub4dc \uc218\uc815");
+        table.put("Reading the settings file",
+                "\uc124\uc815 \ud30c\uc77c\uc744 \uc77d\ub294 \uc911");
+        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
+                "\ubc84\uadf8 \uc2e0\uace0\uc6a9\uc73c\ub85c \ud328\uce58 \ub3d9\uc791\uc744 \uae30\ub85d\ud558\uace0 \uc624\ub958\ub97c \ud45c\uc2dc\ud569\ub2c8\ub2e4. \ud3c9\uc18c\uc5d0\ub294 \uaebc \ub450\uc138\uc694.");
+        table.put("Remove tracking from shared links",
+                "\uacf5\uc720 \ub9c1\ud06c\uc5d0\uc11c \ucd94\uc801 \uc81c\uac70");
+        table.put("Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.",
+                "\ud53c\ub4dc\uc640 \ud504\ub85c\ud544\uc5d0\uc11c \ud314\ub85c\uc6b0\ud560 \uacc4\uc815\uc744 \ucd94\ucc9c\ud558\ub294 \uce74\ub4dc\ub97c \uc81c\uac70\ud569\ub2c8\ub2e4. \uc77c\ubc18 \uac8c\uc2dc\ubb3c\uacfc \ub9ac\ud3ec\uc2a4\ud2b8\ub294 \uadf8\ub300\ub85c \ud45c\uc2dc\ub429\ub2c8\ub2e4.");
+        table.put("Reopen the post and save again.",
+                "\uac8c\uc2dc\ubb3c\uc744 \ub2e4\uc2dc \uc5f4\uace0 \ub2e4\uc2dc \uc800\uc7a5\ud558\uc138\uc694.");
+        table.put("Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.",
+                "\uc544\ub798 \ud328\ud134\uacfc \uc77c\uce58\ud558\ub294 \ub2f5\uae00\uc740 \uac8c\uc2dc\ubb3c\uc758 \ub2f5\uae00\uc5d0\uc11c \ube60\uc9c0\ubbc0\ub85c \uc2a4\ud338 \ub2f5\uae00\uc774 \ubcf4\uc774\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. \ub2f5\uae00\uacfc \uadf8 \uc544\ub798\uc5d0 \ubcf4\uc774\ub294 \ub2f5\uae00\uc740 \ud568\uaed8 \ud655\uc778\ub418\uace0 \ud568\uaed8 \ube60\uc9d1\ub2c8\ub2e4. \uc77c\ubc18 \ub2f5\uae00\uc740 \uc21c\uc11c\uac00 \uadf8\ub300\ub85c \uc720\uc9c0\ub429\ub2c8\ub2e4.");
+        table.put("Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.",
+                "\uc6f9 \ub9c1\ud06c\uac00 \ub4e4\uc5b4 \uc788\ub294 \ub2f5\uae00\uc740 \ud328\ud134\uacfc \uad00\uacc4\uc5c6\uc774 \ube60\uc9d1\ub2c8\ub2e4. shopee.vn\ucc98\ub7fc \uc0ac\uc774\ud2b8 \uc774\ub984\ub9cc \uc788\ub294 \uc8fc\uc18c\ub294 \ud328\ud134\uc73c\ub85c \ucd94\uac00\ud558\uc138\uc694.");
+        table.put("Report a problem",
+                "\ubb38\uc81c \uc2e0\uace0\ud558\uae30");
+        table.put("Reports, restart and app information",
+                "\ubcf4\uace0\uc11c, \ub2e4\uc2dc \uc2dc\uc791 \ubc0f \uc571 \uc815\ubcf4");
+        table.put("Restart Threads",
+                "Threads \ub2e4\uc2dc \uc2dc\uc791");
+        table.put("Restart Threads to apply %1$d changes",
+                "\ubcc0\uacbd \uc0ac\ud56d %1$d\uac1c\ub97c \uc801\uc6a9\ud558\ub824\uba74 Threads \ub2e4\uc2dc \uc2dc\uc791");
+        table.put("Restart Threads to apply this change",
+                "\uc774 \ubcc0\uacbd \uc0ac\ud56d\uc744 \uc801\uc6a9\ud558\ub824\uba74 Threads \ub2e4\uc2dc \uc2dc\uc791");
+        table.put("Restore diagnostic data",
+                "\uc9c4\ub2e8 \ub370\uc774\ud130 \ubcf5\uc6d0");
+        table.put("Resume",
+                "\uc7ac\uac1c");
+        table.put("Retry",
+                "\ub2e4\uc2dc \uc2dc\ub3c4");
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "10\ubd84 \uc548\uc5d0 Threads\ub85c \ub3cc\uc544\uc624\uba74 \ubcf4\ub358 \uc704\uce58\uac00 \uc720\uc9c0\ub429\ub2c8\ub2e4. \ub2f9\uaca8\uc11c \uc0c8\ub85c\uace0\uce68\uc740 \uadf8\ub300\ub85c \uc791\ub3d9\ud569\ub2c8\ub2e4.");
+        table.put("Save",
+                "\uc800\uc7a5");
+        table.put("Save all",
+                "\ubaa8\ub450 \uc800\uc7a5");
+        table.put("Save cancelled",
+                "\uc800\uc7a5 \ucde8\uc18c\ub428");
+        table.put("Save folder",
+                "\uc800\uc7a5 \ud3f4\ub354");
+        table.put("Save full report",
+                "\uc804\uccb4 \ubcf4\uace0\uc11c \uc800\uc7a5");
+        table.put("Save photo",
+                "\uc0ac\uc9c4 \uc800\uc7a5");
+        table.put("Save photos and videos",
+                "\uc0ac\uc9c4 \ubc0f \ub3d9\uc601\uc0c1 \uc800\uc7a5");
+        table.put("Save the full report in Download/Morphe.",
+                "\uc804\uccb4 \ubcf4\uace0\uc11c\ub97c Download/Morphe\uc5d0 \uc800\uc7a5\ud569\ub2c8\ub2e4.");
+        table.put("Save the full report in Threads' own Downloads folder.",
+                "\uc804\uccb4 \ubcf4\uace0\uc11c\ub97c Threads \uc790\uccb4 \ub2e4\uc6b4\ub85c\ub4dc \ud3f4\ub354\uc5d0 \uc800\uc7a5\ud569\ub2c8\ub2e4.");
+        table.put("Save video",
+                "\ub3d9\uc601\uc0c1 \uc800\uc7a5");
+        table.put("Save videos other apps can open",
+                "\ub2e4\ub978 \uc571\uc5d0\uc11c \uc5f4 \uc218 \uc788\ub3c4\ub85d \ub3d9\uc601\uc0c1 \uc800\uc7a5");
+        table.put("Save your switches to a file. Pause and Debug logging aren't included, and neither is the release check.",
+                "\uc2a4\uc704\uce58\ub97c \ud30c\uc77c\ub85c \uc800\uc7a5\ud569\ub2c8\ub2e4. \uc77c\uc2dc \uc815\uc9c0\uc640 \ub514\ubc84\uadf8 \ub85c\uadf8\ub294 \ud3ec\ud568\ub418\uc9c0 \uc54a\uc73c\uba70 \uc0c8 \ubc84\uc804 \ud655\uc778\ub3c4 \ud3ec\ud568\ub418\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
+        table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "\uc800\uc7a5 %1$d\uac1c. \uc2e4\ud328 %2$d\uac1c. \uac74\ub108\ub700 %3$d\uac1c.");
+        table.put("Saved to %1$s",
+                "%1$s\uc5d0 \uc800\uc7a5\ub428");
+        table.put("Saved to %1$s in lower quality than on Threads",
+                "Threads\ubcf4\ub2e4 \ub0ae\uc740 \ud654\uc9c8\ub85c %1$s\uc5d0 \uc800\uc7a5\ub428");
+        table.put("Saved to the gallery",
+                "\uac24\ub7ec\ub9ac\uc5d0 \uc800\uc7a5\ub428");
+        table.put("Saved to the gallery in lower quality than on Threads",
+                "Threads\ubcf4\ub2e4 \ub0ae\uc740 \ud654\uc9c8\ub85c \uac24\ub7ec\ub9ac\uc5d0 \uc800\uc7a5\ub428");
+        table.put("Saved. Restart Threads to apply this change.",
+                "\uc800\uc7a5\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \uc774 \ubcc0\uacbd \uc0ac\ud56d\uc744 \uc801\uc6a9\ud558\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Saves",
+                "\uc800\uc7a5 \uc791\uc5c5");
+        table.put("Saving a carousel",
+                "\uce90\ub7ec\uc140\uc744 \uc800\uc7a5\ud558\ub294 \uc911");
+        table.put("Saving a photo",
+                "\uc0ac\uc9c4\uc744 \uc800\uc7a5\ud558\ub294 \uc911");
+        table.put("Saving a video",
+                "\ub3d9\uc601\uc0c1\uc744 \uc800\uc7a5\ud558\ub294 \uc911");
+        table.put("Saving the settings file",
+                "\uc124\uc815 \ud30c\uc77c\uc744 \uc800\uc7a5\ud558\ub294 \uc911");
+        table.put("Saving...",
+                "\uc800\uc7a5\ud558\ub294 \uc911...");
+        table.put("Saving... To cancel, open Downloads in HushThreads settings.",
+                "\uc800\uc7a5 \uc911... \ucde8\uc18c\ud558\ub824\uba74 HushThreads \uc124\uc815\uc5d0\uc11c \ub2e4\uc6b4\ub85c\ub4dc\ub97c \uc5ec\uc138\uc694.");
+        table.put("Search settings",
+                "\uc124\uc815 \uac80\uc0c9");
+        table.put("Selecting links by hand",
+                "\ub9c1\ud06c \uc9c1\uc811 \uc120\ud0dd\ud558\uae30");
+        table.put("Set when you patched",
+                "\ud328\uce58\ud560 \ub54c \uc124\uc815\ub418\ub294 \uae30\ub2a5");
+        table.put("Settings couldn't open",
+                "\uc124\uc815\uc744 \uc5f4 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4");
+        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
+                "\uc124\uc815\uc744 \uc644\uc804\ud788 \uc0c8\ub85c \uace0\uce58\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc124\uc815\uc744 \ub2e4\uc2dc \uc5f4\uace0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Settings exported.",
+                "\uc124\uc815\uc744 \ub0b4\ubcf4\ub0c8\uc2b5\ub2c8\ub2e4.");
+        table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
+                "\uc124\uc815\uc744 \ub0b4\ubcf4\ub0c8\uc2b5\ub2c8\ub2e4. \ud30c\uc77c\uc744 \ubcf4\uad00\ud558\ub294 \uc571\uc774 HushThreads\uac00 \ub2e4\uc2dc \uc77d\ub3c4\ub85d \ud5c8\uc6a9\ud558\uc9c0 \uc54a\uc544 \ud655\uc778\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4.");
+        table.put("Settings imported.",
+                "\uc124\uc815\uc744 \uac00\uc838\uc654\uc2b5\ub2c8\ub2e4.");
+        table.put("Settings imported. %1$d switch changed.",
+                "\uc124\uc815\uc744 \uac00\uc838\uc654\uc2b5\ub2c8\ub2e4. \uc2a4\uc704\uce58 %1$d\uac1c\uac00 \ubc14\ub00c\uc5c8\uc2b5\ub2c8\ub2e4.");
+        table.put("Settings imported. %1$d switches changed.",
+                "\uc124\uc815\uc744 \uac00\uc838\uc654\uc2b5\ub2c8\ub2e4. \uc2a4\uc704\uce58 %1$d\uac1c\uac00 \ubc14\ub00c\uc5c8\uc2b5\ub2c8\ub2e4.");
+        table.put("Settings row in Threads' settings",
+                "Threads \uc124\uc815\uc758 \ud589");
+        table.put("Settings shortcut on the app icon",
+                "\uc571 \uc544\uc774\ucf58\uc758 \uc124\uc815 \ubc14\ub85c\uac00\uae30");
+    }
+
+    private static void fillKo4(Map<String, String> table) {
+        table.put("Share sheet entry removed",
+                "\uacf5\uc720 \uc2dc\ud2b8 \ud56d\ubaa9 \uc81c\uac70\ub428");
+        table.put("Show all settings as a list",
+                "\ubaa8\ub4e0 \uc124\uc815\uc744 \ubaa9\ub85d\uc73c\ub85c \ubcf4\uae30");
+        table.put("Show settings by category",
+                "\uce74\ud14c\uace0\ub9ac\ubcc4\ub85c \uc124\uc815 \ubcf4\uae30");
+        table.put("Show the date and time",
+                "\ub0a0\uc9dc\uc640 \uc2dc\uac04 \ud45c\uc2dc");
+        table.put("Shown. Tap to hide it.",
+                "\ud45c\uc2dc\ub428. \uc228\uae30\ub824\uba74 \ud0ed\ud558\uc138\uc694.");
+        table.put("Smallest",
+                "\ucd5c\uc18c");
+        table.put("Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.",
+                "\uc77c\ubd80 Threads \ud654\uba74\uc740 \uc571 \uc11c\uba85\uc790\ub97c \ud655\uc778\ud558\ubbc0\ub85c \ud328\uce58\ub41c \uc571\uc5d0\uc11c\ub294 \uc5f4\ub9ac\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. \uc774 \uc218\uc815\uc73c\ub85c \ub2e4\uc2dc \uc5f4\ub9bd\ub2c8\ub2e4.");
+        table.put("Source code and issues",
+                "\uc18c\uc2a4 \ucf54\ub4dc \ubc0f \uc774\uc288");
+        table.put("Spam replies by words or links",
+                "\ub2e8\uc5b4\ub098 \ub9c1\ud06c\ub85c \uac70\ub974\ub294 \uc2a4\ud338 \ub2f5\uae00");
+        table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
+                "Threads\uac00 \ud45c\uc2dc\ud558\uae30 \uc804\uc5d0 \ucd94\ucc9c, \ud314\ub85c\uc789 \ud53c\ub4dc\uc640 \uc0ac\uc6a9\uc790\uac00 \uc5f0 \uac8c\uc2dc\ubb3c\uc5d0\uc11c \uc2a4\ud3f0\uc11c \uac8c\uc2dc\ubb3c\uc744 \uc81c\uac70\ud558\ubbc0\ub85c \ube48 \uacf5\uac04\uc774 \ub0a8\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
+        table.put("Sponsored posts in For you and Following",
+                "\ucd94\ucc9c \ubc0f \ud314\ub85c\uc789\uc758 \uc2a4\ud3f0\uc11c \uac8c\uc2dc\ubb3c");
+        table.put("Stays in while paused",
+                "\uc77c\uc2dc \uc815\uc9c0 \uc911\uc5d0 \uc720\uc9c0\ub418\ub294 \uae30\ub2a5");
+        table.put("Stays on, since it's the only way left into these settings.",
+                "\uc774 \uc124\uc815\uc5d0 \ub4e4\uc5b4\uc62c \uc218 \uc788\ub294 \ub9c8\uc9c0\ub9c9 \ubc29\ubc95\uc774\ubbc0\ub85c \ucf1c\uc9c4 \uc0c1\ud0dc\ub85c \uc720\uc9c0\ub429\ub2c8\ub2e4.");
+        table.put("Stop analytics uploads",
+                "\ubd84\uc11d \ub370\uc774\ud130 \uc804\uc1a1 \uc911\uc9c0");
+        table.put("Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.",
+                "\ub300\ubd80\ubd84\uc758 \uc0ac\uc6a9 \ubcf4\uace0\uc11c\ub97c \ub9c9\uace0 \uacf5\uc720\ud558\ub294 \ub9c1\ud06c\uc5d0\uc11c \ucd94\uc801\uc744 \uc81c\uac70\ud569\ub2c8\ub2e4. \uc2a4\ud06c\ub9b0\uc0f7\ub3c4 Threads\uc5d0 \uc54c\ub824\uc9c0\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
+        table.put("Stops most usage reports from reaching Meta. Some may still get through. Turn this off to send them as before.",
+                "\ub300\ubd80\ubd84\uc758 \uc0ac\uc6a9 \ubcf4\uace0\uc11c\uac00 Meta\uc5d0 \uc804\ub2ec\ub418\uc9c0 \uc54a\uac8c \ud569\ub2c8\ub2e4. \uc77c\ubd80\ub294 \uc5ec\uc804\ud788 \uc804\ub2ec\ub420 \uc218 \uc788\uc2b5\ub2c8\ub2e4. \uc774\uc804\ucc98\ub7fc \ubcf4\ub0b4\ub824\uba74 \ub044\uc138\uc694.");
+        table.put("Suggested accounts in your feed",
+                "\ud53c\ub4dc\uc758 \ucd94\ucc9c \uacc4\uc815");
+        table.put("Support",
+                "\uc9c0\uc6d0");
+        table.put("Support HushThreads",
+                "HushThreads \ud6c4\uc6d0\ud558\uae30");
+        table.put("Support the project",
+                "\ud504\ub85c\uc81d\ud2b8 \ud6c4\uc6d0");
+        table.put("Supported links",
+                "\uc9c0\uc6d0\ub418\ub294 \ub9c1\ud06c");
+        table.put("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.",
+                "\uac80\uc0c9 \ud654\uba74\uc5d0\uc11c \ud314\ub85c\uc6b0 \ucd94\ucc9c \uc904\uc744 \uc81c\uac70\ud569\ub2c8\ub2e4. \uac80\uc0c9 \uae30\ub85d\uacfc \uc8fc\uc81c\ub294 \uadf8\ub300\ub85c \ub0a8\uc2b5\ub2c8\ub2e4.");
+        table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
+                "\ub0b4 \ud504\ub85c\ud544\uacfc \ub2e4\ub978 \uc0ac\ub78c\uc758 \ud504\ub85c\ud544 \uc0c1\ub2e8\uc5d0\uc11c Instagram \ubc84\ud2bc\uc744 \uc81c\uac70\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
+                "\ud504\ub85c\ud544\uacfc \ud53c\ub4dc \uc0c1\ub2e8 \uc904\uc758 \ud504\ub85c\ud544 \uc0ac\uc9c4\uc5d0\uc11c \uace0\uc2a4\ud2b8 \uac8c\uc2dc\ubb3c \ub9d0\ud48d\uc120\uc744 \uc81c\uac70\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
+                "\ubcf5\uc0ac\ud558\uac70\ub098 \uacf5\uc720\ud558\ub294 \uac8c\uc2dc\ubb3c \ub9c1\ud06c\uc5d0\uc11c xmt, slof \uac19\uc740 \ucd94\uc801 \ud0dc\uadf8\ub97c \uc81c\uac70\ud569\ub2c8\ub2e4. \uc9e7\uc740 \uacf5\uc720 \ub9c1\ud06c\ub294 \uac8c\uc2dc\ubb3c \uc6d0\ub798 \ub9c1\ud06c\ub85c \ubc14\ub01d\ub2c8\ub2e4.");
+        table.put("Tap to play videos",
+                "\ud0ed\ud574\uc11c \ub3d9\uc601\uc0c1 \uc7ac\uc0dd");
+        table.put("Tap to see which.",
+                "\ud0ed\ud574\uc11c \ud655\uc778\ud558\uc138\uc694.");
+        table.put("Tap to turn it back on.",
+                "\ub2e4\uc2dc \ucf1c\ub824\uba74 \ud0ed\ud558\uc138\uc694.");
+        table.put("That file is too large to be a settings file. Nothing was changed.",
+                "\uc124\uc815 \ud30c\uc77c\uc774\ub77c\uace0 \ud558\uae30\uc5d0\ub294 \ud30c\uc77c\uc774 \ub108\ubb34 \ud07d\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+        table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
+                "\uc77d\uc744 \uc218 \uc788\ub294 \ud14d\uc2a4\ud2b8 \ud30c\uc77c\uc774 \uc544\ub2c8\uc5b4\uc11c \uc804\uc1a1 \uc911\uc5d0 \uc190\uc0c1\ub418\uc5c8\uc744 \uc218 \uc788\uc2b5\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
+                "\ud30c\uc77c\uc5d0 \uac19\uc740 \uc124\uc815\uc774 \ub450 \ubc88 \uc788\uc5b4\uc11c \uc5b4\ub5a4 \uac12\uc744 \uc368\uc57c \ud560\uc9c0 \uc54c \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+        table.put("That isn't a HushThreads settings file. Nothing was changed.",
+                "HushThreads \uc124\uc815 \ud30c\uc77c\uc774 \uc544\ub2d9\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+        table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
+                "\uc124\uc815 \ud30c\uc77c\uc5d0 HushThreads\uac00 \uc77d\uc744 \uc218 \uc5c6\ub294 \uac12\uc774 \uc788\uc2b5\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
+                "\uc124\uc815 \ud30c\uc77c\uc774 \uc190\uc0c1\ub418\uc5c8\uac70\ub098 \uc77c\ubd80\ub9cc \ub2e4\uc6b4\ub85c\ub4dc\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
+                "\uc774 \uc124\uc815 \ud30c\uc77c\uc740 \uc774 \ubc84\uc804\ubcf4\ub2e4 \ucd5c\uc2e0 HushThreads\uc5d0\uc11c \uc791\uc131\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+        table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
+                "\uadf8 \ud30c\uc77c\uc744 \ubcf4\uad00\ud558\ub294 \uc571\uc758 \uc751\ub2f5\uc774 \ub108\ubb34 \ub2a6\uc5b4 HushThreads\uac00 \uae30\ub2e4\ub9ac\uae30\ub97c \uba48\ucdc4\uc2b5\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+        table.put("The app holding the last settings file still hasn't answered. Try again later.",
+                "\ub9c8\uc9c0\ub9c9 \uc124\uc815 \ud30c\uc77c\uc744 \ubcf4\uad00\ud558\ub294 \uc571\uc774 \uc544\uc9c1 \uc751\ub2f5\ud558\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4. \ub098\uc911\uc5d0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
+                "\uc124\uc815 \ud30c\uc77c\uc744 \ubcf4\uad00\ud558\ub294 \uc571\uc758 \uc751\ub2f5\uc774 \ub108\ubb34 \ub2a6\uc5b4 HushThreads\uac00 \uae30\ub2e4\ub9ac\uae30\ub97c \uba48\ucdc4\uc2b5\ub2c8\ub2e4. \uadf8 \uc571\uc774 \uc800\uc7a5\uc744 \ub9c8\uce60 \uc218\ub3c4 \uc788\uc73c\ub2c8 \ud30c\uc77c\uc744 \uc0ac\uc6a9\ud558\uae30 \uc804\uc5d0 \ud655\uc778\ud558\uc138\uc694.");
+        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
+                "\uc544\uc9c1 \uc9c4\ub2e8 \ubcf4\uace0\uc11c\ub97c \uc800\uc7a5\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("The diagnostic report couldn't be saved. Try again.",
+                "\uc9c4\ub2e8 \ubcf4\uace0\uc11c\ub97c \uc800\uc7a5\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
+                "%1$s \ud30c\uc77c\uc744 \uc81c\uac70\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. HushThreads\ub97c \ub2e4\uc2dc \ucf1c\ub824\uba74 %2$s\uc5d0\uc11c \uc774 \ud30c\uc77c\uc744 \uc0ad\uc81c\ud558\uc138\uc694.");
+        table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
+                "%1$s \ud30c\uc77c\uc744 \uc81c\uac70\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. %2$s\uc5d0\uc11c \uc0ad\uc81c\ud55c \ub2e4\uc74c \ub2e4\uc2dc \uc7ac\uac1c\ub97c \ud0ed\ud558\uc138\uc694.");
+        table.put("The newest HushThreads release is %1$s.",
+                "\ucd5c\uc2e0 HushThreads \ub9b4\ub9ac\uc2a4\ub294 %1$s\uc785\ub2c8\ub2e4.");
+        table.put("The proxy wants a password. Try another network.",
+                "\ud504\ub85d\uc2dc\uac00 \ube44\ubc00\ubc88\ud638\ub97c \uc694\uad6c\ud569\ub2c8\ub2e4. \ub2e4\ub978 \ub124\ud2b8\uc6cc\ud06c\ub97c \uc0ac\uc6a9\ud574 \ubcf4\uc138\uc694.");
+        table.put("The setting couldn't finish updating. Its saved value is shown.",
+                "\uc124\uc815 \uc5c5\ub370\uc774\ud2b8\ub97c \ub9c8\uce58\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc800\uc7a5\ub41c \uac12\uc774 \ud45c\uc2dc\ub429\ub2c8\ub2e4.");
+        table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
+                "\uc124\uc815 \ud30c\uc77c\uc774 \uc800\uc7a5\ub418\uc5c8\uc9c0\ub9cc \ub2e4\uc2dc \uc77d\uc740 \ub0b4\uc6a9\uc774 \uae30\ub85d\ud55c \ub0b4\uc6a9\uacfc \ub2e4\ub985\ub2c8\ub2e4. \uc0c8 \ud30c\uc77c\ub85c \ub2e4\uc2dc \uc800\uc7a5\ud558\uc138\uc694.");
+        table.put("The version number is set as high as Android allows, so Google Play won't offer Meta's updates over this build. Threads still sees its real version. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.",
+                "\ubc84\uc804 \ubc88\ud638\uac00 Android\uac00 \ud5c8\uc6a9\ud558\ub294 \ucd5c\ub313\uac12\uc73c\ub85c \uc124\uc815\ub418\uc5b4 Google Play\uac00 \uc774 \ube4c\ub4dc \uc704\uc5d0 Meta\uc758 \uc5c5\ub370\uc774\ud2b8\ub97c \uc81c\uc548\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. Threads\uc5d0\ub294 \uc2e4\uc81c \ubc84\uc804\uc774 \uadf8\ub300\ub85c \ubcf4\uc785\ub2c8\ub2e4. \uae30\ubcf8 Threads\ub85c \ub3cc\uc544\uac00\ub824\uba74 \uba3c\uc800 \uc774 \uc571\uc744 \uc81c\uac70\ud574\uc57c \ud558\uba70, \uc774 \uacbd\uc6b0 \uc774 \ud734\ub300\uc804\ud654\uc758 Threads \ub370\uc774\ud130\uac00 \uc0ad\uc81c\ub429\ub2c8\ub2e4. \uc774\ud6c4 HushThreads \ube4c\ub4dc\uc5d0\ub3c4 Change version code\uac00 \ud544\uc694\ud558\uba70, \uc5c6\uc73c\uba74 \uc774 \ube4c\ub4dc \uc704\uc5d0 \uc124\uce58\ub418\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
+        table.put("There's no diagnostic data to clear.",
+                "\uc9c0\uc6b8 \uc9c4\ub2e8 \ub370\uc774\ud130\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.");
+        table.put("There's no diagnostic data to put back.",
+                "\ubcf5\uc6d0\ud560 \uc9c4\ub2e8 \ub370\uc774\ud130\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.");
+        table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
+                "\ud328\uce58\ud560 \ub54c Morphe Manager\uc5d0\uc11c \uc120\ud0dd\ud558\uba70 \uc77c\uc2dc \uc815\uc9c0\ub85c\ub294 \ub04c \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \ubc14\uafb8\ub824\uba74 \ub2e4\uc2dc \ud328\uce58\ud558\uc138\uc694.");
+        table.put("This build didn't record which report types it covers. Patch again to see them.",
+                "\uc774 \ube4c\ub4dc\ub294 \uc5b4\ub5a4 \ubcf4\uace0\uc11c \uc720\ud615\uc744 \ub2e4\ub8e8\ub294\uc9c0 \uae30\ub85d\ud558\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4. \ud655\uc778\ud558\ub824\uba74 \ub2e4\uc2dc \ud328\uce58\ud558\uc138\uc694.");
+        table.put("This phone has no file picker, so there's no way to choose a file here.",
+                "\uc774 \ud734\ub300\uc804\ud654\uc5d0\ub294 \ud30c\uc77c \uc120\ud0dd\uae30\uac00 \uc5c6\uc5b4\uc11c \uc5ec\uae30\uc11c \ud30c\uc77c\uc744 \uc120\ud0dd\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.");
+        table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
+                "Threads\uac00 \ud734\ub300\uc804\ud654\uc5d0 \ucd94\uac00\ud55c \ubcf4\uc548 \uc778\uc99d\uc11c\ub97c \ud5c8\uc6a9\ud569\ub2c8\ub2e4. Meta \uc778\uc99d\uc11c\uc5d0 \ub300\ud55c \uc790\uccb4 \uac80\uc0ac\ub294 \uadf8\ub300\ub85c\uc774\ubbc0\ub85c \ud504\ub85d\uc2dc\ub294 \uc5ec\uc804\ud788 \ub300\ubd80\ubd84\uc758 \ud2b8\ub798\ud53d\uc744 \uc77d\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.");
+        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
+                "Threads\uac00 \ud734\ub300\uc804\ud654\uc758 \uad11\uace0 ID\ub97c \uc77d\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uc774 \ube4c\ub4dc\uc5d0\uc11c \ud574\ub2f9 \uad8c\ud55c\uc774 \uc81c\uac70\ub418\uc5c8\uc2b5\ub2c8\ub2e4.");
+        table.put("Threads closes and reopens on this page.",
+                "Threads\uac00 \ub2eb\ud614\ub2e4\uac00 \uc774 \ud398\uc774\uc9c0\uc5d0\uc11c \ub2e4\uc2dc \uc5f4\ub9bd\ub2c8\ub2e4.");
+        table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
+                "Threads\uac00 \uc2dc\uc791 \ud6c4 1\ubd84 \uc548\uc5d0 \uc138 \ubc88 \uc5f0\uc18d\uc73c\ub85c \ucda9\ub3cc\ud558\uac70\ub098 \uba48\ucdb0\uc11c HushThreads\uac00 \uc2a4\uc2a4\ub85c \uc77c\uc2dc \uc815\uc9c0\ud588\uc2b5\ub2c8\ub2e4.");
+        table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
+                "\ub2e4\ub978 \uc571\uc5d0\uc11c \uacf5\uc720\ud560 \ub54c Threads\uac00 \ud45c\uc2dc\ub418\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. Threads\uc5d0\uc11c \ub2e4\ub978 \uc571\uc73c\ub85c \uacf5\uc720\ud558\ub294 \uae30\ub2a5\uc740 \uadf8\ub300\ub85c \uc791\ub3d9\ud569\ub2c8\ub2e4.");
+        table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
+                "\uc2a4\ud06c\ub9b0\uc0f7\uc744 \ucc0d\uc5b4\ub3c4 Threads\uc5d0 \uc54c\ub824\uc9c0\uc9c0 \uc54a\uc73c\ubbc0\ub85c \uae30\ub85d\ud558\uac70\ub098 \ubc18\uc751\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.");
+        table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "Android 9\uc5d0\uc11c \uc800\uc7a5\ud558\ub824\uba74 Threads\uc5d0 \uc800\uc7a5\uacf5\uac04 \uad8c\ud55c\uc774 \ud544\uc694\ud569\ub2c8\ub2e4. Threads \uc571 \uc815\ubcf4\uc758 \uad8c\ud55c\uc5d0\uc11c \ucf20 \ub2e4\uc74c \ub2e4\uc2dc \uc800\uc7a5\ud558\uc138\uc694.");
+        table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
+                "Android \uc124\uc815\uc5d0\uc11c \uc774 \uc571\uc5d0 Threads \uc6f9 \uc8fc\uc18c\uac00 \uc120\ud0dd\ub418\uc5b4 \uc788\uc73c\ubbc0\ub85c \ud574\ub2f9 \ub9c1\ud06c\uac00 \uc5ec\uae30\uc11c \uc5f4\ub9bd\ub2c8\ub2e4.");
+    }
+
+    private static void fillKo5(Map<String, String> table) {
+        table.put("Tracking in links and analytics uploads",
+                "\ub9c1\ud06c \ucd94\uc801\uacfc \ubd84\uc11d \ub370\uc774\ud130 \uc804\uc1a1");
+        table.put("Try a different word or clear the search.",
+                "\ub2e4\ub978 \ub2e8\uc5b4\ub85c \uac80\uc0c9\ud558\uac70\ub098 \uac80\uc0c9\uc5b4\ub97c \uc9c0\uc6b0\uc138\uc694.");
+        table.put("Try again, or go back to Threads.",
+                "\ub2e4\uc2dc \uc2dc\ub3c4\ud558\uac70\ub098 Threads\ub85c \ub3cc\uc544\uac00\uc138\uc694.");
+        table.put("Turn features on or off",
+                "\uae30\ub2a5 \ucf1c\uae30 \ub610\ub294 \ub044\uae30");
+        table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
+                "\ud0ed \ud55c \ubc88\uc73c\ub85c \uc2a4\uc704\uce58 \ubb36\uc74c\uc744 \ucf1c\uac70\ub098 \ubaa8\ub4e0 \uc2a4\uc704\uce58\ub97c \ucc98\uc74c \uc0c1\ud0dc\ub85c \ub418\ub3cc\ub9bd\ub2c8\ub2e4. \uc774 \uc904\uc744 \uc228\uae30\ub824\uba74 \uae38\uac8c \ub204\ub974\uc138\uc694.");
+        table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
+                "\ub2e4\uc74c\uc5d0 Threads\ub97c \uc2dc\uc791\ud560 \ub54c \ub514\ubc84\uadf8 \ub85c\uadf8\ub97c \uc81c\uc678\ud55c \ubaa8\ub4e0 HushThreads \uc2a4\uc704\uce58\ub97c \ub055\ub2c8\ub2e4. \ud328\uce58\ud560 \ub54c \uc120\ud0dd\ud55c \ub0b4\uc6a9\uc740 \uc720\uc9c0\ub418\uba70 \uc120\ud0dd \uc0ac\ud56d\ub3c4 \uc800\uc7a5\ub429\ub2c8\ub2e4.");
+        table.put("Undo",
+                "\uc2e4\ud589 \ucde8\uc18c");
+        table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
+                "\uc7ac\uac1c\ud560 \ub54c\uae4c\uc9c0 \ub514\ubc84\uadf8 \ub85c\uadf8\ub97c \uc81c\uc678\ud55c \ubaa8\ub4e0 \uc2a4\uc704\uce58\uac00 \uaebc\uc9c4 \uac83\ucc98\ub7fc \uc791\ub3d9\ud569\ub2c8\ub2e4. \ud328\uce58\ud560 \ub54c \uc801\uc6a9\ub41c \ubcc0\uacbd \uc0ac\ud56d\uc740 \uc720\uc9c0\ub429\ub2c8\ub2e4.");
+        table.put("Updates",
+                "\uc5c5\ub370\uc774\ud2b8");
+        table.put("User certificates trusted",
+                "\uc0ac\uc6a9\uc790 \uc778\uc99d\uc11c \uc2e0\ub8b0\ub428");
+        table.put("Version",
+                "\ubc84\uc804");
+        table.put("Version %1$s",
+                "\ubc84\uc804 %1$s");
+        table.put("Version %1$s for Threads %2$s",
+                "Threads %2$s\uc6a9 \ubc84\uc804 %1$s");
+        table.put("Version code raised",
+                "\ubc84\uc804 \ucf54\ub4dc \ub192\uc784");
+        table.put("Video file name",
+                "\ub3d9\uc601\uc0c1 \ud30c\uc77c \uc774\ub984");
+        table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
+                "\ub3d9\uc601\uc0c1 \uc774\ub984\uc740 %1$s\uc785\ub2c8\ub2e4. \uc0ac\uc9c4 \uc774\ub984\uc740 \ud56d\uc0c1 %2$s \ub4a4\uc5d0 \ub0a0\uc9dc\uc640 \uc2dc\uac04\uc774 \ubd99\uc2b5\ub2c8\ub2e4.");
+        table.put("Videos go to %1$s and photos to %2$s.",
+                "\ub3d9\uc601\uc0c1\uc740 %1$s\uc5d0, \uc0ac\uc9c4\uc740 %2$s\uc5d0 \uc800\uc7a5\ub429\ub2c8\ub2e4.");
+        table.put("Videos in your feed",
+                "\ud53c\ub4dc\uc758 \ub3d9\uc601\uc0c1");
+        table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
+                "\ud53c\ub4dc\uc758 \ub3d9\uc601\uc0c1\uc774 \uc2a4\ud06c\ub864\ud560 \ub54c \uc790\ub3d9\uc73c\ub85c \uc7ac\uc0dd\ub418\uc9c0 \uc54a\uace0 \ud0ed\ud560 \ub54c\uae4c\uc9c0 \uae30\ub2e4\ub9bd\ub2c8\ub2e4.");
+        table.put("Where you left off in your feed",
+                "\ud53c\ub4dc\uc5d0\uc11c \ub9c8\uc9c0\ub9c9\uc73c\ub85c \ubcf4\ub358 \uc704\uce58");
+        table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
+                "\uc704 \uc2a4\uc704\uce58\uac00 \ucf1c\uc838 \uc788\uc73c\uba74 \uc5bc\ub9c8\ub098 \uc624\ub798 \ub5a0\ub098 \uc788\uc5b4\ub3c4 \ubcf4\ub358 \uc704\uce58\uac00 \uc720\uc9c0\ub429\ub2c8\ub2e4. \ub2f9\uaca8\uc11c \uc0c8\ub85c\uace0\uce68\ud558\uac70\ub098 \uc0c8\ub85c \uc2dc\uc791\ud558\uba74 \uc0c8 \uac8c\uc2dc\ubb3c\uc744 \ubd88\ub7ec\uc635\ub2c8\ub2e4.");
+        table.put("You have the newest HushThreads release.",
+                "\ucd5c\uc2e0 HushThreads \ub9b4\ub9ac\uc2a4\ub97c \uc0ac\uc6a9 \uc911\uc785\ub2c8\ub2e4.");
+        table.put("You paused HushThreads.",
+                "HushThreads\ub97c \uc77c\uc2dc \uc815\uc9c0\ud588\uc2b5\ub2c8\ub2e4.");
+        table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.",
+                "\uc0ac\uc6a9 \uc911\uc778 Instagram\uc740 Meta\uac00 \uc11c\uba85\ud588\uc73c\uba70 Threads \uac8c\uc2dc\ubb3c\uacfc \ud504\ub85c\ud544\uc744 Meta\uac00 \uc11c\uba85\ud55c Threads\uc5d0\uc11c\ub9cc \uc5fd\ub2c8\ub2e4. Instagram\uc5d0\uc11c \ud0ed\ud558\uba74 \uc6f9\uc0ac\uc774\ud2b8\ub97c \ubd88\ub7ec\uc62c \uc218 \uc5c6\ub2e4\ub294 \uc624\ub958\uac00 \ud45c\uc2dc\ub429\ub2c8\ub2e4. Threads\uc5d0\uc11c \uc9c1\uc811 \uc5f0 \uac8c\uc2dc\ubb3c\uc740 \ud3c9\uc18c\ucc98\ub7fc \uc791\ub3d9\ud569\ub2c8\ub2e4.");
+        table.put("Your choices are saved. Tap Resume, then restart Threads.",
+                "\uc120\ud0dd \uc0ac\ud56d\uc774 \uc800\uc7a5\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \uc7ac\uac1c\ub97c \ud0ed\ud55c \ub2e4\uc74c Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Your switches already match that file, so nothing will change.",
+                "\uc2a4\uc704\uce58\uac00 \uc774\ubbf8 \uadf8 \ud30c\uc77c\uacfc \uac19\uc73c\ubbc0\ub85c \uc544\ubb34\uac83\ub3c4 \ubc14\ub00c\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
+        table.put("none",
+                "\uc5c6\uc74c");
+        table.put("the raised version code",
+                "\ub192\uc778 \ubc84\uc804 \ucf54\ub4dc");
+        table.put("the re-signed build fix",
+                "\ub2e4\uc2dc \uc11c\uba85\ub41c \ube4c\ub4dc \uc218\uc815");
+        table.put("the removed advertising ID permission",
+                "\uc81c\uac70\ub41c \uad11\uace0 ID \uad8c\ud55c");
+        table.put("the removed share sheet entry",
+                "\uc81c\uac70\ub41c \uacf5\uc720 \uc2dc\ud2b8 \ud56d\ubaa9");
+        table.put("the user certificate trust",
+                "\uc0ac\uc6a9\uc790 \uc778\uc99d\uc11c \uc2e0\ub8b0");
+    }
+
     private static Map<String, String> buildPt_rBR() {
         Map<String, String> table = new HashMap<>(664);
         fillPt_rBR0(table);
@@ -3509,5 +4901,698 @@ public final class L10nTranslations {
                 "kald\u0131r\u0131lan payla\u015f\u0131m men\u00fcs\u00fc giri\u015fi");
         table.put("the user certificate trust",
                 "kullan\u0131c\u0131 sertifikalar\u0131na duyulan g\u00fcven");
+    }
+
+    private static Map<String, String> buildZh_rTW() {
+        Map<String, String> table = new HashMap<>(664);
+        fillZh_rTW0(table);
+        fillZh_rTW1(table);
+        fillZh_rTW2(table);
+        fillZh_rTW3(table);
+        fillZh_rTW4(table);
+        fillZh_rTW5(table);
+        return table;
+    }
+
+    private static void fillZh_rTW0(Map<String, String> table) {
+        table.put("%1$d default patch isn't in this build",
+                "\u6b64\u7248\u672c\u7f3a\u5c11 %1$d \u500b\u9810\u8a2d\u4fee\u88dc\u9805\u76ee");
+        table.put("%1$d default patches aren't in this build",
+                "\u6b64\u7248\u672c\u7f3a\u5c11 %1$d \u500b\u9810\u8a2d\u4fee\u88dc\u9805\u76ee");
+        table.put("%1$d item in that file isn't a setting this version of HushThreads knows, so it'll be left out.",
+                "\u8a72\u6a94\u6848\u4e2d\u6709 %1$d \u500b\u9805\u76ee\u4e0d\u662f\u9019\u500b\u7248\u672c\u7684 HushThreads \u53ef\u8fa8\u8b58\u7684\u8a2d\u5b9a\uff0c\u56e0\u6b64\u6703\u7565\u904e\u3002");
+        table.put("%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.",
+                "\u8a72\u6a94\u6848\u4e2d\u6709 %1$d \u500b\u9805\u76ee\u4e0d\u662f\u9019\u500b\u7248\u672c\u7684 HushThreads \u53ef\u8fa8\u8b58\u7684\u8a2d\u5b9a\uff0c\u56e0\u6b64\u6703\u7565\u904e\u3002");
+        table.put("%1$d saved in lower quality than on Threads.",
+                "\u6709 %1$d \u500b\u9805\u76ee\u4ee5\u4f4e\u65bc Threads \u7684\u756b\u8cea\u5132\u5b58\u3002");
+        table.put("%1$d saves stopped. Reopen the post and save again.",
+                "\u6709 %1$d \u500b\u5132\u5b58\u4f5c\u696d\u505c\u6b62\u3002\u8acb\u91cd\u65b0\u958b\u555f\u8cbc\u6587\u5f8c\u518d\u5132\u5b58\u3002");
+        table.put("%1$d saves were interrupted",
+                "\u6709 %1$d \u500b\u5132\u5b58\u4f5c\u696d\u88ab\u4e2d\u65b7");
+        table.put("%1$d setting found",
+                "\u627e\u5230 %1$d \u9805\u8a2d\u5b9a");
+        table.put("%1$d settings found",
+                "\u627e\u5230 %1$d \u9805\u8a2d\u5b9a");
+        table.put("%1$d switch will change.",
+                "\u5c07\u8b8a\u66f4 %1$d \u500b\u958b\u95dc\u3002");
+        table.put("%1$d switches will change.",
+                "\u5c07\u8b8a\u66f4 %1$d \u500b\u958b\u95dc\u3002");
+        table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
+                "%1$s \u4ee3\u8868\u5132\u5b58\u65e5\u671f\u8207\u6642\u9593\uff0c%2$s \u4ee3\u8868\u5f71\u7247\u5728 Threads \u7684\u7de8\u865f\uff0c%3$s \u4ee3\u8868\u767c\u6587\u8005\uff0c%4$s \u4ee3\u8868\u767c\u6587\u65e5\u671f\u3002\u672a\u77e5\u8cc7\u8a0a\u6703\u7565\u904e\uff1b\u540d\u7a31\u672a\u5305\u542b\u9019\u4e9b\u8cc7\u8a0a\u6642\u6703\u52a0\u4e0a\u65e5\u671f\u3002\u82e5\u8cc7\u6599\u593e\u4e2d\u5df2\u6709\u76f8\u540c\u540d\u7a31\uff0c\u6703\u5728\u672b\u5c3e\u52a0\u4e0a\u5132\u5b58\u6642\u9593\u3002\u7121\u6548\u5b57\u5143\u6703\u6539\u70ba\u5e95\u7dda\u3002\u7559\u767d\u53ef\u4f7f\u7528\u9810\u8a2d\u503c %5$s\u3002");
+        table.put("%1$s of %2$s",
+                "%1$s\uff0f%2$s");
+        table.put("%1$s so far",
+                "\u76ee\u524d %1$s");
+        table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
+                "%1$s\u3002\u5b83\u662f\u5728\u4fee\u88dc\u6642\u8a2d\u5b9a\u7684\uff0c\u56e0\u6b64\u300c\u66ab\u505c\u300d\u7121\u6cd5\u95dc\u9589\u5b83\u3002\u82e5\u8981\u6392\u9664\u5b83\uff0c\u8acb\u91cd\u65b0\u4fee\u88dc\u4e26\u53d6\u6d88\u9078\u53d6\u8a72\u4fee\u88dc\u9805\u76ee\u3002");
+        table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
+                "%1$s\u3002\u9019\u662f\u5728\u4fee\u88dc\u6642\u8a2d\u5b9a\u7684\uff0c\u56e0\u6b64\u300c\u66ab\u505c\u300d\u7121\u6cd5\u95dc\u9589\u3002\u82e5\u8981\u6392\u9664\uff0c\u8acb\u91cd\u65b0\u4fee\u88dc\u4e26\u53d6\u6d88\u9078\u53d6\u5f8c\u65b9\u62ec\u865f\u4e2d\u7684\u4fee\u88dc\u9805\u76ee\u3002");
+        table.put("%1$s. This action will be available when it finishes.",
+                "%1$s\u3002\u5b8c\u6210\u5f8c\u5373\u53ef\u4f7f\u7528\u6b64\u52d5\u4f5c\u3002");
+        table.put("A diagnostic report is already being saved.",
+                "\u6b63\u5728\u5132\u5b58\u8a3a\u65b7\u5831\u544a\u3002");
+        table.put("A file named %1$s in %2$s paused HushThreads.",
+                "%2$s \u4e2d\u540d\u70ba %1$s \u7684\u6a94\u6848\u5df2\u8b93 HushThreads \u66ab\u505c\u3002");
+        table.put("A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.",
+                "\u9577\u6309\u52d5\u614b\u9802\u7aef\u7684 Threads \u6a19\u8a8c\u5373\u53ef\u958b\u555f\u9019\u4e9b\u8a2d\u5b9a\u3002\u95dc\u9589\u5f8c\u9577\u6309\u4e0d\u6703\u6709\u4efb\u4f55\u4f5c\u7528\u3002");
+        table.put("A save stopped. Reopen the post and save again.",
+                "\u5132\u5b58\u4f5c\u696d\u5df2\u505c\u6b62\u3002\u8acb\u91cd\u65b0\u958b\u555f\u8cbc\u6587\u5f8c\u518d\u5132\u5b58\u3002");
+        table.put("A save was interrupted",
+                "\u5132\u5b58\u4f5c\u696d\u88ab\u4e2d\u65b7");
+        table.put("A sideways swipe on your feed no longer slides into Search. The Search button still opens it. Restart Threads to see the change.",
+                "\u5728\u52d5\u614b\u6d88\u606f\u6a6b\u5411\u6ed1\u52d5\u4e0d\u518d\u9032\u5165\u300c\u641c\u5c0b\u300d\u3002\u641c\u5c0b\u6309\u9215\u4ecd\u53ef\u958b\u555f\u641c\u5c0b\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
+        table.put("About",
+                "\u95dc\u65bc");
+        table.put("Adds Save to a post's menu. A post with several photos or videos saves them all. Off or paused, you get Threads' normal menu.",
+                "\u5728\u8cbc\u6587\u9078\u55ae\u4e2d\u52a0\u5165\u300c\u5132\u5b58\u300d\u3002\u542b\u6709\u591a\u5f35\u76f8\u7247\u6216\u591a\u90e8\u5f71\u7247\u7684\u8cbc\u6587\u6703\u5168\u90e8\u5132\u5b58\u3002\u95dc\u9589\u6216\u66ab\u505c\u6642\u6703\u986f\u793a Threads \u539f\u672c\u7684\u9078\u55ae\u3002");
+        table.put("Adds a HushThreads row just above More settings in Threads' settings. Off, the row is gone the next time you open Threads' settings.",
+                "\u5728 Threads \u8a2d\u5b9a\u7684\u300c\u66f4\u591a\u8a2d\u5b9a\u300d\u6b63\u4e0a\u65b9\u52a0\u5165 HushThreads \u9805\u76ee\u3002\u95dc\u9589\u5f8c\uff0c\u4e0b\u6b21\u958b\u555f Threads \u8a2d\u5b9a\u6642\u8a72\u9805\u76ee\u5c31\u6703\u6d88\u5931\u3002");
+        table.put("Ads and suggested accounts in your feed",
+                "\u52d5\u614b\u6d88\u606f\u4e2d\u7684\u5ee3\u544a\u8207\u5efa\u8b70\u5e33\u865f");
+        table.put("Advertising ID removed",
+                "\u5df2\u79fb\u9664\u5ee3\u544a ID");
+        table.put("Analytics address coverage",
+                "\u5206\u6790\u7db2\u5740\u6db5\u84cb\u7bc4\u570d");
+        table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
+                "Android 11 \u8207\u66f4\u820a\u7248\u672c\u4e0d\u6703\u6307\u51fa\u54ea\u4e9b\u9023\u7d50\u6703\u5728\u6b64\u958b\u555f\u3002\u8f15\u89f8\u4ee5\u958b\u555f\u6b64\u61c9\u7528\u7a0b\u5f0f\u7684\u8a2d\u5b9a\uff0c\u7136\u5f8c\u9078\u64c7\u300c\u9810\u8a2d\u958b\u555f\u300d\u3002");
+        table.put("Android didn't say which links open here. Tap to check in Android's settings.",
+                "Android \u672a\u6307\u51fa\u54ea\u4e9b\u9023\u7d50\u6703\u5728\u6b64\u958b\u555f\u3002\u8f15\u89f8\u4ee5\u5728 Android \u8a2d\u5b9a\u4e2d\u67e5\u770b\u3002");
+        table.put("Android only sends Threads links to an app signed by Meta. Selecting the addresses sends their links here instead. Your other link settings stay as they are.",
+                "Android \u53ea\u6703\u5c07 Threads \u9023\u7d50\u50b3\u9001\u7d66\u7531 Meta \u7c3d\u7f72\u7684\u61c9\u7528\u7a0b\u5f0f\u3002\u9078\u53d6\u9019\u4e9b\u7db2\u5740\u5373\u53ef\u6539\u70ba\u5728\u6b64\u958b\u555f\u9023\u7d50\uff0c\u5176\u4ed6\u9023\u7d50\u8a2d\u5b9a\u4e0d\u53d7\u5f71\u97ff\u3002");
+        table.put("Android verified this app for Threads' web addresses, so their links open here.",
+                "Android \u5df2\u9a57\u8b49\u6b64\u61c9\u7528\u7a0b\u5f0f\u53ef\u8655\u7406 Threads \u7684\u7db2\u5740\uff0c\u56e0\u6b64\u5176\u9023\u7d50\u6703\u5728\u6b64\u958b\u555f\u3002");
+        table.put("Android's settings for this app didn't open. Open App info from Threads' icon, then Open by default.",
+                "\u7121\u6cd5\u958b\u555f Android \u5c0d\u6b64\u61c9\u7528\u7a0b\u5f0f\u7684\u8a2d\u5b9a\u3002\u8acb\u5f9e Threads \u5716\u793a\u958b\u555f\u300c\u61c9\u7528\u7a0b\u5f0f\u8cc7\u8a0a\u300d\uff0c\u518d\u9078\u64c7\u300c\u9810\u8a2d\u958b\u555f\u300d\u3002");
+        table.put("Appearance",
+                "\u5916\u89c0");
+        table.put("Asks GitHub for the newest release right now, even with the switch above off.",
+                "\u5373\u4f7f\u4e0a\u65b9\u958b\u95dc\u5df2\u95dc\u9589\uff0c\u4e5f\u7acb\u5373\u5411 GitHub \u67e5\u8a62\u6700\u65b0\u7248\u672c\u3002");
+        table.put("Back",
+                "\u8fd4\u56de");
+        table.put("Back to defaults",
+                "\u9084\u539f\u9810\u8a2d\u503c");
+        table.put("Best",
+                "\u6700\u4f73");
+        table.put("Blocked words and domains",
+                "\u5c01\u9396\u7684\u5b57\u8a5e\u8207\u7db2\u57df");
+        table.put("Blocked: %1$s. Not found in this build: %2$s.",
+                "\u5df2\u5c01\u9396\uff1a%1$s\u3002\u6b64\u7248\u672c\u4e2d\u627e\u4e0d\u5230\uff1a%2$s\u3002");
+        table.put("Build %1$s",
+                "\u5efa\u7f6e %1$s");
+        table.put("Build %1$s (modified)",
+                "\u5efa\u7f6e %1$s\uff08\u5df2\u4fee\u6539\uff09");
+        table.put("Build %1$s (source known)",
+                "\u5efa\u7f6e %1$s\uff08\u4f86\u6e90\u5df2\u77e5\uff09");
+        table.put("Build %1$s (source unknown)",
+                "\u5efa\u7f6e %1$s\uff08\u4f86\u6e90\u4e0d\u660e\uff09");
+        table.put("Cancel",
+                "\u53d6\u6d88");
+        table.put("Cancel saving this carousel",
+                "\u53d6\u6d88\u5132\u5b58\u6b64\u8f2a\u64ad\u8cbc\u6587");
+        table.put("Cancel saving this photo",
+                "\u53d6\u6d88\u5132\u5b58\u6b64\u76f8\u7247");
+        table.put("Cancel saving this video",
+                "\u53d6\u6d88\u5132\u5b58\u6b64\u5f71\u7247");
+        table.put("Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "\u8f2a\u64ad\u8cbc\u6587\u5df2\u53d6\u6d88\u3002\u5df2\u5132\u5b58 %1$d \u500b\u3001\u5931\u6557 %2$d \u500b\u3001\u7565\u904e %3$d \u500b\u3002");
+        table.put("Changed %1$d setting",
+                "\u5df2\u8b8a\u66f4 %1$d \u9805\u8a2d\u5b9a");
+        table.put("Changed %1$d settings",
+                "\u5df2\u8b8a\u66f4 %1$d \u9805\u8a2d\u5b9a");
+        table.put("Changing these",
+                "\u6b63\u5728\u8b8a\u66f4\u9019\u4e9b\u9805\u76ee");
+        table.put("Check for new HushThreads releases",
+                "\u6aa2\u67e5\u65b0\u7684 HushThreads \u7248\u672c");
+        table.put("Check now",
+                "\u7acb\u5373\u6aa2\u67e5");
+        table.put("Checking GitHub now.",
+                "\u6b63\u5728\u6aa2\u67e5 GitHub\u3002");
+        table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
+                "\u9078\u64c7 Movies \u8207 Pictures \u4e0b\u7684\u8cc7\u6599\u593e\u540d\u7a31\u3002\u7121\u6548\u5b57\u5143\u6703\u6539\u70ba\u5e95\u7dda\u3002\u7559\u767d\u53ef\u4f7f\u7528\u9810\u8a2d\u8cc7\u6599\u593e %1$s\u3002");
+        table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
+                "\u9078\u64c7\u8a2d\u5b9a\u6a94\u3002\u532f\u5165\u524d\u6703\u5148\u986f\u793a\u5b83\u5c07\u8b8a\u66f4\u591a\u5c11\u500b\u958b\u95dc\u3002");
+        table.put("Clear diagnostic data",
+                "\u6e05\u9664\u8a3a\u65b7\u8cc7\u6599");
+        table.put("Clear search",
+                "\u6e05\u9664\u641c\u5c0b");
+    }
+
+    private static void fillZh_rTW1(Map<String, String> table) {
+        table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
+                "\u6e05\u9664\u5df2\u5132\u5b58\u7684\u8a18\u9304\u3001\u4fee\u88dc\u6aa2\u67e5\u7d50\u679c\uff0c\u4ee5\u53ca\u5831\u544a\u6703\u5305\u542b\u7684\u5df2\u4fdd\u7559\u7576\u6a5f\u7d00\u9304\u3002");
+        table.put("Collapsed",
+                "\u5df2\u6536\u5408");
+        table.put("Comments",
+                "\u7559\u8a00");
+        table.put("Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
+                "\u8907\u88fd\u5feb\u901f\u5831\u544a\uff0c\u6216\u5c07\u5b8c\u6574\u5831\u544a\u5132\u5b58\u81f3 Threads \u81ea\u5df1\u7684 Downloads \u8cc7\u6599\u593e\u3002\u5831\u544a\u4e0d\u542b\u9023\u7d50\u3001ID\u3001Cookie \u8207\u767b\u5165\u6b0a\u6756\uff1b\u5206\u4eab\u524d\u8acb\u78ba\u8a8d\u6c92\u6709\u5176\u4ed6\u79c1\u4eba\u6587\u5b57\u3002");
+        table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
+                "\u8907\u88fd\u5feb\u901f\u5831\u544a\uff0c\u6216\u5c07\u5b8c\u6574\u5831\u544a\u5132\u5b58\u5230 Download/Morphe\u3002\u5831\u544a\u4e0d\u542b\u9023\u7d50\u3001ID\u3001Cookie \u8207\u767b\u5165\u6b0a\u6756\uff1b\u5206\u4eab\u524d\u8acb\u78ba\u8a8d\u6c92\u6709\u5176\u4ed6\u79c1\u4eba\u6587\u5b57\u3002");
+        table.put("Copy a short report to the clipboard.",
+                "\u5c07\u7c21\u77ed\u5831\u544a\u8907\u88fd\u5230\u526a\u8cbc\u7c3f\u3002");
+        table.put("Copy quick report",
+                "\u8907\u88fd\u5feb\u901f\u5831\u544a");
+        table.put("Copy text and exact post times",
+                "\u8907\u88fd\u6587\u5b57\u8207\u7cbe\u78ba\u767c\u6587\u6642\u9593");
+        table.put("Copy text on long press",
+                "\u9577\u6309\u6642\u8907\u88fd\u6587\u5b57");
+        table.put("Copy text when you hold a post",
+                "\u9577\u6309\u8cbc\u6587\u6642\u8907\u88fd\u6587\u5b57");
+        table.put("Copying to the gallery",
+                "\u6b63\u5728\u8907\u88fd\u5230\u5716\u5eab");
+        table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
+                "\u7121\u6cd5\u532f\u5165\u8a2d\u5b9a\uff0c\u4e5f\u7121\u6cd5\u9084\u539f\u539f\u6709\u8a2d\u5b9a\u3002\u8acb\u6aa2\u67e5\u6b64\u756b\u9762\u7684\u958b\u95dc\u3002");
+        table.put("Couldn't import the settings. Nothing was changed.",
+                "\u7121\u6cd5\u532f\u5165\u8a2d\u5b9a\uff0c\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+        table.put("Couldn't open that file. Nothing was changed.",
+                "\u7121\u6cd5\u958b\u555f\u8a72\u6a94\u6848\uff0c\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+        table.put("Couldn't open the file picker. Try again.",
+                "\u7121\u6cd5\u958b\u555f\u6a94\u6848\u9078\u64c7\u5668\uff0c\u8acb\u518d\u8a66\u4e00\u6b21\u3002");
+        table.put("Couldn't put back the diagnostic data. Try again.",
+                "\u7121\u6cd5\u9084\u539f\u8a3a\u65b7\u8cc7\u6599\uff0c\u8acb\u518d\u8a66\u4e00\u6b21\u3002");
+        table.put("Couldn't reach GitHub. Try again later.",
+                "\u7121\u6cd5\u9023\u7dda\u81f3 GitHub\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
+        table.put("Couldn't save the settings file. Try again.",
+                "\u7121\u6cd5\u5132\u5b58\u8a2d\u5b9a\u6a94\uff0c\u8acb\u518d\u8a66\u4e00\u6b21\u3002");
+        table.put("Couldn't start that. Try again in a moment.",
+                "\u7121\u6cd5\u555f\u52d5\u8a72\u4f5c\u696d\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
+        table.put("Couldn't start the report export. Try again shortly.",
+                "\u7121\u6cd5\u958b\u59cb\u532f\u51fa\u5831\u544a\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
+        table.put("Couldn't turn HushThreads back on. Try again.",
+                "\u7121\u6cd5\u91cd\u65b0\u555f\u7528 HushThreads\uff0c\u8acb\u518d\u8a66\u4e00\u6b21\u3002");
+        table.put("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.",
+                "\u6df1\u8272\u6a21\u5f0f\u4f7f\u7528\u771f\u6b63\u7684\u9ed1\u8272\uff0c\u800c\u975e\u6df1\u7070\u8272\u3002\u8acb\u5728 Threads \u4e2d\u958b\u555f\u6df1\u8272\u6a21\u5f0f\uff1b\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
+        table.put("Debug logging",
+                "\u5075\u932f\u8a18\u9304");
+        table.put("Diagnostic data cleared. Tap again to put it back.",
+                "\u8a3a\u65b7\u8cc7\u6599\u5df2\u6e05\u9664\u3002\u518d\u6b21\u8f15\u89f8\u53ef\u9084\u539f\u3002");
+        table.put("Diagnostic data put back.",
+                "\u8a3a\u65b7\u8cc7\u6599\u5df2\u9084\u539f\u3002");
+        table.put("Diagnostic report copied to the clipboard.",
+                "\u8a3a\u65b7\u5831\u544a\u5df2\u8907\u88fd\u5230\u526a\u8cbc\u7c3f\u3002");
+        table.put("Download failed. Try again in a moment.",
+                "\u4e0b\u8f09\u5931\u6557\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
+        table.put("Download quality",
+                "\u4e0b\u8f09\u756b\u8cea");
+        table.put("Downloading",
+                "\u6b63\u5728\u4e0b\u8f09");
+        table.put("Downloads",
+                "\u4e0b\u8f09\u9805\u76ee");
+        table.put("Each video saves at %1$s or the closest quality below it. A video with nothing that low saves at the closest quality above.",
+                "\u6bcf\u90e8\u5f71\u7247\u6703\u4ee5 %1$s \u6216\u6700\u63a5\u8fd1\u7684\u8f03\u4f4e\u756b\u8cea\u5132\u5b58\u3002\u82e5\u6c92\u6709\u8f03\u4f4e\u756b\u8cea\uff0c\u5247\u4ee5\u6700\u63a5\u8fd1\u7684\u8f03\u9ad8\u756b\u8cea\u5132\u5b58\u3002");
+        table.put("Each video saves at its lowest quality, for the smallest file.",
+                "\u6bcf\u90e8\u5f71\u7247\u6703\u4ee5\u6700\u4f4e\u756b\u8cea\u5132\u5b58\uff0c\u4ee5\u53d6\u5f97\u6700\u5c0f\u6a94\u6848\u3002");
+        table.put("Each video saves at the best quality the player streams.",
+                "\u6bcf\u90e8\u5f71\u7247\u6703\u4ee5\u64ad\u653e\u5668\u4e32\u6d41\u7684\u6700\u4f73\u756b\u8cea\u5132\u5b58\u3002");
+        table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
+                "\u9664\u4e86\u300c\u5075\u932f\u8a18\u9304\u300d\u4ee5\u5916\uff0c\u6240\u6709\u958b\u95dc\u90fd\u6703\u5982\u540c\u95dc\u9589\u822c\u904b\u4f5c\uff1b\u4fee\u88dc\u6642\u8a2d\u5b9a\u7684\u9805\u76ee\u4ecd\u6703\u4fdd\u7559\u3002\u4f60\u7684\u8a2d\u5b9a\u4e0d\u6703\u8b8a\u66f4\u3002");
+        table.put("Example without post details",
+                "\u4e0d\u542b\u8cbc\u6587\u8cc7\u8a0a\u7684\u7bc4\u4f8b");
+        table.put("Expanded",
+                "\u5df2\u5c55\u958b");
+        table.put("Export diagnostic report",
+                "\u532f\u51fa\u8a3a\u65b7\u5831\u544a");
+        table.put("Export settings",
+                "\u532f\u51fa\u8a2d\u5b9a");
+        table.put("Feed",
+                "\u52d5\u614b\u6d88\u606f");
+        table.put("File name",
+                "\u6a94\u6848\u540d\u7a31");
+        table.put("File name set to %1$s.",
+                "\u6a94\u6848\u540d\u7a31\u5df2\u8a2d\u70ba %1$s\u3002");
+        table.put("Filter comments",
+                "\u904e\u6ffe\u7559\u8a00");
+        table.put("Folder name",
+                "\u8cc7\u6599\u593e\u540d\u7a31");
+        table.put("Folder set to %1$s.",
+                "\u8cc7\u6599\u593e\u5df2\u8a2d\u70ba %1$s\u3002");
+        table.put("Full report saved to %1$s",
+                "\u5b8c\u6574\u5831\u544a\u5df2\u5132\u5b58\u81f3 %1$s");
+        table.put("Full size photos",
+                "\u5b8c\u6574\u5c3a\u5bf8\u76f8\u7247");
+        table.put("GPL-3.0, with the notices of the projects this is built on",
+                "GPL-3.0\uff0c\u4e26\u5305\u542b\u5efa\u7f6e\u6240\u7528\u5c08\u6848\u7684\u8072\u660e");
+        table.put("GitHub is turning away checks from this network for now. Try again later.",
+                "GitHub \u76ee\u524d\u62d2\u7d55\u6b64\u7db2\u8def\u7684\u6aa2\u67e5\u8981\u6c42\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
+        table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
+                "GitHub \u56de\u50b3\u4e86 HushThreads \u7121\u6cd5\u8b80\u53d6\u7684\u5167\u5bb9\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
+        table.put("Go straight to one group of settings. Back returns to where you were.",
+                "\u76f4\u63a5\u524d\u5f80\u4e00\u7d44\u8a2d\u5b9a\u3002\u300c\u8fd4\u56de\u300d\u6703\u56de\u5230\u539f\u672c\u4f4d\u7f6e\u3002");
+        table.put("Help and restart",
+                "\u8aaa\u660e\u8207\u91cd\u65b0\u555f\u52d5");
+        table.put("Helps if WhatsApp, an editor like CapCut or InShot, or a gallery plays your saved video without sound. May lower quality.",
+                "\u82e5 WhatsApp\u3001CapCut \u6216 InShot \u7b49\u7de8\u8f2f\u5668\uff0c\u6216\u5716\u5eab\u64ad\u653e\u5df2\u5132\u5b58\u5f71\u7247\u6642\u6c92\u6709\u8072\u97f3\uff0c\u6b64\u9078\u9805\u53ef\u80fd\u6709\u5e6b\u52a9\uff0c\u4f46\u53ef\u80fd\u964d\u4f4e\u756b\u8cea\u3002");
+        table.put("Hidden. Tap to show it again.",
+                "\u5df2\u96b1\u85cf\u3002\u8f15\u89f8\u53ef\u518d\u6b21\u986f\u793a\u3002");
+        table.put("Hide ads",
+                "\u96b1\u85cf\u5ee3\u544a");
+        table.put("Hide comments with links",
+                "\u96b1\u85cf\u542b\u9023\u7d50\u7684\u7559\u8a00");
+        table.put("Hide follow suggestions in Search",
+                "\u96b1\u85cf\u641c\u5c0b\u4e2d\u7684\u8ffd\u8e64\u5efa\u8b70");
+        table.put("Hide ghost post bubbles",
+                "\u96b1\u85cf\u5e7d\u9748\u8cbc\u6587\u6ce1\u6ce1");
+        table.put("Hide screenshots from Threads",
+                "\u4e0d\u8b93 Threads \u5075\u6e2c\u87a2\u5e55\u622a\u5716");
+        table.put("Hide suggested users",
+                "\u96b1\u85cf\u5efa\u8b70\u8ffd\u8e64\u7684\u7528\u6236");
+        table.put("Hide the Instagram button",
+                "\u96b1\u85cf Instagram \u6309\u9215");
+    }
+
+    private static void fillZh_rTW2(Map<String, String> table) {
+        table.put("Hides ads and the cards that suggest accounts to follow.",
+                "\u96b1\u85cf\u5ee3\u544a\u8207\u5efa\u8b70\u8ffd\u8e64\u5e33\u865f\u7684\u5361\u7247\u3002");
+        table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
+                "\u9577\u6309\u8cbc\u6587\u6587\u5b57\uff08\u5305\u62ec\u5df2\u958b\u555f\u7684\u8cbc\u6587\uff09\u6703\u958b\u555f\u300c\u8907\u88fd\u6587\u5b57\u300d\uff0c\u8b93\u4f60\u53d6\u5f97\u5b8c\u6574\u8cbc\u6587\u8207\u5176\u4e2d\u9023\u7d50\uff0c\u800c\u975e\u53ea\u80fd\u9078\u53d6\u55ae\u5b57\u3002");
+        table.put("How far a photo or video you're saving has got, with a button to cancel it",
+                "\u986f\u793a\u6b63\u5728\u5132\u5b58\u7684\u76f8\u7247\u6216\u5f71\u7247\u9032\u5ea6\uff0c\u4e26\u63d0\u4f9b\u53d6\u6d88\u6309\u9215");
+        table.put("HushThreads %1$s is out. Update it in Morphe Manager.",
+                "HushThreads %1$s \u5df2\u63a8\u51fa\u3002\u8acb\u5728 Morphe Manager \u4e2d\u66f4\u65b0\u3002");
+        table.put("HushThreads %1$s on Threads %2$s",
+                "HushThreads %1$s\uff08Threads %2$s\uff09");
+        table.put("HushThreads %1$s targets Threads %2$s.",
+                "HushThreads %1$s \u7684\u76ee\u6a19\u7248\u672c\u662f Threads %2$s\u3002");
+        table.put("HushThreads is on",
+                "HushThreads \u5df2\u555f\u7528");
+        table.put("HushThreads is paused",
+                "HushThreads \u5df2\u66ab\u505c");
+        table.put("HushThreads pauses when Threads restarts.",
+                "Threads \u91cd\u65b0\u555f\u52d5\u6642\uff0cHushThreads \u6703\u66ab\u505c\u3002");
+        table.put("HushThreads saves",
+                "HushThreads \u5132\u5b58\u4f5c\u696d");
+        table.put("HushThreads settings",
+                "HushThreads \u8a2d\u5b9a");
+        table.put("HushThreads settings couldn't open",
+                "\u7121\u6cd5\u958b\u555f HushThreads \u8a2d\u5b9a");
+        table.put("HushThreads turns back on when Threads restarts.",
+                "Threads \u91cd\u65b0\u555f\u52d5\u6642\uff0cHushThreads \u6703\u91cd\u65b0\u555f\u7528\u3002");
+        table.put("Import",
+                "\u532f\u5165");
+        table.put("Import settings",
+                "\u532f\u5165\u8a2d\u5b9a");
+        table.put("Importing settings",
+                "\u6b63\u5728\u532f\u5165\u8a2d\u5b9a");
+        table.put("Instagram won't open posts here",
+                "Instagram \u7121\u6cd5\u5728\u6b64\u958b\u555f\u8cbc\u6587");
+        table.put("It targets Threads %1$s.",
+                "\u76ee\u6a19\u7248\u672c\u70ba Threads %1$s\u3002");
+        table.put("Joining the picture and sound",
+                "\u6b63\u5728\u5408\u4f75\u5f71\u50cf\u8207\u8072\u97f3");
+        table.put("Jump to a section",
+                "\u8df3\u81f3\u5340\u6bb5");
+        table.put("Keep feed position on return",
+                "\u8fd4\u56de\u6642\u4fdd\u7559\u52d5\u614b\u6d88\u606f\u4f4d\u7f6e");
+        table.put("Last carousel save",
+                "\u4e0a\u6b21\u5132\u5b58\u8f2a\u64ad\u8cbc\u6587");
+        table.put("Licenses",
+                "\u6388\u6b0a\u689d\u6b3e");
+        table.put("Link expired. Reopen the post and try again",
+                "\u9023\u7d50\u5df2\u904e\u671f\u3002\u8acb\u91cd\u65b0\u958b\u555f\u8cbc\u6587\u5f8c\u518d\u8a66");
+        table.put("Links",
+                "\u9023\u7d50");
+        table.put("Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.",
+                "\u4f60\u8f15\u89f8\u7684\u9023\u7d50\u6703\u5728\u700f\u89bd\u5668\u6216\u7db2\u7ad9\u61c9\u7528\u7a0b\u5f0f\u4e2d\u958b\u555f\uff0c\u7565\u904e Threads \u7684\u9023\u7d50\u8ffd\u8e64\u3002Threads \u8207 Instagram \u9801\u9762\u4ecd\u6703\u5728 Threads \u4e2d\u958b\u555f\u3002");
+        table.put("No app on this phone can open the link. The address is %1$s.",
+                "\u6b64\u624b\u6a5f\u6c92\u6709\u61c9\u7528\u7a0b\u5f0f\u53ef\u958b\u555f\u6b64\u9023\u7d50\u3002\u7db2\u5740\u70ba %1$s\u3002");
+        table.put("No matching settings",
+                "\u6c92\u6709\u76f8\u7b26\u7684\u8a2d\u5b9a");
+        table.put("No saves in progress.",
+                "\u76ee\u524d\u6c92\u6709\u9032\u884c\u4e2d\u7684\u5132\u5b58\u4f5c\u696d\u3002");
+        table.put("No swipe into Search",
+                "\u7981\u6b62\u6ed1\u52d5\u9032\u5165\u641c\u5c0b");
+        table.put("No time limit",
+                "\u7121\u6642\u9593\u9650\u5236");
+        table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
+                "\u672a\u70ba\u6b64\u61c9\u7528\u7a0b\u5f0f\u9078\u53d6\u4efb\u4f55 Threads \u7db2\u5740\uff0c\u56e0\u6b64\u9023\u7d50\u6703\u5728\u5176\u4ed6\u4f4d\u7f6e\u958b\u555f\u3002\u8f15\u89f8\u4ee5\u5728 Android \u8a2d\u5b9a\u4e2d\u9078\u53d6\u5b83\u5011\u3002");
+        table.put("Not in this build: %1$s. Morphe Manager selects it by default. Patch again with it selected to get what it does.",
+                "\u6b64\u7248\u672c\u672a\u5305\u542b\uff1a%1$s\u3002Morphe Manager \u9810\u8a2d\u6703\u9078\u53d6\u5b83\u3002\u8acb\u5728\u9078\u53d6\u5b83\u5f8c\u91cd\u65b0\u4fee\u88dc\u4ee5\u555f\u7528\u5176\u529f\u80fd\u3002");
+        table.put("Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.",
+                "\u6b64\u7248\u672c\u672a\u5305\u542b\uff1a%1$s\u3002Morphe Manager \u9810\u8a2d\u6703\u9078\u53d6\u5b83\u5011\u3002\u8acb\u5728\u9078\u53d6\u5b83\u5011\u5f8c\u91cd\u65b0\u4fee\u88dc\u4ee5\u555f\u7528\u5176\u529f\u80fd\u3002");
+        table.put("Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "\u672a\u5132\u5b58\uff1aAndroid 9 \u4e0a\u7684 Threads \u9700\u8981\u300c\u5132\u5b58\u7a7a\u9593\u300d\u6b0a\u9650\u624d\u80fd\u5132\u5b58\u3002\u8acb\u5728 Threads \u7684\u300c\u61c9\u7528\u7a0b\u5f0f\u8cc7\u8a0a\u300d\uff1e\u300c\u6b0a\u9650\u300d\u4e2d\u958b\u555f\uff0c\u518d\u6b21\u5132\u5b58\u3002");
+        table.put("Not saved: a carousel can have at most %1$d pages",
+                "\u672a\u5132\u5b58\uff1a\u8f2a\u64ad\u8cbc\u6587\u6700\u591a\u53ef\u6709 %1$d \u9801");
+        table.put("Not saved: that isn't a Threads photo or video",
+                "\u672a\u5132\u5b58\uff1a\u90a3\u4e0d\u662f Threads \u76f8\u7247\u6216\u5f71\u7247");
+        table.put("Not saved: the download was too slow. Try a faster connection.",
+                "\u672a\u5132\u5b58\uff1a\u4e0b\u8f09\u901f\u5ea6\u592a\u6162\u3002\u8acb\u5617\u8a66\u8f03\u5feb\u7684\u9023\u7dda\u3002");
+        table.put("Not saved: the file is over 512 MB",
+                "\u672a\u5132\u5b58\uff1a\u6a94\u6848\u8d85\u904e 512 MB");
+        table.put("Not saved: the proxy wants a password. Try another network.",
+                "\u672a\u5132\u5b58\uff1a\u4ee3\u7406\u4f3a\u670d\u5668\u8981\u6c42\u5bc6\u78bc\u3002\u8acb\u5617\u8a66\u5176\u4ed6\u7db2\u8def\u3002");
+        table.put("OK",
+                "\u78ba\u5b9a");
+        table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
+                "\u6bcf\u5929\u5728 Threads \u555f\u52d5\u6642\u6aa2\u67e5 GitHub \u662f\u5426\u6709\u8f03\u65b0\u7684 HushThreads\uff0c\u4e26\u5728\u6b64\u901a\u77e5\u4f60\u3002\u4e0d\u6703\u4e0b\u8f09\u4efb\u4f55\u5167\u5bb9\u3002");
+        table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
+                "\u6bcf\u884c\u4e00\u689d\u898f\u5247\uff0c\u6216\u4ee5\u9017\u865f\u5206\u9694\u3002\u8f38\u5165 shopee.vn \u9019\u985e\u5546\u5e97\u7db2\u57df\uff0c\u5c31\u6703\u79fb\u9664\u9023\u5230\u8a72\u7db2\u7ad9\u7684\u56de\u8986\u3002");
+        table.put("One pattern a line, or separated by commas. Matched whatever the letter case.",
+                "\u6bcf\u884c\u4e00\u689d\u898f\u5247\uff0c\u6216\u4ee5\u9017\u865f\u5206\u9694\u3002\u6bd4\u5c0d\u6642\u4e0d\u5206\u5927\u5c0f\u5beb\u3002");
+        table.put("Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
+                "\u6b64\u61c9\u7528\u7a0b\u5f0f\u53ea\u9078\u53d6\u4e86\u90e8\u5206 Threads \u7db2\u5740\uff0c\u5176\u9918\u9023\u7d50\u6703\u5728\u5176\u4ed6\u4f4d\u7f6e\u958b\u555f\u3002\u8f15\u89f8\u4ee5\u5728 Android \u8a2d\u5b9a\u4e2d\u9078\u53d6\u5b83\u5011\u3002");
+        table.put("Open HushThreads settings",
+                "\u958b\u555f HushThreads \u8a2d\u5b9a");
+        table.put("Open links in your browser",
+                "\u5728\u700f\u89bd\u5668\u4e2d\u958b\u555f\u9023\u7d50");
+        table.put("Open settings from the logo",
+                "\u5f9e\u6a19\u8a8c\u958b\u555f\u8a2d\u5b9a");
+        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
+                "\u6b64\u61c9\u7528\u7a0b\u5f0f\u5728 Android \u8a2d\u5b9a\u4e2d\u7684\u300c\u958b\u555f\u652f\u63f4\u7684\u9023\u7d50\u300d\u5df2\u95dc\u9589\u3002\u8f15\u89f8\u4ee5\u555f\u7528\u3002");
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "\u958b\u555f\u5df2\u586b\u5165\u4f60\u7684\u7248\u672c\u8207\u8a2d\u5b9a\u7684 GitHub \u554f\u984c\u56de\u5831\uff1b\u8acb\u88dc\u5145\u767c\u751f\u7684\u60c5\u6cc1\u3002");
+        table.put("Page %1$d of %2$d",
+                "\u7b2c %1$d\uff0f%2$d \u9801");
+        table.put("Pause",
+                "\u66ab\u505c");
+        table.put("Pause HushThreads",
+                "\u66ab\u505c HushThreads");
+        table.put("Pause, backup and diagnostics",
+                "\u66ab\u505c\u3001\u5099\u4efd\u8207\u8a3a\u65b7");
+        table.put("Photos and videos you save from posts",
+                "\u4f60\u5f9e\u8cbc\u6587\u5132\u5b58\u7684\u76f8\u7247\u8207\u5f71\u7247");
+        table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
+                "\u76f8\u7247\u6703\u4ee5 Threads \u63d0\u4f9b\u7684\u6700\u5927\u5c3a\u5bf8\u8f09\u5165\uff0c\u800c\u975e\u4f9d\u87a2\u5e55\u9078\u64c7\u7684\u5c3a\u5bf8\u3002\u756b\u9762\u6703\u66f4\u6e05\u6670\uff0c\u4f46\u6703\u4f7f\u7528\u66f4\u591a\u6d41\u91cf\u3002");
+        table.put("Posts",
+                "\u8cbc\u6587");
+        table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
+                "\u8cbc\u6587\u548c\u56de\u8986\u6703\u986f\u793a\u767c\u5e03\u7684\u65e5\u671f\u8207\u6642\u9593\uff0c\u800c\u4e0d\u662f 3 \u5c0f\u6642\u6216 2 \u5929\uff0c\u4e26\u63a1\u7528\u624b\u6a5f\u7684 12 \u6216 24 \u5c0f\u6642\u5236\u3002");
+        table.put("Privacy",
+                "\u96b1\u79c1");
+        table.put("Pure black dark mode",
+                "\u7d14\u9ed1\u6df1\u8272\u6a21\u5f0f");
+    }
+
+    private static void fillZh_rTW3(Map<String, String> table) {
+        table.put("Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.",
+                "\u5c07 HushThreads \u8a2d\u5b9a\u653e\u9032\u9577\u6309 Threads \u5716\u793a\u6642\u51fa\u73fe\u7684\u9078\u55ae\u3002\u95dc\u9589\u5f8c\u5c31\u6703\u5f9e\u8a72\u9078\u55ae\u79fb\u9664\u3002");
+        table.put("Puts every feature switch back the way it started.",
+                "\u5c07\u6bcf\u500b\u529f\u80fd\u958b\u95dc\u9084\u539f\u70ba\u521d\u59cb\u72c0\u614b\u3002");
+        table.put("Quick setups",
+                "\u5feb\u901f\u8a2d\u5b9a");
+        table.put("Quick setups hidden. Bring it back from Pause, backup and diagnostics.",
+                "\u5feb\u901f\u8a2d\u5b9a\u5df2\u96b1\u85cf\u3002\u8acb\u5f9e\u300c\u66ab\u505c\u3001\u5099\u4efd\u8207\u8a3a\u65b7\u300d\u6062\u5fa9\u3002");
+        table.put("Quick setups on the home page",
+                "\u9996\u9801\u4e0a\u7684\u5feb\u901f\u8a2d\u5b9a");
+        table.put("Quiet",
+                "\u5b89\u975c\u6a21\u5f0f");
+        table.put("Re-signed build fix",
+                "\u91cd\u65b0\u7c3d\u7f72\u7248\u672c\u4fee\u6b63");
+        table.put("Reading the settings file",
+                "\u6b63\u5728\u8b80\u53d6\u8a2d\u5b9a\u6a94");
+        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
+                "\u8a18\u9304\u4fee\u88dc\u6d3b\u52d5\u4e26\u986f\u793a\u932f\u8aa4\uff0c\u4ee5\u4f9b\u554f\u984c\u56de\u5831\u3002\u6b63\u5e38\u4f7f\u7528\u6642\u8acb\u4fdd\u6301\u95dc\u9589\u3002");
+        table.put("Remove tracking from shared links",
+                "\u79fb\u9664\u5206\u4eab\u9023\u7d50\u4e2d\u7684\u8ffd\u8e64");
+        table.put("Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.",
+                "\u79fb\u9664\u52d5\u614b\u6d88\u606f\u8207\u500b\u4eba\u6a94\u6848\u4e2d\u7684\u5efa\u8b70\u8ffd\u8e64\u5e33\u865f\u5361\u7247\u3002\u4e00\u822c\u8cbc\u6587\u8207\u8f49\u767c\u8cbc\u6587\u4e0d\u53d7\u5f71\u97ff\u3002");
+        table.put("Reopen the post and save again.",
+                "\u8acb\u91cd\u65b0\u958b\u555f\u8cbc\u6587\u5f8c\u518d\u5132\u5b58\u3002");
+        table.put("Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.",
+                "\u7b26\u5408\u4e0b\u65b9\u898f\u5247\u7684\u56de\u8986\u4e0d\u6703\u5217\u5728\u8cbc\u6587\u7684\u56de\u8986\u4e2d\uff0c\u5783\u573e\u56de\u8986\u56e0\u6b64\u4e0d\u6703\u51fa\u73fe\u3002\u4e00\u5247\u56de\u8986\u548c\u986f\u793a\u5728\u5b83\u4e0b\u65b9\u7684\u56de\u8986\u6703\u4e00\u8d77\u6aa2\u67e5\u3001\u4e00\u8d77\u79fb\u9664\u3002\u4e00\u822c\u56de\u8986\u6703\u7dad\u6301\u539f\u672c\u7684\u9806\u5e8f\u3002");
+        table.put("Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.",
+                "\u542b\u6709\u7db2\u9801\u9023\u7d50\u7684\u56de\u8986\u90fd\u6703\u88ab\u79fb\u9664\uff0c\u4e0d\u8ad6\u898f\u5247\u70ba\u4f55\u3002\u50cf shopee.vn \u9019\u6a23\u55ae\u7368\u7684\u7db2\u7ad9\u540d\u7a31\uff0c\u8acb\u52a0\u70ba\u898f\u5247\u3002");
+        table.put("Report a problem",
+                "\u56de\u5831\u554f\u984c");
+        table.put("Reports, restart and app information",
+                "\u5831\u544a\u3001\u91cd\u65b0\u555f\u52d5\u8207\u61c9\u7528\u7a0b\u5f0f\u8cc7\u8a0a");
+        table.put("Restart Threads",
+                "\u91cd\u65b0\u555f\u52d5 Threads");
+        table.put("Restart Threads to apply %1$d changes",
+                "\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u5957\u7528 %1$d \u9805\u8b8a\u66f4");
+        table.put("Restart Threads to apply this change",
+                "\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u5957\u7528\u6b64\u8b8a\u66f4");
+        table.put("Restore diagnostic data",
+                "\u9084\u539f\u8a3a\u65b7\u8cc7\u6599");
+        table.put("Resume",
+                "\u7e7c\u7e8c");
+        table.put("Retry",
+                "\u91cd\u8a66");
+        table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
+                "\u5728\u5341\u5206\u9418\u5167\u8fd4\u56de Threads \u6642\u6703\u4fdd\u7559\u539f\u672c\u4f4d\u7f6e\uff1b\u4e0b\u62c9\u91cd\u65b0\u6574\u7406\u4ecd\u53ef\u4f7f\u7528\u3002");
+        table.put("Save",
+                "\u5132\u5b58");
+        table.put("Save all",
+                "\u5168\u90e8\u5132\u5b58");
+        table.put("Save cancelled",
+                "\u5df2\u53d6\u6d88\u5132\u5b58");
+        table.put("Save folder",
+                "\u5132\u5b58\u8cc7\u6599\u593e");
+        table.put("Save full report",
+                "\u5132\u5b58\u5b8c\u6574\u5831\u544a");
+        table.put("Save photo",
+                "\u5132\u5b58\u76f8\u7247");
+        table.put("Save photos and videos",
+                "\u5132\u5b58\u76f8\u7247\u8207\u5f71\u7247");
+        table.put("Save the full report in Download/Morphe.",
+                "\u5c07\u5b8c\u6574\u5831\u544a\u5132\u5b58\u5230 Download/Morphe\u3002");
+        table.put("Save the full report in Threads' own Downloads folder.",
+                "\u5c07\u5b8c\u6574\u5831\u544a\u5132\u5b58\u81f3 Threads \u81ea\u5df1\u7684 Downloads \u8cc7\u6599\u593e\u3002");
+        table.put("Save video",
+                "\u5132\u5b58\u5f71\u7247");
+        table.put("Save videos other apps can open",
+                "\u5132\u5b58\u5176\u4ed6\u61c9\u7528\u7a0b\u5f0f\u53ef\u958b\u555f\u7684\u5f71\u7247");
+        table.put("Save your switches to a file. Pause and Debug logging aren't included, and neither is the release check.",
+                "\u5c07\u4f60\u7684\u958b\u95dc\u5132\u5b58\u81f3\u6a94\u6848\u3002\u4e0d\u6703\u5305\u542b\u300c\u66ab\u505c\u300d\u3001\u300c\u5075\u932f\u8a18\u9304\u300d\u53ca\u7248\u672c\u6aa2\u67e5\u3002");
+        table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
+                "\u5df2\u5132\u5b58 %1$d \u500b\u3001\u5931\u6557 %2$d \u500b\u3001\u7565\u904e %3$d \u500b\u3002");
+        table.put("Saved to %1$s",
+                "\u5df2\u5132\u5b58\u81f3 %1$s");
+        table.put("Saved to %1$s in lower quality than on Threads",
+                "\u5df2\u5132\u5b58\u81f3 %1$s\uff0c\u756b\u8cea\u4f4e\u65bc Threads");
+        table.put("Saved to the gallery",
+                "\u5df2\u5132\u5b58\u81f3\u5716\u5eab");
+        table.put("Saved to the gallery in lower quality than on Threads",
+                "\u5df2\u5132\u5b58\u81f3\u5716\u5eab\uff0c\u756b\u8cea\u4f4e\u65bc Threads");
+        table.put("Saved. Restart Threads to apply this change.",
+                "\u5df2\u5132\u5b58\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u5957\u7528\u6b64\u8b8a\u66f4\u3002");
+        table.put("Saves",
+                "\u5132\u5b58\u4f5c\u696d");
+        table.put("Saving a carousel",
+                "\u6b63\u5728\u5132\u5b58\u8f2a\u64ad\u8cbc\u6587");
+        table.put("Saving a photo",
+                "\u6b63\u5728\u5132\u5b58\u76f8\u7247");
+        table.put("Saving a video",
+                "\u6b63\u5728\u5132\u5b58\u5f71\u7247");
+        table.put("Saving the settings file",
+                "\u6b63\u5728\u5132\u5b58\u8a2d\u5b9a\u6a94");
+        table.put("Saving...",
+                "\u6b63\u5728\u5132\u5b58\u2026");
+        table.put("Saving... To cancel, open Downloads in HushThreads settings.",
+                "\u6b63\u5728\u5132\u5b58\u2026\u8981\u53d6\u6d88\uff0c\u8acb\u5230 HushThreads \u8a2d\u5b9a\u7684\u300c\u4e0b\u8f09\u9805\u76ee\u300d\u3002");
+        table.put("Search settings",
+                "\u641c\u5c0b\u8a2d\u5b9a");
+        table.put("Selecting links by hand",
+                "\u624b\u52d5\u9078\u53d6\u9023\u7d50");
+        table.put("Set when you patched",
+                "\u4fee\u88dc\u6642\u8a2d\u5b9a");
+        table.put("Settings couldn't open",
+                "\u7121\u6cd5\u958b\u555f\u8a2d\u5b9a");
+        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
+                "\u7121\u6cd5\u5b8c\u6574\u91cd\u65b0\u6574\u7406\u8a2d\u5b9a\u3002\u8acb\u91cd\u65b0\u958b\u555f\u8a2d\u5b9a\u5f8c\u518d\u8a66\u3002");
+        table.put("Settings exported.",
+                "\u8a2d\u5b9a\u5df2\u532f\u51fa\u3002");
+        table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
+                "\u8a2d\u5b9a\u5df2\u532f\u51fa\u3002\u6301\u6709\u8a72\u6a94\u6848\u7684\u61c9\u7528\u7a0b\u5f0f\u4e0d\u5141\u8a31 HushThreads \u8b80\u56de\u6a94\u6848\uff0c\u56e0\u6b64\u672a\u80fd\u6aa2\u67e5\u3002");
+        table.put("Settings imported.",
+                "\u8a2d\u5b9a\u5df2\u532f\u5165\u3002");
+        table.put("Settings imported. %1$d switch changed.",
+                "\u8a2d\u5b9a\u5df2\u532f\u5165\uff0c\u5df2\u8b8a\u66f4 %1$d \u500b\u958b\u95dc\u3002");
+        table.put("Settings imported. %1$d switches changed.",
+                "\u8a2d\u5b9a\u5df2\u532f\u5165\uff0c\u5df2\u8b8a\u66f4 %1$d \u500b\u958b\u95dc\u3002");
+        table.put("Settings row in Threads' settings",
+                "Threads \u8a2d\u5b9a\u4e2d\u7684\u9805\u76ee");
+        table.put("Settings shortcut on the app icon",
+                "\u61c9\u7528\u7a0b\u5f0f\u5716\u793a\u4e0a\u7684\u8a2d\u5b9a\u6377\u5f91");
+    }
+
+    private static void fillZh_rTW4(Map<String, String> table) {
+        table.put("Share sheet entry removed",
+                "\u5df2\u79fb\u9664\u5206\u4eab\u9762\u677f\u9805\u76ee");
+        table.put("Show all settings as a list",
+                "\u4ee5\u6e05\u55ae\u986f\u793a\u6240\u6709\u8a2d\u5b9a");
+        table.put("Show settings by category",
+                "\u4f9d\u5206\u985e\u986f\u793a\u8a2d\u5b9a");
+        table.put("Show the date and time",
+                "\u986f\u793a\u65e5\u671f\u8207\u6642\u9593");
+        table.put("Shown. Tap to hide it.",
+                "\u5df2\u986f\u793a\u3002\u8f15\u89f8\u53ef\u96b1\u85cf\u3002");
+        table.put("Smallest",
+                "\u6700\u5c0f");
+        table.put("Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.",
+                "\u90e8\u5206 Threads \u756b\u9762\u6703\u6aa2\u67e5\u61c9\u7528\u7a0b\u5f0f\u7c3d\u7f72\u8005\uff0c\u56e0\u6b64\u5728\u4fee\u88dc\u7248\u4e2d\u7121\u6cd5\u958b\u555f\u3002\u6b64\u4fee\u6b63\u53ef\u8b93\u5b83\u5011\u91cd\u65b0\u958b\u555f\u3002");
+        table.put("Source code and issues",
+                "\u539f\u59cb\u78bc\u8207\u554f\u984c\u56de\u5831");
+        table.put("Spam replies by words or links",
+                "\u4f9d\u5b57\u8a5e\u6216\u9023\u7d50\u904e\u6ffe\u5783\u573e\u56de\u8986");
+        table.put("Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.",
+                "\u5728 Threads \u986f\u793a\u524d\uff0c\u6703\u5f9e\u300c\u70ba\u4f60\u63a8\u85a6\u300d\u3001\u300c\u8ffd\u8e64\u4e2d\u300d\u53ca\u4f60\u958b\u555f\u7684\u8cbc\u6587\u79fb\u9664\u8d0a\u52a9\u8cbc\u6587\uff0c\u56e0\u6b64\u4e0d\u6703\u7559\u4e0b\u7a7a\u767d\u3002");
+        table.put("Sponsored posts in For you and Following",
+                "\u300c\u70ba\u4f60\u63a8\u85a6\u300d\u8207\u300c\u8ffd\u8e64\u4e2d\u300d\u7684\u8d0a\u52a9\u8cbc\u6587");
+        table.put("Stays in while paused",
+                "\u66ab\u505c\u6642\u4ecd\u4fdd\u7559");
+        table.put("Stays on, since it's the only way left into these settings.",
+                "\u56e0\u70ba\u9019\u662f\u9032\u5165\u9019\u4e9b\u8a2d\u5b9a\u50c5\u5269\u7684\u65b9\u5f0f\uff0c\u6240\u4ee5\u6703\u4fdd\u6301\u958b\u555f\u3002");
+        table.put("Stop analytics uploads",
+                "\u505c\u6b62\u4e0a\u50b3\u5206\u6790\u8cc7\u6599");
+        table.put("Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.",
+                "\u505c\u6b62\u5927\u90e8\u5206\u4f7f\u7528\u5831\u544a\uff0c\u4e26\u79fb\u9664\u5206\u4eab\u9023\u7d50\u4e2d\u7684\u8ffd\u8e64\uff1bThreads \u4e5f\u4e0d\u6703\u5f97\u77e5\u4f60\u7684\u622a\u5716\u3002");
+        table.put("Stops most usage reports from reaching Meta. Some may still get through. Turn this off to send them as before.",
+                "\u963b\u6b62\u5927\u90e8\u5206\u4f7f\u7528\u5831\u544a\u50b3\u9001\u81f3 Meta\uff0c\u4f46\u4ecd\u53ef\u80fd\u6709\u5c11\u90e8\u5206\u9001\u51fa\u3002\u95dc\u9589\u6b64\u9078\u9805\u5373\u53ef\u6062\u5fa9\u50b3\u9001\u3002");
+        table.put("Suggested accounts in your feed",
+                "\u52d5\u614b\u6d88\u606f\u4e2d\u7684\u5efa\u8b70\u5e33\u865f");
+        table.put("Support",
+                "\u652f\u63f4");
+        table.put("Support HushThreads",
+                "\u652f\u6301 HushThreads");
+        table.put("Support the project",
+                "\u652f\u6301\u9019\u500b\u5c08\u6848");
+        table.put("Supported links",
+                "\u652f\u63f4\u7684\u9023\u7d50");
+        table.put("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.",
+                "\u79fb\u9664\u641c\u5c0b\u756b\u9762\u4e2d\u7684\u300c\u8ffd\u8e64\u5efa\u8b70\u300d\u5217\u3002\u4f60\u7684\u641c\u5c0b\u8207\u4e3b\u984c\u4e0d\u53d7\u5f71\u97ff\u3002");
+        table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
+                "\u79fb\u9664\u4f60\u81ea\u5df1\u8207\u4ed6\u4eba\u500b\u4eba\u6a94\u6848\u9802\u7aef\u7684 Instagram \u6309\u9215\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
+        table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
+                "\u79fb\u9664\u500b\u4eba\u6a94\u6848\u5927\u982d\u8cbc\u8207\u52d5\u614b\u6d88\u606f\u9802\u7aef\u5217\u4e2d\u7684\u5e7d\u9748\u8cbc\u6587\u6ce1\u6ce1\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
+        table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
+                "\u79fb\u9664\u4f60\u8907\u88fd\u6216\u5206\u4eab\u4e4b\u8cbc\u6587\u9023\u7d50\u4e2d\u7684 xmt\u3001slof \u7b49\u8ffd\u8e64\u6a19\u8a18\u3002\u77ed\u5206\u4eab\u9023\u7d50\u6703\u6539\u70ba\u8cbc\u6587\u672c\u8eab\u7684\u9023\u7d50\u3002");
+        table.put("Tap to play videos",
+                "\u8f15\u89f8\u64ad\u653e\u5f71\u7247");
+        table.put("Tap to see which.",
+                "\u8f15\u89f8\u4ee5\u67e5\u770b\u9805\u76ee\u3002");
+        table.put("Tap to turn it back on.",
+                "\u8f15\u89f8\u4ee5\u91cd\u65b0\u555f\u7528\u3002");
+        table.put("That file is too large to be a settings file. Nothing was changed.",
+                "\u8a72\u6a94\u6848\u592a\u5927\uff0c\u7121\u6cd5\u4f5c\u70ba\u8a2d\u5b9a\u6a94\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+        table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
+                "\u8a72\u6a94\u6848\u4e0d\u662f\u53ef\u8b80\u6587\u5b57\uff0c\u53ef\u80fd\u5728\u50b3\u8f38\u904e\u7a0b\u4e2d\u640d\u6bc0\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
+                "\u8a72\u6a94\u6848\u91cd\u8907\u5217\u51fa\u67d0\u500b\u8a2d\u5b9a\uff0c\u7121\u6cd5\u5224\u65b7\u8981\u4f7f\u7528\u54ea\u500b\u503c\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+        table.put("That isn't a HushThreads settings file. Nothing was changed.",
+                "\u90a3\u4e0d\u662f HushThreads \u8a2d\u5b9a\u6a94\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+        table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
+                "\u8a72\u8a2d\u5b9a\u6a94\u5305\u542b HushThreads \u7121\u6cd5\u8b80\u53d6\u7684\u503c\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
+                "\u8a72\u8a2d\u5b9a\u6a94\u5df2\u640d\u6bc0\u6216\u4e0b\u8f09\u4e0d\u5b8c\u6574\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+        table.put("That settings file was written by a newer HushThreads than this one. Nothing was changed.",
+                "\u8a72\u8a2d\u5b9a\u6a94\u7531\u6bd4\u76ee\u524d\u66f4\u65b0\u7684 HushThreads \u5beb\u5165\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+        table.put("The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.",
+                "\u6301\u6709\u8a72\u6a94\u6848\u7684\u61c9\u7528\u7a0b\u5f0f\u56de\u61c9\u592a\u4e45\uff0cHushThreads \u5df2\u505c\u6b62\u7b49\u5f85\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+        table.put("The app holding the last settings file still hasn't answered. Try again later.",
+                "\u6301\u6709\u4e0a\u4e00\u500b\u8a2d\u5b9a\u6a94\u7684\u61c9\u7528\u7a0b\u5f0f\u5c1a\u672a\u56de\u61c9\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
+        table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
+                "\u6301\u6709\u8a2d\u5b9a\u6a94\u7684\u61c9\u7528\u7a0b\u5f0f\u56de\u61c9\u592a\u4e45\uff0cHushThreads \u5df2\u505c\u6b62\u7b49\u5f85\u3002\u5b83\u53ef\u80fd\u4ecd\u6703\u5b8c\u6210\u5132\u5b58\uff0c\u4f7f\u7528\u524d\u8acb\u6aa2\u67e5\u6a94\u6848\u3002");
+        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
+                "\u5c1a\u7121\u6cd5\u5132\u5b58\u8a3a\u65b7\u5831\u544a\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
+        table.put("The diagnostic report couldn't be saved. Try again.",
+                "\u7121\u6cd5\u5132\u5b58\u8a3a\u65b7\u5831\u544a\uff0c\u8acb\u518d\u8a66\u4e00\u6b21\u3002");
+        table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
+                "\u7121\u6cd5\u79fb\u9664\u6a94\u6848 %1$s\u3002\u8acb\u5f9e %2$s \u522a\u9664\u5b83\u4ee5\u91cd\u65b0\u555f\u7528 HushThreads\u3002");
+        table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
+                "\u7121\u6cd5\u79fb\u9664\u6a94\u6848 %1$s\u3002\u8acb\u5f9e %2$s \u522a\u9664\u5b83\uff0c\u7136\u5f8c\u518d\u6b21\u8f15\u89f8\u300c\u7e7c\u7e8c\u300d\u3002");
+        table.put("The newest HushThreads release is %1$s.",
+                "\u6700\u65b0\u7684 HushThreads \u7248\u672c\u662f %1$s\u3002");
+        table.put("The proxy wants a password. Try another network.",
+                "\u4ee3\u7406\u4f3a\u670d\u5668\u8981\u6c42\u5bc6\u78bc\u3002\u8acb\u5617\u8a66\u5176\u4ed6\u7db2\u8def\u3002");
+        table.put("The setting couldn't finish updating. Its saved value is shown.",
+                "\u8a2d\u5b9a\u7121\u6cd5\u5b8c\u6210\u66f4\u65b0\uff0c\u986f\u793a\u7684\u662f\u5df2\u5132\u5b58\u7684\u503c\u3002");
+        table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
+                "\u8a2d\u5b9a\u6a94\u5df2\u5132\u5b58\uff0c\u4f46\u8b80\u56de\u7684\u5167\u5bb9\u8207\u5beb\u5165\u5167\u5bb9\u4e0d\u540c\u3002\u8acb\u53e6\u5b58\u70ba\u65b0\u6a94\u6848\u3002");
+        table.put("The version number is set as high as Android allows, so Google Play won't offer Meta's updates over this build. Threads still sees its real version. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.",
+                "\u7248\u672c\u865f\u5df2\u8a2d\u70ba Android \u5141\u8a31\u7684\u6700\u9ad8\u503c\uff0c\u56e0\u6b64 Google Play \u4e0d\u6703\u63d0\u4f9b Meta \u7684\u66f4\u65b0\u4f86\u8986\u84cb\u6b64\u7248\u672c\u3002Threads \u4ecd\u6703\u8fa8\u8b58\u5176\u5be6\u969b\u7248\u672c\u3002\u82e5\u8981\u56de\u5230\u539f\u7248 Threads\uff0c\u8acb\u5148\u89e3\u9664\u5b89\u88dd\u6b64\u7248\u672c\uff1b\u9019\u6703\u522a\u9664\u624b\u6a5f\u4e0a\u7684 Threads \u8cc7\u6599\u3002\u5f8c\u7e8c HushThreads \u7248\u672c\u4e5f\u5fc5\u9808\u4f7f\u7528\u300c\u8b8a\u66f4\u7248\u672c\u4ee3\u78bc\u300d\uff0c\u5426\u5247\u7121\u6cd5\u8986\u84cb\u5b89\u88dd\u3002");
+        table.put("There's no diagnostic data to clear.",
+                "\u6c92\u6709\u53ef\u6e05\u9664\u7684\u8a3a\u65b7\u8cc7\u6599\u3002");
+        table.put("There's no diagnostic data to put back.",
+                "\u6c92\u6709\u53ef\u9084\u539f\u7684\u8a3a\u65b7\u8cc7\u6599\u3002");
+        table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
+                "\u5b83\u5011\u662f\u5728 Morphe Manager \u4fee\u88dc\u6642\u9078\u53d6\u7684\uff0c\u300c\u66ab\u505c\u300d\u7121\u6cd5\u95dc\u9589\u3002\u8acb\u91cd\u65b0\u4fee\u88dc\u4ee5\u8b8a\u66f4\u3002");
+        table.put("This build didn't record which report types it covers. Patch again to see them.",
+                "\u6b64\u7248\u672c\u672a\u8a18\u9304\u6db5\u84cb\u54ea\u4e9b\u5831\u544a\u985e\u578b\u3002\u8acb\u91cd\u65b0\u4fee\u88dc\u4ee5\u67e5\u770b\u3002");
+        table.put("This phone has no file picker, so there's no way to choose a file here.",
+                "\u6b64\u624b\u6a5f\u6c92\u6709\u6a94\u6848\u9078\u64c7\u5668\uff0c\u56e0\u6b64\u7121\u6cd5\u5728\u6b64\u9078\u64c7\u6a94\u6848\u3002");
+        table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
+                "Threads \u63a5\u53d7\u4f60\u65b0\u589e\u81f3\u624b\u6a5f\u7684\u5b89\u5168\u6191\u8b49\u3002\u5b83\u5c0d Meta \u6191\u8b49\u7684\u6aa2\u67e5\u4e0d\u8b8a\uff0c\u56e0\u6b64\u4ee3\u7406\u4f3a\u670d\u5668\u4ecd\u7121\u6cd5\u8b80\u53d6\u5927\u90e8\u5206\u6d41\u91cf\u3002");
+        table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
+                "Threads \u7121\u6cd5\u8b80\u53d6\u4f60\u7684\u624b\u6a5f\u5ee3\u544a ID\u3002\u6b64\u7248\u672c\u5df2\u79fb\u9664\u76f8\u95dc\u6b0a\u9650\u3002");
+        table.put("Threads closes and reopens on this page.",
+                "Threads \u6703\u95dc\u9589\u4e26\u5728\u6b64\u9801\u9762\u91cd\u65b0\u958b\u555f\u3002");
+        table.put("Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.",
+                "Threads \u555f\u52d5\u5f8c\u4e00\u5206\u9418\u5167\u9023\u7e8c\u4e09\u6b21\u7576\u6a5f\u6216\u51cd\u7d50\uff0c\u56e0\u6b64 HushThreads \u5df2\u81ea\u884c\u66ab\u505c\u3002");
+        table.put("Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.",
+                "\u5f9e\u5176\u4ed6\u61c9\u7528\u7a0b\u5f0f\u5206\u4eab\u6642\u4e0d\u6703\u986f\u793a Threads\u3002\u5f9e Threads \u5206\u4eab\u5230\u5176\u4ed6\u61c9\u7528\u7a0b\u5f0f\u4ecd\u53ef\u6b63\u5e38\u4f7f\u7528\u3002");
+        table.put("Threads isn't told when you take a screenshot, so it can't log it or react to it.",
+                "\u622a\u5716\u6642\u4e0d\u6703\u901a\u77e5 Threads\uff0c\u56e0\u6b64\u5b83\u7121\u6cd5\u8a18\u9304\u6216\u56de\u61c9\u622a\u5716\u3002");
+        table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
+                "Android 9 \u4e0a\u7684 Threads \u9700\u8981\u300c\u5132\u5b58\u7a7a\u9593\u300d\u6b0a\u9650\u624d\u80fd\u5132\u5b58\u3002\u8acb\u5728 Threads \u7684\u300c\u61c9\u7528\u7a0b\u5f0f\u8cc7\u8a0a\u300d\uff1e\u300c\u6b0a\u9650\u300d\u4e2d\u958b\u555f\uff0c\u518d\u6b21\u5132\u5b58\u3002");
+        table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
+                "\u5df2\u5728 Android \u8a2d\u5b9a\u4e2d\u70ba\u6b64\u61c9\u7528\u7a0b\u5f0f\u9078\u53d6 Threads \u7db2\u5740\uff0c\u56e0\u6b64\u5176\u9023\u7d50\u6703\u5728\u6b64\u958b\u555f\u3002");
+    }
+
+    private static void fillZh_rTW5(Map<String, String> table) {
+        table.put("Tracking in links and analytics uploads",
+                "\u9023\u7d50\u8ffd\u8e64\u8207\u5206\u6790\u8cc7\u6599\u4e0a\u50b3");
+        table.put("Try a different word or clear the search.",
+                "\u8acb\u5617\u8a66\u5176\u4ed6\u95dc\u9375\u5b57\u6216\u6e05\u9664\u641c\u5c0b\u3002");
+        table.put("Try again, or go back to Threads.",
+                "\u8acb\u518d\u8a66\u4e00\u6b21\uff0c\u6216\u8fd4\u56de Threads\u3002");
+        table.put("Turn features on or off",
+                "\u958b\u555f\u6216\u95dc\u9589\u529f\u80fd");
+        table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
+                "\u8f15\u89f8\u5373\u53ef\u958b\u555f\u4e00\u7d44\u958b\u95dc\uff0c\u6216\u5c07\u6240\u6709\u958b\u95dc\u9084\u539f\u70ba\u521d\u59cb\u72c0\u614b\u3002\u9577\u6309\u53ef\u96b1\u85cf\u6b64\u5217\u3002");
+        table.put("Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.",
+                "\u4e0b\u6b21\u555f\u52d5 Threads \u6642\uff0c\u6703\u95dc\u9589\u6240\u6709 HushThreads \u958b\u95dc\uff08\u300c\u5075\u932f\u8a18\u9304\u300d\u9664\u5916\uff09\u3002\u4fee\u88dc\u6642\u9078\u64c7\u7684\u9805\u76ee\u6703\u4fdd\u7559\uff0c\u4f60\u7684\u9078\u64c7\u4e5f\u6703\u5132\u5b58\u3002");
+        table.put("Undo",
+                "\u5fa9\u539f");
+        table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
+                "\u5728\u4f60\u7e7c\u7e8c\u524d\uff0c\u9664\u4e86\u300c\u5075\u932f\u8a18\u9304\u300d\u5916\uff0c\u6240\u6709\u958b\u95dc\u90fd\u6703\u5982\u540c\u95dc\u9589\u822c\u904b\u4f5c\u3002\u4fee\u88dc\u6642\u7684\u8b8a\u66f4\u4ecd\u6703\u4fdd\u7559\u3002");
+        table.put("Updates",
+                "\u66f4\u65b0");
+        table.put("User certificates trusted",
+                "\u4fe1\u4efb\u4f7f\u7528\u8005\u6191\u8b49");
+        table.put("Version",
+                "\u7248\u672c");
+        table.put("Version %1$s",
+                "\u7248\u672c %1$s");
+        table.put("Version %1$s for Threads %2$s",
+                "\u7248\u672c %1$s\uff08\u9069\u7528\u65bc Threads %2$s\uff09");
+        table.put("Version code raised",
+                "\u5df2\u63d0\u9ad8\u7248\u672c\u4ee3\u78bc");
+        table.put("Video file name",
+                "\u5f71\u7247\u6a94\u6848\u540d\u7a31");
+        table.put("Videos are named %1$s. Photos are always named %2$s followed by the date and time.",
+                "\u5f71\u7247\u540d\u7a31\u70ba %1$s\u3002\u76f8\u7247\u4e00\u5f8b\u4f7f\u7528 %2$s \u5f8c\u63a5\u65e5\u671f\u8207\u6642\u9593\u547d\u540d\u3002");
+        table.put("Videos go to %1$s and photos to %2$s.",
+                "\u5f71\u7247\u5132\u5b58\u81f3 %1$s\uff0c\u76f8\u7247\u5132\u5b58\u81f3 %2$s\u3002");
+        table.put("Videos in your feed",
+                "\u52d5\u614b\u6d88\u606f\u4e2d\u7684\u5f71\u7247");
+        table.put("Videos in your feed wait for a tap instead of playing as you scroll.",
+                "\u52d5\u614b\u6d88\u606f\u4e2d\u7684\u5f71\u7247\u6703\u7b49\u5f85\u4f60\u8f15\u89f8\uff0c\u4e0d\u6703\u5728\u6372\u52d5\u6642\u81ea\u52d5\u64ad\u653e\u3002");
+        table.put("Where you left off in your feed",
+                "\u52d5\u614b\u6d88\u606f\u4e2d\u4e0a\u6b21\u700f\u89bd\u7684\u4f4d\u7f6e");
+        table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
+                "\u958b\u555f\u4e0a\u65b9\u958b\u95dc\u5f8c\uff0c\u7121\u8ad6\u96e2\u958b\u591a\u4e45\u90fd\u6703\u4fdd\u7559\u539f\u672c\u4f4d\u7f6e\u3002\u4e0b\u62c9\u91cd\u65b0\u6574\u7406\u8207\u91cd\u65b0\u555f\u52d5\u4ecd\u6703\u8f09\u5165\u65b0\u8cbc\u6587\u3002");
+        table.put("You have the newest HushThreads release.",
+                "\u4f60\u6b63\u5728\u4f7f\u7528\u6700\u65b0\u7684 HushThreads \u7248\u672c\u3002");
+        table.put("You paused HushThreads.",
+                "\u4f60\u5df2\u66ab\u505c HushThreads\u3002");
+        table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual.",
+                "\u4f60\u7684 Instagram \u7531 Meta \u7c3d\u7f72\uff0c\u5b83\u53ea\u6703\u5728\u540c\u6a23\u7531 Meta \u7c3d\u7f72\u7684 Threads \u4e2d\u958b\u555f Threads \u8cbc\u6587\u8207\u500b\u4eba\u6a94\u6848\u3002\u5728 Instagram \u8f15\u89f8\u6642\u6703\u986f\u793a\u7121\u6cd5\u8f09\u5165\u7db2\u7ad9\u7684\u932f\u8aa4\u3002\u76f4\u63a5\u5728 Threads \u4e2d\u958b\u555f\u8cbc\u6587\u4ecd\u53ef\u6b63\u5e38\u4f7f\u7528\u3002");
+        table.put("Your choices are saved. Tap Resume, then restart Threads.",
+                "\u4f60\u7684\u9078\u64c7\u5df2\u5132\u5b58\u3002\u8f15\u89f8\u300c\u7e7c\u7e8c\u300d\uff0c\u7136\u5f8c\u91cd\u65b0\u555f\u52d5 Threads\u3002");
+        table.put("Your switches already match that file, so nothing will change.",
+                "\u4f60\u7684\u958b\u95dc\u5df2\u7b26\u5408\u8a72\u6a94\u6848\uff0c\u56e0\u6b64\u4e0d\u6703\u8b8a\u66f4\u3002");
+        table.put("none",
+                "\u7121");
+        table.put("the raised version code",
+                "\u5df2\u63d0\u9ad8\u7684\u7248\u672c\u4ee3\u78bc");
+        table.put("the re-signed build fix",
+                "\u91cd\u65b0\u7c3d\u7f72\u7248\u672c\u4fee\u6b63");
+        table.put("the removed advertising ID permission",
+                "\u5df2\u79fb\u9664\u7684\u5ee3\u544a ID \u6b0a\u9650");
+        table.put("the removed share sheet entry",
+                "\u5df2\u79fb\u9664\u7684\u5206\u4eab\u9762\u677f\u9805\u76ee");
+        table.put("the user certificate trust",
+                "\u4f7f\u7528\u8005\u6191\u8b49\u4fe1\u4efb");
     }
 }
