@@ -46,6 +46,28 @@ internal object PatchContexts {
         BytecodePatchContext::class.java.getMethod("setPatchClasses\$morphe_patcher", poolType).invoke(context, pool)
         BytecodePatchContext::class.java.getMethod("setOpcodes\$morphe_patcher", Opcodes::class.java)
             .invoke(context, Opcodes.getDefault())
+        makeCurrent(context, metadata, work)
         return context
+    }
+
+    /**
+     * Patcher 2.3.0 answers fingerprints and class lookups from one patcher-wide context, the one an
+     * APK is being patched in, rather than from the context a call is made with. Its constructor reads
+     * that APK, so the test allocates one without it, hands it [context] as its bytecode side and makes
+     * it the current one. Each [of] replaces the one before, so a test reads a context before building
+     * the next.
+     */
+    private fun makeCurrent(context: BytecodePatchContext, metadata: Any, work: File) {
+        val type = Class.forName("app.morphe.patcher.PatcherContext")
+        val unsafe = Class.forName("sun.misc.Unsafe").getDeclaredField("theUnsafe").apply { isAccessible = true }.get(null)
+        val current = unsafe.javaClass.getMethod("allocateInstance", Class::class.java).invoke(unsafe, type)
+        fun set(field: String, value: Any) = type.getDeclaredField(field).apply { isAccessible = true }.set(current, value)
+        set("bytecodeContext", context)
+        set("packageMetadata", metadata)
+        set("fileWorkspace", work)
+        set("executablePatches", LinkedHashSet<Any>())
+        set("allPatches", LinkedHashSet<Any>())
+        val companion = type.getField("Companion").get(null)
+        companion.javaClass.getMethod("setCurrent\$morphe_patcher", type).invoke(companion, current)
     }
 }
