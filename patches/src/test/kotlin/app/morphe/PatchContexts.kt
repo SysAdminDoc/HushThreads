@@ -8,6 +8,7 @@
 package app.morphe
 
 import app.morphe.patcher.PatcherConfig
+import app.morphe.patcher.PatcherProgress
 import app.morphe.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -19,7 +20,7 @@ import java.io.File
  *
  * The patcher fills its class pool from an APK's dex files, and what takes a pool directly is
  * internal to it: the context's constructor, the pool's class and its setter. They are reached by
- * their JVM names, pinned to morphe-patcher 2.2.0. A bump that renames one fails here, naming it,
+ * their JVM names, pinned to morphe-patcher 2.3.0. A bump that renames one fails here, naming it,
  * rather than leaving a test that never ran the patch. Nothing is written to disk: the context only
  * names its work folders until something compiles the dex, which no test here asks for.
  *
@@ -40,7 +41,8 @@ internal object PatchContexts {
         val context = BytecodePatchContext::class.java.getConstructor(PatcherConfig::class.java, metadataType)
             .newInstance(config, metadata)
         val poolType = Class.forName("app.morphe.patcher.util.PatchClasses")
-        val pool = poolType.getConstructor(Set::class.java).newInstance(classes.toSet())
+        // Patcher 2.3.0 hands PatchClasses a PatcherProgress beside the classes; tests report none.
+        val pool = poolType.getConstructor(Set::class.java, PatcherProgress::class.java).newInstance(classes.toSet(), null)
         BytecodePatchContext::class.java.getMethod("setPatchClasses\$morphe_patcher", poolType).invoke(context, pool)
         BytecodePatchContext::class.java.getMethod("setOpcodes\$morphe_patcher", Opcodes::class.java)
             .invoke(context, Opcodes.getDefault())
