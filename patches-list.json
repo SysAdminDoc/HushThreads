@@ -250,6 +250,41 @@
       "options": []
     },
     {
+      "name": "Full size profile pictures",
+      "description": "Opens a profile picture full size when you tap it on a profile, so you can zoom in and save it, instead of Threads' small circle. Starts off. Turn it on in HushThreads settings > Appearance.",
+      "category": "Interface",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "454.0.0.54.79"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "454.0.0.54.79",
+              "experimental": false,
+              "versionCodes": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide ads",
       "description": "Removes sponsored posts from your feed and from under the posts you open before Threads shows them, so they leave no gap. On by default. Turn it off in HushThreads settings > Feed.",
       "category": "Ads",

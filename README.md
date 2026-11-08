@@ -80,7 +80,7 @@ On a new phone, import the key before you patch anything. Reinstalling Manager o
 
 ## Patches
 
-HushThreads has 22 patches. Morphe Manager's default selection has all but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Those three change Threads when you patch and have no switch to undo them. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
+HushThreads has 23 patches. Morphe Manager's default selection has all but three: `Change version code`, `Remove share targets` and `Trust user-added certificates`. Those three change Threads when you patch and have no switch to undo them. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
 
 | Patch | What it does |
 |---|---|
@@ -91,6 +91,7 @@ HushThreads has 22 patches. Morphe Manager's default selection has all but three
 | `Disable swipe to Search` | Stops a sideways swipe on your feed from sliding into Search. The Search button still opens Search. Threads only has the swipe on some accounts. Good if you keep landing in Search while you scroll. Starts off. Turn it on in HushThreads settings > Feed. |
 | `Disable video autoplay` | Videos in your feed wait for a tap instead of playing as you scroll. Good for a calmer feed and less data use. Starts off. Turn it on in HushThreads settings > Feed. |
 | `Filter comments` | Leaves out the replies to a post that match words or domains you list, such as the shop link a spam reply ends with, before Threads shows them. A second switch under it also hides any reply with a web link. The replies that stay keep their order. Starts off. Turn it on and add your list in HushThreads settings > Comments. |
+| `Full size profile pictures` | Opens a profile picture full size when you tap it on a profile, so you can zoom in and save it, instead of Threads' small circle. Starts off. Turn it on in HushThreads settings > Appearance. |
 | `Hide ads` | Removes sponsored posts from your feed and from under the posts you open before Threads shows them, so they leave no gap. On by default. Turn it off in HushThreads settings > Feed. |
 | `Hide ghost post bubbles` | Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. The pictures and the ghost posts themselves stay. Good for a calmer look. Starts off. Turn it on in HushThreads settings > Appearance. |
 | `Hide suggested users` | Removes the cards that suggest accounts to follow, in your feed and on profiles, and the Follow suggestions row in Search. Normal posts and reposts stay, and so does the rest of a profile or Search. Good if you only want posts in your feed. On by default. Its two switches are in HushThreads settings > Feed. |

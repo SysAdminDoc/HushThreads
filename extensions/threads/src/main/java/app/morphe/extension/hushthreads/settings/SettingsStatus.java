@@ -82,6 +82,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean fullSizeProfilePictures() {
+        return false;
+    }
+
     public static boolean exactPostTimes() {
         return false;
     }
