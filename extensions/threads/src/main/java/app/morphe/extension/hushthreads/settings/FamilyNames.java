@@ -41,6 +41,8 @@ public final class FamilyNames {
     public static final String REMOVE_SHARE_TARGETS = "Remove share targets";
     public static final String TRUST_USER_CERTIFICATES = "Trust user-added certificates";
     public static final String FILTER_COMMENTS = "Filter comments";
+    public static final String CHANGE_PACKAGE_NAME = "Change package name";
+    public static final String CHANGE_APP_NAME = "Change app name";
 
     private FamilyNames() {
     }

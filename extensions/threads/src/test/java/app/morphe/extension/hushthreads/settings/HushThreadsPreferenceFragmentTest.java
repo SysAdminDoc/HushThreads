@@ -103,6 +103,8 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.VERSION_CODE, "Version code raised");
         ROW_TITLES.put(PatchFamily.REMOVE_SHARE_TARGETS, "Share sheet entry removed");
         ROW_TITLES.put(PatchFamily.TRUST_USER_CERTIFICATES, "User certificates trusted");
+        ROW_TITLES.put(PatchFamily.CHANGE_PACKAGE_NAME, "Own package name");
+        ROW_TITLES.put(PatchFamily.CHANGE_APP_NAME, "Own app name");
     }
 
     /** The sections every build has, in the order they're drawn. */
@@ -221,7 +223,8 @@ public class HushThreadsPreferenceFragmentTest {
                 expected.addAll(EVERY_BUILD.subList(0, 3));
                 if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)
                         || build.contains(PatchFamily.VERSION_CODE) || build.contains(PatchFamily.REMOVE_SHARE_TARGETS)
-                        || build.contains(PatchFamily.TRUST_USER_CERTIFICATES)) {
+                        || build.contains(PatchFamily.TRUST_USER_CERTIFICATES)
+                        || build.contains(PatchFamily.CHANGE_PACKAGE_NAME) || build.contains(PatchFamily.CHANGE_APP_NAME)) {
                     expected.add("Set when you patched");
                 }
                 expected.addAll(EVERY_BUILD.subList(3, EVERY_BUILD.size()));

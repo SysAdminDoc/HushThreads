@@ -73,6 +73,8 @@ body:
       multiple: true
       options:
         - Block background-return feed refresh
+        - Change app name
+        - Change package name
         - Change version code
         - Disable analytics
         - Disable screenshot detection

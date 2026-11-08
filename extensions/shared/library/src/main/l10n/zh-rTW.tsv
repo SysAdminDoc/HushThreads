@@ -276,6 +276,12 @@ the removed share sheet entry	已移除的分享面板項目
 User certificates trusted	信任使用者憑證
 Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.	Threads 接受你新增至手機的安全憑證。它對 Meta 憑證的檢查不變，因此代理伺服器仍無法讀取大部分流量。
 the user certificate trust	使用者憑證信任
+Own package name	自訂套件名稱
+This copy installs beside Threads as an app of its own, with its own sign-in.	這個副本會以獨立應用程式的形式安裝在 Threads 旁邊，並使用自己的登入。
+the new package name	新的套件名稱
+Own app name	自訂應用程式名稱
+The name under the app's icon.	應用程式圖示下方顯示的名稱。
+the new app name	新的應用程式名稱
 Hide screenshots from Threads	不讓 Threads 偵測螢幕截圖
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	截圖時不會通知 Threads，因此它無法記錄或回應截圖。
 Full size photos	完整尺寸相片

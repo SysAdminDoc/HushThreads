@@ -274,6 +274,12 @@ the removed share sheet entry	la entrada eliminada del menú para compartir
 User certificates trusted	Certificados del usuario de confianza
 Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.	Threads acepta los certificados de seguridad que añadiste a tu teléfono. Sus propias comprobaciones de los certificados de Meta no cambian, así que un proxy sigue sin poder leer la mayor parte de su tráfico.
 the user certificate trust	la confianza en los certificados del usuario
+Own package name	Nombre de paquete propio
+This copy installs beside Threads as an app of its own, with its own sign-in.	Esta copia se instala junto a Threads como una app aparte, con su propio inicio de sesión.
+the new package name	el nuevo nombre de paquete
+Own app name	Nombre de app propio
+The name under the app's icon.	El nombre que aparece bajo el icono de la app.
+the new app name	el nuevo nombre de la app
 Hide screenshots from Threads	Ocultar capturas de pantalla a Threads
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	Threads no se entera cuando haces una captura de pantalla, así que no puede registrarla ni reaccionar a ella.
 Full size photos	Fotos a tamaño completo

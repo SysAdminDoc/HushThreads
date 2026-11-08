@@ -274,6 +274,12 @@ the removed share sheet entry	kaldırılan paylaşım menüsü girişi
 User certificates trusted	Kullanıcı sertifikalarına güveniliyor
 Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.	Threads, telefonuna eklediğin güvenlik sertifikalarını kabul eder. Meta sertifikalarına yaptığı kendi kontroller değişmez, bu yüzden bir proxy trafiğinin çoğunu yine okuyamaz.
 the user certificate trust	kullanıcı sertifikalarına duyulan güven
+Own package name	Kendi paket adı
+This copy installs beside Threads as an app of its own, with its own sign-in.	Bu kopya, Threads'in yanına kendi oturum açma bilgisiyle ayrı bir uygulama olarak kurulur.
+the new package name	yeni paket adı
+Own app name	Kendi uygulama adı
+The name under the app's icon.	Uygulama simgesinin altındaki ad.
+the new app name	yeni uygulama adı
 Hide screenshots from Threads	Ekran görüntülerini Threads'ten gizle
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	Ekran görüntüsü aldığında Threads'e haber verilmez, bu yüzden onu kaydedemez ya da ona tepki veremez.
 Full size photos	Tam boyutlu fotoğraflar

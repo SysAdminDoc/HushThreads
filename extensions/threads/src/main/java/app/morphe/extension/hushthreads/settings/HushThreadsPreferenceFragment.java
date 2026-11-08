@@ -489,8 +489,22 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
 
         if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)
                 || build.contains(PatchFamily.VERSION_CODE) || build.contains(PatchFamily.REMOVE_SHARE_TARGETS)
-                || build.contains(PatchFamily.TRUST_USER_CERTIFICATES)) {
+                || build.contains(PatchFamily.TRUST_USER_CERTIFICATES)
+                || build.contains(PatchFamily.CHANGE_PACKAGE_NAME) || build.contains(PatchFamily.CHANGE_APP_NAME)) {
             PreferenceCategory patched = category(screen, L10n.t("Set when you patched"));
+            // Each shows its value as Android has it, which is what the patch set, isolated so it
+            // reads the same way round in a right-to-left sentence.
+            if (build.contains(PatchFamily.CHANGE_PACKAGE_NAME)) {
+                patched.addPreference(mark(info(context, L10n.t("Own package name"),
+                        L10n.t("This copy installs beside Threads as an app of its own, with its own sign-in.") + "\n"
+                                + L10n.isolate(context.getPackageName())), SettingsIcons.BUILD));
+            }
+            if (build.contains(PatchFamily.CHANGE_APP_NAME)) {
+                patched.addPreference(mark(info(context, L10n.t("Own app name"),
+                        L10n.t("The name under the app's icon.") + "\n"
+                                + L10n.isolate(context.getApplicationInfo().loadLabel(context.getPackageManager()))),
+                        SettingsIcons.BUILD));
+            }
             if (build.contains(PatchFamily.REMOVE_AD_ID)) {
                 patched.addPreference(mark(info(context, L10n.t("Advertising ID removed"),
                         L10n.t("Threads can't read your phone's advertising ID. The permission for it is gone from this "
