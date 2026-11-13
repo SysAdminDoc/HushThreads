@@ -3296,7 +3296,7 @@ public class DexDiff {
         featureHostCalls(patched, featureSig(stub), Map.of());
         featureSearchCarousel(clean, patched);
         featureProfileSuggestions(clean, patched);
-        featureRelatedThreads(clean, patched);
+        featureRelatedThreads(clean, patched, cleanApk);
     }
 
     /** The key Search's list builder adds its Follow suggestions carousel under, which Threads keeps from build to build. */
@@ -3399,20 +3399,65 @@ public class DexDiff {
     }
 
     private static final String RELATED_THREADS = "Lapp/morphe/extension/hushthreads/comments/SuggestedThreads;->relatedThreads(Ljava/util/List;)Ljava/util/List;";
+    /** What the reply parser builds each suggested thread's row from. Threads keeps this name. */
+    private static final String RELATED_THREAD = "Lcom/instagram/api/schemas/RelatedThreadIntf;";
 
     /**
      * Hide suggested users on an opened post: the reply parser hands relatedThreads() the list it
      * just read off the answer, once, right after that read's move-result-object, and walks what
-     * comes back in the same register. Checked where this build's extension carries the call; an
-     * older one has none.
+     * comes back in the same register. Since 455 the suggested threads also come from a query of
+     * their own, and the one collector holding the permalink repository whose emit builds the
+     * parser's row hands relatedThreads() the answer's List right after its iget-object, keeping
+     * what comes back in the same register. Checked where this build's extension carries the call;
+     * an older one has none, and a build without that collector has the parser's call alone.
      */
-    private static void featureRelatedThreads(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+    private static void featureRelatedThreads(Map<String, List<Method>> clean, Map<String, List<Method>> patched,
+            File cleanApk) throws Exception {
         if (!patched.containsKey(RELATED_THREADS)) return;
         Method parser = featureTarget(clean, m -> m.getDefiningClass().equals(REPLIES_PARSER_HOST)
                 && m.getReturnType().startsWith("L") && m.getParameterTypes().size() == 6
                 && m.getParameterTypes().get(0).equals(REPLIES_RESPONSE)
                 && m.getParameterTypes().get(1).equals(REPLIES_PARSER_HOST), "opened post's reply parser");
-        featureHostCalls(patched, RELATED_THREADS, Map.of(featureSig(parser), 1));
+        List<String> rows = new ArrayList<>();
+        for (Instruction i : instructions(parser)) {
+            if (!isStaticInvoke(i.getOpcode()) || !(((ReferenceInstruction) i).getReference() instanceof MethodReference call)) continue;
+            if (call.getParameterTypes().size() == 1 && call.getParameterTypes().get(0).toString().equals(RELATED_THREAD)
+                    && call.getReturnType().startsWith("L")) rows.add(call.getReturnType());
+        }
+        String row = featureOne(rows, "row the opened post's parse makes of a related thread");
+        List<String> collectors = new ArrayList<>();
+        MultiDexContainer<? extends DexFile> dex = DexFileFactory.loadDexContainer(cleanApk, Opcodes.getDefault());
+        for (String entry : dex.getDexEntryNames()) for (ClassDef cd : dex.getEntry(entry).getDexFile().getClasses()) {
+            boolean holdsRepository = false;
+            for (Field f : cd.getInstanceFields()) holdsRepository |= f.getType().equals(REPLIES_PARSER_HOST);
+            if (!holdsRepository) continue;
+            for (Method m : cd.getMethods()) {
+                if (!m.getName().equals("emit") || !m.getReturnType().equals("Ljava/lang/Object;") || m.getParameterTypes().size() != 2) continue;
+                if (instructions(m).stream().anyMatch(i -> i.getOpcode() == Opcode.NEW_INSTANCE && reference(i).equals(row))) {
+                    collectors.add(featureSig(m));
+                }
+            }
+        }
+        requireFeature(collectors.size() <= 1, "fetched suggested threads have " + collectors.size() + " collectors: " + collectors);
+        Map<String, Integer> hosts = new TreeMap<>(Map.of(featureSig(parser), 1));
+        for (String collector : collectors) hosts.put(collector, 1);
+        featureHostCalls(patched, RELATED_THREADS, hosts);
+        for (String collector : collectors) {
+            String answer = instructions(featureMethod(clean, collector)).stream()
+                    .filter(i -> i.getOpcode() == Opcode.CHECK_CAST).map(DexDiff::reference).findFirst().orElse("");
+            List<Instruction> fetch = instructions(featureMethod(patched, collector));
+            int call = featureOne(java.util.stream.IntStream.range(0, fetch.size()).boxed()
+                    .filter(n -> reference(fetch.get(n)).equals(RELATED_THREADS)).toList(), "fetched suggested threads hook");
+            requireFeature(call >= 1 && isStaticInvoke(fetch.get(call).getOpcode()) && invokeRegisters(fetch.get(call)).length == 1
+                    && call + 1 < fetch.size() && fetch.get(call + 1).getOpcode() == Opcode.MOVE_RESULT_OBJECT,
+                    "fetched suggested threads hook doesn't take the list and hand one back");
+            int threads = invokeRegisters(fetch.get(call))[0];
+            Instruction read = fetch.get(call - 1);
+            requireFeature(!answer.isEmpty() && read.getOpcode() == Opcode.IGET_OBJECT && registerA(read) == threads
+                    && registerA(fetch.get(call + 1)) == threads && reference(read).startsWith(answer + "->")
+                    && reference(read).endsWith(":Ljava/util/List;"),
+                    "fetched suggested threads hook isn't on the List " + collector + " just read off its answer");
+        }
         List<Instruction> body = instructions(featureMethod(patched, featureSig(parser)));
         int at = featureOne(java.util.stream.IntStream.range(0, body.size()).boxed()
                 .filter(n -> reference(body.get(n)).equals(RELATED_THREADS)).toList(), "suggested threads hook");
