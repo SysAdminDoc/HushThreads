@@ -48,6 +48,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_SEARCH_SUGGESTIONS =
             new BooleanSetting("hushthreads_hide_search_suggestions", TRUE);
 
+    /**
+     * The suggested threads under an opened post's replies are kept off it
+     * ({@link app.morphe.extension.hushthreads.comments.SuggestedThreads}). The third switch of
+     * Hide suggested users, so it starts on like the others.
+     */
+    public static final BooleanSetting HIDE_SUGGESTED_THREADS =
+            new BooleanSetting("hushthreads_hide_suggested_threads", TRUE);
+
     /** Keep the current feed when returning to Threads within ten minutes. */
     public static final BooleanSetting BLOCK_RETURN_REFRESH =
             new BooleanSetting("hushthreads_block_return_refresh", FALSE);

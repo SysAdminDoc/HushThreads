@@ -266,10 +266,10 @@ public class SettingsNavigationTest {
         assertEquals("Quick setups doesn't open the list", 0, position(SettingsNavigation.QUICK_SETUPS));
         assertEquals("Quick setups", String.valueOf(((Preference) list().getItemAtPosition(0)).getTitle()));
         try {
-            // All three of Quiet's switches start on, so they go off first.
+            // All four of Quiet's switches start on, so they go off first.
             Map<BooleanSetting, Boolean> off = new java.util.LinkedHashMap<>();
             for (BooleanSetting setting : QuickSetupKeys.QUIET) off.put(setting, false);
-            assertEquals(3, page.applyQuickSetup(off));
+            assertEquals(4, page.applyQuickSetup(off));
             for (BooleanSetting setting : QuickSetupKeys.QUIET) assertFalse(setting.key, setting.savedValue());
 
             tap(SettingsNavigation.QUICK_SETUPS);
@@ -283,7 +283,7 @@ public class SettingsNavigationTest {
             choices.getListView().performItemClick(null, 0, 0);
             ShadowLooper.idleMainLooper();
             for (BooleanSetting setting : QuickSetupKeys.QUIET) assertTrue(setting.key, setting.savedValue());
-            assertEquals("Changed 3 settings", ShadowToast.getTextOfLatestToast());
+            assertEquals("Changed 4 settings", ShadowToast.getTextOfLatestToast());
             assertEquals("the choice changed the main list", HOME_ROWS, list().getCount());
 
             assertEquals(0, page.applyQuickSetup(QuickSetupKeys.quiet()));

@@ -321,6 +321,9 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 feed.addPreference(toggle(context, Settings.HIDE_SEARCH_SUGGESTIONS,
                         L10n.t("Hide follow suggestions in Search"),
                         L10n.t("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.")));
+                feed.addPreference(toggle(context, Settings.HIDE_SUGGESTED_THREADS,
+                        L10n.t("Hide suggested threads"),
+                        L10n.t("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.")));
             }
             if (build.contains(PatchFamily.RETURN_REFRESH)) {
                 feed.addPreference(toggle(context, Settings.BLOCK_RETURN_REFRESH,
@@ -1134,6 +1137,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         else if (setting == Settings.HIDE_COMMENT_LINKS) icon = SettingsIcons.LINKS;
         else if (setting == Settings.HIDE_SUGGESTED_USERS) icon = SettingsIcons.PERSON;
         else if (setting == Settings.HIDE_SEARCH_SUGGESTIONS) icon = SettingsIcons.SEARCH;
+        else if (setting == Settings.HIDE_SUGGESTED_THREADS) icon = SettingsIcons.FEED;
         else if (setting == Settings.BLOCK_RETURN_REFRESH) icon = SettingsIcons.BOOKMARK;
         else if (setting == Settings.RETURN_REFRESH_NO_LIMIT) icon = SettingsIcons.CLOCK;
         else if (setting == Settings.DISABLE_VIDEO_AUTOPLAY || setting == Settings.DOWNLOAD_COMPATIBLE) icon = SettingsIcons.PLAY;

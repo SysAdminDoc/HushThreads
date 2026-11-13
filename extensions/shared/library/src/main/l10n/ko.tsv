@@ -342,6 +342,8 @@ Threads needs the Storage permission to save on Android 9. Turn it on in Threads
 Not saved: the download was too slow. Try a faster connection.	저장되지 않음: 다운로드가 너무 느립니다. 더 빠른 연결로 시도하세요.
 Hide follow suggestions in Search	검색에서 팔로우 추천 숨기기
 Takes the Follow suggestions row off the Search screen. Your searches and topics stay.	검색 화면에서 팔로우 추천 줄을 제거합니다. 검색 기록과 주제는 그대로 남습니다.
+Hide suggested threads	추천 스레드 숨기기
+Takes the suggested threads off the bottom of a post you open. The post and its replies stay.	여는 게시물 아래의 추천 스레드를 제거합니다. 게시물과 답글은 그대로 남습니다.
 # A save stopped because a proxy server on the phone's network (Wi-Fi or global proxy setting) asked for a user name and password: the toast. HushThreads never sends one for a download. Android 12 and later cut a toast after two lines, so it stays short.
 Not saved: the proxy wants a password. Try another network.	저장되지 않음: 프록시 비밀번호 필요. 다른 네트워크를 쓰세요.
 # The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary. Android 12 and later cut a toast after two lines, so it stays short.

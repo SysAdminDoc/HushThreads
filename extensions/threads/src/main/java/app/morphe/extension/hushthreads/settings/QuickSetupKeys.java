@@ -34,7 +34,8 @@ final class QuickSetupKeys {
     static final List<BooleanSetting> QUIET = Collections.unmodifiableList(Arrays.asList(
             Settings.HIDE_ADS,
             Settings.HIDE_SUGGESTED_USERS,
-            Settings.HIDE_SEARCH_SUGGESTIONS));
+            Settings.HIDE_SEARCH_SUGGESTIONS,
+            Settings.HIDE_SUGGESTED_THREADS));
 
     /** Less sent about you: usage reports, tracking in shared links and screenshots. */
     static final List<BooleanSetting> PRIVACY = Collections.unmodifiableList(Arrays.asList(

@@ -250,6 +250,10 @@ public class HushThreadsPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.HIDE_SEARCH_SUGGESTIONS.key).getTitle()));
             assertEquals("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.",
                     String.valueOf(page.findPreference(Settings.HIDE_SEARCH_SUGGESTIONS.key).getSummary()));
+            assertEquals("Hide suggested threads",
+                    String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_THREADS.key).getTitle()));
+            assertEquals("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
+                    String.valueOf(page.findPreference(Settings.HIDE_SUGGESTED_THREADS.key).getSummary()));
             assertEquals("Keep feed position on return", String.valueOf(page.findPreference(Settings.BLOCK_RETURN_REFRESH.key).getTitle()));
             assertEquals("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                     String.valueOf(page.findPreference(Settings.BLOCK_RETURN_REFRESH.key).getSummary()));
@@ -309,9 +313,9 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Save", String.valueOf(((android.preference.EditTextPreference) page.findPreference(
                     app.morphe.extension.hushthreads.comments.CommentSettings.FILTER_COMMENT_PATTERNS.key)).getPositiveButtonText()));
             // The patches that were always in Manager's default selection ship their switches on,
-            // Search's half of Hide suggested users included.
+            // Search's and an opened post's parts of Hide suggested users included.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_SUGGESTED_USERS, Settings.HIDE_SEARCH_SUGGESTIONS,
-                    Settings.SANITIZE_SHARING_LINKS, Settings.OPEN_LINKS_EXTERNALLY, Settings.DISABLE_ANALYTICS)) {
+                    Settings.HIDE_SUGGESTED_THREADS, Settings.SANITIZE_SHARING_LINKS, Settings.OPEN_LINKS_EXTERNALLY, Settings.DISABLE_ANALYTICS)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             // The ones that joined it later start off, so a default build looks like Threads, and so

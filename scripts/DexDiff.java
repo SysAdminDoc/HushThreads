@@ -3295,6 +3295,7 @@ public class DexDiff {
         featureHostCalls(patched, featureSig(stub), Map.of());
         featureSearchCarousel(clean, patched);
         featureProfileSuggestions(clean, patched);
+        featureRelatedThreads(clean, patched);
     }
 
     /** The key Search's list builder adds its Follow suggestions carousel under, which Threads keeps from build to build. */
@@ -3394,6 +3395,34 @@ public class DexDiff {
     private static void featureOmittedSearchCarousel(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
         featureHostCalls(patched, SHOW_SEARCH_CAROUSEL, Map.of());
         featurePreserveTargets(clean, patched, m -> !m.getDefiningClass().startsWith(OWN) && holds(m, SEARCH_CAROUSEL_KEY));
+    }
+
+    private static final String RELATED_THREADS = "Lapp/morphe/extension/hushthreads/comments/SuggestedThreads;->relatedThreads(Ljava/util/List;)Ljava/util/List;";
+
+    /**
+     * Hide suggested users on an opened post: the reply parser hands relatedThreads() the list it
+     * just read off the answer, once, right after that read's move-result-object, and walks what
+     * comes back in the same register. Checked where this build's extension carries the call; an
+     * older one has none.
+     */
+    private static void featureRelatedThreads(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
+        if (!patched.containsKey(RELATED_THREADS)) return;
+        Method parser = featureTarget(clean, m -> m.getDefiningClass().equals(REPLIES_PARSER_HOST)
+                && m.getReturnType().startsWith("L") && m.getParameterTypes().size() == 6
+                && m.getParameterTypes().get(0).equals(REPLIES_RESPONSE)
+                && m.getParameterTypes().get(1).equals(REPLIES_PARSER_HOST), "opened post's reply parser");
+        featureHostCalls(patched, RELATED_THREADS, Map.of(featureSig(parser), 1));
+        List<Instruction> body = instructions(featureMethod(patched, featureSig(parser)));
+        int at = featureOne(java.util.stream.IntStream.range(0, body.size()).boxed()
+                .filter(n -> reference(body.get(n)).equals(RELATED_THREADS)).toList(), "suggested threads hook");
+        requireFeature(at >= 2 && isStaticInvoke(body.get(at).getOpcode()) && invokeRegisters(body.get(at)).length == 1
+                && at + 1 < body.size() && body.get(at + 1).getOpcode() == Opcode.MOVE_RESULT_OBJECT,
+                "suggested threads hook doesn't take the list and hand one back");
+        int list = invokeRegisters(body.get(at))[0];
+        requireFeature(body.get(at - 1).getOpcode() == Opcode.MOVE_RESULT_OBJECT && registerA(body.get(at - 1)) == list
+                && registerA(body.get(at + 1)) == list && reference(body.get(at - 2)).startsWith(REPLIES_RESPONSE + "->")
+                && reference(body.get(at - 2)).endsWith("()Ljava/util/List;"),
+                "suggested threads hook isn't on the list the answer's read just handed back");
     }
 
     /** The Compose note of Threads' suggested accounts row, the one Search, Activity and profiles share. */
@@ -6152,6 +6181,7 @@ public class DexDiff {
         featureHostCalls(patched, ADS + "isSuggestedUserItem(Ljava/lang/Object;)Z", Map.of());
         featureOmittedSearchCarousel(clean, patched);
         featureOmittedProfileSuggestions(clean, patched);
+        featureHostCalls(patched, RELATED_THREADS, Map.of());
         MultiDexContainer<? extends DexFile> dex = DexFileFactory.loadDexContainer(patchedApk, Opcodes.getDefault());
         for (String entry : dex.getDexEntryNames()) for (ClassDef cd : dex.getEntry(entry).getDexFile().getClasses())
             for (Field field : cd.getFields()) requireFeature(!field.getName().equals(RECORDED_RAW), "omitted suggestion feature added a raw recording field: " + field);

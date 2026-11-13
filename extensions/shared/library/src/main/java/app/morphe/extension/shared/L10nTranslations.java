@@ -53,7 +53,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(684);
+        Map<String, String> table = new HashMap<>(688);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -314,6 +314,8 @@ public final class L10nTranslations {
                 "Ghost-Post-Blasen ausblenden");
         table.put("Hide screenshots from Threads",
                 "Screenshots vor Threads verbergen");
+        table.put("Hide suggested threads",
+                "Vorgeschlagene Threads ausblenden");
         table.put("Hide suggested users",
                 "Vorgeschlagene Nutzer ausblenden");
         table.put("Hide the Instagram button",
@@ -428,11 +430,11 @@ public final class L10nTranslations {
                 "Pausieren");
         table.put("Pause HushThreads",
                 "HushThreads pausieren");
-        table.put("Pause, backup and diagnostics",
-                "Pause, Sicherung und Diagnose");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Pause, backup and diagnostics",
+                "Pause, Sicherung und Diagnose");
         table.put("Photos and videos you save from posts",
                 "Fotos und Videos, die du aus Beitr\u00e4gen speicherst");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
@@ -551,11 +553,11 @@ public final class L10nTranslations {
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Die Einstellungen lie\u00dfen sich nicht vollst\u00e4ndig aktualisieren. \u00d6ffne sie neu und versuche es noch einmal.");
-        table.put("Settings exported.",
-                "Einstellungen exportiert.");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("Settings exported.",
+                "Einstellungen exportiert.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
                 "Einstellungen exportiert. Die App, in der die Datei liegt, lie\u00df HushThreads sie nicht zur\u00fccklesen, daher wurde sie nicht gepr\u00fcft.");
         table.put("Settings imported.",
@@ -616,6 +618,8 @@ public final class L10nTranslations {
                 "Entfernt den Instagram-Button oben in Profilen, in deinem und in denen anderer. Starte Threads neu, damit die \u00c4nderung greift.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Entfernt die Ghost-Post-Blasen von Profilbildern, in Profilen und in der Reihe oben in deinem Feed. Starte Threads neu, damit die \u00c4nderung greift.");
+        table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
+                "Entfernt die vorgeschlagenen Threads unter einem Beitrag, den du \u00f6ffnest. Der Beitrag und seine Antworten bleiben.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Entfernt Tracking-Tags wie xmt und slof aus den Beitragslinks, die du kopierst oder teilst. Ein kurzer Teilen-Link wird zum eigenen Link des Beitrags.");
         table.put("Tap to play videos",
@@ -672,13 +676,13 @@ public final class L10nTranslations {
                 "Diese werden beim Patchen in Morphe Manager ausgew\u00e4hlt, und die Pause schaltet sie nicht aus. Patche erneut, um sie zu \u00e4ndern.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Dieser Build hat nicht festgehalten, welche Berichtsarten er abdeckt. Patche erneut, um sie zu sehen.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Diese Kopie wird neben Threads als eigene App installiert, mit eigener Anmeldung.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Dieses Handy hat keine Dateiauswahl, hier l\u00e4sst sich also keine Datei w\u00e4hlen.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "Threads akzeptiert Sicherheitszertifikate, die du auf deinem Handy hinzugef\u00fcgt hast. Die eigenen Pr\u00fcfungen der Meta-Zertifikate bleiben unver\u00e4ndert, deshalb kann ein Proxy den Gro\u00dfteil des Datenverkehrs weiterhin nicht lesen.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -766,7 +770,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(684);
+        Map<String, String> table = new HashMap<>(688);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1027,6 +1031,8 @@ public final class L10nTranslations {
                 "Ocultar las burbujas de publicaciones fantasma");
         table.put("Hide screenshots from Threads",
                 "Ocultar capturas de pantalla a Threads");
+        table.put("Hide suggested threads",
+                "Ocultar hilos sugeridos");
         table.put("Hide suggested users",
                 "Ocultar usuarios sugeridos");
         table.put("Hide the Instagram button",
@@ -1141,11 +1147,11 @@ public final class L10nTranslations {
                 "Pausar");
         table.put("Pause HushThreads",
                 "Pausar HushThreads");
-        table.put("Pause, backup and diagnostics",
-                "Pausa, copia de seguridad y diagn\u00f3stico");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Pause, backup and diagnostics",
+                "Pausa, copia de seguridad y diagn\u00f3stico");
         table.put("Photos and videos you save from posts",
                 "Fotos y videos que guardas de las publicaciones");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
@@ -1264,11 +1270,11 @@ public final class L10nTranslations {
                 "No se pudo abrir la configuraci\u00f3n");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "No se pudo actualizar la configuraci\u00f3n por completo. Vuelve a abrirla e int\u00e9ntalo de nuevo.");
-        table.put("Settings exported.",
-                "Configuraci\u00f3n exportada.");
     }
 
     private static void fillEs4(Map<String, String> table) {
+        table.put("Settings exported.",
+                "Configuraci\u00f3n exportada.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
                 "Configuraci\u00f3n exportada. La app que guarda el archivo no dej\u00f3 que HushThreads lo volviera a leer, as\u00ed que no se comprob\u00f3.");
         table.put("Settings imported.",
@@ -1329,6 +1335,8 @@ public final class L10nTranslations {
                 "Quita el bot\u00f3n de Instagram de la parte de arriba de los perfiles, el tuyo y los de otras personas. Reinicia Threads para ver el cambio.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Quita las burbujas de publicaciones fantasma de las fotos de perfil, en los perfiles y en la fila de arriba de tu feed. Reinicia Threads para ver el cambio.");
+        table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
+                "Quita los hilos sugeridos del final de una publicaci\u00f3n que abres. La publicaci\u00f3n y sus respuestas se quedan.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Quita las etiquetas de seguimiento, como xmt y slof, de los enlaces de publicaciones que copias o compartes. Un enlace corto para compartir pasa a ser el enlace propio de la publicaci\u00f3n.");
         table.put("Tap to play videos",
@@ -1385,13 +1393,13 @@ public final class L10nTranslations {
                 "Se eligen en Morphe Manager al parchear, y Pausar no los desactiva. Vuelve a parchear para cambiarlos.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Esta versi\u00f3n no registr\u00f3 qu\u00e9 tipos de informe cubre. Vuelve a parchear para verlos.");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Esta copia se instala junto a Threads como una app aparte, con su propio inicio de sesi\u00f3n.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que aqu\u00ed no hay forma de elegir un archivo.");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "Threads acepta los certificados de seguridad que a\u00f1adiste a tu tel\u00e9fono. Sus propias comprobaciones de los certificados de Meta no cambian, as\u00ed que un proxy sigue sin poder leer la mayor parte de su tr\u00e1fico.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -1479,7 +1487,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(684);
+        Map<String, String> table = new HashMap<>(688);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1740,6 +1748,8 @@ public final class L10nTranslations {
                 "Sembunyikan gelembung postingan hantu");
         table.put("Hide screenshots from Threads",
                 "Sembunyikan tangkapan layar dari Threads");
+        table.put("Hide suggested threads",
+                "Sembunyikan utas yang disarankan");
         table.put("Hide suggested users",
                 "Sembunyikan pengguna yang disarankan");
         table.put("Hide the Instagram button",
@@ -1854,11 +1864,11 @@ public final class L10nTranslations {
                 "Jeda");
         table.put("Pause HushThreads",
                 "Jeda HushThreads");
-        table.put("Pause, backup and diagnostics",
-                "Jeda, cadangan, dan diagnostik");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Pause, backup and diagnostics",
+                "Jeda, cadangan, dan diagnostik");
         table.put("Photos and videos you save from posts",
                 "Foto dan video yang Anda simpan dari postingan");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
@@ -1977,11 +1987,11 @@ public final class L10nTranslations {
                 "Pengaturan tidak dapat dibuka");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Pengaturan tidak dapat dimuat ulang sepenuhnya. Buka kembali pengaturan lalu coba lagi.");
-        table.put("Settings exported.",
-                "Pengaturan diekspor.");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("Settings exported.",
+                "Pengaturan diekspor.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
                 "Pengaturan diekspor. Aplikasi yang menyimpan file itu tidak mengizinkan HushThreads membacanya kembali, jadi file itu tidak diperiksa.");
         table.put("Settings imported.",
@@ -2042,6 +2052,8 @@ public final class L10nTranslations {
                 "Menghapus tombol Instagram di bagian atas profil, milik Anda dan milik orang lain. Mulai ulang Threads untuk melihat perubahannya.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Menghapus gelembung postingan hantu dari foto profil, di profil dan di baris bagian atas feed Anda. Mulai ulang Threads untuk melihat perubahannya.");
+        table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
+                "Menghapus utas yang disarankan dari bagian bawah postingan yang Anda buka. Postingan dan balasannya tetap ada.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Menghapus tag pelacakan seperti xmt dan slof dari tautan postingan yang Anda salin atau bagikan. Tautan berbagi pendek diganti dengan tautan postingan itu sendiri.");
         table.put("Tap to play videos",
@@ -2098,13 +2110,13 @@ public final class L10nTranslations {
                 "Semua ini dipilih di Morphe Manager saat Anda menambal, dan Jeda tidak mematikannya. Tambal ulang untuk mengubahnya.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Build ini tidak mencatat jenis laporan apa yang dicakup. Tambal ulang untuk melihatnya.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Salinan ini terpasang di samping Threads sebagai aplikasi tersendiri, dengan login sendiri.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Ponsel ini tidak memiliki pemilih file, jadi file tidak dapat dipilih di sini.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "Threads menerima sertifikat keamanan yang Anda tambahkan ke ponsel. Pemeriksaan sendiri atas sertifikat Meta tidak berubah, jadi proxy tetap tidak bisa membaca sebagian besar lalu lintasnya.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -2192,7 +2204,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIt() {
-        Map<String, String> table = new HashMap<>(684);
+        Map<String, String> table = new HashMap<>(688);
         fillIt0(table);
         fillIt1(table);
         fillIt2(table);
@@ -2453,6 +2465,8 @@ public final class L10nTranslations {
                 "Nascondi le bolle dei post fantasma");
         table.put("Hide screenshots from Threads",
                 "Nascondi gli screenshot a Threads");
+        table.put("Hide suggested threads",
+                "Nascondi i thread suggeriti");
         table.put("Hide suggested users",
                 "Nascondi gli utenti suggeriti");
         table.put("Hide the Instagram button",
@@ -2567,11 +2581,11 @@ public final class L10nTranslations {
                 "Pausa");
         table.put("Pause HushThreads",
                 "Metti in pausa HushThreads");
-        table.put("Pause, backup and diagnostics",
-                "Pausa, backup e diagnostica");
     }
 
     private static void fillIt3(Map<String, String> table) {
+        table.put("Pause, backup and diagnostics",
+                "Pausa, backup e diagnostica");
         table.put("Photos and videos you save from posts",
                 "Foto e video che salvi dai post");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
@@ -2690,11 +2704,11 @@ public final class L10nTranslations {
                 "Impossibile aprire le impostazioni");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Impossibile aggiornare del tutto le impostazioni. Riapri le impostazioni e riprova.");
-        table.put("Settings exported.",
-                "Impostazioni esportate.");
     }
 
     private static void fillIt4(Map<String, String> table) {
+        table.put("Settings exported.",
+                "Impostazioni esportate.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
                 "Impostazioni esportate. L'app che contiene il file non ha permesso a HushThreads di rileggerlo, quindi non \u00e8 stato controllato.");
         table.put("Settings imported.",
@@ -2755,6 +2769,8 @@ public final class L10nTranslations {
                 "Toglie il pulsante di Instagram dalla parte alta dei profili, il tuo e quelli degli altri. Riavvia Threads per vedere la modifica.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Toglie le bolle dei post fantasma dalle immagini del profilo, sui profili e nella riga in cima al feed. Riavvia Threads per vedere la modifica.");
+        table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
+                "Toglie i thread suggeriti dal fondo di un post che apri. Il post e le sue risposte restano.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Toglie i tag di tracciamento come xmt e slof dai link dei post che copi o condividi. Un link breve di condivisione diventa il link diretto del post.");
         table.put("Tap to play videos",
@@ -2811,13 +2827,13 @@ public final class L10nTranslations {
                 "Si scelgono in Morphe Manager quando applichi la patch e Pausa non le disattiva. Applica di nuovo la patch per cambiarle.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Questa build non ha registrato quali tipi di report copre. Applica di nuovo la patch per vederli.");
+    }
+
+    private static void fillIt5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Questa copia si installa accanto a Threads come app a s\u00e9, con un accesso tutto suo.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Questo telefono non ha un selettore di file, quindi qui non \u00e8 possibile scegliere un file.");
-    }
-
-    private static void fillIt5(Map<String, String> table) {
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "Threads accetta i certificati di sicurezza che hai aggiunto al telefono. I suoi controlli sui certificati di Meta restano invariati, quindi un proxy non pu\u00f2 comunque leggere gran parte del suo traffico.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -2905,7 +2921,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildKo() {
-        Map<String, String> table = new HashMap<>(684);
+        Map<String, String> table = new HashMap<>(688);
         fillKo0(table);
         fillKo1(table);
         fillKo2(table);
@@ -3166,6 +3182,8 @@ public final class L10nTranslations {
                 "\uace0\uc2a4\ud2b8 \uac8c\uc2dc\ubb3c \ub9d0\ud48d\uc120 \uc228\uae30\uae30");
         table.put("Hide screenshots from Threads",
                 "Threads\uc5d0 \uc2a4\ud06c\ub9b0\uc0f7 \uc228\uae30\uae30");
+        table.put("Hide suggested threads",
+                "\ucd94\ucc9c \uc2a4\ub808\ub4dc \uc228\uae30\uae30");
         table.put("Hide suggested users",
                 "\ucd94\ucc9c \uc0ac\uc6a9\uc790 \uc228\uae30\uae30");
         table.put("Hide the Instagram button",
@@ -3280,11 +3298,11 @@ public final class L10nTranslations {
                 "\uc77c\uc2dc \uc815\uc9c0");
         table.put("Pause HushThreads",
                 "HushThreads \uc77c\uc2dc \uc815\uc9c0");
-        table.put("Pause, backup and diagnostics",
-                "\uc77c\uc2dc \uc815\uc9c0, \ubc31\uc5c5 \ubc0f \uc9c4\ub2e8");
     }
 
     private static void fillKo3(Map<String, String> table) {
+        table.put("Pause, backup and diagnostics",
+                "\uc77c\uc2dc \uc815\uc9c0, \ubc31\uc5c5 \ubc0f \uc9c4\ub2e8");
         table.put("Photos and videos you save from posts",
                 "\uac8c\uc2dc\ubb3c\uc5d0\uc11c \uc800\uc7a5\ud558\ub294 \uc0ac\uc9c4\uacfc \ub3d9\uc601\uc0c1");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
@@ -3403,11 +3421,11 @@ public final class L10nTranslations {
                 "\uc124\uc815\uc744 \uc5f4 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "\uc124\uc815\uc744 \uc644\uc804\ud788 \uc0c8\ub85c \uace0\uce58\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc124\uc815\uc744 \ub2e4\uc2dc \uc5f4\uace0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
-        table.put("Settings exported.",
-                "\uc124\uc815\uc744 \ub0b4\ubcf4\ub0c8\uc2b5\ub2c8\ub2e4.");
     }
 
     private static void fillKo4(Map<String, String> table) {
+        table.put("Settings exported.",
+                "\uc124\uc815\uc744 \ub0b4\ubcf4\ub0c8\uc2b5\ub2c8\ub2e4.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
                 "\uc124\uc815\uc744 \ub0b4\ubcf4\ub0c8\uc2b5\ub2c8\ub2e4. \ud30c\uc77c\uc744 \ubcf4\uad00\ud558\ub294 \uc571\uc774 HushThreads\uac00 \ub2e4\uc2dc \uc77d\ub3c4\ub85d \ud5c8\uc6a9\ud558\uc9c0 \uc54a\uc544 \ud655\uc778\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4.");
         table.put("Settings imported.",
@@ -3468,6 +3486,8 @@ public final class L10nTranslations {
                 "\ub0b4 \ud504\ub85c\ud544\uacfc \ub2e4\ub978 \uc0ac\ub78c\uc758 \ud504\ub85c\ud544 \uc0c1\ub2e8\uc5d0\uc11c Instagram \ubc84\ud2bc\uc744 \uc81c\uac70\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "\ud504\ub85c\ud544\uacfc \ud53c\ub4dc \uc0c1\ub2e8 \uc904\uc758 \ud504\ub85c\ud544 \uc0ac\uc9c4\uc5d0\uc11c \uace0\uc2a4\ud2b8 \uac8c\uc2dc\ubb3c \ub9d0\ud48d\uc120\uc744 \uc81c\uac70\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
+                "\uc5ec\ub294 \uac8c\uc2dc\ubb3c \uc544\ub798\uc758 \ucd94\ucc9c \uc2a4\ub808\ub4dc\ub97c \uc81c\uac70\ud569\ub2c8\ub2e4. \uac8c\uc2dc\ubb3c\uacfc \ub2f5\uae00\uc740 \uadf8\ub300\ub85c \ub0a8\uc2b5\ub2c8\ub2e4.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "\ubcf5\uc0ac\ud558\uac70\ub098 \uacf5\uc720\ud558\ub294 \uac8c\uc2dc\ubb3c \ub9c1\ud06c\uc5d0\uc11c xmt, slof \uac19\uc740 \ucd94\uc801 \ud0dc\uadf8\ub97c \uc81c\uac70\ud569\ub2c8\ub2e4. \uc9e7\uc740 \uacf5\uc720 \ub9c1\ud06c\ub294 \uac8c\uc2dc\ubb3c \uc6d0\ub798 \ub9c1\ud06c\ub85c \ubc14\ub01d\ub2c8\ub2e4.");
         table.put("Tap to play videos",
@@ -3524,13 +3544,13 @@ public final class L10nTranslations {
                 "\ud328\uce58\ud560 \ub54c Morphe Manager\uc5d0\uc11c \uc120\ud0dd\ud558\uba70 \uc77c\uc2dc \uc815\uc9c0\ub85c\ub294 \ub04c \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \ubc14\uafb8\ub824\uba74 \ub2e4\uc2dc \ud328\uce58\ud558\uc138\uc694.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "\uc774 \ube4c\ub4dc\ub294 \uc5b4\ub5a4 \ubcf4\uace0\uc11c \uc720\ud615\uc744 \ub2e4\ub8e8\ub294\uc9c0 \uae30\ub85d\ud558\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4. \ud655\uc778\ud558\ub824\uba74 \ub2e4\uc2dc \ud328\uce58\ud558\uc138\uc694.");
+    }
+
+    private static void fillKo5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "\uc774 \uc0ac\ubcf8\uc740 Threads \uc606\uc5d0 \ubcc4\ub3c4 \uc571\uc73c\ub85c \uc124\uce58\ub418\uba70 \ub85c\uadf8\uc778\ub3c4 \ub530\ub85c \ud569\ub2c8\ub2e4.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "\uc774 \ud734\ub300\uc804\ud654\uc5d0\ub294 \ud30c\uc77c \uc120\ud0dd\uae30\uac00 \uc5c6\uc5b4\uc11c \uc5ec\uae30\uc11c \ud30c\uc77c\uc744 \uc120\ud0dd\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.");
-    }
-
-    private static void fillKo5(Map<String, String> table) {
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "Threads\uac00 \ud734\ub300\uc804\ud654\uc5d0 \ucd94\uac00\ud55c \ubcf4\uc548 \uc778\uc99d\uc11c\ub97c \ud5c8\uc6a9\ud569\ub2c8\ub2e4. Meta \uc778\uc99d\uc11c\uc5d0 \ub300\ud55c \uc790\uccb4 \uac80\uc0ac\ub294 \uadf8\ub300\ub85c\uc774\ubbc0\ub85c \ud504\ub85d\uc2dc\ub294 \uc5ec\uc804\ud788 \ub300\ubd80\ubd84\uc758 \ud2b8\ub798\ud53d\uc744 \uc77d\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -3618,7 +3638,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(684);
+        Map<String, String> table = new HashMap<>(688);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -3879,6 +3899,8 @@ public final class L10nTranslations {
                 "Ocultar os bal\u00f5es de posts fantasma");
         table.put("Hide screenshots from Threads",
                 "Esconder capturas de tela do Threads");
+        table.put("Hide suggested threads",
+                "Ocultar threads sugeridos");
         table.put("Hide suggested users",
                 "Ocultar usu\u00e1rios sugeridos");
         table.put("Hide the Instagram button",
@@ -3993,11 +4015,11 @@ public final class L10nTranslations {
                 "Pausar");
         table.put("Pause HushThreads",
                 "Pausar o HushThreads");
-        table.put("Pause, backup and diagnostics",
-                "Pausa, backup e diagn\u00f3stico");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Pause, backup and diagnostics",
+                "Pausa, backup e diagn\u00f3stico");
         table.put("Photos and videos you save from posts",
                 "Fotos e v\u00eddeos que voc\u00ea salva das publica\u00e7\u00f5es");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
@@ -4116,11 +4138,11 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "N\u00e3o foi poss\u00edvel atualizar completamente as configura\u00e7\u00f5es. Reabra as configura\u00e7\u00f5es e tente novamente.");
-        table.put("Settings exported.",
-                "Configura\u00e7\u00f5es exportadas.");
     }
 
     private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("Settings exported.",
+                "Configura\u00e7\u00f5es exportadas.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
                 "Configura\u00e7\u00f5es exportadas. O app que guarda o arquivo n\u00e3o deixou o HushThreads l\u00ea-lo de volta, ent\u00e3o ele n\u00e3o foi conferido.");
         table.put("Settings imported.",
@@ -4181,6 +4203,8 @@ public final class L10nTranslations {
                 "Remove o bot\u00e3o do Instagram do topo dos perfis, o seu e os de outras pessoas. Reinicie o Threads para ver a mudan\u00e7a.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Remove os bal\u00f5es de posts fantasma das fotos de perfil, nos perfis e na fileira no topo do seu feed. Reinicie o Threads para ver a mudan\u00e7a.");
+        table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
+                "Remove os threads sugeridos do fim de um post que voc\u00ea abre. O post e as respostas continuam.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Remove dos links de publica\u00e7\u00f5es que voc\u00ea copia ou compartilha as tags de rastreamento, como xmt e slof. Um link curto de compartilhamento vira o link da pr\u00f3pria publica\u00e7\u00e3o.");
         table.put("Tap to play videos",
@@ -4237,13 +4261,13 @@ public final class L10nTranslations {
                 "Eles s\u00e3o escolhidos no Morphe Manager quando voc\u00ea aplica os patches, e a pausa n\u00e3o os desativa. Aplique os patches novamente para alter\u00e1-los.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Esta vers\u00e3o n\u00e3o registrou quais tipos de relat\u00f3rio cobre. Aplique os patches de novo para ver.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Esta c\u00f3pia \u00e9 instalada ao lado do Threads como um app \u00e0 parte, com login pr\u00f3prio.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este dispositivo n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel escolher um arquivo aqui.");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "O Threads aceita certificados de seguran\u00e7a que voc\u00ea adicionou ao celular. As verifica\u00e7\u00f5es pr\u00f3prias dos certificados da Meta n\u00e3o mudam, ent\u00e3o um proxy ainda n\u00e3o consegue ler a maior parte do tr\u00e1fego.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -4331,7 +4355,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(684);
+        Map<String, String> table = new HashMap<>(688);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -4592,6 +4616,8 @@ public final class L10nTranslations {
                 "Hayalet g\u00f6nderi balonlar\u0131n\u0131 gizle");
         table.put("Hide screenshots from Threads",
                 "Ekran g\u00f6r\u00fcnt\u00fclerini Threads'ten gizle");
+        table.put("Hide suggested threads",
+                "\u00d6nerilen thread'leri gizle");
         table.put("Hide suggested users",
                 "\u00d6nerilen kullan\u0131c\u0131lar\u0131 gizle");
         table.put("Hide the Instagram button",
@@ -4706,11 +4732,11 @@ public final class L10nTranslations {
                 "Duraklat");
         table.put("Pause HushThreads",
                 "HushThreads'u duraklat");
-        table.put("Pause, backup and diagnostics",
-                "Duraklatma, yedekleme ve tan\u0131lama");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Pause, backup and diagnostics",
+                "Duraklatma, yedekleme ve tan\u0131lama");
         table.put("Photos and videos you save from posts",
                 "G\u00f6nderilerden kaydetti\u011fin foto\u011fraflar ve videolar");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
@@ -4829,11 +4855,11 @@ public final class L10nTranslations {
                 "Ayarlar a\u00e7\u0131lamad\u0131");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Ayarlar tamamen yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
-        table.put("Settings exported.",
-                "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131.");
     }
 
     private static void fillTr4(Map<String, String> table) {
+        table.put("Settings exported.",
+                "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
                 "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131. Dosyay\u0131 tutan uygulama HushThreads'un onu geri okumas\u0131na izin vermedi, bu y\u00fczden kontrol edilmedi.");
         table.put("Settings imported.",
@@ -4894,6 +4920,8 @@ public final class L10nTranslations {
                 "Kendi profilinin ve ba\u015fkalar\u0131n\u0131n profillerinin \u00fcst\u00fcndeki Instagram d\u00fc\u011fmesini kald\u0131r\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Profil foto\u011fraflar\u0131ndaki hayalet g\u00f6nderi balonlar\u0131n\u0131 kald\u0131r\u0131r, profillerde ve ak\u0131\u015f\u0131n\u0131n \u00fcst\u00fcndeki s\u0131rada. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
+        table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
+                "A\u00e7t\u0131\u011f\u0131n\u0131z bir g\u00f6nderinin alt\u0131ndaki \u00f6nerilen thread'leri kald\u0131r\u0131r. G\u00f6nderi ve yan\u0131tlar\u0131 kal\u0131r.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "Kopyalad\u0131\u011f\u0131n veya payla\u015ft\u0131\u011f\u0131n g\u00f6nderi ba\u011flant\u0131lar\u0131ndan xmt ve slof gibi izleme etiketlerini kald\u0131r\u0131r. K\u0131sa payla\u015f\u0131m ba\u011flant\u0131s\u0131, g\u00f6nderinin kendi ba\u011flant\u0131s\u0131na d\u00f6n\u00fc\u015f\u00fcr.");
         table.put("Tap to play videos",
@@ -4950,13 +4978,13 @@ public final class L10nTranslations {
                 "Bunlar yamalarken Morphe Manager'da se\u00e7ilir ve Duraklatma bunlar\u0131 kapatmaz. De\u011fi\u015ftirmek i\u00e7in yeniden yamala.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Bu s\u00fcr\u00fcm hangi rapor t\u00fcrlerini kapsad\u0131\u011f\u0131n\u0131 kaydetmedi. G\u00f6rmek i\u00e7in yeniden yamala.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Bu kopya, Threads'in yan\u0131na kendi oturum a\u00e7ma bilgisiyle ayr\u0131 bir uygulama olarak kurulur.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Bu telefonda dosya se\u00e7ici yok, bu y\u00fczden burada dosya se\u00e7menin bir yolu yok.");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "Threads, telefonuna ekledi\u011fin g\u00fcvenlik sertifikalar\u0131n\u0131 kabul eder. Meta sertifikalar\u0131na yapt\u0131\u011f\u0131 kendi kontroller de\u011fi\u015fmez, bu y\u00fczden bir proxy trafi\u011finin \u00e7o\u011funu yine okuyamaz.");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",
@@ -5044,7 +5072,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildZh_rTW() {
-        Map<String, String> table = new HashMap<>(684);
+        Map<String, String> table = new HashMap<>(688);
         fillZh_rTW0(table);
         fillZh_rTW1(table);
         fillZh_rTW2(table);
@@ -5305,6 +5333,8 @@ public final class L10nTranslations {
                 "\u96b1\u85cf\u5e7d\u9748\u8cbc\u6587\u6ce1\u6ce1");
         table.put("Hide screenshots from Threads",
                 "\u4e0d\u8b93 Threads \u5075\u6e2c\u87a2\u5e55\u622a\u5716");
+        table.put("Hide suggested threads",
+                "\u96b1\u85cf\u63a8\u85a6\u8cbc\u6587\u4e32");
         table.put("Hide suggested users",
                 "\u96b1\u85cf\u5efa\u8b70\u8ffd\u8e64\u7684\u7528\u6236");
         table.put("Hide the Instagram button",
@@ -5419,11 +5449,11 @@ public final class L10nTranslations {
                 "\u66ab\u505c");
         table.put("Pause HushThreads",
                 "\u66ab\u505c HushThreads");
-        table.put("Pause, backup and diagnostics",
-                "\u66ab\u505c\u3001\u5099\u4efd\u8207\u8a3a\u65b7");
     }
 
     private static void fillZh_rTW3(Map<String, String> table) {
+        table.put("Pause, backup and diagnostics",
+                "\u66ab\u505c\u3001\u5099\u4efd\u8207\u8a3a\u65b7");
         table.put("Photos and videos you save from posts",
                 "\u4f60\u5f9e\u8cbc\u6587\u5132\u5b58\u7684\u76f8\u7247\u8207\u5f71\u7247");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
@@ -5542,11 +5572,11 @@ public final class L10nTranslations {
                 "\u7121\u6cd5\u958b\u555f\u8a2d\u5b9a");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "\u7121\u6cd5\u5b8c\u6574\u91cd\u65b0\u6574\u7406\u8a2d\u5b9a\u3002\u8acb\u91cd\u65b0\u958b\u555f\u8a2d\u5b9a\u5f8c\u518d\u8a66\u3002");
-        table.put("Settings exported.",
-                "\u8a2d\u5b9a\u5df2\u532f\u51fa\u3002");
     }
 
     private static void fillZh_rTW4(Map<String, String> table) {
+        table.put("Settings exported.",
+                "\u8a2d\u5b9a\u5df2\u532f\u51fa\u3002");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
                 "\u8a2d\u5b9a\u5df2\u532f\u51fa\u3002\u6301\u6709\u8a72\u6a94\u6848\u7684\u61c9\u7528\u7a0b\u5f0f\u4e0d\u5141\u8a31 HushThreads \u8b80\u56de\u6a94\u6848\uff0c\u56e0\u6b64\u672a\u80fd\u6aa2\u67e5\u3002");
         table.put("Settings imported.",
@@ -5607,6 +5637,8 @@ public final class L10nTranslations {
                 "\u79fb\u9664\u4f60\u81ea\u5df1\u8207\u4ed6\u4eba\u500b\u4eba\u6a94\u6848\u9802\u7aef\u7684 Instagram \u6309\u9215\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "\u79fb\u9664\u500b\u4eba\u6a94\u6848\u5927\u982d\u8cbc\u8207\u52d5\u614b\u6d88\u606f\u9802\u7aef\u5217\u4e2d\u7684\u5e7d\u9748\u8cbc\u6587\u6ce1\u6ce1\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
+        table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
+                "\u79fb\u9664\u4f60\u958b\u555f\u7684\u8cbc\u6587\u5e95\u90e8\u7684\u63a8\u85a6\u8cbc\u6587\u4e32\u3002\u8cbc\u6587\u8207\u56de\u8986\u4e0d\u53d7\u5f71\u97ff\u3002");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
                 "\u79fb\u9664\u4f60\u8907\u88fd\u6216\u5206\u4eab\u4e4b\u8cbc\u6587\u9023\u7d50\u4e2d\u7684 xmt\u3001slof \u7b49\u8ffd\u8e64\u6a19\u8a18\u3002\u77ed\u5206\u4eab\u9023\u7d50\u6703\u6539\u70ba\u8cbc\u6587\u672c\u8eab\u7684\u9023\u7d50\u3002");
         table.put("Tap to play videos",
@@ -5663,13 +5695,13 @@ public final class L10nTranslations {
                 "\u5b83\u5011\u662f\u5728 Morphe Manager \u4fee\u88dc\u6642\u9078\u53d6\u7684\uff0c\u300c\u66ab\u505c\u300d\u7121\u6cd5\u95dc\u9589\u3002\u8acb\u91cd\u65b0\u4fee\u88dc\u4ee5\u8b8a\u66f4\u3002");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "\u6b64\u7248\u672c\u672a\u8a18\u9304\u6db5\u84cb\u54ea\u4e9b\u5831\u544a\u985e\u578b\u3002\u8acb\u91cd\u65b0\u4fee\u88dc\u4ee5\u67e5\u770b\u3002");
+    }
+
+    private static void fillZh_rTW5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "\u9019\u500b\u526f\u672c\u6703\u4ee5\u7368\u7acb\u61c9\u7528\u7a0b\u5f0f\u7684\u5f62\u5f0f\u5b89\u88dd\u5728 Threads \u65c1\u908a\uff0c\u4e26\u4f7f\u7528\u81ea\u5df1\u7684\u767b\u5165\u3002");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "\u6b64\u624b\u6a5f\u6c92\u6709\u6a94\u6848\u9078\u64c7\u5668\uff0c\u56e0\u6b64\u7121\u6cd5\u5728\u6b64\u9078\u64c7\u6a94\u6848\u3002");
-    }
-
-    private static void fillZh_rTW5(Map<String, String> table) {
         table.put("Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.",
                 "Threads \u63a5\u53d7\u4f60\u65b0\u589e\u81f3\u624b\u6a5f\u7684\u5b89\u5168\u6191\u8b49\u3002\u5b83\u5c0d Meta \u6191\u8b49\u7684\u6aa2\u67e5\u4e0d\u8b8a\uff0c\u56e0\u6b64\u4ee3\u7406\u4f3a\u670d\u5668\u4ecd\u7121\u6cd5\u8b80\u53d6\u5927\u90e8\u5206\u6d41\u91cf\u3002");
         table.put("Threads can't read your phone's advertising ID. The permission for it is gone from this build.",

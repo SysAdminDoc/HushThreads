@@ -17,6 +17,8 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.patches.threads.comments.PERMALINK_REPOSITORY
+import app.morphe.patches.threads.comments.RepliesParseFingerprint
 import app.morphe.patches.threads.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.threads.misc.extension.parameterRegisterNumber
 import app.morphe.util.getReference
@@ -97,8 +99,10 @@ class HideSuggestedUsersFixtureTest {
                 .toSet() - FEED_CACHE).values
             // The row Threads builds after a follow comes from builders that name it by a prefix.
             val chaining = FixtureDex.classesWhere(build, { true }) { it.hasString(CHAINING_PREFIX) }
+            // An opened post's suggested threads are read in the parse of its page of replies.
+            val permalink = FixtureDex.classes(build, setOf(PERMALINK_REPOSITORY)).values
             val classes = (anchors + cache + done + item + kinds + rawParsers + wrappers.values + profile + search +
-                chaining).distinctBy { it.type }
+                chaining + permalink).distinctBy { it.type }
             return Vendor(build.name, classes, parser.type)
         }
 
@@ -110,6 +114,7 @@ class HideSuggestedUsersFixtureTest {
         FeedPageMergeFingerprint.clearMatch()
         SuggestedModelFingerprint.clearMatch()
         SuggestedFeedParserFingerprint.clearMatch()
+        RepliesParseFingerprint.clearMatch()
         return PatchContexts.of(ExtensionDex.classes() + vendor.classes).also { feedPageFilterPatch.execute(it) }
     }
 
@@ -148,6 +153,8 @@ class HideSuggestedUsersFixtureTest {
             assertEquals(vendor.name, 1, profileHooks.count { it == SHOW_ROW })
             // And Search's carousel asks once.
             assertEquals(vendor.name, 1, profileHooks.count { it == SHOW_SEARCH_CAROUSEL })
+            // And an opened post hands over its suggested threads once.
+            assertEquals(vendor.name, 1, profileHooks.count { it == RELATED_THREADS_CALL })
             val capture = context.mutableClassDefBy(targets.wrapper.definingClass).instanceFields.single {
                 it.name == targets.capturedRaw.name
             }

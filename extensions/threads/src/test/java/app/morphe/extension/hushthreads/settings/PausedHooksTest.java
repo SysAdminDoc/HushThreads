@@ -35,6 +35,7 @@ import app.morphe.extension.hushthreads.ads.FeedAds;
 import app.morphe.extension.hushthreads.ads.ShadowFeedAds;
 import app.morphe.extension.hushthreads.comments.CommentFilter;
 import app.morphe.extension.hushthreads.comments.CommentSettings;
+import app.morphe.extension.hushthreads.comments.SuggestedThreads;
 import app.morphe.extension.hushthreads.download.SavesForTests;
 import app.morphe.extension.hushthreads.feed.CopyText;
 import app.morphe.extension.hushthreads.feed.ImageQuality;
@@ -111,8 +112,8 @@ public class PausedHooksTest {
             List<Object> page = Arrays.asList("a post", ShadowFeedAds.AD, "another post");
             return FeedAds.filter(page).size() != page.size();
         }));
-        // A feed page loses its suggestion card, a profile loses its carousel and its row, and
-        // Search loses its Follow suggestions carousel.
+        // A feed page loses its suggestion card, a profile loses its carousel and its row, Search
+        // loses its Follow suggestions carousel, and an opened post loses its suggested threads.
         probes.put(PatchFamily.HIDE_SUGGESTED_USERS, Arrays.asList(
                 () -> {
                     List<Object> page = Arrays.asList("a post", ShadowFeedAds.SUGGESTED, "another post");
@@ -120,7 +121,8 @@ public class PausedHooksTest {
                 },
                 () -> ProfileSuggestions.carousel(Collections.singletonList("an account")) == null,
                 () -> !ProfileSuggestions.showRow(),
-                () -> !SearchSuggestions.showCarousel()));
+                () -> !SearchSuggestions.showCarousel(),
+                () -> SuggestedThreads.relatedThreads(Collections.singletonList("a related thread")).isEmpty()));
         // Each of Threads' return checks, straight after its screens were hidden, keeps the feed.
         probes.put(PatchFamily.RETURN_REFRESH, Arrays.asList(
                 () -> {
