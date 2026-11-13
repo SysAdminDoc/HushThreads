@@ -161,13 +161,13 @@ The About section and the Licenses window link to `github.com`, `gitlab.com` and
 
 ## Verify a download
 
-Only trust a bundle from this repo's [Releases](https://github.com/SysAdminDoc/HushThreads/releases) page. Each release ships `SHA256SUMS.txt` beside the bundle, along with a CycloneDX SBOM and a release receipt recording the Threads build every patch was checked on. Compare the `.mpp` hash with your download. For v0.0.17 it's:
+Only trust a bundle from this repo's [Releases](https://github.com/SysAdminDoc/HushThreads/releases) page. Each release ships `SHA256SUMS.txt` beside the bundle, along with a CycloneDX SBOM and a release receipt recording the Threads build every patch was checked on. Compare the `.mpp` hash with your download. For v0.0.18 it's:
 
 ```text
-bdcedf1a14476c9b430c0bba68ebd040e116ff798818794cd7ff512c45190b23  patches-0.0.17.mpp
+d2ea9f291e71aaebaeb5ab0d91ff054185eabd14077c74c206afd67554c83005  patches-0.0.18.mpp
 ```
 
-On Windows, run `Get-FileHash -Algorithm SHA256 .\patches-0.0.17.mpp`. Inside the patched app, the About section in HushThreads settings shows the bundle's payload hash and the source it was built from.
+On Windows, run `Get-FileHash -Algorithm SHA256 .\patches-0.0.18.mpp`. Inside the patched app, the About section in HushThreads settings shows the bundle's payload hash and the source it was built from.
 
 Releases from v0.0.17 on are signed. Morphe Manager shows the signer when you add or update the source, and it should read `d0d2 eda0 b978 70da`. Manager remembers that key from then on and refuses an update signed by any other, or by none. The full public key is in [`morphe-signing.pub`](morphe-signing.pub).
 
