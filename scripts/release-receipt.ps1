@@ -1465,8 +1465,14 @@ function Test-ReleaseReceipt {
                 return Fail "The receipt reports $label patch $name as not applied."
             }
         }
-        foreach ($entry in ConvertTo-ManifestDeltaEntries -Delta $target.manifestDelta) {
-            $produced.Add($entry)
+        # Change package name renames the app's own permissions with the package, and the receipt
+        # applies every catalog patch, so those pairs are the rename and not a change to review.
+        $entries = @(ConvertTo-ManifestDeltaEntries -Delta $target.manifestDelta)
+        $renamed = @(Get-PackageRenameEntries -Stock $target.source `
+            -Patched ([pscustomobject]@{ package = [string]$target.patchedPackage }) -Entries $entries |
+            Where-Object { $_ })
+        foreach ($entry in $entries) {
+            if ($renamed -cnotcontains $entry) { $produced.Add($entry) }
         }
     }
     # Every declared version, not just one of them. With two declared, a receipt that ran only
