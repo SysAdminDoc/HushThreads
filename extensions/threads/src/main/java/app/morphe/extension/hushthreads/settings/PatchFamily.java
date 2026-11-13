@@ -57,6 +57,8 @@ public enum PatchFamily {
             Settings.DISABLE_ANALYTICS),
     SCREENSHOT_DETECTION(FamilyNames.SCREENSHOT_DETECTION, "disableScreenshotDetection", null,
             Settings.DISABLE_SCREENSHOT_DETECTION),
+    SPOOF_SIM_REGION(FamilyNames.SPOOF_SIM_REGION, "spoofSimRegion", null,
+            Settings.SPOOF_SIM_REGION),
     SAVE_MEDIA(FamilyNames.SAVE_MEDIA, "saveMedia", null,
             Settings.SAVE_MEDIA, Settings.DOWNLOAD_COMPATIBLE),
     PURE_BLACK(FamilyNames.PURE_BLACK, "pureBlack", null,

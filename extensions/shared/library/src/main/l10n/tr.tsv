@@ -282,6 +282,9 @@ The name under the app's icon.	Uygulama simgesinin altındaki ad.
 the new app name	yeni uygulama adı
 Hide screenshots from Threads	Ekran görüntülerini Threads'ten gizle
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	Ekran görüntüsü aldığında Threads'e haber verilmez, bu yüzden onu kaydedemez ya da ona tepki veremez.
+Spoof SIM region	SIM bölgesini taklit et
+Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.	Threads, SIM'ini ve ağını aşağıda seçilen bölgeye aitmiş gibi görür. Meta yine de bağlantına ve hesabına bakabilir. Değişikliği görmek için Threads'i yeniden başlat.
+SIM region	SIM bölgesi
 Full size photos	Tam boyutlu fotoğraflar
 Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	Fotoğraflar ekranına göre seçilen bir boyutta değil, Threads'te bulunan en büyük boyutta yüklenir. Daha net görünür ve daha fazla veri kullanır.
 No swipe into Search	Aramaya kaydırma yok

@@ -116,6 +116,15 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_disable_screenshot_detection", FALSE);
 
     /**
+     * Threads' reads of the SIM's and the network's country, network code and carrier answer the
+     * region picked in {@link app.morphe.extension.hushthreads.misc.SimRegions#REGION}
+     * ({@link app.morphe.extension.hushthreads.misc.SimRegion}). Threads keeps what it read for the
+     * rest of a start, so a change waits for a restart.
+     */
+    public static final BooleanSetting SPOOF_SIM_REGION =
+            new BooleanSetting("hushthreads_spoof_sim_region", FALSE, true);
+
+    /**
      * Dark mode's background is pure black instead of Threads' dark gray. Threads builds its colors
      * once a start, so a change waits for a restart.
      */

@@ -283,6 +283,9 @@ The name under the app's icon.	앱 아이콘 아래에 표시되는 이름입니
 the new app name	새 앱 이름
 Hide screenshots from Threads	Threads에 스크린샷 숨기기
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	스크린샷을 찍어도 Threads에 알려지지 않으므로 기록하거나 반응할 수 없습니다.
+Spoof SIM region	SIM 지역 위장
+Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.	Threads가 SIM과 네트워크를 아래에서 고른 지역으로 인식합니다. Meta는 여전히 연결과 계정으로 위치를 판단할 수 있습니다. 변경 사항을 보려면 Threads를 다시 시작하세요.
+SIM region	SIM 지역
 Full size photos	원본 크기 사진
 Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	화면에 맞춘 크기가 아니라 Threads가 가진 가장 큰 크기로 사진을 불러옵니다. 더 선명하지만 데이터를 더 많이 사용합니다.
 No swipe into Search	검색으로 스와이프하지 않기

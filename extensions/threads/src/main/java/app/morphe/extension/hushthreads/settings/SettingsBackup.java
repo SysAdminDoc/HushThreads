@@ -86,6 +86,7 @@ public final class SettingsBackup {
             Settings.OPEN_LINKS_EXTERNALLY,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_SCREENSHOT_DETECTION,
+            Settings.SPOOF_SIM_REGION,
             Settings.PURE_BLACK,
             Settings.HIDE_INSTAGRAM_BUTTON,
             Settings.HIDE_GHOST_POST_BUBBLES,

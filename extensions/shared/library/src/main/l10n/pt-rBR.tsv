@@ -279,6 +279,9 @@ The name under the app's icon.	O nome embaixo do ícone do app.
 the new app name	o novo nome do app
 Hide screenshots from Threads	Esconder capturas de tela do Threads
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	O Threads não fica sabendo quando você faz uma captura de tela, então não pode registrá-la nem reagir a ela.
+Spoof SIM region	Falsificar região do chip
+Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.	O Threads vê seu chip e sua rede como da região escolhida abaixo. A Meta ainda pode se basear na sua conexão e na sua conta. Reinicie o Threads para ver a mudança.
+SIM region	Região do chip
 Full size photos	Fotos em tamanho original
 Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	As fotos carregam no maior tamanho que o Threads tem, não em um escolhido para a sua tela. Ficam mais nítidas e usam mais dados.
 No swipe into Search	Sem deslizar para a pesquisa

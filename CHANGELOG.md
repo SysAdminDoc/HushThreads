@@ -4,6 +4,7 @@ Changes in the source build, then released versions.
 
 ## Unreleased
 
+* New `Spoof SIM region` patch. Threads sees a SIM and network from the country you pick, with one of that country's real carriers, instead of your own. There are 69 countries to choose from. It starts off, so turn it on and pick one in HushThreads settings > Privacy. Meta can still go by your connection and your account, so it won't hide where you are by itself. Asked for in #25.
 * HushThreads now patches Threads 455.0.0.55.72 only, for all nine APKMirror variants across arm64-v8a, armeabi-v7a, x86_64 and x86. Update Threads to 455 before you patch. v0.0.17 is the last release for 454.0.0.54.79.
 * Hide ads and Hide suggested users follow the way Threads 455 stores For You. It dropped the spool cache and writes each page and each single post straight into the feed cache, and it now places an inserted ad from inside the page it's holding. Every one of those writes goes through the filters, and an inserted ad that's turned away leaves the page as it was.
 * Hide suggested users also takes the suggested threads off the bottom of a post you open. It has its own switch, `Hide suggested threads`, under the other two on the Feed page, and it starts on. The post and its replies stay. Asked for in #24.

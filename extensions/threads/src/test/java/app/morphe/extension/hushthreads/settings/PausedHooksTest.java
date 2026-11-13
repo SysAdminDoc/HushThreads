@@ -47,6 +47,7 @@ import app.morphe.extension.hushthreads.misc.Analytics;
 import app.morphe.extension.hushthreads.misc.ExternalBrowser;
 import app.morphe.extension.hushthreads.misc.LinkCleaner;
 import app.morphe.extension.hushthreads.misc.ScreenshotDetection;
+import app.morphe.extension.hushthreads.misc.SimRegion;
 import app.morphe.extension.hushthreads.profile.GhostPostBubbles;
 import app.morphe.extension.hushthreads.profile.InstagramButton;
 import app.morphe.extension.hushthreads.profile.ProfilePictureForTests;
@@ -175,6 +176,11 @@ public class PausedHooksTest {
         // A new picture in the photo library or a screenshot folder never reaches Threads' watchers.
         probes.put(PatchFamily.SCREENSHOT_DETECTION, Arrays.asList(
                 ScreenshotDetection::ignoresChange, ScreenshotDetection::ignoresScreenshotFile));
+        // A German SIM's country, network code and carrier id come back as the chosen region's.
+        probes.put(PatchFamily.SPOOF_SIM_REGION, Arrays.asList(
+                () -> !"de".equals(SimRegion.countryIso("de")),
+                () -> SimRegion.mccNumber(262) != 262,
+                () -> SimRegion.carrierId(1) != 1));
         // A post's menu offers Save.
         probes.put(PatchFamily.SAVE_MEDIA, Collections.singletonList(SavesForTests::menuOffersSave));
         // Threads' dark gray background comes back black.

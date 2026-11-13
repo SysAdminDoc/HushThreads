@@ -1142,9 +1142,10 @@ public class SettingsNavigationTest {
         recreate();
         assertTrue(page.navigation.isExpanded("Privacy"));
         assertTrue(contains(Settings.SANITIZE_SHARING_LINKS.key));
-        // Privacy includes its four switches and the address coverage disclosed by this build.
-        assertEquals(5, categoryCount("Privacy"));
-        assertEquals(HOME_ROWS + 5, list().getCount());
+        // Privacy includes its five switches, the SIM region under the last of them and the address
+        // coverage disclosed by this build.
+        assertEquals(7, categoryCount("Privacy"));
+        assertEquals(HOME_ROWS + 7, list().getCount());
         assertTrue(titles().contains("Analytics address coverage"));
         findSearch(dialog.getView()).setText("shared links");
         recreate();

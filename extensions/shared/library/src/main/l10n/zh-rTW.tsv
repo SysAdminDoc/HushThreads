@@ -284,6 +284,9 @@ The name under the app's icon.	應用程式圖示下方顯示的名稱。
 the new app name	新的應用程式名稱
 Hide screenshots from Threads	不讓 Threads 偵測螢幕截圖
 Threads isn't told when you take a screenshot, so it can't log it or react to it.	截圖時不會通知 Threads，因此它無法記錄或回應截圖。
+Spoof SIM region	偽裝 SIM 卡地區
+Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.	Threads 會把你的 SIM 卡和網路視為下方所選的地區。Meta 仍可能依你的連線和帳號判斷。重新啟動 Threads 以查看變更。
+SIM region	SIM 卡地區
 Full size photos	完整尺寸相片
 Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	相片會以 Threads 提供的最大尺寸載入，而非依螢幕選擇的尺寸。畫面會更清晰，但會使用更多流量。
 No swipe into Search	禁止滑動進入搜尋

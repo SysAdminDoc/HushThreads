@@ -392,6 +392,21 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/misc/SimRegion.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/misc/SimRegions.java",
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/SimRegionRows.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/misc/sim/**"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [
+        "https://github.com/SysAdminDoc/hushfeed"
+      ],
+      "license": "GPL-3.0-only",
+      "changes": "Spoof SIM region: each read of the SIM's or the network's country, network code and carrier name that Threads makes through TelephonyManager, SubscriptionInfo and the CellIdentity classes hands its answer to the extension right after the call, which gives back the chosen region's while the switch is on. Found by reading which telephony methods 455's dex calls, with Hushfeed's SIM spoof as the behavior reference and its presets as the source of each region's country, network code and carrier. The region list in settings is HushThreads' own."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/settings/ThreadsSettingsRow.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/misc/settings/ThreadsSettingsRow.kt"
       ],

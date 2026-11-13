@@ -53,7 +53,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(688);
+        Map<String, String> table = new HashMap<>(694);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -493,6 +493,8 @@ public final class L10nTranslations {
                 "Erneut versuchen");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Wenn du innerhalb von zehn Minuten zu Threads zur\u00fcckkehrst, bleibst du an derselben Stelle. Zum Aktualisieren kannst du weiter nach unten ziehen.");
+        table.put("SIM region",
+                "SIM-Region");
         table.put("Save",
                 "Speichern");
         table.put("Save all",
@@ -551,11 +553,11 @@ public final class L10nTranslations {
                 "Beim Patchen festgelegt");
         table.put("Settings couldn't open",
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "Die Einstellungen lie\u00dfen sich nicht vollst\u00e4ndig aktualisieren. \u00d6ffne sie neu und versuche es noch einmal.");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
+                "Die Einstellungen lie\u00dfen sich nicht vollst\u00e4ndig aktualisieren. \u00d6ffne sie neu und versuche es noch einmal.");
         table.put("Settings exported.",
                 "Einstellungen exportiert.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
@@ -592,6 +594,8 @@ public final class L10nTranslations {
                 "Gesponserte Beitr\u00e4ge werden aus \u201eF\u00fcr dich\u201c, \u201eGefolgt\u201c und ge\u00f6ffneten Beitr\u00e4gen entfernt, bevor Threads sie zeigt, deshalb bleibt keine L\u00fccke.");
         table.put("Sponsored posts in For you and Following",
                 "Gesponserte Beitr\u00e4ge in \u201eF\u00fcr dich\u201c und \u201eGefolgt\u201c");
+        table.put("Spoof SIM region",
+                "SIM-Region vort\u00e4uschen");
         table.put("Stays in while paused",
                 "Bleibt w\u00e4hrend der Pause aktiv");
         table.put("Stays on, since it's the only way left into these settings.",
@@ -672,13 +676,13 @@ public final class L10nTranslations {
                 "Es gibt keine Diagnosedaten zum L\u00f6schen.");
         table.put("There's no diagnostic data to put back.",
                 "Es gibt keine Diagnosedaten zum Wiederherstellen.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Diese werden beim Patchen in Morphe Manager ausgew\u00e4hlt, und die Pause schaltet sie nicht aus. Patche erneut, um sie zu \u00e4ndern.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Dieser Build hat nicht festgehalten, welche Berichtsarten er abdeckt. Patche erneut, um sie zu sehen.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Diese Kopie wird neben Threads als eigene App installiert, mit eigener Anmeldung.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -697,6 +701,8 @@ public final class L10nTranslations {
                 "Threads erf\u00e4hrt nicht, wenn du einen Screenshot machst, und kann ihn daher weder protokollieren noch darauf reagieren.");
         table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
                 "Threads braucht unter Android 9 die Speicher-Berechtigung, um zu speichern. Schalte sie in den App-Infos von Threads unter Berechtigungen ein und speichere dann noch einmal.");
+        table.put("Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.",
+                "Threads sieht deine SIM und dein Netz als die unten gew\u00e4hlte Region. Meta kann sich weiterhin an deiner Verbindung und deinem Konto orientieren. Starte Threads neu, damit die \u00c4nderung greift.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Die Webadressen von Threads sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
         table.put("Tracking in links and analytics uploads",
@@ -770,7 +776,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(688);
+        Map<String, String> table = new HashMap<>(694);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1210,6 +1216,8 @@ public final class L10nTranslations {
                 "Reintentar");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Si vuelves a Threads en menos de diez minutos, seguir\u00e1s donde estabas. Puedes deslizar hacia abajo para actualizar.");
+        table.put("SIM region",
+                "Regi\u00f3n de la SIM");
         table.put("Save",
                 "Guardar");
         table.put("Save all",
@@ -1268,11 +1276,11 @@ public final class L10nTranslations {
                 "Aplicado al parchear");
         table.put("Settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "No se pudo actualizar la configuraci\u00f3n por completo. Vuelve a abrirla e int\u00e9ntalo de nuevo.");
     }
 
     private static void fillEs4(Map<String, String> table) {
+        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
+                "No se pudo actualizar la configuraci\u00f3n por completo. Vuelve a abrirla e int\u00e9ntalo de nuevo.");
         table.put("Settings exported.",
                 "Configuraci\u00f3n exportada.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
@@ -1309,6 +1317,8 @@ public final class L10nTranslations {
                 "Las publicaciones patrocinadas salen de Para ti, Siguiendo y las publicaciones que abres antes de que Threads las muestre, as\u00ed que no queda ning\u00fan hueco.");
         table.put("Sponsored posts in For you and Following",
                 "Publicaciones patrocinadas en Para ti y Siguiendo");
+        table.put("Spoof SIM region",
+                "Falsear regi\u00f3n de la SIM");
         table.put("Stays in while paused",
                 "Se mantiene durante la pausa");
         table.put("Stays on, since it's the only way left into these settings.",
@@ -1389,13 +1399,13 @@ public final class L10nTranslations {
                 "No hay datos de diagn\u00f3stico que borrar.");
         table.put("There's no diagnostic data to put back.",
                 "No hay datos de diagn\u00f3stico que restaurar.");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Se eligen en Morphe Manager al parchear, y Pausar no los desactiva. Vuelve a parchear para cambiarlos.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Esta versi\u00f3n no registr\u00f3 qu\u00e9 tipos de informe cubre. Vuelve a parchear para verlos.");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Esta copia se instala junto a Threads como una app aparte, con su propio inicio de sesi\u00f3n.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -1414,6 +1424,8 @@ public final class L10nTranslations {
                 "Threads no se entera cuando haces una captura de pantalla, as\u00ed que no puede registrarla ni reaccionar a ella.");
         table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
                 "En Android 9, Threads necesita el permiso de Almacenamiento para guardar. Act\u00edvalo en la informaci\u00f3n de la app de Threads, en Permisos, y vuelve a guardar.");
+        table.put("Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.",
+                "Threads ve tu SIM y tu red como de la regi\u00f3n elegida abajo. Meta todav\u00eda puede guiarse por tu conexi\u00f3n y tu cuenta. Reinicia Threads para ver el cambio.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Las direcciones web de Threads est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
         table.put("Tracking in links and analytics uploads",
@@ -1487,7 +1499,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(688);
+        Map<String, String> table = new HashMap<>(694);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1927,6 +1939,8 @@ public final class L10nTranslations {
                 "Coba lagi");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Jika kembali ke Threads dalam sepuluh menit, posisi feed tetap sama. Tarik ke bawah untuk memuat ulang masih berfungsi.");
+        table.put("SIM region",
+                "Wilayah SIM");
         table.put("Save",
                 "Simpan");
         table.put("Save all",
@@ -1985,11 +1999,11 @@ public final class L10nTranslations {
                 "Diatur saat Anda menambal");
         table.put("Settings couldn't open",
                 "Pengaturan tidak dapat dibuka");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "Pengaturan tidak dapat dimuat ulang sepenuhnya. Buka kembali pengaturan lalu coba lagi.");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
+                "Pengaturan tidak dapat dimuat ulang sepenuhnya. Buka kembali pengaturan lalu coba lagi.");
         table.put("Settings exported.",
                 "Pengaturan diekspor.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
@@ -2026,6 +2040,8 @@ public final class L10nTranslations {
                 "Postingan bersponsor dihapus dari Untuk Anda, Mengikuti, dan postingan yang Anda buka sebelum Threads menampilkannya, jadi tidak ada celah kosong.");
         table.put("Sponsored posts in For you and Following",
                 "Postingan bersponsor di Untuk Anda dan Mengikuti");
+        table.put("Spoof SIM region",
+                "Palsukan wilayah SIM");
         table.put("Stays in while paused",
                 "Tetap aktif saat dijeda");
         table.put("Stays on, since it's the only way left into these settings.",
@@ -2106,13 +2122,13 @@ public final class L10nTranslations {
                 "Tidak ada data diagnostik yang dapat dihapus.");
         table.put("There's no diagnostic data to put back.",
                 "Tidak ada data diagnostik yang dapat dikembalikan.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Semua ini dipilih di Morphe Manager saat Anda menambal, dan Jeda tidak mematikannya. Tambal ulang untuk mengubahnya.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Build ini tidak mencatat jenis laporan apa yang dicakup. Tambal ulang untuk melihatnya.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Salinan ini terpasang di samping Threads sebagai aplikasi tersendiri, dengan login sendiri.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -2131,6 +2147,8 @@ public final class L10nTranslations {
                 "Threads tidak diberi tahu saat kamu mengambil tangkapan layar, jadi tidak bisa mencatat atau menanggapinya.");
         table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
                 "Di Android 9, Threads memerlukan izin Penyimpanan untuk menyimpan. Aktifkan di info aplikasi Threads pada bagian Izin, lalu simpan lagi.");
+        table.put("Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.",
+                "Threads melihat SIM dan jaringan Anda sebagai wilayah yang dipilih di bawah. Meta masih bisa berpatokan pada koneksi dan akun Anda. Mulai ulang Threads untuk melihat perubahannya.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Alamat web Threads dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
         table.put("Tracking in links and analytics uploads",
@@ -2204,7 +2222,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIt() {
-        Map<String, String> table = new HashMap<>(688);
+        Map<String, String> table = new HashMap<>(694);
         fillIt0(table);
         fillIt1(table);
         fillIt2(table);
@@ -2644,6 +2662,8 @@ public final class L10nTranslations {
                 "Riprova");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Tornando su Threads entro dieci minuti resti dov'eri. Puoi ancora trascinare verso il basso per aggiornare.");
+        table.put("SIM region",
+                "Regione SIM");
         table.put("Save",
                 "Salva");
         table.put("Save all",
@@ -2702,11 +2722,11 @@ public final class L10nTranslations {
                 "Impostato durante la patch");
         table.put("Settings couldn't open",
                 "Impossibile aprire le impostazioni");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "Impossibile aggiornare del tutto le impostazioni. Riapri le impostazioni e riprova.");
     }
 
     private static void fillIt4(Map<String, String> table) {
+        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
+                "Impossibile aggiornare del tutto le impostazioni. Riapri le impostazioni e riprova.");
         table.put("Settings exported.",
                 "Impostazioni esportate.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
@@ -2743,6 +2763,8 @@ public final class L10nTranslations {
                 "I post sponsorizzati vengono tolti da Per te, Seguiti e dai post che apri prima che Threads li mostri, quindi non resta nessuno spazio vuoto.");
         table.put("Sponsored posts in For you and Following",
                 "Post sponsorizzati in Per te e Seguiti");
+        table.put("Spoof SIM region",
+                "Falsifica regione SIM");
         table.put("Stays in while paused",
                 "Resta attivo in pausa");
         table.put("Stays on, since it's the only way left into these settings.",
@@ -2823,13 +2845,13 @@ public final class L10nTranslations {
                 "Non ci sono dati diagnostici da cancellare.");
         table.put("There's no diagnostic data to put back.",
                 "Non ci sono dati diagnostici da ripristinare.");
+    }
+
+    private static void fillIt5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Si scelgono in Morphe Manager quando applichi la patch e Pausa non le disattiva. Applica di nuovo la patch per cambiarle.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Questa build non ha registrato quali tipi di report copre. Applica di nuovo la patch per vederli.");
-    }
-
-    private static void fillIt5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Questa copia si installa accanto a Threads come app a s\u00e9, con un accesso tutto suo.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -2848,6 +2870,8 @@ public final class L10nTranslations {
                 "Threads non viene avvisato quando fai uno screenshot, quindi non pu\u00f2 registrarlo n\u00e9 reagire.");
         table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
                 "Su Android 9 Threads ha bisogno del permesso Archiviazione per salvare. Attivalo nelle informazioni dell'app Threads, in Autorizzazioni, poi salva di nuovo.");
+        table.put("Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.",
+                "Threads vede la tua SIM e la tua rete come della regione scelta qui sotto. Meta pu\u00f2 ancora basarsi sulla tua connessione e sul tuo account. Riavvia Threads per vedere la modifica.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Gli indirizzi web di Threads sono selezionati per questa app nelle impostazioni di Android, quindi i loro link si aprono qui.");
         table.put("Tracking in links and analytics uploads",
@@ -2921,7 +2945,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildKo() {
-        Map<String, String> table = new HashMap<>(688);
+        Map<String, String> table = new HashMap<>(694);
         fillKo0(table);
         fillKo1(table);
         fillKo2(table);
@@ -3361,6 +3385,8 @@ public final class L10nTranslations {
                 "\ub2e4\uc2dc \uc2dc\ub3c4");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "10\ubd84 \uc548\uc5d0 Threads\ub85c \ub3cc\uc544\uc624\uba74 \ubcf4\ub358 \uc704\uce58\uac00 \uc720\uc9c0\ub429\ub2c8\ub2e4. \ub2f9\uaca8\uc11c \uc0c8\ub85c\uace0\uce68\uc740 \uadf8\ub300\ub85c \uc791\ub3d9\ud569\ub2c8\ub2e4.");
+        table.put("SIM region",
+                "SIM \uc9c0\uc5ed");
         table.put("Save",
                 "\uc800\uc7a5");
         table.put("Save all",
@@ -3419,11 +3445,11 @@ public final class L10nTranslations {
                 "\ud328\uce58\ud560 \ub54c \uc124\uc815\ub418\ub294 \uae30\ub2a5");
         table.put("Settings couldn't open",
                 "\uc124\uc815\uc744 \uc5f4 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "\uc124\uc815\uc744 \uc644\uc804\ud788 \uc0c8\ub85c \uace0\uce58\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc124\uc815\uc744 \ub2e4\uc2dc \uc5f4\uace0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
     }
 
     private static void fillKo4(Map<String, String> table) {
+        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
+                "\uc124\uc815\uc744 \uc644\uc804\ud788 \uc0c8\ub85c \uace0\uce58\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc124\uc815\uc744 \ub2e4\uc2dc \uc5f4\uace0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
         table.put("Settings exported.",
                 "\uc124\uc815\uc744 \ub0b4\ubcf4\ub0c8\uc2b5\ub2c8\ub2e4.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
@@ -3460,6 +3486,8 @@ public final class L10nTranslations {
                 "Threads\uac00 \ud45c\uc2dc\ud558\uae30 \uc804\uc5d0 \ucd94\ucc9c, \ud314\ub85c\uc789 \ud53c\ub4dc\uc640 \uc0ac\uc6a9\uc790\uac00 \uc5f0 \uac8c\uc2dc\ubb3c\uc5d0\uc11c \uc2a4\ud3f0\uc11c \uac8c\uc2dc\ubb3c\uc744 \uc81c\uac70\ud558\ubbc0\ub85c \ube48 \uacf5\uac04\uc774 \ub0a8\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
         table.put("Sponsored posts in For you and Following",
                 "\ucd94\ucc9c \ubc0f \ud314\ub85c\uc789\uc758 \uc2a4\ud3f0\uc11c \uac8c\uc2dc\ubb3c");
+        table.put("Spoof SIM region",
+                "SIM \uc9c0\uc5ed \uc704\uc7a5");
         table.put("Stays in while paused",
                 "\uc77c\uc2dc \uc815\uc9c0 \uc911\uc5d0 \uc720\uc9c0\ub418\ub294 \uae30\ub2a5");
         table.put("Stays on, since it's the only way left into these settings.",
@@ -3540,13 +3568,13 @@ public final class L10nTranslations {
                 "\uc9c0\uc6b8 \uc9c4\ub2e8 \ub370\uc774\ud130\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.");
         table.put("There's no diagnostic data to put back.",
                 "\ubcf5\uc6d0\ud560 \uc9c4\ub2e8 \ub370\uc774\ud130\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.");
+    }
+
+    private static void fillKo5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "\ud328\uce58\ud560 \ub54c Morphe Manager\uc5d0\uc11c \uc120\ud0dd\ud558\uba70 \uc77c\uc2dc \uc815\uc9c0\ub85c\ub294 \ub04c \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \ubc14\uafb8\ub824\uba74 \ub2e4\uc2dc \ud328\uce58\ud558\uc138\uc694.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "\uc774 \ube4c\ub4dc\ub294 \uc5b4\ub5a4 \ubcf4\uace0\uc11c \uc720\ud615\uc744 \ub2e4\ub8e8\ub294\uc9c0 \uae30\ub85d\ud558\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4. \ud655\uc778\ud558\ub824\uba74 \ub2e4\uc2dc \ud328\uce58\ud558\uc138\uc694.");
-    }
-
-    private static void fillKo5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "\uc774 \uc0ac\ubcf8\uc740 Threads \uc606\uc5d0 \ubcc4\ub3c4 \uc571\uc73c\ub85c \uc124\uce58\ub418\uba70 \ub85c\uadf8\uc778\ub3c4 \ub530\ub85c \ud569\ub2c8\ub2e4.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -3565,6 +3593,8 @@ public final class L10nTranslations {
                 "\uc2a4\ud06c\ub9b0\uc0f7\uc744 \ucc0d\uc5b4\ub3c4 Threads\uc5d0 \uc54c\ub824\uc9c0\uc9c0 \uc54a\uc73c\ubbc0\ub85c \uae30\ub85d\ud558\uac70\ub098 \ubc18\uc751\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.");
         table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
                 "Android 9\uc5d0\uc11c \uc800\uc7a5\ud558\ub824\uba74 Threads\uc5d0 \uc800\uc7a5\uacf5\uac04 \uad8c\ud55c\uc774 \ud544\uc694\ud569\ub2c8\ub2e4. Threads \uc571 \uc815\ubcf4\uc758 \uad8c\ud55c\uc5d0\uc11c \ucf20 \ub2e4\uc74c \ub2e4\uc2dc \uc800\uc7a5\ud558\uc138\uc694.");
+        table.put("Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.",
+                "Threads\uac00 SIM\uacfc \ub124\ud2b8\uc6cc\ud06c\ub97c \uc544\ub798\uc5d0\uc11c \uace0\ub978 \uc9c0\uc5ed\uc73c\ub85c \uc778\uc2dd\ud569\ub2c8\ub2e4. Meta\ub294 \uc5ec\uc804\ud788 \uc5f0\uacb0\uacfc \uacc4\uc815\uc73c\ub85c \uc704\uce58\ub97c \ud310\ub2e8\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Android \uc124\uc815\uc5d0\uc11c \uc774 \uc571\uc5d0 Threads \uc6f9 \uc8fc\uc18c\uac00 \uc120\ud0dd\ub418\uc5b4 \uc788\uc73c\ubbc0\ub85c \ud574\ub2f9 \ub9c1\ud06c\uac00 \uc5ec\uae30\uc11c \uc5f4\ub9bd\ub2c8\ub2e4.");
         table.put("Tracking in links and analytics uploads",
@@ -3638,7 +3668,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(688);
+        Map<String, String> table = new HashMap<>(694);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -4078,6 +4108,8 @@ public final class L10nTranslations {
                 "Tentar novamente");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Ao voltar ao Threads em at\u00e9 dez minutos, voc\u00ea continuar\u00e1 no ponto em que estava. O gesto de puxar para baixo para atualizar continuar\u00e1 funcionando.");
+        table.put("SIM region",
+                "Regi\u00e3o do chip");
         table.put("Save",
                 "Salvar");
         table.put("Save all",
@@ -4136,11 +4168,11 @@ public final class L10nTranslations {
                 "Definido ao aplicar os patches");
         table.put("Settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "N\u00e3o foi poss\u00edvel atualizar completamente as configura\u00e7\u00f5es. Reabra as configura\u00e7\u00f5es e tente novamente.");
     }
 
     private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
+                "N\u00e3o foi poss\u00edvel atualizar completamente as configura\u00e7\u00f5es. Reabra as configura\u00e7\u00f5es e tente novamente.");
         table.put("Settings exported.",
                 "Configura\u00e7\u00f5es exportadas.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
@@ -4177,6 +4209,8 @@ public final class L10nTranslations {
                 "As publica\u00e7\u00f5es patrocinadas saem de Para voc\u00ea, Seguindo e das publica\u00e7\u00f5es que voc\u00ea abre antes que o Threads as mostre, ent\u00e3o nenhum espa\u00e7o fica vazio.");
         table.put("Sponsored posts in For you and Following",
                 "Publica\u00e7\u00f5es patrocinadas em Para voc\u00ea e Seguindo");
+        table.put("Spoof SIM region",
+                "Falsificar regi\u00e3o do chip");
         table.put("Stays in while paused",
                 "O que continua ativo na pausa");
         table.put("Stays on, since it's the only way left into these settings.",
@@ -4257,13 +4291,13 @@ public final class L10nTranslations {
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para limpar.");
         table.put("There's no diagnostic data to put back.",
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para restaurar.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Eles s\u00e3o escolhidos no Morphe Manager quando voc\u00ea aplica os patches, e a pausa n\u00e3o os desativa. Aplique os patches novamente para alter\u00e1-los.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Esta vers\u00e3o n\u00e3o registrou quais tipos de relat\u00f3rio cobre. Aplique os patches de novo para ver.");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Esta c\u00f3pia \u00e9 instalada ao lado do Threads como um app \u00e0 parte, com login pr\u00f3prio.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -4282,6 +4316,8 @@ public final class L10nTranslations {
                 "O Threads n\u00e3o fica sabendo quando voc\u00ea faz uma captura de tela, ent\u00e3o n\u00e3o pode registr\u00e1-la nem reagir a ela.");
         table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
                 "No Android 9, o Threads precisa da permiss\u00e3o de Armazenamento para salvar. Ative-a nas informa\u00e7\u00f5es do app Threads, em Permiss\u00f5es, e salve de novo.");
+        table.put("Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.",
+                "O Threads v\u00ea seu chip e sua rede como da regi\u00e3o escolhida abaixo. A Meta ainda pode se basear na sua conex\u00e3o e na sua conta. Reinicie o Threads para ver a mudan\u00e7a.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Os endere\u00e7os web do Threads est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
         table.put("Tracking in links and analytics uploads",
@@ -4355,7 +4391,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(688);
+        Map<String, String> table = new HashMap<>(694);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -4795,6 +4831,8 @@ public final class L10nTranslations {
                 "Yeniden dene");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "Threads'e on dakika i\u00e7inde d\u00f6nersen kald\u0131\u011f\u0131n yer korunur. Yenilemek i\u00e7in a\u015fa\u011f\u0131 \u00e7ekmeye devam edebilirsin.");
+        table.put("SIM region",
+                "SIM b\u00f6lgesi");
         table.put("Save",
                 "Kaydet");
         table.put("Save all",
@@ -4853,11 +4891,11 @@ public final class L10nTranslations {
                 "Yamalad\u0131\u011f\u0131nda ayarlananlar");
         table.put("Settings couldn't open",
                 "Ayarlar a\u00e7\u0131lamad\u0131");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "Ayarlar tamamen yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
     }
 
     private static void fillTr4(Map<String, String> table) {
+        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
+                "Ayarlar tamamen yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
         table.put("Settings exported.",
                 "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131.");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
@@ -4894,6 +4932,8 @@ public final class L10nTranslations {
                 "Sponsorlu g\u00f6nderiler, Threads onlar\u0131 g\u00f6stermeden \u00f6nce Senin \u0130\u00e7in ve Takip Edilenler ak\u0131\u015flar\u0131ndan ve a\u00e7t\u0131\u011f\u0131n g\u00f6nderilerden \u00e7\u0131kar\u0131l\u0131r, b\u00f6ylece bo\u015fluk kalmaz.");
         table.put("Sponsored posts in For you and Following",
                 "Senin \u0130\u00e7in ve Takip Edilenler'deki sponsorlu g\u00f6nderiler");
+        table.put("Spoof SIM region",
+                "SIM b\u00f6lgesini taklit et");
         table.put("Stays in while paused",
                 "Duraklat\u0131lsa da devrede kal\u0131r");
         table.put("Stays on, since it's the only way left into these settings.",
@@ -4974,13 +5014,13 @@ public final class L10nTranslations {
                 "Temizlenecek tan\u0131lama verisi yok.");
         table.put("There's no diagnostic data to put back.",
                 "Geri getirilecek tan\u0131lama verisi yok.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Bunlar yamalarken Morphe Manager'da se\u00e7ilir ve Duraklatma bunlar\u0131 kapatmaz. De\u011fi\u015ftirmek i\u00e7in yeniden yamala.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "Bu s\u00fcr\u00fcm hangi rapor t\u00fcrlerini kapsad\u0131\u011f\u0131n\u0131 kaydetmedi. G\u00f6rmek i\u00e7in yeniden yamala.");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "Bu kopya, Threads'in yan\u0131na kendi oturum a\u00e7ma bilgisiyle ayr\u0131 bir uygulama olarak kurulur.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -4999,6 +5039,8 @@ public final class L10nTranslations {
                 "Ekran g\u00f6r\u00fcnt\u00fcs\u00fc ald\u0131\u011f\u0131nda Threads'e haber verilmez, bu y\u00fczden onu kaydedemez ya da ona tepki veremez.");
         table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
                 "Android 9'da Threads'in kaydetmek i\u00e7in Depolama iznine ihtiyac\u0131 var. Threads'in uygulama bilgilerinde \u0130zinler b\u00f6l\u00fcm\u00fcnden bu izni a\u00e7, sonra tekrar kaydet.");
+        table.put("Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.",
+                "Threads, SIM'ini ve a\u011f\u0131n\u0131 a\u015fa\u011f\u0131da se\u00e7ilen b\u00f6lgeye aitmi\u015f gibi g\u00f6r\u00fcr. Meta yine de ba\u011flant\u0131na ve hesab\u0131na bakabilir. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "Threads'in web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
         table.put("Tracking in links and analytics uploads",
@@ -5072,7 +5114,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildZh_rTW() {
-        Map<String, String> table = new HashMap<>(688);
+        Map<String, String> table = new HashMap<>(694);
         fillZh_rTW0(table);
         fillZh_rTW1(table);
         fillZh_rTW2(table);
@@ -5512,6 +5554,8 @@ public final class L10nTranslations {
                 "\u91cd\u8a66");
         table.put("Returning to Threads within ten minutes keeps your place. Pull to refresh still works.",
                 "\u5728\u5341\u5206\u9418\u5167\u8fd4\u56de Threads \u6642\u6703\u4fdd\u7559\u539f\u672c\u4f4d\u7f6e\uff1b\u4e0b\u62c9\u91cd\u65b0\u6574\u7406\u4ecd\u53ef\u4f7f\u7528\u3002");
+        table.put("SIM region",
+                "SIM \u5361\u5730\u5340");
         table.put("Save",
                 "\u5132\u5b58");
         table.put("Save all",
@@ -5570,11 +5614,11 @@ public final class L10nTranslations {
                 "\u4fee\u88dc\u6642\u8a2d\u5b9a");
         table.put("Settings couldn't open",
                 "\u7121\u6cd5\u958b\u555f\u8a2d\u5b9a");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "\u7121\u6cd5\u5b8c\u6574\u91cd\u65b0\u6574\u7406\u8a2d\u5b9a\u3002\u8acb\u91cd\u65b0\u958b\u555f\u8a2d\u5b9a\u5f8c\u518d\u8a66\u3002");
     }
 
     private static void fillZh_rTW4(Map<String, String> table) {
+        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
+                "\u7121\u6cd5\u5b8c\u6574\u91cd\u65b0\u6574\u7406\u8a2d\u5b9a\u3002\u8acb\u91cd\u65b0\u958b\u555f\u8a2d\u5b9a\u5f8c\u518d\u8a66\u3002");
         table.put("Settings exported.",
                 "\u8a2d\u5b9a\u5df2\u532f\u51fa\u3002");
         table.put("Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.",
@@ -5611,6 +5655,8 @@ public final class L10nTranslations {
                 "\u5728 Threads \u986f\u793a\u524d\uff0c\u6703\u5f9e\u300c\u70ba\u4f60\u63a8\u85a6\u300d\u3001\u300c\u8ffd\u8e64\u4e2d\u300d\u53ca\u4f60\u958b\u555f\u7684\u8cbc\u6587\u79fb\u9664\u8d0a\u52a9\u8cbc\u6587\uff0c\u56e0\u6b64\u4e0d\u6703\u7559\u4e0b\u7a7a\u767d\u3002");
         table.put("Sponsored posts in For you and Following",
                 "\u300c\u70ba\u4f60\u63a8\u85a6\u300d\u8207\u300c\u8ffd\u8e64\u4e2d\u300d\u7684\u8d0a\u52a9\u8cbc\u6587");
+        table.put("Spoof SIM region",
+                "\u507d\u88dd SIM \u5361\u5730\u5340");
         table.put("Stays in while paused",
                 "\u66ab\u505c\u6642\u4ecd\u4fdd\u7559");
         table.put("Stays on, since it's the only way left into these settings.",
@@ -5691,13 +5737,13 @@ public final class L10nTranslations {
                 "\u6c92\u6709\u53ef\u6e05\u9664\u7684\u8a3a\u65b7\u8cc7\u6599\u3002");
         table.put("There's no diagnostic data to put back.",
                 "\u6c92\u6709\u53ef\u9084\u539f\u7684\u8a3a\u65b7\u8cc7\u6599\u3002");
+    }
+
+    private static void fillZh_rTW5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "\u5b83\u5011\u662f\u5728 Morphe Manager \u4fee\u88dc\u6642\u9078\u53d6\u7684\uff0c\u300c\u66ab\u505c\u300d\u7121\u6cd5\u95dc\u9589\u3002\u8acb\u91cd\u65b0\u4fee\u88dc\u4ee5\u8b8a\u66f4\u3002");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
                 "\u6b64\u7248\u672c\u672a\u8a18\u9304\u6db5\u84cb\u54ea\u4e9b\u5831\u544a\u985e\u578b\u3002\u8acb\u91cd\u65b0\u4fee\u88dc\u4ee5\u67e5\u770b\u3002");
-    }
-
-    private static void fillZh_rTW5(Map<String, String> table) {
         table.put("This copy installs beside Threads as an app of its own, with its own sign-in.",
                 "\u9019\u500b\u526f\u672c\u6703\u4ee5\u7368\u7acb\u61c9\u7528\u7a0b\u5f0f\u7684\u5f62\u5f0f\u5b89\u88dd\u5728 Threads \u65c1\u908a\uff0c\u4e26\u4f7f\u7528\u81ea\u5df1\u7684\u767b\u5165\u3002");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
@@ -5716,6 +5762,8 @@ public final class L10nTranslations {
                 "\u622a\u5716\u6642\u4e0d\u6703\u901a\u77e5 Threads\uff0c\u56e0\u6b64\u5b83\u7121\u6cd5\u8a18\u9304\u6216\u56de\u61c9\u622a\u5716\u3002");
         table.put("Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.",
                 "Android 9 \u4e0a\u7684 Threads \u9700\u8981\u300c\u5132\u5b58\u7a7a\u9593\u300d\u6b0a\u9650\u624d\u80fd\u5132\u5b58\u3002\u8acb\u5728 Threads \u7684\u300c\u61c9\u7528\u7a0b\u5f0f\u8cc7\u8a0a\u300d\uff1e\u300c\u6b0a\u9650\u300d\u4e2d\u958b\u555f\uff0c\u518d\u6b21\u5132\u5b58\u3002");
+        table.put("Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.",
+                "Threads \u6703\u628a\u4f60\u7684 SIM \u5361\u548c\u7db2\u8def\u8996\u70ba\u4e0b\u65b9\u6240\u9078\u7684\u5730\u5340\u3002Meta \u4ecd\u53ef\u80fd\u4f9d\u4f60\u7684\u9023\u7dda\u548c\u5e33\u865f\u5224\u65b7\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
         table.put("Threads' web addresses are selected for this app in Android's settings, so their links open here.",
                 "\u5df2\u5728 Android \u8a2d\u5b9a\u4e2d\u70ba\u6b64\u61c9\u7528\u7a0b\u5f0f\u9078\u53d6 Threads \u7db2\u5740\uff0c\u56e0\u6b64\u5176\u9023\u7d50\u6703\u5728\u6b64\u958b\u555f\u3002");
         table.put("Tracking in links and analytics uploads",
