@@ -5,6 +5,7 @@ Changes in the source build, then released versions.
 ## Unreleased
 
 * **Tooling:** The GitHub release notes carry the Threads bullets and the update steps now. The Docs and Tooling bullets stay here in the changelog, and the notes no longer end with a Validation section.
+* The bundle is built on Morphe patcher 2.4.0 now, the one that comes with Morphe Manager 2.6.0 and Morphe Desktop 2.2.0. Older Manager builds can't load it, so update Manager to 2.6.0 or newer first.
 
 ## 0.0.18 (2026-11-13)
 
