@@ -466,7 +466,7 @@ class ThreadsLogoFixtureTest {
     private fun fixture(build: File): Fixture = fixtures.getOrPut(build) {
         val where = build.name
         val noted = FixtureDex.classesWhere(build, { true }) { method ->
-            method.holdsString(MAIN_FEED_SCREEN_NOTE) || method.name == "<clinit>" && method.body().any { it.string() == LOGO_TAP }
+            method.name == "<clinit>" && method.body().any { it.string() == LOGO_TAP }
         }
         // The reason is the field the enum's static initializer stores after it builds LogoTap.
         val initializer = noted.flatMap { it.methods }.single { it.name == "<clinit>" && it.body().any { i -> i.string() == LOGO_TAP } }
@@ -485,8 +485,6 @@ class ThreadsLogoFixtureTest {
         val header = FixtureDex.methodsWhere(build, { true }) { method ->
             method.body().any { it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == tap }
         }.single()
-        assertTrue("$where: ${header.signature()} holds the main feed's note",
-            header.body().any { it.string()?.let { s -> s.startsWith(MAIN_FEED_SCREEN_NOTE) && "(MainFeedScreen.kt:" in s } == true })
         val body = header.body()
         val built = body.indexOfFirst { it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == tap }
         val call = (built + 1 until body.size).first {
@@ -511,8 +509,6 @@ class ThreadsLogoFixtureTest {
 
     private fun BytecodePatchContext.header(fixture: Fixture) =
         mutableClassDefBy(fixture.header.definingClass).methods.single { it.signature() == fixture.header.signature() }
-
-    private fun Method.holdsString(prefix: String) = body().any { it.string()?.startsWith(prefix) == true }
 
     private fun Instruction.string(): String? = getReference<StringReference>()?.string
 

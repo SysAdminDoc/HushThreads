@@ -1994,7 +1994,7 @@ public class DexDiff {
     private static final Map<String, List<String>> POST_FIELDS = new HashMap<>();
     private static final String ENDPOINT = "Lapp/morphe/extension/hushthreads/misc/Analytics;->endpoint(Ljava/lang/String;)Ljava/lang/String;";
     private static final String SIGNERS = "Lapp/morphe/extension/hushthreads/misc/ThreadsSignature;->originalSigners(Landroid/content/pm/PackageInfo;)Ljava/util/List;";
-    private static final String OPEN_REFUSED_TILE = "Lapp/morphe/extension/hushthreads/coexist/ShareTiles;->openRefused(ZLandroid/content/Context;Landroid/content/Intent;)V";
+    private static final String OPEN_REFUSED_TILE = "Lapp/morphe/extension/hushthreads/coexist/ShareTiles;->openRefused(ZLandroid/content/Context;Landroid/content/Intent;)Z";
     /** The share actions and the link the tiles for Instagram, Facebook and WhatsApp start their apps with. */
     private static final List<String> SHARE_TILE_ACTIONS = List.of("com.instagram.share.ADD_TO_FEED",
             "com.instagram.share.ADD_TO_REEL_THREAD", "com.facebook.reels.SHARE_TO_REEL", "https://wa.me/status");
@@ -4433,9 +4433,10 @@ public class DexDiff {
     /**
      * Share tiles on a re-signed build: each launch in each tile hands the launcher's answer and the
      * same context and intent to the extension, the answer in a register nothing reads after it, and
-     * nothing else in the tile changes. A launch through an outlined helper calls the helper's twin
-     * instead, which is the helper with the launcher's answer handed back; the helper stays as it was.
-     * Nothing else in Threads calls the extension.
+     * nothing else in the tile changes. A launch whose answer Threads reads hands over that register
+     * and takes the extension's answer back in it. A launch through an outlined helper calls the
+     * helper's twin instead, which is the helper with the launcher's answer handed back; the helper
+     * stays as it was. Nothing else in Threads calls the extension.
      */
     private static void featureShareTiles(Map<String, List<Method>> clean, Map<String, List<Method>> patched) {
         FeatureTiles tiles = featureShareTileLambdas(clean);
@@ -4466,6 +4467,18 @@ public class DexDiff {
                 // The launcher takes the context and intent after itself, an outlined helper's twin takes them alone.
                 int context = direct ? launch[1] : launch[0], intent = direct ? launch[2] : launch[1];
                 int index = k, next = k + 1;
+                if (direct && next < code.size() && code.get(next).getOpcode() == Opcode.MOVE_RESULT) {
+                    int answer = registerA(code.get(next));
+                    hooks.put(next + 1, (body, at) -> {
+                        requireFeature(at + 1 < body.size() && isStaticInvoke(body.get(at).getOpcode()) && reference(body.get(at)).equals(OPEN_REFUSED_TILE)
+                                && Arrays.equals(invokeRegisters(body.get(at)), new int[]{answer, context, intent}),
+                                "the share tile launch before original instruction " + next + " doesn't hand its answer, context and intent to " + OPEN_REFUSED_TILE);
+                        requireFeature(body.get(at + 1).getOpcode() == Opcode.MOVE_RESULT && registerA(body.get(at + 1)) == answer,
+                                "the share tile launch before original instruction " + next + " drops what the extension answered");
+                        return 2;
+                    });
+                    continue;
+                }
                 FeatureBlock answered = (body, at) -> {
                     requireFeature(at + 1 < body.size() && body.get(at).getOpcode() == Opcode.MOVE_RESULT,
                             "the share tile launch before original instruction " + next + " drops its answer");

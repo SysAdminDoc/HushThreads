@@ -155,11 +155,17 @@ class ChangePackageNameFixtureTest {
          * Redex's table of outlined strings for the debug name where it does.
          */
         val CHECKS = mapOf(
-            "512508344" to ("LX/122;->A0P" to null), "512508348" to ("LX/122;->A0P" to null),
-            "512508358" to ("LX/128;->A0Q" to null), "512508359" to ("LX/167;->A0Q" to null),
-            "512508360" to ("LX/11X;->A0Q" to 13), "512508368" to ("LX/11V;->A0Q" to null),
-            "512508369" to ("LX/122;->A0P" to null), "512508370" to ("LX/122;->A0Q" to 10),
-            "512508371" to ("LX/122;->A0P" to null),
+            "512608732" to ("LX/0s5;->A0O" to 46),
+            "512608736" to ("LX/0s5;->A0O" to 46),
+            "512608737" to ("LX/00O2;->A0P" to null),
+            "512608738" to ("LX/0s5;->A0O" to 46),
+            "512608746" to ("LX/10r;->A0O" to 38),
+            "512608747" to ("LX/0s5;->A0O" to 46),
+            "512608748" to ("LX/00O2;->A0P" to null),
+            "512608756" to ("LX/10r;->A0O" to 38),
+            "512608757" to ("LX/0s5;->A0O" to 46),
+            "512608758" to ("LX/00O2;->A0P" to null),
+            "512608759" to ("LX/0s5;->A0O" to 46),
         )
 
         val cache = HashMap<File, List<ClassDef>>()

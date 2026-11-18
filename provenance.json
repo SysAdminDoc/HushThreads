@@ -750,6 +750,17 @@
       "upstream": "https://github.com/SysAdminDoc/HushThreads",
       "license": "GPL-3.0-only",
       "changes": "Filter comments: an opened post's reply list, filtered before Threads parses it into rows, with each reply's text read through Threads' own post model."
+    },
+    {
+      "paths": [
+        "patches/src/main/kotlin/app/morphe/patches/threads/misc/extension/ComposeNotes.kt",
+        "patches/src/main/resources/app/morphe/patches/threads/misc/extension/compose-notes.tsv"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Compose source notes: Threads 456 strips the note strings the patches used to find their composables, so this reads the group key its trace calls still carry and looks it up in a table of the notes each key had in 455."
     }
   ]
 }

@@ -169,7 +169,7 @@ class RelatedThreadsFixtureTest {
             RepliesParseFingerprint.clearMatch()
             val where = build.name
             // Read apart from the patch: the static call right after the parse casts a related thread
-            // makes its row, and one emit among the classes holding the repository builds that row.
+            // makes its row, and one emit in the whole build builds that row.
             val parseBody = stockParse(build).body()
             val row = parseBody.indices.filter {
                 parseBody[it].opcode == Opcode.CHECK_CAST && parseBody[it].getReference<TypeReference>()?.type == RELATED_THREAD
@@ -286,11 +286,6 @@ class RelatedThreadsFixtureTest {
 
     private fun stockParse(build: File): Method = classes(build).getValue(PERMALINK_REPOSITORY).methods.single { it.isParse() }
 
-    /** A method taking the answer, the repository, two objects and two flags, and answering an object. */
-    private fun Method.isParse() = returnType.startsWith("L") && parameterTypes.size == 6 &&
-        parameterTypes[0] == REPLIES_RESPONSE && parameterTypes[1] == PERMALINK_REPOSITORY &&
-        parameterTypes.drop(2).map { it.first() } == listOf('L', 'L', 'Z', 'Z')
-
     private fun Method.body(): List<Instruction> = implementation!!.instructions.toList()
 
     /** The opcode, with a goto of any width read as one: the inserted instructions can widen a goto. */
@@ -319,23 +314,27 @@ class RelatedThreadsFixtureTest {
     }
 }
 
+/** A method taking the answer, the repository, two objects and two flags, and answering an object. */
+private fun Method.isParse() = returnType.startsWith("L") && parameterTypes.size == 6 &&
+    parameterTypes[0] == REPLIES_RESPONSE && parameterTypes[1] == PERMALINK_REPOSITORY &&
+    parameterTypes.drop(2).map { it.first() } == listOf('L', 'L', 'Z', 'Z')
+
 /**
- * Every class of a build holding the permalink repository in an instance field: where the patch
- * looks for the collector of the suggested threads Threads fetches on their own, so a test context
- * carries all the candidates the patch weighs and not just the one it should pick.
+ * Every class of a build with an `emit` that builds the row an opened post's replies make of a
+ * related thread: where the patch looks for the collector of the suggested threads Threads fetches
+ * on their own, so a test context carries every candidate the patch weighs.
  */
 internal object RelatedThreadsFetchFixture {
     private val loaded = PerBuild<List<ClassDef>>()
 
     fun classes(build: File): List<ClassDef> = loaded.getOrPut(build) {
-        val found = mutableListOf<ClassDef>()
-        FixtureDex.forEach(build) { dex ->
-            for (classDef in dex.classes) {
-                if (classDef.fields.any { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == PERMALINK_REPOSITORY }) {
-                    found += ImmutableClassDef.of(classDef)
-                }
-            }
+        val parse = FixtureDex.classes(build, setOf(PERMALINK_REPOSITORY)).getValue(PERMALINK_REPOSITORY).methods.single { it.isParse() }
+        val row = parse.relatedThreadRow()
+        FixtureDex.classesWhere(build, { true }) { method ->
+            method.name == "emit" && method.returnType == "Ljava/lang/Object;" && method.parameterTypes.size == 2 &&
+                method.implementation?.instructions?.any {
+                    it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == row
+                } == true
         }
-        found.distinctBy { it.type }
     }
 }

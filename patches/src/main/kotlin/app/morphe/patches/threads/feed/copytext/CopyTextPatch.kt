@@ -6,7 +6,6 @@
  */
 package app.morphe.patches.threads.feed.copytext
 
-import app.morphe.patcher.StringComparisonType
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -17,12 +16,14 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.threads.ads.sourceOrNull
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.threads.misc.extension.classesNoted
 import app.morphe.patches.threads.misc.extension.freeLocalsAt
+import app.morphe.patches.threads.misc.extension.holdsNote
+import app.morphe.patches.threads.misc.extension.indexOfNote
 import app.morphe.patches.threads.misc.extension.localRegisterCount
 import app.morphe.patches.threads.misc.extension.parameterRegisterNumber
 import app.morphe.patches.threads.misc.extension.requireParameterIntact
 import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
-import app.morphe.patches.threads.misc.settings.EXTENSION_ROOT
 import app.morphe.util.ControlFlow
 import app.morphe.util.findMutableMethodOf
 import app.morphe.util.getReference
@@ -34,7 +35,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
-import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import java.util.EnumSet
 
@@ -148,17 +148,12 @@ private fun Method.signature() = "$definingClass->$name(${parameterTypes.joinToS
 
 private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 
-private fun Instruction.isNote(note: String): Boolean =
-    (opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO) &&
-        getReference<StringReference>()?.string?.startsWith(note) == true
-
-/** Every method outside the extension holding a string that starts with [note], read through its mutable copy. */
+/** Every method outside the extension carrying a note that starts with [note], read through its mutable copy. */
 private fun BytecodePatchContext.noted(note: String): List<MutableMethod> =
-    classDefByStrings(note, StringComparisonType.STARTS_WITH)
-        .filterNot { it.type.startsWith(EXTENSION_ROOT) }
+    classesNoted(note)
         .flatMap { it.methods }
         .distinctBy { it.signature() }
-        .filter { method -> method.body().any { it.isNote(note) } }
+        .filter { it.holdsNote(note) }
         // Read through the mutable copy, so what's checked is what the hook goes into.
         .map { mutableClassDefBy(it.definingClass).findMutableMethodOf(it) }
 
@@ -275,7 +270,7 @@ private fun Method.readsOwnAs(body: List<Instruction>, at: Int, type: String): B
 internal fun BytecodePatchContext.selectionFlag(): SelectionFlag {
     val method = noted(SELECTION_NOTE).singleOrPatchException("$PATCH: PostText, the method holding \"$SELECTION_NOTE\"")
     val body = method.body()
-    val note = body.indexOfFirst { it.isNote(SELECTION_NOTE) }
+    val note = body.indexOfNote(SELECTION_NOTE)
     val check = (note + 1 until body.size).firstOrNull { body[it].opcode == Opcode.IF_EQZ }
         ?: throw PatchException("$PATCH: ${method.signature()} checks nothing after its selection note")
     val register = (body[check] as OneRegisterInstruction).registerA

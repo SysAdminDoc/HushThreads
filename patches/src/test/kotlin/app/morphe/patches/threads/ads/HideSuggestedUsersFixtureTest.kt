@@ -126,13 +126,14 @@ class HideSuggestedUsersFixtureTest {
             val context = context(vendor)
             val targets = context.suggestedTargets()
             // 450 added an item field ahead of the impression item, so the same store lands one name later.
-            // 455 added one more ahead of both slots. The wrapper's raw type stays A0L, in its own class.
+            // 455 added one more ahead of both slots, and 456 one ahead of the content alone. The
+            // wrapper's raw type stays A0L, in its own class.
             assertEquals(
-                vendor.name, listOf("A0V", "A0M", "A0L", "A0t"),
+                vendor.name, listOf("A0V", "A0M", "A0L", "A0u"),
                 listOf(targets.suggestedSlot, targets.kickstartSlot, targets.rawType, targets.content).map { it.name },
             )
-            // The row built after a follow keeps its id in the item's own public field, A16 on 455 (A14 on 454).
-            assertEquals(vendor.name, targets.media.definingClass to "A16",
+            // The row built after a follow keeps its id in the item's own public field, A17 on 456 (A16 on 455).
+            assertEquals(vendor.name, targets.media.definingClass to "A17",
                 targets.chainingId.definingClass to targets.chainingId.name)
             hideSuggestedUsersPatch.execute(context)
             val stubs = context.mutableClassDefBy(FEED_ADS).methods
@@ -146,7 +147,7 @@ class HideSuggestedUsersFixtureTest {
             }
             assertEquals(vendor.name, 1, calls)
             // And the feed cache filters For You's four other writes and asks before its four one-item writes.
-            assertEquals(vendor.name, 4, writeCalls(context))
+            assertEquals(vendor.name, 5, writeCalls(context))
             assertEquals(vendor.name, 4, itemCalls(context))
             // And on profiles, the carousel and the row each ask once.
             val profileHooks = vendor.classes.flatMap { context.mutableClassDefBy(it.type).methods }
@@ -202,13 +203,13 @@ class HideSuggestedUsersFixtureTest {
                     method.instructions().any { it.getReference<MethodReference>()?.let { call ->
                         call.name == "add" && call.parameterTypes.map(CharSequence::toString) == listOf("I", "Ljava/lang/Object;")
                     } == true }
-            }.filter { holder -> holder.fields.any { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == FOR_YOU_LOCAL_SOURCE } }
+            }.filter { it.superclass == FOR_YOU_LOCAL_SOURCE } + FixtureDex.classes(build, setOf(FOR_YOU_LOCAL_SOURCE)).values
             val vendor = cards.copy(classes = (cards.classes + adClasses).distinctBy { it.type })
             val adsOnly = context(vendor)
             InjectedAdCheckFingerprint.clearMatch()
             hideAdsPatch.execute(adsOnly)
             assertEquals(vendor.name, 1, filterCalls(adsOnly))
-            assertEquals(vendor.name, 4, writeCalls(adsOnly))
+            assertEquals(vendor.name, 5, writeCalls(adsOnly))
             assertEquals(vendor.name, 4, itemCalls(adsOnly))
             assertEquals(vendor.name, 1, insertCalls(adsOnly, vendor))
             assertEquals(vendor.name, 1, status(adsOnly, "hideAds"))
@@ -219,7 +220,7 @@ class HideSuggestedUsersFixtureTest {
             val suggestionsOnly = context(vendor)
             hideSuggestedUsersPatch.execute(suggestionsOnly)
             assertEquals(vendor.name, 1, filterCalls(suggestionsOnly))
-            assertEquals(vendor.name, 4, writeCalls(suggestionsOnly))
+            assertEquals(vendor.name, 5, writeCalls(suggestionsOnly))
             assertEquals(vendor.name, 4, itemCalls(suggestionsOnly))
             assertEquals(vendor.name, 0, insertCalls(suggestionsOnly, vendor))
             assertEquals(vendor.name, 0, status(suggestionsOnly, "hideAds"))
@@ -232,7 +233,7 @@ class HideSuggestedUsersFixtureTest {
             hideAdsPatch.execute(both)
             hideSuggestedUsersPatch.execute(both)
             assertEquals(vendor.name, 1, filterCalls(both))
-            assertEquals(vendor.name, 4, writeCalls(both))
+            assertEquals(vendor.name, 5, writeCalls(both))
             assertEquals(vendor.name, 4, itemCalls(both))
             assertEquals(vendor.name, 1, insertCalls(both, vendor))
             assertEquals(vendor.name, 1, status(both, "hideAds"))

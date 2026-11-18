@@ -16,6 +16,8 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.threads.feed.reaching
 import app.morphe.patches.threads.misc.extension.SETTINGS_STATUS
+import app.morphe.patches.threads.misc.extension.holdsNote
+import app.morphe.patches.threads.misc.extension.noteSites
 import app.morphe.util.ControlFlow
 import app.morphe.util.argumentRegister
 import app.morphe.util.getReference
@@ -319,8 +321,8 @@ class DisableVideoAutoplayFixtureTest {
             val noCarousel = context(fixture)
             for (site in fixture.sites.filter { it.method.holdsNote(POST_CAROUSEL) }) {
                 val method = noCarousel.mutableMethod(site.method)
-                method.body().indices.filter { method.body()[it].getReference<StringReference>()?.string?.startsWith(POST_CAROUSEL) == true }.forEach {
-                    method.replaceInstruction(it, "const-string v${(method.body()[it] as OneRegisterInstruction).registerA}, \"some other composable\"")
+                method.body().noteSites(POST_CAROUSEL).forEach {
+                    method.replaceInstruction(it, "const v${(method.body()[it] as OneRegisterInstruction).registerA}, 0x12345678")
                 }
             }
             val missing = assertThrows(build.name, PatchException::class.java) { disableVideoAutoplayPatch.execute(noCarousel) }
@@ -549,8 +551,8 @@ class DisableVideoAutoplayFixtureTest {
         val postVideo = noted.flatMap { it.methods }.single { it.holdsNote(POST_VIDEO) }
         // Since 455 PostVideo tests the flag in one of the lambdas it builds.
         val built = postVideo.body().mapNotNull { it.takeIf { it.opcode == Opcode.NEW_INSTANCE }?.getReference<TypeReference>()?.type }.toSet()
-        // And the video player gives its booleans Compose's defaults through small (IZ)Z merges.
-        val merges = noted.flatMap { it.methods }.filter { it.holdsNote(VIDEO_PLAYER) }.flatMap { it.body() }.mapNotNull { call ->
+        // And the video player, and since 456 PostVideo, give their booleans Compose's defaults through small (IZ)Z merges.
+        val merges = noted.flatMap { it.methods }.filter { it.holdsNote(VIDEO_PLAYER) || it.holdsNote(POST_VIDEO) }.flatMap { it.body() }.mapNotNull { call ->
             call.getReference<MethodReference>()?.takeIf {
                 call.opcode == Opcode.INVOKE_STATIC && it.returnType == "Z" && it.parameterTypes.map(CharSequence::toString) == listOf("I", "Z")
             }?.definingClass
@@ -643,7 +645,7 @@ class DisableVideoAutoplayFixtureTest {
         assertEquals("${build.name}: the check's callers", 2, callers.size)
         val skip = callers.single { caller -> dispatcher.body().any { it.reference() == caller.reference() } }
         val legacy = callers.single { it.reference() != skip.reference() }
-        assertTrue(build.name, legacy.holdsNote("Video autoplay not allowed"))
+        assertTrue(build.name, legacy.body().any { it.getReference<StringReference>()?.string?.startsWith("Video autoplay not allowed") == true })
         assertFalse(build.name, skip.body().any { it.getReference<StringReference>() != null })
         val types = setOf(skip.definingClass, legacy.definingClass)
         val classes = (holders + FixtureDex.classes(build, types).values).distinctBy { it.type }
@@ -695,7 +697,7 @@ class DisableVideoAutoplayFixtureTest {
 
         /** The shortened PostVideo forwarder of each build that has one: its parameter count, play flag and mask. */
         val FORWARDERS = mapOf(
-            "threads-455." to Forwarder(size = 14, play = null, mask = 12),
+            "threads-456." to Forwarder(size = 14, play = null, mask = 12),
         )
 
         /** The bit of PostVideo's default mask that hands its play flag to the default, since 454 (0x4000 from 450 to 453). */
