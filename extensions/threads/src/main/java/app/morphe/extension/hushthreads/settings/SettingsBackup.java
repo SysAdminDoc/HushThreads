@@ -89,6 +89,7 @@ public final class SettingsBackup {
             Settings.SPOOF_SIM_REGION,
             Settings.PURE_BLACK,
             Settings.HEADER_LOGO,
+            Settings.CUSTOM_FONT,
             Settings.HIDE_INSTAGRAM_BUTTON,
             Settings.HIDE_GHOST_POST_BUBBLES,
             Settings.FULL_SIZE_PROFILE_PICTURES,

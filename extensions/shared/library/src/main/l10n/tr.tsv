@@ -407,3 +407,15 @@ Shows the HushThreads logo at the top of your feed in place of the Threads logo.
 HushThreads icon	HushThreads simgesi
 The app's icon on your home screen is the HushThreads logo.	Ana ekranındaki uygulama simgesi HushThreads logosudur.
 the HushThreads icon	HushThreads simgesi
+# Custom font's switch and its Font file row under Appearance, and what picking a font file says
+Custom font	Özel yazı tipi
+Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.	Threads'teki yazıları aşağıda seçtiğin yazı tipi dosyasıyla gösterir. Simgeler kendi yazı tiplerini korur. Değişikliği görmek için Threads'i yeniden başlat.
+Font file	Yazı tipi dosyası
+No font picked yet. Pick a .ttf or .otf file.	Henüz yazı tipi seçilmedi. Bir .ttf veya .otf dosyası seç.
+A font file is picked. Tap to pick another.	Bir yazı tipi dosyası seçili. Başkasını seçmek için dokun.
+%1$s is picked. Tap to pick another.	%1$s seçili. Başkasını seçmek için dokun.
+Copying the font file	Yazı tipi dosyası kopyalanıyor
+Font file saved. Restart Threads to see it.	Yazı tipi dosyası kaydedildi. Görmek için Threads'i yeniden başlat.
+Font file saved. Turn on Custom font to use it.	Yazı tipi dosyası kaydedildi. Kullanmak için Özel yazı tipi'ni aç.
+That file is too large to be a font. Nothing was changed.	Bu dosya bir yazı tipi olamayacak kadar büyük. Hiçbir şey değiştirilmedi.
+That isn't a font file Android can use. Nothing was changed.	Bu, Android'in kullanabileceği bir yazı tipi dosyası değil. Hiçbir şey değiştirilmedi.

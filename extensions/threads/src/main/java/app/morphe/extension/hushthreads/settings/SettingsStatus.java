@@ -82,6 +82,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean customFont() {
+        return false;
+    }
+
     public static boolean hideInstagramButton() {
         return false;
     }

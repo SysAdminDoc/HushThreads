@@ -84,7 +84,7 @@ On a new phone, import the key before you patch anything. Reinstalling Manager o
 
 ## Patches
 
-HushThreads has 29 patches. Morphe Manager's default selection has all but six: `Change app name`, `Change package name`, `Change version code`, `Custom launcher icon`, `Remove share targets` and `Trust user-added certificates`. Those six change Threads when you patch and have no switch to undo them. The first two make a second app you install beside Threads, with its own sign-in. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
+HushThreads has 30 patches. Morphe Manager's default selection has all but six: `Change app name`, `Change package name`, `Change version code`, `Custom launcher icon`, `Remove share targets` and `Trust user-added certificates`. Those six change Threads when you patch and have no switch to undo them. The first two make a second app you install beside Threads, with its own sign-in. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
 
 | Patch | What it does |
 |---|---|
@@ -92,6 +92,7 @@ HushThreads has 29 patches. Morphe Manager's default selection has all but six: 
 | `Change app name` | Changes the name under the app's icon, so a copy you install beside Threads with Change package name is easy to tell apart. It isn't selected by default. Works as soon as you patch it in, with no switch. |
 | `Change package name` | Gives the patched Threads its own package name, so it installs beside the Threads you already have instead of over it. It's a separate app with its own sign-in. It isn't selected by default. Works as soon as you patch it in, with no switch. |
 | `Change version code` | Raises the version number as high as Android allows, so Google Play won't offer Meta's updates over it. Going back to stock Threads means uninstalling, which deletes its data. It isn't selected by default. Works as soon as you patch it in, with no switch. |
+| `Custom font` | Shows Threads' text in a font file you pick, a .ttf or .otf. Icons keep their own font. Starts off. Turn it on and pick the file in HushThreads settings > Appearance, then restart Threads. |
 | `Custom launcher icon` | Swaps the Threads icon on your home screen for the HushThreads logo, with a one-color version for themed icons, so a patched copy is easy to spot. It isn't selected by default. Works as soon as you patch it in, with no switch. |
 | `Disable analytics` | Stops Threads from sending most of its usage reports to Meta. A few may still get through. Good if you'd rather share less about how you use the app. On by default. Turn it off in HushThreads settings > Privacy. |
 | `Disable screenshot detection` | Threads isn't told when you take a screenshot. It stops watching your photos for new screenshots. Good if you want to screenshot without Threads noticing. Starts off. Turn it on in HushThreads settings > Privacy. |

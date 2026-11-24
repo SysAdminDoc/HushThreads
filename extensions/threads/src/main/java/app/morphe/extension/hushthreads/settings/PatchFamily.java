@@ -65,6 +65,8 @@ public enum PatchFamily {
             Settings.PURE_BLACK),
     HEADER_LOGO(FamilyNames.HEADER_LOGO, "headerLogo", null,
             Settings.HEADER_LOGO),
+    CUSTOM_FONT(FamilyNames.CUSTOM_FONT, "customFont", null,
+            Settings.CUSTOM_FONT),
     HIDE_INSTAGRAM_BUTTON(FamilyNames.HIDE_INSTAGRAM_BUTTON, "hideInstagramButton", null,
             Settings.HIDE_INSTAGRAM_BUTTON),
     HIDE_GHOST_POST_BUBBLES(FamilyNames.HIDE_GHOST_POST_BUBBLES, "hideGhostPostBubbles", null,

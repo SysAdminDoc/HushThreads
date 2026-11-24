@@ -407,3 +407,15 @@ Shows the HushThreads logo at the top of your feed in place of the Threads logo.
 HushThreads icon	Ikon HushThreads
 The app's icon on your home screen is the HushThreads logo.	Ikon aplikasi di layar utama adalah logo HushThreads.
 the HushThreads icon	ikon HushThreads
+# Custom font's switch and its Font file row under Appearance, and what picking a font file says
+Custom font	Font kustom
+Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.	Menampilkan teks Threads dengan file font yang Anda pilih di bawah. Ikon tetap memakai font-nya sendiri. Mulai ulang Threads untuk melihat perubahannya.
+Font file	File font
+No font picked yet. Pick a .ttf or .otf file.	Belum ada font yang dipilih. Pilih file .ttf atau .otf.
+A font file is picked. Tap to pick another.	File font sudah dipilih. Ketuk untuk memilih yang lain.
+%1$s is picked. Tap to pick another.	%1$s dipilih. Ketuk untuk memilih yang lain.
+Copying the font file	Menyalin file font
+Font file saved. Restart Threads to see it.	File font disimpan. Mulai ulang Threads untuk melihatnya.
+Font file saved. Turn on Custom font to use it.	File font disimpan. Aktifkan Font kustom untuk memakainya.
+That file is too large to be a font. Nothing was changed.	File itu terlalu besar untuk sebuah font. Tidak ada yang diubah.
+That isn't a font file Android can use. Nothing was changed.	Itu bukan file font yang dapat digunakan Android. Tidak ada yang diubah.

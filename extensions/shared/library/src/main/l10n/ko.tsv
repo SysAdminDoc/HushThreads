@@ -408,3 +408,15 @@ Shows the HushThreads logo at the top of your feed in place of the Threads logo.
 HushThreads icon	HushThreads 아이콘
 The app's icon on your home screen is the HushThreads logo.	홈 화면의 앱 아이콘이 HushThreads 로고입니다.
 the HushThreads icon	HushThreads 아이콘
+# Custom font's switch and its Font file row under Appearance, and what picking a font file says
+Custom font	사용자 지정 글꼴
+Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.	Threads의 텍스트를 아래에서 선택한 글꼴 파일로 표시합니다. 아이콘은 원래 글꼴을 유지합니다. 변경 사항을 보려면 Threads를 다시 시작하세요.
+Font file	글꼴 파일
+No font picked yet. Pick a .ttf or .otf file.	아직 선택한 글꼴이 없습니다. .ttf 또는 .otf 파일을 선택하세요.
+A font file is picked. Tap to pick another.	글꼴 파일이 선택되어 있습니다. 다른 파일을 선택하려면 탭하세요.
+%1$s is picked. Tap to pick another.	%1$s 파일이 선택되어 있습니다. 다른 파일을 선택하려면 탭하세요.
+Copying the font file	글꼴 파일을 복사하는 중
+Font file saved. Restart Threads to see it.	글꼴 파일을 저장했습니다. 적용하려면 Threads를 다시 시작하세요.
+Font file saved. Turn on Custom font to use it.	글꼴 파일을 저장했습니다. 사용하려면 사용자 지정 글꼴을 켜세요.
+That file is too large to be a font. Nothing was changed.	글꼴이라고 하기에는 파일이 너무 큽니다. 아무것도 변경되지 않았습니다.
+That isn't a font file Android can use. Nothing was changed.	Android에서 사용할 수 있는 글꼴 파일이 아닙니다. 아무것도 변경되지 않았습니다.

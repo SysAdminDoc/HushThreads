@@ -95,6 +95,7 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.SAVE_MEDIA, "Save photos and videos");
         ROW_TITLES.put(PatchFamily.PURE_BLACK, "Pure black dark mode");
         ROW_TITLES.put(PatchFamily.HEADER_LOGO, "Use the HushThreads logo");
+        ROW_TITLES.put(PatchFamily.CUSTOM_FONT, "Custom font");
         ROW_TITLES.put(PatchFamily.HIDE_INSTAGRAM_BUTTON, "Hide the Instagram button");
         ROW_TITLES.put(PatchFamily.HIDE_GHOST_POST_BUBBLES, "Hide ghost post bubbles");
         ROW_TITLES.put(PatchFamily.HIDE_POST_BUTTONS, "Hide the like button");
@@ -221,7 +222,7 @@ public class HushThreadsPreferenceFragmentTest {
                 if (build.contains(PatchFamily.FILTER_COMMENTS)) expected.add("Comments");
                 if (build.contains(PatchFamily.SAVE_MEDIA)) expected.add("Downloads");
                 if (build.contains(PatchFamily.PURE_BLACK) || build.contains(PatchFamily.HEADER_LOGO)
-                        || build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)
+                        || build.contains(PatchFamily.CUSTOM_FONT) || build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)
                         || build.contains(PatchFamily.HIDE_GHOST_POST_BUBBLES)
                         || build.contains(PatchFamily.FULL_SIZE_PROFILE_PICTURES)) {
                     expected.add("Appearance");
@@ -310,6 +311,13 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Shows the HushThreads logo at the top of your feed in place of the Threads logo. "
                 + "It doesn't spin while the feed refreshes. Restart Threads to see the change.",
                     String.valueOf(page.findPreference(Settings.HEADER_LOGO.key).getSummary()));
+            assertEquals("Custom font", String.valueOf(page.findPreference(Settings.CUSTOM_FONT.key).getTitle()));
+            assertEquals("Shows Threads' text in the font file you pick below. Icons keep their own font. "
+                + "Restart Threads to see the change.",
+                    String.valueOf(page.findPreference(Settings.CUSTOM_FONT.key).getSummary()));
+            assertEquals("Font file", String.valueOf(page.findPreference("action_font_file").getTitle()));
+            assertEquals("No font picked yet. Pick a .ttf or .otf file.",
+                    String.valueOf(page.findPreference("action_font_file").getSummary()));
             assertEquals("Hide the Instagram button", String.valueOf(page.findPreference(Settings.HIDE_INSTAGRAM_BUTTON.key).getTitle()));
             assertEquals("Takes the Instagram button off the top of profiles, yours and other people's. "
                 + "Restart Threads to see the change.",
@@ -365,7 +373,7 @@ public class HushThreadsPreferenceFragmentTest {
             // exact post times, Full size profile pictures and the post buttons, which came after.
             for (BooleanSetting setting : Arrays.asList(Settings.BLOCK_RETURN_REFRESH, Settings.DISABLE_VIDEO_AUTOPLAY,
                     Settings.MAX_IMAGE_QUALITY, Settings.DISABLE_SCREENSHOT_DETECTION, Settings.SPOOF_SIM_REGION,
-                    Settings.PURE_BLACK, Settings.HEADER_LOGO,
+                    Settings.PURE_BLACK, Settings.HEADER_LOGO, Settings.CUSTOM_FONT,
                     Settings.HIDE_INSTAGRAM_BUTTON, Settings.HIDE_GHOST_POST_BUBBLES, Settings.DISABLE_SWIPE_TO_SEARCH,
                     Settings.EXACT_POST_TIMES, Settings.FULL_SIZE_PROFILE_PICTURES, Settings.HIDE_LIKE_BUTTON,
                     Settings.HIDE_REPLY_BUTTON, Settings.HIDE_REPOST_BUTTON, Settings.HIDE_SHARE_BUTTON,

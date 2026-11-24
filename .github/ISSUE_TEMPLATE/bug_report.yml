@@ -76,6 +76,7 @@ body:
         - Change app name
         - Change package name
         - Change version code
+        - Custom font
         - Custom launcher icon
         - Disable analytics
         - Disable screenshot detection

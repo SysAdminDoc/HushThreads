@@ -53,7 +53,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(724);
+        Map<String, String> table = new HashMap<>(746);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -89,6 +89,8 @@ public final class L10nTranslations {
                 "%1$d Schalter werden ge\u00e4ndert.");
         table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
                 "%1$s wird zu Datum und Uhrzeit des Speicherns, %2$s zur Nummer des Videos auf Threads, %3$s zum Namen dessen, der es gepostet hat, und %4$s zum Tag der Ver\u00f6ffentlichung. Was beim Speichern nicht bekannt ist, wird weggelassen, und ein Name ohne eines davon bekommt das Datum angeh\u00e4ngt. Gibt es den Namen im Ordner schon, wird die Uhrzeit des Speicherns angeh\u00e4ngt. Ung\u00fcltige Zeichen werden zu Unterstrichen. Lass das Feld leer, um den Standardnamen %5$s zu verwenden.");
+        table.put("%1$s is picked. Tap to pick another.",
+                "%1$s ist ausgew\u00e4hlt. Tippe, um eine andere zu w\u00e4hlen.");
         table.put("%1$s of %2$s",
                 "%1$s von %2$s");
         table.put("%1$s so far",
@@ -103,6 +105,8 @@ public final class L10nTranslations {
                 "Ein Diagnosebericht wird bereits gespeichert.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "Eine Datei namens %1$s in %2$s hat HushThreads pausiert.");
+        table.put("A font file is picked. Tap to pick another.",
+                "Eine Schriftdatei ist ausgew\u00e4hlt. Tippe, um eine andere zu w\u00e4hlen.");
         table.put("A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.",
                 "Langes Dr\u00fccken auf das Threads-Logo oben im Feed \u00f6ffnet diese Einstellungen. Aus passiert beim langen Dr\u00fccken nichts.");
         table.put("A profile picture you open on a profile shows full size, where you can zoom in and save it, instead of the small circle.",
@@ -181,13 +185,13 @@ public final class L10nTranslations {
                 "GitHub wird gerade gefragt.");
         table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
                 "W\u00e4hle einen Ordnernamen unter Movies und Pictures. Ung\u00fcltige Zeichen werden zu Unterstrichen. Lass das Feld leer, um den Standardordner %1$s zu verwenden.");
+    }
+
+    private static void fillDe1(Map<String, String> table) {
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "W\u00e4hle eine Einstellungsdatei. Vor dem Import siehst du, wie viele Schalter sie \u00e4ndert.");
         table.put("Clear diagnostic data",
                 "Diagnosedaten l\u00f6schen");
-    }
-
-    private static void fillDe1(Map<String, String> table) {
         table.put("Clear search",
                 "Suche l\u00f6schen");
         table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
@@ -212,6 +216,8 @@ public final class L10nTranslations {
                 "Text kopieren per langem Dr\u00fccken");
         table.put("Copy text when you hold a post",
                 "Text kopieren, wenn du einen Beitrag gedr\u00fcckt h\u00e4ltst");
+        table.put("Copying the font file",
+                "Schriftdatei wird kopiert");
         table.put("Copying to the gallery",
                 "Wird in die Galerie kopiert");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
@@ -236,6 +242,8 @@ public final class L10nTranslations {
                 "Der Export des Berichts lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
         table.put("Couldn't turn HushThreads back on. Try again.",
                 "HushThreads lie\u00df sich nicht wieder einschalten. Versuche es noch einmal.");
+        table.put("Custom font",
+                "Eigene Schriftart");
         table.put("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.",
                 "Der Dunkelmodus nutzt echtes Schwarz statt Dunkelgrau. Schalte in Threads den Dunkelmodus ein, um das zu sehen. Starte Threads neu, damit die \u00c4nderung greift.");
         table.put("Debug logging",
@@ -282,6 +290,12 @@ public final class L10nTranslations {
                 "Ordnername");
         table.put("Folder set to %1$s.",
                 "Ordner auf %1$s gesetzt.");
+        table.put("Font file",
+                "Schriftdatei");
+        table.put("Font file saved. Restart Threads to see it.",
+                "Schriftdatei gespeichert. Starte Threads neu, um sie zu sehen.");
+        table.put("Font file saved. Turn on Custom font to use it.",
+                "Schriftdatei gespeichert. Schalte Eigene Schriftart ein, um sie zu nutzen.");
         table.put("Full report saved to %1$s",
                 "Vollst\u00e4ndiger Bericht gespeichert unter %1$s");
         table.put("Full size photos",
@@ -294,6 +308,9 @@ public final class L10nTranslations {
                 "GitHub weist Anfragen aus diesem Netz gerade ab. Versuche es sp\u00e4ter noch einmal.");
         table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
                 "GitHub hat etwas geschickt, das HushThreads nicht lesen konnte. Versuche es sp\u00e4ter noch einmal.");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Direkt zu einer Gruppe von Einstellungen. Zur\u00fcck bringt dich dorthin, wo du warst.");
         table.put("Help and restart",
@@ -308,9 +325,6 @@ public final class L10nTranslations {
                 "Kommentare mit Links ausblenden");
         table.put("Hide follow suggestions in Search",
                 "Vorschl\u00e4ge zum Folgen in der Suche ausblenden");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Hide ghost post bubbles",
                 "Ghost-Post-Blasen ausblenden");
         table.put("Hide screenshots from Threads",
@@ -387,6 +401,8 @@ public final class L10nTranslations {
                 "Links, die du antippst, \u00f6ffnen sich in deinem Browser oder in der App der Seite, ohne Threads' Link-Tracking. Threads- und Instagram-Seiten \u00f6ffnen sich weiter in Threads.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Keine App auf diesem Handy kann den Link \u00f6ffnen. Die Adresse ist %1$s.");
+        table.put("No font picked yet. Pick a .ttf or .otf file.",
+                "Noch keine Schrift ausgew\u00e4hlt. W\u00e4hle eine .ttf- oder .otf-Datei.");
         table.put("No matching settings",
                 "Keine passenden Einstellungen");
         table.put("No saves in progress.",
@@ -415,6 +431,9 @@ public final class L10nTranslations {
                 "Nicht gespeichert: Der Proxy will ein Passwort. Wechsle das Netz.");
         table.put("OK",
                 "OK");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Pr\u00fcft einmal am Tag beim Start von Threads auf GitHub, ob es ein neueres HushThreads gibt, und sagt es dir hier. Es wird nichts heruntergeladen.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -431,9 +450,6 @@ public final class L10nTranslations {
                 "Einstellungen \u00fcber das Logo \u00f6ffnen");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201eUnterst\u00fctzte Links \u00f6ffnen\u201c ist f\u00fcr diese App in den Android-Einstellungen aus. Tippe, um es einzuschalten.");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "\u00d6ffnet eine GitHub-Meldung, in der deine Versionen und Einstellungen schon stehen. Erg\u00e4nze, was passiert ist.");
         table.put("Own app name",
@@ -538,6 +554,9 @@ public final class L10nTranslations {
                 "Gespeichert unter %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "In %1$s gespeichert. Qualit\u00e4t geringer als auf Threads");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "In der Galerie gespeichert");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -554,9 +573,6 @@ public final class L10nTranslations {
                 "Video wird gespeichert");
         table.put("Saving the settings file",
                 "Einstellungsdatei wird gespeichert");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Saving...",
                 "Wird gespeichert \u2026");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
@@ -595,6 +611,8 @@ public final class L10nTranslations {
                 "Datum und Uhrzeit anzeigen");
         table.put("Shown. Tap to hide it.",
                 "Werden angezeigt. Tippe, um sie auszublenden.");
+        table.put("Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.",
+                "Zeigt den Text in Threads in der Schriftdatei, die du unten ausw\u00e4hlst. Symbole behalten ihre eigene Schrift. Starte Threads neu, damit die \u00c4nderung greift.");
         table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
                 "Zeigt oben in deinem Feed das HushThreads-Logo statt des Threads-Logos. Es dreht sich nicht, w\u00e4hrend der Feed aktualisiert wird. Starte Threads neu, damit die \u00c4nderung greift.");
         table.put("Smallest",
@@ -657,6 +675,11 @@ public final class L10nTranslations {
                 "Tippe, um sie zu sehen.");
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
+        table.put("That file is too large to be a font. Nothing was changed.",
+                "Diese Datei ist zu gro\u00df f\u00fcr eine Schriftart. Es wurde nichts ge\u00e4ndert.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Diese Datei ist zu gro\u00df f\u00fcr eine Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -665,6 +688,8 @@ public final class L10nTranslations {
                 "Diese Datei f\u00fchrt eine Einstellung zweimal auf, daher ist unklar, welcher Wert gilt. Es wurde nichts ge\u00e4ndert.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Das ist keine HushThreads-Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
+        table.put("That isn't a font file Android can use. Nothing was changed.",
+                "Das ist keine Schriftdatei, die Android verwenden kann. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Diese Einstellungsdatei enth\u00e4lt einen Wert, den HushThreads nicht lesen kann. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -677,9 +702,6 @@ public final class L10nTranslations {
                 "Die App mit der letzten Einstellungsdatei hat noch immer nicht geantwortet. Versuche es sp\u00e4ter noch einmal.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Die App, in der die Einstellungsdatei liegt, braucht zu lange, deshalb wartet HushThreads nicht mehr. Sie kann das Speichern noch abschlie\u00dfen, also pr\u00fcfe die Datei, bevor du dich darauf verl\u00e4sst.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("The app's icon on your home screen is the HushThreads logo.",
                 "Das App-Symbol auf deinem Startbildschirm ist das HushThreads-Logo.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
@@ -778,6 +800,9 @@ public final class L10nTranslations {
                 "Wenn der Schalter oben an ist, bleibt deine Stelle erhalten, egal wie lange du weg bist. Zum Aktualisieren ziehen und ein Neustart laden weiterhin neue Beitr\u00e4ge.");
         table.put("You have the newest HushThreads release.",
                 "Du hast die neueste Version von HushThreads.");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Du hast HushThreads pausiert.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -800,9 +825,6 @@ public final class L10nTranslations {
                 "der Fix f\u00fcr neu signierte Builds");
         table.put("the removed advertising ID permission",
                 "die entfernte Berechtigung f\u00fcr die Werbe-ID");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "der entfernte Eintrag im Teilen-Men\u00fc");
         table.put("the user certificate trust",
@@ -810,7 +832,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(724);
+        Map<String, String> table = new HashMap<>(746);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -846,6 +868,8 @@ public final class L10nTranslations {
                 "Cambiar\u00e1n %1$d interruptores.");
         table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
                 "%1$s se convierte en la fecha y la hora del guardado, %2$s en el n\u00famero del video en Threads, %3$s en quien lo public\u00f3 y %4$s en el d\u00eda en que se public\u00f3. Lo que el guardado no sabe se omite, y a un nombre sin ninguno de ellos se le a\u00f1ade la fecha. Si el nombre ya est\u00e1 en la carpeta, se le a\u00f1ade al final la hora del guardado. Los caracteres no v\u00e1lidos se convierten en guiones bajos. D\u00e9jalo vac\u00edo para usar el nombre predeterminado, %5$s.");
+        table.put("%1$s is picked. Tap to pick another.",
+                "%1$s est\u00e1 elegido. Toca para elegir otro.");
         table.put("%1$s of %2$s",
                 "%1$s de %2$s");
         table.put("%1$s so far",
@@ -860,6 +884,8 @@ public final class L10nTranslations {
                 "Ya se est\u00e1 guardando un informe de diagn\u00f3stico.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "Un archivo llamado %1$s en %2$s paus\u00f3 HushThreads.");
+        table.put("A font file is picked. Tap to pick another.",
+                "Hay un archivo de fuente elegido. Toca para elegir otro.");
         table.put("A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.",
                 "Mantener pulsado el logotipo de Threads en la parte superior del feed abre esta configuraci\u00f3n. Si lo desactivas, mantenerlo pulsado no hace nada.");
         table.put("A profile picture you open on a profile shows full size, where you can zoom in and save it, instead of the small circle.",
@@ -938,13 +964,13 @@ public final class L10nTranslations {
                 "Consultando GitHub ahora.");
         table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
                 "Elige un nombre de carpeta en Movies y Pictures. Los caracteres no v\u00e1lidos se convierten en guiones bajos. D\u00e9jalo vac\u00edo para usar la carpeta predeterminada, %1$s.");
+    }
+
+    private static void fillEs1(Map<String, String> table) {
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "Elige un archivo de configuraci\u00f3n. Antes de importar nada, ver\u00e1s cu\u00e1ntos interruptores cambia.");
         table.put("Clear diagnostic data",
                 "Borrar datos de diagn\u00f3stico");
-    }
-
-    private static void fillEs1(Map<String, String> table) {
         table.put("Clear search",
                 "Borrar b\u00fasqueda");
         table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
@@ -969,6 +995,8 @@ public final class L10nTranslations {
                 "Copiar texto al mantener pulsado");
         table.put("Copy text when you hold a post",
                 "Copiar texto al mantener pulsada una publicaci\u00f3n");
+        table.put("Copying the font file",
+                "Copiando el archivo de fuente");
         table.put("Copying to the gallery",
                 "Copiando a la galer\u00eda");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
@@ -993,6 +1021,8 @@ public final class L10nTranslations {
                 "No se pudo iniciar la exportaci\u00f3n del informe. Int\u00e9ntalo de nuevo en breve.");
         table.put("Couldn't turn HushThreads back on. Try again.",
                 "No se pudo volver a activar HushThreads. Int\u00e9ntalo de nuevo.");
+        table.put("Custom font",
+                "Fuente personalizada");
         table.put("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.",
                 "El modo oscuro usa negro puro en lugar de gris oscuro. Activa el modo oscuro en Threads para verlo. Reinicia Threads para ver el cambio.");
         table.put("Debug logging",
@@ -1039,6 +1069,12 @@ public final class L10nTranslations {
                 "Nombre de carpeta");
         table.put("Folder set to %1$s.",
                 "Carpeta establecida en %1$s.");
+        table.put("Font file",
+                "Archivo de fuente");
+        table.put("Font file saved. Restart Threads to see it.",
+                "Archivo de fuente guardado. Reinicia Threads para verlo.");
+        table.put("Font file saved. Turn on Custom font to use it.",
+                "Archivo de fuente guardado. Activa Fuente personalizada para usarlo.");
         table.put("Full report saved to %1$s",
                 "Informe completo guardado en %1$s");
         table.put("Full size photos",
@@ -1051,6 +1087,9 @@ public final class L10nTranslations {
                 "GitHub est\u00e1 rechazando por ahora las consultas desde esta red. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
         table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
                 "GitHub devolvi\u00f3 algo que HushThreads no pudo leer. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Ve directo a un grupo de ajustes. Atr\u00e1s te devuelve a donde estabas.");
         table.put("Help and restart",
@@ -1065,9 +1104,6 @@ public final class L10nTranslations {
                 "Ocultar comentarios con enlaces");
         table.put("Hide follow suggestions in Search",
                 "Ocultar sugerencias para seguir en Buscar");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Hide ghost post bubbles",
                 "Ocultar las burbujas de publicaciones fantasma");
         table.put("Hide screenshots from Threads",
@@ -1144,6 +1180,8 @@ public final class L10nTranslations {
                 "Los enlaces que tocas se abren en tu navegador o en la app del sitio, sin el seguimiento de enlaces de Threads. Las p\u00e1ginas de Threads e Instagram se siguen abriendo en Threads.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Ninguna app de este tel\u00e9fono puede abrir el enlace. La direcci\u00f3n es %1$s.");
+        table.put("No font picked yet. Pick a .ttf or .otf file.",
+                "A\u00fan no se eligi\u00f3 ninguna fuente. Elige un archivo .ttf u .otf.");
         table.put("No matching settings",
                 "No hay ajustes coincidentes");
         table.put("No saves in progress.",
@@ -1172,6 +1210,9 @@ public final class L10nTranslations {
                 "No se guard\u00f3: el proxy pide una contrase\u00f1a. Prueba otra red.");
         table.put("OK",
                 "Aceptar");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Una vez al d\u00eda, al abrir Threads, busca en GitHub un HushThreads m\u00e1s nuevo y te avisa aqu\u00ed. No se descarga nada.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -1188,9 +1229,6 @@ public final class L10nTranslations {
                 "Abrir la configuraci\u00f3n desde el logotipo");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir enlaces compatibles\u201d est\u00e1 desactivado para esta app en los ajustes de Android. Toca para activarlo.");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "Abre un informe en GitHub con tus versiones y ajustes ya puestos. A\u00f1ade qu\u00e9 pas\u00f3.");
         table.put("Own app name",
@@ -1295,6 +1333,9 @@ public final class L10nTranslations {
                 "Se guard\u00f3 en %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Se guard\u00f3 en %1$s con menos calidad que en Threads");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Se guard\u00f3 en la galer\u00eda");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -1311,9 +1352,6 @@ public final class L10nTranslations {
                 "Guardando un video");
         table.put("Saving the settings file",
                 "Guardando el archivo de configuraci\u00f3n");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Saving...",
                 "Guardando...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
@@ -1352,6 +1390,8 @@ public final class L10nTranslations {
                 "Mostrar la fecha y la hora");
         table.put("Shown. Tap to hide it.",
                 "Visible. Toca para ocultarla.");
+        table.put("Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.",
+                "Muestra el texto de Threads con el archivo de fuente que elijas abajo. Los iconos conservan su propia fuente. Reinicia Threads para ver el cambio.");
         table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
                 "Muestra el logotipo de HushThreads en la parte superior del feed en lugar del logotipo de Threads. No gira mientras el feed se actualiza. Reinicia Threads para ver el cambio.");
         table.put("Smallest",
@@ -1414,6 +1454,11 @@ public final class L10nTranslations {
                 "Toca para ver cu\u00e1les.");
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
+        table.put("That file is too large to be a font. Nothing was changed.",
+                "Ese archivo es demasiado grande para ser una fuente. No se cambi\u00f3 nada.");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Ese archivo es demasiado grande para ser un archivo de configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -1422,6 +1467,8 @@ public final class L10nTranslations {
                 "Ese archivo incluye un ajuste dos veces, as\u00ed que no se sabe qu\u00e9 valor usar. No se cambi\u00f3 nada.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Eso no es un archivo de configuraci\u00f3n de HushThreads. No se cambi\u00f3 nada.");
+        table.put("That isn't a font file Android can use. Nothing was changed.",
+                "Ese no es un archivo de fuente que Android pueda usar. No se cambi\u00f3 nada.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n contiene un valor que HushThreads no puede leer. No se cambi\u00f3 nada.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -1434,9 +1481,6 @@ public final class L10nTranslations {
                 "La app del \u00faltimo archivo de configuraci\u00f3n a\u00fan no ha respondido. Int\u00e9ntalo m\u00e1s tarde.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "La app que guarda el archivo de configuraci\u00f3n tarda demasiado, as\u00ed que HushThreads dej\u00f3 de esperar. Esa app a\u00fan puede terminar de guardarlo, as\u00ed que revisa el archivo antes de confiar en \u00e9l.");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("The app's icon on your home screen is the HushThreads logo.",
                 "El icono de la app en tu pantalla de inicio es el logotipo de HushThreads.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
@@ -1535,6 +1579,9 @@ public final class L10nTranslations {
                 "Con el interruptor de arriba activado, tu lugar se mantiene sin importar cu\u00e1nto tiempo est\u00e9s fuera. Deslizar para actualizar y abrir la app de nuevo siguen cargando publicaciones nuevas.");
         table.put("You have the newest HushThreads release.",
                 "Tienes la versi\u00f3n m\u00e1s reciente de HushThreads.");
+    }
+
+    private static void fillEs6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Pausaste HushThreads.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -1557,9 +1604,6 @@ public final class L10nTranslations {
                 "el arreglo para la nueva firma");
         table.put("the removed advertising ID permission",
                 "el permiso del ID de publicidad eliminado");
-    }
-
-    private static void fillEs6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "la entrada eliminada del men\u00fa para compartir");
         table.put("the user certificate trust",
@@ -1567,7 +1611,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(724);
+        Map<String, String> table = new HashMap<>(746);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1603,6 +1647,8 @@ public final class L10nTranslations {
                 "%1$d sakelar akan berubah.");
         table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
                 "%1$s diganti dengan tanggal dan waktu penyimpanan, %2$s dengan nomor video di Threads, %3$s dengan nama pengunggahnya, dan %4$s dengan tanggal unggahnya. Yang tidak diketahui saat menyimpan akan dihilangkan, dan nama tanpa satu pun di antaranya akan ditambahi tanggal. Jika nama itu sudah ada di folder, waktu penyimpanan ditambahkan di akhir. Karakter yang tidak valid menjadi garis bawah. Kosongkan untuk memakai nama bawaan, %5$s.");
+        table.put("%1$s is picked. Tap to pick another.",
+                "%1$s dipilih. Ketuk untuk memilih yang lain.");
         table.put("%1$s of %2$s",
                 "%1$s dari %2$s");
         table.put("%1$s so far",
@@ -1617,6 +1663,8 @@ public final class L10nTranslations {
                 "Sudah ada laporan diagnostik yang sedang disimpan.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "File bernama %1$s di %2$s menjeda HushThreads.");
+        table.put("A font file is picked. Tap to pick another.",
+                "File font sudah dipilih. Ketuk untuk memilih yang lain.");
         table.put("A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.",
                 "Menekan lama logo Threads di bagian atas feed membuka pengaturan ini. Jika dimatikan, menekan lama tidak melakukan apa-apa.");
         table.put("A profile picture you open on a profile shows full size, where you can zoom in and save it, instead of the small circle.",
@@ -1695,13 +1743,13 @@ public final class L10nTranslations {
                 "Sedang memeriksa GitHub.");
         table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
                 "Pilih nama folder di Movies dan Pictures. Karakter yang tidak valid menjadi garis bawah. Kosongkan untuk memakai folder bawaan, %1$s.");
+    }
+
+    private static void fillIn1(Map<String, String> table) {
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "Pilih file pengaturan. Sebelum apa pun diimpor, Anda akan melihat berapa sakelar yang berubah.");
         table.put("Clear diagnostic data",
                 "Hapus data diagnostik");
-    }
-
-    private static void fillIn1(Map<String, String> table) {
         table.put("Clear search",
                 "Hapus pencarian");
         table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
@@ -1726,6 +1774,8 @@ public final class L10nTranslations {
                 "Salin teks dengan tekan lama");
         table.put("Copy text when you hold a post",
                 "Salin teks saat Anda menekan lama postingan");
+        table.put("Copying the font file",
+                "Menyalin file font");
         table.put("Copying to the gallery",
                 "Menyalin ke galeri");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
@@ -1750,6 +1800,8 @@ public final class L10nTranslations {
                 "Ekspor laporan tidak dapat dimulai. Coba lagi dalam beberapa saat.");
         table.put("Couldn't turn HushThreads back on. Try again.",
                 "HushThreads tidak dapat diaktifkan lagi. Coba lagi.");
+        table.put("Custom font",
+                "Font kustom");
         table.put("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.",
                 "Mode gelap memakai hitam pekat, bukan abu-abu gelap. Aktifkan mode gelap di Threads untuk melihatnya. Mulai ulang Threads untuk melihat perubahannya.");
         table.put("Debug logging",
@@ -1796,6 +1848,12 @@ public final class L10nTranslations {
                 "Nama folder");
         table.put("Folder set to %1$s.",
                 "Folder diatur menjadi %1$s.");
+        table.put("Font file",
+                "File font");
+        table.put("Font file saved. Restart Threads to see it.",
+                "File font disimpan. Mulai ulang Threads untuk melihatnya.");
+        table.put("Font file saved. Turn on Custom font to use it.",
+                "File font disimpan. Aktifkan Font kustom untuk memakainya.");
         table.put("Full report saved to %1$s",
                 "Laporan lengkap disimpan ke %1$s");
         table.put("Full size photos",
@@ -1808,6 +1866,9 @@ public final class L10nTranslations {
                 "GitHub sedang menolak pemeriksaan dari jaringan ini. Coba lagi nanti.");
         table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
                 "GitHub mengirim sesuatu yang tidak bisa dibaca HushThreads. Coba lagi nanti.");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.");
         table.put("Help and restart",
@@ -1822,9 +1883,6 @@ public final class L10nTranslations {
                 "Sembunyikan komentar yang berisi tautan");
         table.put("Hide follow suggestions in Search",
                 "Sembunyikan saran ikuti di Pencarian");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Hide ghost post bubbles",
                 "Sembunyikan gelembung postingan hantu");
         table.put("Hide screenshots from Threads",
@@ -1901,6 +1959,8 @@ public final class L10nTranslations {
                 "Tautan yang Anda ketuk terbuka di browser atau aplikasi situsnya, tanpa pelacakan tautan Threads. Halaman Threads dan Instagram tetap terbuka di Threads.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.");
+        table.put("No font picked yet. Pick a .ttf or .otf file.",
+                "Belum ada font yang dipilih. Pilih file .ttf atau .otf.");
         table.put("No matching settings",
                 "Tidak ada pengaturan yang cocok");
         table.put("No saves in progress.",
@@ -1929,6 +1989,9 @@ public final class L10nTranslations {
                 "Tidak disimpan: proxy butuh kata sandi. Coba jaringan lain.");
         table.put("OK",
                 "Oke");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Sekali sehari, saat Threads dibuka, memeriksa GitHub untuk HushThreads yang lebih baru dan memberi tahu Anda di sini. Tidak ada yang diunduh.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -1945,9 +2008,6 @@ public final class L10nTranslations {
                 "Buka pengaturan dari logo");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cBuka link yang didukung\u201d nonaktif untuk aplikasi ini di pengaturan Android. Ketuk untuk mengaktifkannya.");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "Membuka laporan GitHub dengan versi dan pengaturan Anda yang sudah terisi. Tambahkan apa yang terjadi.");
         table.put("Own app name",
@@ -2052,6 +2112,9 @@ public final class L10nTranslations {
                 "Disimpan ke %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Disimpan ke %1$s, kualitas lebih rendah dari Threads");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Disimpan ke galeri");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -2068,9 +2131,6 @@ public final class L10nTranslations {
                 "Menyimpan video");
         table.put("Saving the settings file",
                 "Menyimpan file pengaturan");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Saving...",
                 "Menyimpan...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
@@ -2109,6 +2169,8 @@ public final class L10nTranslations {
                 "Tampilkan tanggal dan waktu");
         table.put("Shown. Tap to hide it.",
                 "Ditampilkan. Ketuk untuk menyembunyikannya.");
+        table.put("Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.",
+                "Menampilkan teks Threads dengan file font yang Anda pilih di bawah. Ikon tetap memakai font-nya sendiri. Mulai ulang Threads untuk melihat perubahannya.");
         table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
                 "Menampilkan logo HushThreads di bagian atas feed sebagai ganti logo Threads. Logo ini tidak berputar saat feed dimuat ulang. Mulai ulang Threads untuk melihat perubahannya.");
         table.put("Smallest",
@@ -2171,6 +2233,11 @@ public final class L10nTranslations {
                 "Ketuk untuk melihat yang mana.");
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushThreads lagi.");
+        table.put("That file is too large to be a font. Nothing was changed.",
+                "File itu terlalu besar untuk sebuah font. Tidak ada yang diubah.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "File itu terlalu besar untuk sebuah file pengaturan. Tidak ada yang diubah.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -2179,6 +2246,8 @@ public final class L10nTranslations {
                 "File itu mencantumkan satu pengaturan dua kali, jadi tidak jelas nilai mana yang harus dipakai. Tidak ada yang diubah.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Itu bukan file pengaturan HushThreads. Tidak ada yang diubah.");
+        table.put("That isn't a font file Android can use. Nothing was changed.",
+                "Itu bukan file font yang dapat digunakan Android. Tidak ada yang diubah.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "File pengaturan itu memuat nilai yang tidak dapat dibaca HushThreads. Tidak ada yang diubah.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -2191,9 +2260,6 @@ public final class L10nTranslations {
                 "Aplikasi yang menyimpan file pengaturan terakhir masih belum merespons. Coba lagi nanti.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushThreads berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("The app's icon on your home screen is the HushThreads logo.",
                 "Ikon aplikasi di layar utama adalah logo HushThreads.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
@@ -2292,6 +2358,9 @@ public final class L10nTranslations {
                 "Jika sakelar di atas aktif, posisi Anda tetap tersimpan berapa lama pun Anda pergi. Tarik untuk memuat ulang dan membuka ulang aplikasi tetap memuat postingan baru.");
         table.put("You have the newest HushThreads release.",
                 "Anda sudah memakai rilis HushThreads terbaru.");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Anda menjeda HushThreads.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -2314,9 +2383,6 @@ public final class L10nTranslations {
                 "perbaikan build yang ditandatangani ulang");
         table.put("the removed advertising ID permission",
                 "izin ID iklan yang dihapus");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "entri lembar bagikan yang dihapus");
         table.put("the user certificate trust",
@@ -2324,7 +2390,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIt() {
-        Map<String, String> table = new HashMap<>(724);
+        Map<String, String> table = new HashMap<>(746);
         fillIt0(table);
         fillIt1(table);
         fillIt2(table);
@@ -2360,6 +2426,8 @@ public final class L10nTranslations {
                 "Cambieranno %1$d interruttori.");
         table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
                 "%1$s diventa la data e l'ora del salvataggio, %2$s il numero del video su Threads, %3$s chi l'ha pubblicato e %4$s il giorno di pubblicazione. Ci\u00f2 che un salvataggio non conosce viene omesso, e un nome senza nessuno di questi riceve la data. Se il nome \u00e8 gi\u00e0 nella cartella, l'ora del salvataggio viene aggiunta in fondo. I caratteri non validi diventano trattini bassi. Lascia vuoto per usare il predefinito, %5$s.");
+        table.put("%1$s is picked. Tap to pick another.",
+                "Hai scelto %1$s. Tocca per sceglierne un altro.");
         table.put("%1$s of %2$s",
                 "%1$s di %2$s");
         table.put("%1$s so far",
@@ -2374,6 +2442,8 @@ public final class L10nTranslations {
                 "Un report diagnostico \u00e8 gi\u00e0 in fase di salvataggio.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "Un file chiamato %1$s in %2$s ha messo in pausa HushThreads.");
+        table.put("A font file is picked. Tap to pick another.",
+                "\u00c8 stato scelto un file di carattere. Tocca per sceglierne un altro.");
         table.put("A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.",
                 "Una pressione prolungata sul logo di Threads in cima al feed apre queste impostazioni. Se disattivato, la pressione prolungata non fa nulla.");
         table.put("A profile picture you open on a profile shows full size, where you can zoom in and save it, instead of the small circle.",
@@ -2452,13 +2522,13 @@ public final class L10nTranslations {
                 "Controllo su GitHub in corso.");
         table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
                 "Scegli un nome di cartella sotto Movies e Pictures. I caratteri non validi diventano trattini bassi. Lascia vuoto per usare la cartella predefinita, %1$s.");
+    }
+
+    private static void fillIt1(Map<String, String> table) {
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "Scegli un file di impostazioni. Prima di importare qualsiasi cosa, vedrai quanti interruttori cambia.");
         table.put("Clear diagnostic data",
                 "Cancella i dati diagnostici");
-    }
-
-    private static void fillIt1(Map<String, String> table) {
         table.put("Clear search",
                 "Cancella la ricerca");
         table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
@@ -2483,6 +2553,8 @@ public final class L10nTranslations {
                 "Copia testo con pressione prolungata");
         table.put("Copy text when you hold a post",
                 "Copia il testo tenendo premuto un post");
+        table.put("Copying the font file",
+                "Copia del file del carattere");
         table.put("Copying to the gallery",
                 "Copia nella galleria in corso");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
@@ -2507,6 +2579,8 @@ public final class L10nTranslations {
                 "Impossibile avviare l'esportazione del report. Riprova tra poco.");
         table.put("Couldn't turn HushThreads back on. Try again.",
                 "Impossibile riattivare HushThreads. Riprova.");
+        table.put("Custom font",
+                "Carattere personalizzato");
         table.put("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.",
                 "La modalit\u00e0 scura usa il nero puro invece del grigio scuro. Attiva la modalit\u00e0 scura in Threads per vederlo. Riavvia Threads per vedere la modifica.");
         table.put("Debug logging",
@@ -2553,6 +2627,12 @@ public final class L10nTranslations {
                 "Nome della cartella");
         table.put("Folder set to %1$s.",
                 "Cartella impostata su %1$s.");
+        table.put("Font file",
+                "File del carattere");
+        table.put("Font file saved. Restart Threads to see it.",
+                "File del carattere salvato. Riavvia Threads per vederlo.");
+        table.put("Font file saved. Turn on Custom font to use it.",
+                "File del carattere salvato. Attiva Carattere personalizzato per usarlo.");
         table.put("Full report saved to %1$s",
                 "Report completo salvato in %1$s");
         table.put("Full size photos",
@@ -2565,6 +2645,9 @@ public final class L10nTranslations {
                 "Per ora GitHub rifiuta i controlli da questa rete. Riprova pi\u00f9 tardi.");
         table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
                 "GitHub ha risposto con qualcosa che HushThreads non riesce a leggere. Riprova pi\u00f9 tardi.");
+    }
+
+    private static void fillIt2(Map<String, String> table) {
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Vai direttamente a un gruppo di impostazioni. Indietro ti riporta dov'eri.");
         table.put("Help and restart",
@@ -2579,9 +2662,6 @@ public final class L10nTranslations {
                 "Nascondi commenti con link");
         table.put("Hide follow suggestions in Search",
                 "Nascondi i suggerimenti da seguire in Cerca");
-    }
-
-    private static void fillIt2(Map<String, String> table) {
         table.put("Hide ghost post bubbles",
                 "Nascondi le bolle dei post fantasma");
         table.put("Hide screenshots from Threads",
@@ -2658,6 +2738,8 @@ public final class L10nTranslations {
                 "I link che tocchi si aprono nel browser o nell'app del sito, saltando il tracciamento dei link di Threads. Le pagine di Threads e Instagram si aprono ancora in Threads.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Nessuna app su questo telefono pu\u00f2 aprire il link. L'indirizzo \u00e8 %1$s.");
+        table.put("No font picked yet. Pick a .ttf or .otf file.",
+                "Nessun carattere scelto. Scegli un file .ttf o .otf.");
         table.put("No matching settings",
                 "Nessuna impostazione corrispondente");
         table.put("No saves in progress.",
@@ -2686,6 +2768,9 @@ public final class L10nTranslations {
                 "Non salvato: il proxy chiede una password. Prova un'altra rete.");
         table.put("OK",
                 "OK");
+    }
+
+    private static void fillIt3(Map<String, String> table) {
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Una volta al giorno, all'avvio di Threads, controlla su GitHub se c'\u00e8 un HushThreads pi\u00f9 recente e te lo dice qui. Non viene scaricato nulla.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -2702,9 +2787,6 @@ public final class L10nTranslations {
                 "Apri le impostazioni dal logo");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "L'apertura dei link supportati \u00e8 disattivata per questa app nelle impostazioni di Android. Tocca per attivarla.");
-    }
-
-    private static void fillIt3(Map<String, String> table) {
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "Apre una segnalazione su GitHub con le tue versioni e impostazioni gi\u00e0 compilate. Aggiungi cos'\u00e8 successo.");
         table.put("Own app name",
@@ -2809,6 +2891,9 @@ public final class L10nTranslations {
                 "Salvato in %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Salvato in %1$s con qualit\u00e0 inferiore a Threads");
+    }
+
+    private static void fillIt4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Salvato nella galleria");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -2825,9 +2910,6 @@ public final class L10nTranslations {
                 "Salvataggio di un video");
         table.put("Saving the settings file",
                 "Salvataggio del file di impostazioni");
-    }
-
-    private static void fillIt4(Map<String, String> table) {
         table.put("Saving...",
                 "Salvataggio...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
@@ -2866,6 +2948,8 @@ public final class L10nTranslations {
                 "Mostra data e ora");
         table.put("Shown. Tap to hide it.",
                 "Visibili. Tocca per nasconderle.");
+        table.put("Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.",
+                "Mostra il testo di Threads con il file di carattere che scegli qui sotto. Le icone mantengono il loro carattere. Riavvia Threads per vedere la modifica.");
         table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
                 "Mostra il logo di HushThreads in cima al feed al posto del logo di Threads. Non gira mentre il feed si aggiorna. Riavvia Threads per vedere la modifica.");
         table.put("Smallest",
@@ -2928,6 +3012,11 @@ public final class L10nTranslations {
                 "Tocca per vedere quali.");
         table.put("Tap to turn it back on.",
                 "Tocca per riattivarlo.");
+        table.put("That file is too large to be a font. Nothing was changed.",
+                "Quel file \u00e8 troppo grande per essere un carattere. Non \u00e8 cambiato nulla.");
+    }
+
+    private static void fillIt5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Quel file \u00e8 troppo grande per essere un file di impostazioni. Non \u00e8 cambiato nulla.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -2936,6 +3025,8 @@ public final class L10nTranslations {
                 "Quel file elenca un'impostazione due volte, quindi non si sa quale valore usare. Non \u00e8 cambiato nulla.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Non \u00e8 un file di impostazioni di HushThreads. Non \u00e8 cambiato nulla.");
+        table.put("That isn't a font file Android can use. Nothing was changed.",
+                "Quello non \u00e8 un file di carattere che Android pu\u00f2 usare. Non \u00e8 cambiato nulla.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Quel file di impostazioni contiene un valore che HushThreads non riesce a leggere. Non \u00e8 cambiato nulla.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -2948,9 +3039,6 @@ public final class L10nTranslations {
                 "L'app che contiene l'ultimo file di impostazioni non ha ancora risposto. Riprova pi\u00f9 tardi.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "L'app che contiene il file di impostazioni ci sta mettendo troppo, quindi HushThreads ha smesso di aspettare. Quell'app potrebbe comunque finire di salvarlo, quindi controlla il file prima di farci affidamento.");
-    }
-
-    private static void fillIt5(Map<String, String> table) {
         table.put("The app's icon on your home screen is the HushThreads logo.",
                 "L'icona dell'app nella schermata Home \u00e8 il logo di HushThreads.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
@@ -3049,6 +3137,9 @@ public final class L10nTranslations {
                 "Con l'interruttore qui sopra attivo, resti dov'eri per quanto tempo tu stia via. Trascinare per aggiornare e un nuovo avvio caricano comunque nuovi post.");
         table.put("You have the newest HushThreads release.",
                 "Hai la versione pi\u00f9 recente di HushThreads.");
+    }
+
+    private static void fillIt6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Hai messo in pausa HushThreads.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -3071,9 +3162,6 @@ public final class L10nTranslations {
                 "la correzione per le build rifirmate");
         table.put("the removed advertising ID permission",
                 "il permesso dell'ID pubblicitario rimosso");
-    }
-
-    private static void fillIt6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "la voce del menu di condivisione rimossa");
         table.put("the user certificate trust",
@@ -3081,7 +3169,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildKo() {
-        Map<String, String> table = new HashMap<>(724);
+        Map<String, String> table = new HashMap<>(746);
         fillKo0(table);
         fillKo1(table);
         fillKo2(table);
@@ -3117,6 +3205,8 @@ public final class L10nTranslations {
                 "\uc2a4\uc704\uce58 %1$d\uac1c\uac00 \ubc14\ub01d\ub2c8\ub2e4.");
         table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
                 "%1$s\ub294 \uc800\uc7a5\ud55c \ub0a0\uc9dc\uc640 \uc2dc\uac04, %2$s\ub294 Threads\uc5d0\uc11c \ub3d9\uc601\uc0c1\uc758 \ubc88\ud638, %3$s\ub294 \uac8c\uc2dc\ud55c \uc0ac\ub78c, %4$s\ub294 \uac8c\uc2dc\ub41c \ub0a0\uc9dc\uac00 \ub429\ub2c8\ub2e4. \uc800\uc7a5\ud560 \ub54c \uc54c \uc218 \uc5c6\ub294 \uc815\ubcf4\ub294 \ube60\uc9c0\uba70, \uc774 \uc911 \uc544\ubb34\uac83\ub3c4 \uc5c6\ub294 \uc774\ub984\uc5d0\ub294 \ub0a0\uc9dc\uac00 \ubd99\uc2b5\ub2c8\ub2e4. \uac19\uc740 \uc774\ub984\uc774 \uc774\ubbf8 \ud3f4\ub354\uc5d0 \uc788\uc73c\uba74 \uc800\uc7a5\ud55c \uc2dc\uac04\uc774 \ub05d\uc5d0 \ubd99\uc2b5\ub2c8\ub2e4. \uc0ac\uc6a9\ud560 \uc218 \uc5c6\ub294 \ubb38\uc790\ub294 \ubc11\uc904\ub85c \ubc14\ub01d\ub2c8\ub2e4. \ube44\uc6cc \ub450\uba74 \uae30\ubcf8\uac12\uc778 %5$s\ub97c \uc0ac\uc6a9\ud569\ub2c8\ub2e4.");
+        table.put("%1$s is picked. Tap to pick another.",
+                "%1$s \ud30c\uc77c\uc774 \uc120\ud0dd\ub418\uc5b4 \uc788\uc2b5\ub2c8\ub2e4. \ub2e4\ub978 \ud30c\uc77c\uc744 \uc120\ud0dd\ud558\ub824\uba74 \ud0ed\ud558\uc138\uc694.");
         table.put("%1$s of %2$s",
                 "%2$s \uc911 %1$s");
         table.put("%1$s so far",
@@ -3131,6 +3221,8 @@ public final class L10nTranslations {
                 "\uc9c4\ub2e8 \ubcf4\uace0\uc11c\ub97c \uc774\ubbf8 \uc800\uc7a5\ud558\uace0 \uc788\uc2b5\ub2c8\ub2e4.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "%2$s\uc5d0 \uc788\ub294 %1$s \ud30c\uc77c \ub54c\ubb38\uc5d0 HushThreads\uac00 \uc77c\uc2dc \uc815\uc9c0\ub418\uc5c8\uc2b5\ub2c8\ub2e4.");
+        table.put("A font file is picked. Tap to pick another.",
+                "\uae00\uaf34 \ud30c\uc77c\uc774 \uc120\ud0dd\ub418\uc5b4 \uc788\uc2b5\ub2c8\ub2e4. \ub2e4\ub978 \ud30c\uc77c\uc744 \uc120\ud0dd\ud558\ub824\uba74 \ud0ed\ud558\uc138\uc694.");
         table.put("A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.",
                 "\ud53c\ub4dc \uc0c1\ub2e8\uc758 Threads \ub85c\uace0\ub97c \uae38\uac8c \ub204\ub974\uba74 \uc774 \uc124\uc815\uc774 \uc5f4\ub9bd\ub2c8\ub2e4. \ub044\uba74 \uae38\uac8c \ub20c\ub7ec\ub3c4 \uc544\ubb34 \uc77c\ub3c4 \uc77c\uc5b4\ub098\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
         table.put("A profile picture you open on a profile shows full size, where you can zoom in and save it, instead of the small circle.",
@@ -3209,13 +3301,13 @@ public final class L10nTranslations {
                 "\uc9c0\uae08 GitHub\ub97c \ud655\uc778\ud558\ub294 \uc911\uc785\ub2c8\ub2e4.");
         table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
                 "Movies\uc640 Pictures \uc544\ub798\uc5d0 \uc4f8 \ud3f4\ub354 \uc774\ub984\uc744 \uc815\ud558\uc138\uc694. \uc0ac\uc6a9\ud560 \uc218 \uc5c6\ub294 \ubb38\uc790\ub294 \ubc11\uc904\ub85c \ubc14\ub01d\ub2c8\ub2e4. \ube44\uc6cc \ub450\uba74 \uae30\ubcf8 \ud3f4\ub354\uc778 %1$s\ub97c \uc0ac\uc6a9\ud569\ub2c8\ub2e4.");
+    }
+
+    private static void fillKo1(Map<String, String> table) {
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "\uc124\uc815 \ud30c\uc77c\uc744 \uc120\ud0dd\ud558\uc138\uc694. \uac00\uc838\uc624\uae30 \uc804\uc5d0 \uc2a4\uc704\uce58\uac00 \uba87 \uac1c \ubc14\ub00c\ub294\uc9c0 \ubcf4\uc5ec \uc90d\ub2c8\ub2e4.");
         table.put("Clear diagnostic data",
                 "\uc9c4\ub2e8 \ub370\uc774\ud130 \uc9c0\uc6b0\uae30");
-    }
-
-    private static void fillKo1(Map<String, String> table) {
         table.put("Clear search",
                 "\uac80\uc0c9 \uc9c0\uc6b0\uae30");
         table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
@@ -3240,6 +3332,8 @@ public final class L10nTranslations {
                 "\uae38\uac8c \ub20c\ub7ec \ud14d\uc2a4\ud2b8 \ubcf5\uc0ac");
         table.put("Copy text when you hold a post",
                 "\uac8c\uc2dc\ubb3c\uc744 \uae38\uac8c \ub20c\ub7ec \ud14d\uc2a4\ud2b8 \ubcf5\uc0ac");
+        table.put("Copying the font file",
+                "\uae00\uaf34 \ud30c\uc77c\uc744 \ubcf5\uc0ac\ud558\ub294 \uc911");
         table.put("Copying to the gallery",
                 "\uac24\ub7ec\ub9ac\uc5d0 \ubcf5\uc0ac\ud558\ub294 \uc911");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
@@ -3264,6 +3358,8 @@ public final class L10nTranslations {
                 "\ubcf4\uace0\uc11c \ub0b4\ubcf4\ub0b4\uae30\ub97c \uc2dc\uc791\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
         table.put("Couldn't turn HushThreads back on. Try again.",
                 "HushThreads\ub97c \ub2e4\uc2dc \ucf1c\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+        table.put("Custom font",
+                "\uc0ac\uc6a9\uc790 \uc9c0\uc815 \uae00\uaf34");
         table.put("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.",
                 "\ub2e4\ud06c \ubaa8\ub4dc\uc5d0\uc11c \uc5b4\ub450\uc6b4 \ud68c\uc0c9 \ub300\uc2e0 \uc644\uc804\ud55c \uac80\uc740\uc0c9\uc744 \uc0ac\uc6a9\ud569\ub2c8\ub2e4. \ubcf4\ub824\uba74 Threads\uc5d0\uc11c \ub2e4\ud06c \ubaa8\ub4dc\ub97c \ucf1c\uc138\uc694. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
         table.put("Debug logging",
@@ -3310,6 +3406,12 @@ public final class L10nTranslations {
                 "\ud3f4\ub354 \uc774\ub984");
         table.put("Folder set to %1$s.",
                 "\ud3f4\ub354\ub97c %1$s(\uc73c)\ub85c \uc124\uc815\ud588\uc2b5\ub2c8\ub2e4.");
+        table.put("Font file",
+                "\uae00\uaf34 \ud30c\uc77c");
+        table.put("Font file saved. Restart Threads to see it.",
+                "\uae00\uaf34 \ud30c\uc77c\uc744 \uc800\uc7a5\ud588\uc2b5\ub2c8\ub2e4. \uc801\uc6a9\ud558\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Font file saved. Turn on Custom font to use it.",
+                "\uae00\uaf34 \ud30c\uc77c\uc744 \uc800\uc7a5\ud588\uc2b5\ub2c8\ub2e4. \uc0ac\uc6a9\ud558\ub824\uba74 \uc0ac\uc6a9\uc790 \uc9c0\uc815 \uae00\uaf34\uc744 \ucf1c\uc138\uc694.");
         table.put("Full report saved to %1$s",
                 "\uc804\uccb4 \ubcf4\uace0\uc11c\uac00 %1$s\uc5d0 \uc800\uc7a5\ub418\uc5c8\uc2b5\ub2c8\ub2e4");
         table.put("Full size photos",
@@ -3322,6 +3424,9 @@ public final class L10nTranslations {
                 "GitHub\uac00 \uc9c0\uae08\uc740 \uc774 \ub124\ud2b8\uc6cc\ud06c\uc758 \ud655\uc778 \uc694\uccad\uc744 \uac70\ubd80\ud558\uace0 \uc788\uc2b5\ub2c8\ub2e4. \ub098\uc911\uc5d0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
         table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
                 "GitHub\uac00 HushThreads\uac00 \uc77d\uc744 \uc218 \uc5c6\ub294 \uc751\ub2f5\uc744 \ubcf4\ub0c8\uc2b5\ub2c8\ub2e4. \ub098\uc911\uc5d0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+    }
+
+    private static void fillKo2(Map<String, String> table) {
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "\uc124\uc815 \uadf8\ub8f9 \ud558\ub098\ub85c \ubc14\ub85c \uc774\ub3d9\ud569\ub2c8\ub2e4. \ub4a4\ub85c\ub97c \ub204\ub974\uba74 \uc6d0\ub798 \uc704\uce58\ub85c \ub3cc\uc544\uac11\ub2c8\ub2e4.");
         table.put("Help and restart",
@@ -3336,9 +3441,6 @@ public final class L10nTranslations {
                 "\ub9c1\ud06c\uac00 \uc788\ub294 \ub313\uae00 \uc228\uae30\uae30");
         table.put("Hide follow suggestions in Search",
                 "\uac80\uc0c9\uc5d0\uc11c \ud314\ub85c\uc6b0 \ucd94\ucc9c \uc228\uae30\uae30");
-    }
-
-    private static void fillKo2(Map<String, String> table) {
         table.put("Hide ghost post bubbles",
                 "\uace0\uc2a4\ud2b8 \uac8c\uc2dc\ubb3c \ub9d0\ud48d\uc120 \uc228\uae30\uae30");
         table.put("Hide screenshots from Threads",
@@ -3415,6 +3517,8 @@ public final class L10nTranslations {
                 "\ud0ed\ud55c \ub9c1\ud06c\uac00 Threads\uc758 \ub9c1\ud06c \ucd94\uc801\uc744 \uac74\ub108\ub6f0\uace0 \ube0c\ub77c\uc6b0\uc800\ub098 \ud574\ub2f9 \uc0ac\uc774\ud2b8\uc758 \uc571\uc5d0\uc11c \uc5f4\ub9bd\ub2c8\ub2e4. Threads\uc640 Instagram \ud398\uc774\uc9c0\ub294 \uacc4\uc18d Threads\uc5d0\uc11c \uc5f4\ub9bd\ub2c8\ub2e4.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "\uc774 \ud734\ub300\uc804\ud654\uc5d0\ub294 \uc774 \ub9c1\ud06c\ub97c \uc5f4 \uc218 \uc788\ub294 \uc571\uc774 \uc5c6\uc2b5\ub2c8\ub2e4. \uc8fc\uc18c\ub294 %1$s\uc785\ub2c8\ub2e4.");
+        table.put("No font picked yet. Pick a .ttf or .otf file.",
+                "\uc544\uc9c1 \uc120\ud0dd\ud55c \uae00\uaf34\uc774 \uc5c6\uc2b5\ub2c8\ub2e4. .ttf \ub610\ub294 .otf \ud30c\uc77c\uc744 \uc120\ud0dd\ud558\uc138\uc694.");
         table.put("No matching settings",
                 "\uc77c\uce58\ud558\ub294 \uc124\uc815\uc774 \uc5c6\uc2b5\ub2c8\ub2e4");
         table.put("No saves in progress.",
@@ -3443,6 +3547,9 @@ public final class L10nTranslations {
                 "\uc800\uc7a5\ub418\uc9c0 \uc54a\uc74c: \ud504\ub85d\uc2dc \ube44\ubc00\ubc88\ud638 \ud544\uc694. \ub2e4\ub978 \ub124\ud2b8\uc6cc\ud06c\ub97c \uc4f0\uc138\uc694.");
         table.put("OK",
                 "\ud655\uc778");
+    }
+
+    private static void fillKo3(Map<String, String> table) {
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "\ud558\ub8e8\uc5d0 \ud55c \ubc88 Threads\ub97c \uc2dc\uc791\ud560 \ub54c GitHub\uc5d0\uc11c \uc0c8 HushThreads\uac00 \uc788\ub294\uc9c0 \ud655\uc778\ud558\uace0 \uc5ec\uae30\uc5d0 \uc54c\ub824 \uc90d\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ub2e4\uc6b4\ub85c\ub4dc\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -3459,9 +3566,6 @@ public final class L10nTranslations {
                 "\ub85c\uace0\uc5d0\uc11c \uc124\uc815 \uc5f4\uae30");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "Android \uc124\uc815\uc5d0\uc11c \uc774 \uc571\uc758 \uc9c0\uc6d0\ub418\ub294 \ub9c1\ud06c \uc5f4\uae30\uac00 \uaebc\uc838 \uc788\uc2b5\ub2c8\ub2e4. \ud0ed\ud574\uc11c \ucf1c\uc138\uc694.");
-    }
-
-    private static void fillKo3(Map<String, String> table) {
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "\ubc84\uc804\uacfc \uc124\uc815\uc774 \ubbf8\ub9ac \ucc44\uc6cc\uc9c4 GitHub \uc2e0\uace0\ub97c \uc5fd\ub2c8\ub2e4. \ubb34\uc2a8 \uc77c\uc774 \uc788\uc5c8\ub294\uc9c0 \uc801\uc5b4 \uc8fc\uc138\uc694.");
         table.put("Own app name",
@@ -3566,6 +3670,9 @@ public final class L10nTranslations {
                 "%1$s\uc5d0 \uc800\uc7a5\ub428");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Threads\ubcf4\ub2e4 \ub0ae\uc740 \ud654\uc9c8\ub85c %1$s\uc5d0 \uc800\uc7a5\ub428");
+    }
+
+    private static void fillKo4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "\uac24\ub7ec\ub9ac\uc5d0 \uc800\uc7a5\ub428");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -3582,9 +3689,6 @@ public final class L10nTranslations {
                 "\ub3d9\uc601\uc0c1\uc744 \uc800\uc7a5\ud558\ub294 \uc911");
         table.put("Saving the settings file",
                 "\uc124\uc815 \ud30c\uc77c\uc744 \uc800\uc7a5\ud558\ub294 \uc911");
-    }
-
-    private static void fillKo4(Map<String, String> table) {
         table.put("Saving...",
                 "\uc800\uc7a5\ud558\ub294 \uc911...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
@@ -3623,6 +3727,8 @@ public final class L10nTranslations {
                 "\ub0a0\uc9dc\uc640 \uc2dc\uac04 \ud45c\uc2dc");
         table.put("Shown. Tap to hide it.",
                 "\ud45c\uc2dc\ub428. \uc228\uae30\ub824\uba74 \ud0ed\ud558\uc138\uc694.");
+        table.put("Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.",
+                "Threads\uc758 \ud14d\uc2a4\ud2b8\ub97c \uc544\ub798\uc5d0\uc11c \uc120\ud0dd\ud55c \uae00\uaf34 \ud30c\uc77c\ub85c \ud45c\uc2dc\ud569\ub2c8\ub2e4. \uc544\uc774\ucf58\uc740 \uc6d0\ub798 \uae00\uaf34\uc744 \uc720\uc9c0\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
         table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
                 "\ud53c\ub4dc \uc0c1\ub2e8\uc5d0 Threads \ub85c\uace0 \ub300\uc2e0 HushThreads \ub85c\uace0\ub97c \ud45c\uc2dc\ud569\ub2c8\ub2e4. \ud53c\ub4dc\ub97c \uc0c8\ub85c\uace0\uce68\ud558\ub294 \ub3d9\uc548 \ud68c\uc804\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
         table.put("Smallest",
@@ -3685,6 +3791,11 @@ public final class L10nTranslations {
                 "\ud0ed\ud574\uc11c \ud655\uc778\ud558\uc138\uc694.");
         table.put("Tap to turn it back on.",
                 "\ub2e4\uc2dc \ucf1c\ub824\uba74 \ud0ed\ud558\uc138\uc694.");
+        table.put("That file is too large to be a font. Nothing was changed.",
+                "\uae00\uaf34\uc774\ub77c\uace0 \ud558\uae30\uc5d0\ub294 \ud30c\uc77c\uc774 \ub108\ubb34 \ud07d\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+    }
+
+    private static void fillKo5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "\uc124\uc815 \ud30c\uc77c\uc774\ub77c\uace0 \ud558\uae30\uc5d0\ub294 \ud30c\uc77c\uc774 \ub108\ubb34 \ud07d\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -3693,6 +3804,8 @@ public final class L10nTranslations {
                 "\ud30c\uc77c\uc5d0 \uac19\uc740 \uc124\uc815\uc774 \ub450 \ubc88 \uc788\uc5b4\uc11c \uc5b4\ub5a4 \uac12\uc744 \uc368\uc57c \ud560\uc9c0 \uc54c \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "HushThreads \uc124\uc815 \ud30c\uc77c\uc774 \uc544\ub2d9\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
+        table.put("That isn't a font file Android can use. Nothing was changed.",
+                "Android\uc5d0\uc11c \uc0ac\uc6a9\ud560 \uc218 \uc788\ub294 \uae00\uaf34 \ud30c\uc77c\uc774 \uc544\ub2d9\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "\uc124\uc815 \ud30c\uc77c\uc5d0 HushThreads\uac00 \uc77d\uc744 \uc218 \uc5c6\ub294 \uac12\uc774 \uc788\uc2b5\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -3705,9 +3818,6 @@ public final class L10nTranslations {
                 "\ub9c8\uc9c0\ub9c9 \uc124\uc815 \ud30c\uc77c\uc744 \ubcf4\uad00\ud558\ub294 \uc571\uc774 \uc544\uc9c1 \uc751\ub2f5\ud558\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4. \ub098\uc911\uc5d0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "\uc124\uc815 \ud30c\uc77c\uc744 \ubcf4\uad00\ud558\ub294 \uc571\uc758 \uc751\ub2f5\uc774 \ub108\ubb34 \ub2a6\uc5b4 HushThreads\uac00 \uae30\ub2e4\ub9ac\uae30\ub97c \uba48\ucdc4\uc2b5\ub2c8\ub2e4. \uadf8 \uc571\uc774 \uc800\uc7a5\uc744 \ub9c8\uce60 \uc218\ub3c4 \uc788\uc73c\ub2c8 \ud30c\uc77c\uc744 \uc0ac\uc6a9\ud558\uae30 \uc804\uc5d0 \ud655\uc778\ud558\uc138\uc694.");
-    }
-
-    private static void fillKo5(Map<String, String> table) {
         table.put("The app's icon on your home screen is the HushThreads logo.",
                 "\ud648 \ud654\uba74\uc758 \uc571 \uc544\uc774\ucf58\uc774 HushThreads \ub85c\uace0\uc785\ub2c8\ub2e4.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
@@ -3806,6 +3916,9 @@ public final class L10nTranslations {
                 "\uc704 \uc2a4\uc704\uce58\uac00 \ucf1c\uc838 \uc788\uc73c\uba74 \uc5bc\ub9c8\ub098 \uc624\ub798 \ub5a0\ub098 \uc788\uc5b4\ub3c4 \ubcf4\ub358 \uc704\uce58\uac00 \uc720\uc9c0\ub429\ub2c8\ub2e4. \ub2f9\uaca8\uc11c \uc0c8\ub85c\uace0\uce68\ud558\uac70\ub098 \uc0c8\ub85c \uc2dc\uc791\ud558\uba74 \uc0c8 \uac8c\uc2dc\ubb3c\uc744 \ubd88\ub7ec\uc635\ub2c8\ub2e4.");
         table.put("You have the newest HushThreads release.",
                 "\ucd5c\uc2e0 HushThreads \ub9b4\ub9ac\uc2a4\ub97c \uc0ac\uc6a9 \uc911\uc785\ub2c8\ub2e4.");
+    }
+
+    private static void fillKo6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "HushThreads\ub97c \uc77c\uc2dc \uc815\uc9c0\ud588\uc2b5\ub2c8\ub2e4.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -3828,9 +3941,6 @@ public final class L10nTranslations {
                 "\ub2e4\uc2dc \uc11c\uba85\ub41c \ube4c\ub4dc \uc218\uc815");
         table.put("the removed advertising ID permission",
                 "\uc81c\uac70\ub41c \uad11\uace0 ID \uad8c\ud55c");
-    }
-
-    private static void fillKo6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "\uc81c\uac70\ub41c \uacf5\uc720 \uc2dc\ud2b8 \ud56d\ubaa9");
         table.put("the user certificate trust",
@@ -3838,7 +3948,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(724);
+        Map<String, String> table = new HashMap<>(746);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -3874,6 +3984,8 @@ public final class L10nTranslations {
                 "%1$d op\u00e7\u00f5es ser\u00e3o alteradas.");
         table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
                 "%1$s representa a data e a hora do salvamento, %2$s o n\u00famero do v\u00eddeo no Threads, %3$s quem o publicou e %4$s o dia da publica\u00e7\u00e3o. O que n\u00e3o estiver dispon\u00edvel ser\u00e1 omitido, e um nome sem nenhum desses dados receber\u00e1 a data. Se o nome j\u00e1 existir na pasta, a hora do salvamento ser\u00e1 acrescentada ao final. Caracteres inv\u00e1lidos s\u00e3o substitu\u00eddos por sublinhados. Deixe em branco para usar o nome padr\u00e3o, %5$s.");
+        table.put("%1$s is picked. Tap to pick another.",
+                "%1$s est\u00e1 escolhido. Toque para escolher outro.");
         table.put("%1$s of %2$s",
                 "%1$s de %2$s");
         table.put("%1$s so far",
@@ -3888,6 +4000,8 @@ public final class L10nTranslations {
                 "Um relat\u00f3rio de diagn\u00f3stico j\u00e1 est\u00e1 sendo salvo.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "Um arquivo chamado %1$s em %2$s pausou o HushThreads.");
+        table.put("A font file is picked. Tap to pick another.",
+                "H\u00e1 um arquivo de fonte escolhido. Toque para escolher outro.");
         table.put("A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.",
                 "Tocar e segurar o logotipo do Threads no topo do feed abre estas configura\u00e7\u00f5es. Desligado, tocar e segurar n\u00e3o faz nada.");
         table.put("A profile picture you open on a profile shows full size, where you can zoom in and save it, instead of the small circle.",
@@ -3966,13 +4080,13 @@ public final class L10nTranslations {
                 "Consultando o GitHub agora.");
         table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
                 "Escolha o nome da pasta dentro de Movies e Pictures. Caracteres inv\u00e1lidos s\u00e3o substitu\u00eddos por sublinhados. Deixe em branco para usar a pasta padr\u00e3o, %1$s.");
+    }
+
+    private static void fillPt_rBR1(Map<String, String> table) {
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "Escolha um arquivo de configura\u00e7\u00f5es. Antes de importar qualquer coisa, voc\u00ea ver\u00e1 quantas op\u00e7\u00f5es ser\u00e3o alteradas.");
         table.put("Clear diagnostic data",
                 "Limpar dados de diagn\u00f3stico");
-    }
-
-    private static void fillPt_rBR1(Map<String, String> table) {
         table.put("Clear search",
                 "Limpar busca");
         table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
@@ -3997,6 +4111,8 @@ public final class L10nTranslations {
                 "Copiar texto ao tocar e segurar");
         table.put("Copy text when you hold a post",
                 "Copiar texto ao tocar e segurar uma publica\u00e7\u00e3o");
+        table.put("Copying the font file",
+                "Copiando o arquivo de fonte");
         table.put("Copying to the gallery",
                 "Copiando para a galeria");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
@@ -4021,6 +4137,8 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel iniciar a exporta\u00e7\u00e3o do relat\u00f3rio. Tente de novo daqui a pouco.");
         table.put("Couldn't turn HushThreads back on. Try again.",
                 "N\u00e3o foi poss\u00edvel reativar o HushThreads. Tente novamente.");
+        table.put("Custom font",
+                "Fonte personalizada");
         table.put("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.",
                 "O modo escuro usa preto puro em vez de cinza-escuro. Ative o modo escuro no Threads para ver. Reinicie o Threads para ver a mudan\u00e7a.");
         table.put("Debug logging",
@@ -4067,6 +4185,12 @@ public final class L10nTranslations {
                 "Nome da pasta");
         table.put("Folder set to %1$s.",
                 "Pasta definida como %1$s.");
+        table.put("Font file",
+                "Arquivo de fonte");
+        table.put("Font file saved. Restart Threads to see it.",
+                "Arquivo de fonte salvo. Reinicie o Threads para ver.");
+        table.put("Font file saved. Turn on Custom font to use it.",
+                "Arquivo de fonte salvo. Ative Fonte personalizada para usar.");
         table.put("Full report saved to %1$s",
                 "Relat\u00f3rio completo salvo em %1$s");
         table.put("Full size photos",
@@ -4079,6 +4203,9 @@ public final class L10nTranslations {
                 "O GitHub est\u00e1 recusando consultas desta rede por enquanto. Tente novamente mais tarde.");
         table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
                 "O GitHub enviou algo que o HushThreads n\u00e3o conseguiu ler. Tente de novo mais tarde.");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "V\u00e1 diretamente para um grupo de configura\u00e7\u00f5es. Voltar leva voc\u00ea de volta ao ponto em que estava.");
         table.put("Help and restart",
@@ -4093,9 +4220,6 @@ public final class L10nTranslations {
                 "Ocultar coment\u00e1rios com links");
         table.put("Hide follow suggestions in Search",
                 "Ocultar sugest\u00f5es para seguir na pesquisa");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Hide ghost post bubbles",
                 "Ocultar os bal\u00f5es de posts fantasma");
         table.put("Hide screenshots from Threads",
@@ -4172,6 +4296,8 @@ public final class L10nTranslations {
                 "Os links que voc\u00ea toca abrem no navegador ou no app do site, sem o rastreamento de links do Threads. P\u00e1ginas do Threads e do Instagram continuam abrindo no Threads.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Nenhum aplicativo neste dispositivo consegue abrir o link. O endere\u00e7o \u00e9 %1$s.");
+        table.put("No font picked yet. Pick a .ttf or .otf file.",
+                "Nenhuma fonte escolhida ainda. Escolha um arquivo .ttf ou .otf.");
         table.put("No matching settings",
                 "Nenhuma configura\u00e7\u00e3o encontrada");
         table.put("No saves in progress.",
@@ -4200,6 +4326,9 @@ public final class L10nTranslations {
                 "N\u00e3o foi salvo: o proxy pede uma senha. Tente outra rede.");
         table.put("OK",
                 "OK");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Uma vez por dia, quando o Threads abre, procura no GitHub um HushThreads mais novo e avisa voc\u00ea aqui. Nada \u00e9 baixado.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -4216,9 +4345,6 @@ public final class L10nTranslations {
                 "Abrir as configura\u00e7\u00f5es pelo logotipo");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir links compat\u00edveis\u201d est\u00e1 desativado para este app nas configura\u00e7\u00f5es do Android. Toque para ativar.");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "Abre um relato no GitHub com suas vers\u00f5es e configura\u00e7\u00f5es j\u00e1 preenchidas. Conte o que aconteceu.");
         table.put("Own app name",
@@ -4323,6 +4449,9 @@ public final class L10nTranslations {
                 "Salvo em %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Salvo em %1$s com qualidade menor que no Threads");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Salvo na galeria");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -4339,9 +4468,6 @@ public final class L10nTranslations {
                 "Salvando um v\u00eddeo");
         table.put("Saving the settings file",
                 "Salvando o arquivo de configura\u00e7\u00f5es");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Saving...",
                 "Salvando...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
@@ -4380,6 +4506,8 @@ public final class L10nTranslations {
                 "Mostrar a data e a hora");
         table.put("Shown. Tap to hide it.",
                 "Vis\u00edveis. Toque para ocultar.");
+        table.put("Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.",
+                "Mostra o texto do Threads com o arquivo de fonte que voc\u00ea escolher abaixo. Os \u00edcones mant\u00eam a pr\u00f3pria fonte. Reinicie o Threads para ver a mudan\u00e7a.");
         table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
                 "Mostra o logotipo do HushThreads no topo do feed no lugar do logotipo do Threads. Ele n\u00e3o gira enquanto o feed atualiza. Reinicie o Threads para ver a mudan\u00e7a.");
         table.put("Smallest",
@@ -4442,6 +4570,11 @@ public final class L10nTranslations {
                 "Toque para ver quais.");
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
+        table.put("That file is too large to be a font. Nothing was changed.",
+                "Esse arquivo \u00e9 grande demais para ser uma fonte. Nada foi alterado.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Esse arquivo \u00e9 grande demais para ser um arquivo de configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -4450,6 +4583,8 @@ public final class L10nTranslations {
                 "Esse arquivo cont\u00e9m uma configura\u00e7\u00e3o duplicada, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel saber qual valor usar. Nada foi alterado.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Isso n\u00e3o \u00e9 um arquivo de configura\u00e7\u00f5es do HushThreads. Nada foi alterado.");
+        table.put("That isn't a font file Android can use. Nothing was changed.",
+                "Esse n\u00e3o \u00e9 um arquivo de fonte que o Android consiga usar. Nada foi alterado.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es tem um valor que o HushThreads n\u00e3o consegue ler. Nada foi alterado.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -4462,9 +4597,6 @@ public final class L10nTranslations {
                 "O app do \u00faltimo arquivo de configura\u00e7\u00f5es ainda n\u00e3o respondeu. Tente de novo mais tarde.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "O app que guarda o arquivo de configura\u00e7\u00f5es est\u00e1 demorando demais, ent\u00e3o o HushThreads parou de esperar. Esse app ainda pode terminar de salv\u00e1-lo, ent\u00e3o confira o arquivo antes de confiar nele.");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("The app's icon on your home screen is the HushThreads logo.",
                 "O \u00edcone do app na sua tela inicial \u00e9 o logotipo do HushThreads.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
@@ -4563,6 +4695,9 @@ public final class L10nTranslations {
                 "Com a op\u00e7\u00e3o acima ativada, voc\u00ea continua no ponto em que estava, n\u00e3o importa quanto tempo fique fora. Puxar para atualizar e iniciar o Threads novamente continuam carregando novas publica\u00e7\u00f5es.");
         table.put("You have the newest HushThreads release.",
                 "Voc\u00ea j\u00e1 est\u00e1 usando a vers\u00e3o mais nova do HushThreads.");
+    }
+
+    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Voc\u00ea pausou o HushThreads.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -4585,9 +4720,6 @@ public final class L10nTranslations {
                 "a corre\u00e7\u00e3o para vers\u00e3o reassinada");
         table.put("the removed advertising ID permission",
                 "a permiss\u00e3o do ID de publicidade removida");
-    }
-
-    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "a entrada removida do menu de compartilhamento");
         table.put("the user certificate trust",
@@ -4595,7 +4727,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(724);
+        Map<String, String> table = new HashMap<>(746);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -4631,6 +4763,8 @@ public final class L10nTranslations {
                 "%1$d anahtar de\u011fi\u015fecek.");
         table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
                 "%1$s kaydetme tarihine ve saatine, %2$s videonun Threads'teki numaras\u0131na, %3$s payla\u015fan ki\u015finin ad\u0131na, %4$s ise payla\u015f\u0131ld\u0131\u011f\u0131 g\u00fcne d\u00f6n\u00fc\u015f\u00fcr. Kaydederken bilinmeyenler d\u0131\u015far\u0131da b\u0131rak\u0131l\u0131r ve bunlar\u0131n hi\u00e7birini i\u00e7ermeyen bir ada tarih eklenir. Ad klas\u00f6rde zaten varsa sonuna kaydetme saati eklenir. Ge\u00e7ersiz karakterler alt \u00e7izgiye d\u00f6n\u00fc\u015f\u00fcr. Varsay\u0131lan %5$s ad\u0131n\u0131 kullanmak i\u00e7in bo\u015f b\u0131rak.");
+        table.put("%1$s is picked. Tap to pick another.",
+                "%1$s se\u00e7ili. Ba\u015fkas\u0131n\u0131 se\u00e7mek i\u00e7in dokun.");
         table.put("%1$s of %2$s",
                 "%1$s / %2$s");
         table.put("%1$s so far",
@@ -4645,6 +4779,8 @@ public final class L10nTranslations {
                 "Bir tan\u0131lama raporu zaten kaydediliyor.");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "%2$s i\u00e7indeki %1$s adl\u0131 bir dosya HushThreads'u duraklatt\u0131.");
+        table.put("A font file is picked. Tap to pick another.",
+                "Bir yaz\u0131 tipi dosyas\u0131 se\u00e7ili. Ba\u015fkas\u0131n\u0131 se\u00e7mek i\u00e7in dokun.");
         table.put("A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.",
                 "Ak\u0131\u015f\u0131n \u00fcst\u00fcndeki Threads logosuna bas\u0131l\u0131 tutmak bu ayarlar\u0131 a\u00e7ar. Kapal\u0131yken bas\u0131l\u0131 tutmak hi\u00e7bir \u015fey yapmaz.");
         table.put("A profile picture you open on a profile shows full size, where you can zoom in and save it, instead of the small circle.",
@@ -4723,13 +4859,13 @@ public final class L10nTranslations {
                 "GitHub \u015fu anda denetleniyor.");
         table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
                 "Movies ve Pictures alt\u0131nda bir klas\u00f6r ad\u0131 se\u00e7. Ge\u00e7ersiz karakterler alt \u00e7izgiye d\u00f6n\u00fc\u015f\u00fcr. Varsay\u0131lan %1$s klas\u00f6r\u00fcn\u00fc kullanmak i\u00e7in bo\u015f b\u0131rak.");
+    }
+
+    private static void fillTr1(Map<String, String> table) {
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "Bir ayar dosyas\u0131 se\u00e7. \u0130\u00e7e aktarmadan \u00f6nce ka\u00e7 anahtar\u0131n de\u011fi\u015fece\u011fini g\u00f6r\u00fcrs\u00fcn.");
         table.put("Clear diagnostic data",
                 "Tan\u0131lama verilerini temizle");
-    }
-
-    private static void fillTr1(Map<String, String> table) {
         table.put("Clear search",
                 "Aramay\u0131 temizle");
         table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
@@ -4754,6 +4890,8 @@ public final class L10nTranslations {
                 "Uzun bas\u0131nca metni kopyala");
         table.put("Copy text when you hold a post",
                 "Bir g\u00f6nderiye bas\u0131l\u0131 tutunca metni kopyala");
+        table.put("Copying the font file",
+                "Yaz\u0131 tipi dosyas\u0131 kopyalan\u0131yor");
         table.put("Copying to the gallery",
                 "Galeriye kopyalan\u0131yor");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
@@ -4778,6 +4916,8 @@ public final class L10nTranslations {
                 "Rapor d\u0131\u015fa aktar\u0131m\u0131 ba\u015flat\u0131lamad\u0131. Birazdan tekrar dene.");
         table.put("Couldn't turn HushThreads back on. Try again.",
                 "HushThreads yeniden a\u00e7\u0131lamad\u0131. Tekrar dene.");
+        table.put("Custom font",
+                "\u00d6zel yaz\u0131 tipi");
         table.put("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.",
                 "Karanl\u0131k mod koyu gri yerine ger\u00e7ek siyah\u0131 kullan\u0131r. G\u00f6rmek i\u00e7in Threads'te karanl\u0131k modu a\u00e7. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
         table.put("Debug logging",
@@ -4824,6 +4964,12 @@ public final class L10nTranslations {
                 "Klas\u00f6r ad\u0131");
         table.put("Folder set to %1$s.",
                 "Klas\u00f6r %1$s olarak ayarland\u0131.");
+        table.put("Font file",
+                "Yaz\u0131 tipi dosyas\u0131");
+        table.put("Font file saved. Restart Threads to see it.",
+                "Yaz\u0131 tipi dosyas\u0131 kaydedildi. G\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
+        table.put("Font file saved. Turn on Custom font to use it.",
+                "Yaz\u0131 tipi dosyas\u0131 kaydedildi. Kullanmak i\u00e7in \u00d6zel yaz\u0131 tipi'ni a\u00e7.");
         table.put("Full report saved to %1$s",
                 "Tam rapor \u015furaya kaydedildi: %1$s");
         table.put("Full size photos",
@@ -4836,6 +4982,9 @@ public final class L10nTranslations {
                 "GitHub \u015fu an bu a\u011fdan gelen sorgular\u0131 geri \u00e7eviriyor. Daha sonra tekrar dene.");
         table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
                 "GitHub, HushThreads'in okuyamad\u0131\u011f\u0131 bir yan\u0131t g\u00f6nderdi. Daha sonra tekrar dene.");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Do\u011frudan bir ayar grubuna git. Geri, bulundu\u011fun yere d\u00f6nd\u00fcr\u00fcr.");
         table.put("Help and restart",
@@ -4850,9 +4999,6 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131 i\u00e7eren yorumlar\u0131 gizle");
         table.put("Hide follow suggestions in Search",
                 "Aramada takip \u00f6nerilerini gizle");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Hide ghost post bubbles",
                 "Hayalet g\u00f6nderi balonlar\u0131n\u0131 gizle");
         table.put("Hide screenshots from Threads",
@@ -4929,6 +5075,8 @@ public final class L10nTranslations {
                 "Dokundu\u011fun ba\u011flant\u0131lar taray\u0131c\u0131nda veya sitenin uygulamas\u0131nda a\u00e7\u0131l\u0131r, Threads'in ba\u011flant\u0131 takibi atlan\u0131r. Threads ve Instagram sayfalar\u0131 yine Threads'te a\u00e7\u0131l\u0131r.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Bu telefondaki hi\u00e7bir uygulama ba\u011flant\u0131y\u0131 a\u00e7am\u0131yor. Adres: %1$s.");
+        table.put("No font picked yet. Pick a .ttf or .otf file.",
+                "Hen\u00fcz yaz\u0131 tipi se\u00e7ilmedi. Bir .ttf veya .otf dosyas\u0131 se\u00e7.");
         table.put("No matching settings",
                 "E\u015fle\u015fen ayar yok");
         table.put("No saves in progress.",
@@ -4957,6 +5105,9 @@ public final class L10nTranslations {
                 "Kaydedilmedi: Proxy parola istiyor. Ba\u015fka bir a\u011f dene.");
         table.put("OK",
                 "Tamam");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "G\u00fcnde bir kez, Threads a\u00e7\u0131l\u0131rken GitHub'da daha yeni bir HushThreads olup olmad\u0131\u011f\u0131na bakar ve burada s\u00f6yler. Hi\u00e7bir \u015fey indirilmez.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -4973,9 +5124,6 @@ public final class L10nTranslations {
                 "Ayarlar\u0131 logodan a\u00e7");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cDesteklenen ba\u011flant\u0131lar\u0131 a\u00e7\u201d Android ayarlar\u0131nda bu uygulama i\u00e7in kapal\u0131. A\u00e7mak i\u00e7in dokunun.");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "S\u00fcr\u00fcmlerin ve ayarlar\u0131n doldurulmu\u015f bir GitHub raporu a\u00e7ar. Ne oldu\u011funu ekle.");
         table.put("Own app name",
@@ -5080,6 +5228,9 @@ public final class L10nTranslations {
                 "\u015euraya kaydedildi: %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Threads'tekinden d\u00fc\u015f\u00fck kalitede kaydedildi: %1$s");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Galeriye kaydedildi");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -5096,9 +5247,6 @@ public final class L10nTranslations {
                 "Video kaydediliyor");
         table.put("Saving the settings file",
                 "Ayar dosyas\u0131 kaydediliyor");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Saving...",
                 "Kaydediliyor...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
@@ -5137,6 +5285,8 @@ public final class L10nTranslations {
                 "Tarihi ve saati g\u00f6ster");
         table.put("Shown. Tap to hide it.",
                 "G\u00f6steriliyor. Gizlemek i\u00e7in dokun.");
+        table.put("Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.",
+                "Threads'teki yaz\u0131lar\u0131 a\u015fa\u011f\u0131da se\u00e7ti\u011fin yaz\u0131 tipi dosyas\u0131yla g\u00f6sterir. Simgeler kendi yaz\u0131 tiplerini korur. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
         table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
                 "Ak\u0131\u015f\u0131n\u0131n \u00fcst\u00fcnde Threads logosu yerine HushThreads logosunu g\u00f6sterir. Ak\u0131\u015f yenilenirken d\u00f6nmez. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
         table.put("Smallest",
@@ -5199,6 +5349,11 @@ public final class L10nTranslations {
                 "Hangileri oldu\u011funu g\u00f6rmek i\u00e7in dokun.");
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
+        table.put("That file is too large to be a font. Nothing was changed.",
+                "Bu dosya bir yaz\u0131 tipi olamayacak kadar b\u00fcy\u00fck. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Bu dosya bir ayar dosyas\u0131 olamayacak kadar b\u00fcy\u00fck. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -5207,6 +5362,8 @@ public final class L10nTranslations {
                 "Bu dosyada bir ayar iki kez ge\u00e7iyor, bu y\u00fczden hangi de\u011ferin kullan\u0131laca\u011f\u0131 belli de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "Bu bir HushThreads ayar dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+        table.put("That isn't a font file Android can use. Nothing was changed.",
+                "Bu, Android'in kullanabilece\u011fi bir yaz\u0131 tipi dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "Bu ayar dosyas\u0131nda HushThreads'un okuyamad\u0131\u011f\u0131 bir de\u011fer var. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -5219,9 +5376,6 @@ public final class L10nTranslations {
                 "Son ayar dosyas\u0131n\u0131 tutan uygulama h\u00e2l\u00e2 yan\u0131t vermedi. Daha sonra tekrar dene.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Ayar dosyas\u0131n\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushThreads beklemeyi b\u0131rakt\u0131. O uygulama kaydetmeyi yine de bitirebilir, bu y\u00fczden dosyaya g\u00fcvenmeden \u00f6nce onu kontrol et.");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("The app's icon on your home screen is the HushThreads logo.",
                 "Ana ekran\u0131ndaki uygulama simgesi HushThreads logosudur.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
@@ -5320,6 +5474,9 @@ public final class L10nTranslations {
                 "Yukar\u0131daki anahtar a\u00e7\u0131kken ne kadar uzun s\u00fcre uzakta kal\u0131rsan kal yerin korunur. Yenilemek i\u00e7in \u00e7ekmek ve uygulamay\u0131 yeniden ba\u015flatmak yine yeni g\u00f6nderileri y\u00fckler.");
         table.put("You have the newest HushThreads release.",
                 "En yeni HushThreads s\u00fcr\u00fcm\u00fcn\u00fc kullan\u0131yorsun.");
+    }
+
+    private static void fillTr6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "HushThreads'u duraklatt\u0131n.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -5342,9 +5499,6 @@ public final class L10nTranslations {
                 "yeniden imzalanm\u0131\u015f s\u00fcr\u00fcm d\u00fczeltmesi");
         table.put("the removed advertising ID permission",
                 "kald\u0131r\u0131lan reklam kimli\u011fi izni");
-    }
-
-    private static void fillTr6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "kald\u0131r\u0131lan payla\u015f\u0131m men\u00fcs\u00fc giri\u015fi");
         table.put("the user certificate trust",
@@ -5352,7 +5506,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildZh_rTW() {
-        Map<String, String> table = new HashMap<>(724);
+        Map<String, String> table = new HashMap<>(746);
         fillZh_rTW0(table);
         fillZh_rTW1(table);
         fillZh_rTW2(table);
@@ -5388,6 +5542,8 @@ public final class L10nTranslations {
                 "\u5c07\u8b8a\u66f4 %1$d \u500b\u958b\u95dc\u3002");
         table.put("%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.",
                 "%1$s \u4ee3\u8868\u5132\u5b58\u65e5\u671f\u8207\u6642\u9593\uff0c%2$s \u4ee3\u8868\u5f71\u7247\u5728 Threads \u7684\u7de8\u865f\uff0c%3$s \u4ee3\u8868\u767c\u6587\u8005\uff0c%4$s \u4ee3\u8868\u767c\u6587\u65e5\u671f\u3002\u672a\u77e5\u8cc7\u8a0a\u6703\u7565\u904e\uff1b\u540d\u7a31\u672a\u5305\u542b\u9019\u4e9b\u8cc7\u8a0a\u6642\u6703\u52a0\u4e0a\u65e5\u671f\u3002\u82e5\u8cc7\u6599\u593e\u4e2d\u5df2\u6709\u76f8\u540c\u540d\u7a31\uff0c\u6703\u5728\u672b\u5c3e\u52a0\u4e0a\u5132\u5b58\u6642\u9593\u3002\u7121\u6548\u5b57\u5143\u6703\u6539\u70ba\u5e95\u7dda\u3002\u7559\u767d\u53ef\u4f7f\u7528\u9810\u8a2d\u503c %5$s\u3002");
+        table.put("%1$s is picked. Tap to pick another.",
+                "\u5df2\u9078\u64c7 %1$s\u3002\u9ede\u4e00\u4e0b\u5373\u53ef\u9078\u64c7\u5176\u4ed6\u6a94\u6848\u3002");
         table.put("%1$s of %2$s",
                 "%1$s\uff0f%2$s");
         table.put("%1$s so far",
@@ -5402,6 +5558,8 @@ public final class L10nTranslations {
                 "\u6b63\u5728\u5132\u5b58\u8a3a\u65b7\u5831\u544a\u3002");
         table.put("A file named %1$s in %2$s paused HushThreads.",
                 "%2$s \u4e2d\u540d\u70ba %1$s \u7684\u6a94\u6848\u5df2\u8b93 HushThreads \u66ab\u505c\u3002");
+        table.put("A font file is picked. Tap to pick another.",
+                "\u5df2\u9078\u64c7\u5b57\u578b\u6a94\u3002\u9ede\u4e00\u4e0b\u5373\u53ef\u9078\u64c7\u5176\u4ed6\u6a94\u6848\u3002");
         table.put("A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.",
                 "\u9577\u6309\u52d5\u614b\u9802\u7aef\u7684 Threads \u6a19\u8a8c\u5373\u53ef\u958b\u555f\u9019\u4e9b\u8a2d\u5b9a\u3002\u95dc\u9589\u5f8c\u9577\u6309\u4e0d\u6703\u6709\u4efb\u4f55\u4f5c\u7528\u3002");
         table.put("A profile picture you open on a profile shows full size, where you can zoom in and save it, instead of the small circle.",
@@ -5480,13 +5638,13 @@ public final class L10nTranslations {
                 "\u6b63\u5728\u6aa2\u67e5 GitHub\u3002");
         table.put("Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.",
                 "\u9078\u64c7 Movies \u8207 Pictures \u4e0b\u7684\u8cc7\u6599\u593e\u540d\u7a31\u3002\u7121\u6548\u5b57\u5143\u6703\u6539\u70ba\u5e95\u7dda\u3002\u7559\u767d\u53ef\u4f7f\u7528\u9810\u8a2d\u8cc7\u6599\u593e %1$s\u3002");
+    }
+
+    private static void fillZh_rTW1(Map<String, String> table) {
         table.put("Choose a settings file. Before anything is imported, you'll see how many switches it changes.",
                 "\u9078\u64c7\u8a2d\u5b9a\u6a94\u3002\u532f\u5165\u524d\u6703\u5148\u986f\u793a\u5b83\u5c07\u8b8a\u66f4\u591a\u5c11\u500b\u958b\u95dc\u3002");
         table.put("Clear diagnostic data",
                 "\u6e05\u9664\u8a3a\u65b7\u8cc7\u6599");
-    }
-
-    private static void fillZh_rTW1(Map<String, String> table) {
         table.put("Clear search",
                 "\u6e05\u9664\u641c\u5c0b");
         table.put("Clears the saved log, patch check results and any kept crash that a report would include.",
@@ -5511,6 +5669,8 @@ public final class L10nTranslations {
                 "\u9577\u6309\u6642\u8907\u88fd\u6587\u5b57");
         table.put("Copy text when you hold a post",
                 "\u9577\u6309\u8cbc\u6587\u6642\u8907\u88fd\u6587\u5b57");
+        table.put("Copying the font file",
+                "\u6b63\u5728\u8907\u88fd\u5b57\u578b\u6a94");
         table.put("Copying to the gallery",
                 "\u6b63\u5728\u8907\u88fd\u5230\u5716\u5eab");
         table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
@@ -5535,6 +5695,8 @@ public final class L10nTranslations {
                 "\u7121\u6cd5\u958b\u59cb\u532f\u51fa\u5831\u544a\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
         table.put("Couldn't turn HushThreads back on. Try again.",
                 "\u7121\u6cd5\u91cd\u65b0\u555f\u7528 HushThreads\uff0c\u8acb\u518d\u8a66\u4e00\u6b21\u3002");
+        table.put("Custom font",
+                "\u81ea\u8a02\u5b57\u578b");
         table.put("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.",
                 "\u6df1\u8272\u6a21\u5f0f\u4f7f\u7528\u771f\u6b63\u7684\u9ed1\u8272\uff0c\u800c\u975e\u6df1\u7070\u8272\u3002\u8acb\u5728 Threads \u4e2d\u958b\u555f\u6df1\u8272\u6a21\u5f0f\uff1b\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
         table.put("Debug logging",
@@ -5581,6 +5743,12 @@ public final class L10nTranslations {
                 "\u8cc7\u6599\u593e\u540d\u7a31");
         table.put("Folder set to %1$s.",
                 "\u8cc7\u6599\u593e\u5df2\u8a2d\u70ba %1$s\u3002");
+        table.put("Font file",
+                "\u5b57\u578b\u6a94");
+        table.put("Font file saved. Restart Threads to see it.",
+                "\u5b57\u578b\u6a94\u5df2\u5132\u5b58\u3002\u91cd\u65b0\u555f\u52d5 Threads \u5373\u53ef\u770b\u5230\u3002");
+        table.put("Font file saved. Turn on Custom font to use it.",
+                "\u5b57\u578b\u6a94\u5df2\u5132\u5b58\u3002\u958b\u555f\u300c\u81ea\u8a02\u5b57\u578b\u300d\u5373\u53ef\u4f7f\u7528\u3002");
         table.put("Full report saved to %1$s",
                 "\u5b8c\u6574\u5831\u544a\u5df2\u5132\u5b58\u81f3 %1$s");
         table.put("Full size photos",
@@ -5593,6 +5761,9 @@ public final class L10nTranslations {
                 "GitHub \u76ee\u524d\u62d2\u7d55\u6b64\u7db2\u8def\u7684\u6aa2\u67e5\u8981\u6c42\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
         table.put("GitHub sent back something HushThreads couldn't read. Try again later.",
                 "GitHub \u56de\u50b3\u4e86 HushThreads \u7121\u6cd5\u8b80\u53d6\u7684\u5167\u5bb9\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
+    }
+
+    private static void fillZh_rTW2(Map<String, String> table) {
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "\u76f4\u63a5\u524d\u5f80\u4e00\u7d44\u8a2d\u5b9a\u3002\u300c\u8fd4\u56de\u300d\u6703\u56de\u5230\u539f\u672c\u4f4d\u7f6e\u3002");
         table.put("Help and restart",
@@ -5607,9 +5778,6 @@ public final class L10nTranslations {
                 "\u96b1\u85cf\u542b\u9023\u7d50\u7684\u7559\u8a00");
         table.put("Hide follow suggestions in Search",
                 "\u96b1\u85cf\u641c\u5c0b\u4e2d\u7684\u8ffd\u8e64\u5efa\u8b70");
-    }
-
-    private static void fillZh_rTW2(Map<String, String> table) {
         table.put("Hide ghost post bubbles",
                 "\u96b1\u85cf\u5e7d\u9748\u8cbc\u6587\u6ce1\u6ce1");
         table.put("Hide screenshots from Threads",
@@ -5686,6 +5854,8 @@ public final class L10nTranslations {
                 "\u4f60\u8f15\u89f8\u7684\u9023\u7d50\u6703\u5728\u700f\u89bd\u5668\u6216\u7db2\u7ad9\u61c9\u7528\u7a0b\u5f0f\u4e2d\u958b\u555f\uff0c\u7565\u904e Threads \u7684\u9023\u7d50\u8ffd\u8e64\u3002Threads \u8207 Instagram \u9801\u9762\u4ecd\u6703\u5728 Threads \u4e2d\u958b\u555f\u3002");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "\u6b64\u624b\u6a5f\u6c92\u6709\u61c9\u7528\u7a0b\u5f0f\u53ef\u958b\u555f\u6b64\u9023\u7d50\u3002\u7db2\u5740\u70ba %1$s\u3002");
+        table.put("No font picked yet. Pick a .ttf or .otf file.",
+                "\u5c1a\u672a\u9078\u64c7\u5b57\u578b\u3002\u8acb\u9078\u64c7 .ttf \u6216 .otf \u6a94\u6848\u3002");
         table.put("No matching settings",
                 "\u6c92\u6709\u76f8\u7b26\u7684\u8a2d\u5b9a");
         table.put("No saves in progress.",
@@ -5714,6 +5884,9 @@ public final class L10nTranslations {
                 "\u672a\u5132\u5b58\uff1a\u4ee3\u7406\u4f3a\u670d\u5668\u8981\u6c42\u5bc6\u78bc\u3002\u8acb\u5617\u8a66\u5176\u4ed6\u7db2\u8def\u3002");
         table.put("OK",
                 "\u78ba\u5b9a");
+    }
+
+    private static void fillZh_rTW3(Map<String, String> table) {
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "\u6bcf\u5929\u5728 Threads \u555f\u52d5\u6642\u6aa2\u67e5 GitHub \u662f\u5426\u6709\u8f03\u65b0\u7684 HushThreads\uff0c\u4e26\u5728\u6b64\u901a\u77e5\u4f60\u3002\u4e0d\u6703\u4e0b\u8f09\u4efb\u4f55\u5167\u5bb9\u3002");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -5730,9 +5903,6 @@ public final class L10nTranslations {
                 "\u5f9e\u6a19\u8a8c\u958b\u555f\u8a2d\u5b9a");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u6b64\u61c9\u7528\u7a0b\u5f0f\u5728 Android \u8a2d\u5b9a\u4e2d\u7684\u300c\u958b\u555f\u652f\u63f4\u7684\u9023\u7d50\u300d\u5df2\u95dc\u9589\u3002\u8f15\u89f8\u4ee5\u555f\u7528\u3002");
-    }
-
-    private static void fillZh_rTW3(Map<String, String> table) {
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "\u958b\u555f\u5df2\u586b\u5165\u4f60\u7684\u7248\u672c\u8207\u8a2d\u5b9a\u7684 GitHub \u554f\u984c\u56de\u5831\uff1b\u8acb\u88dc\u5145\u767c\u751f\u7684\u60c5\u6cc1\u3002");
         table.put("Own app name",
@@ -5837,6 +6007,9 @@ public final class L10nTranslations {
                 "\u5df2\u5132\u5b58\u81f3 %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "\u5df2\u5132\u5b58\u81f3 %1$s\uff0c\u756b\u8cea\u4f4e\u65bc Threads");
+    }
+
+    private static void fillZh_rTW4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "\u5df2\u5132\u5b58\u81f3\u5716\u5eab");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -5853,9 +6026,6 @@ public final class L10nTranslations {
                 "\u6b63\u5728\u5132\u5b58\u5f71\u7247");
         table.put("Saving the settings file",
                 "\u6b63\u5728\u5132\u5b58\u8a2d\u5b9a\u6a94");
-    }
-
-    private static void fillZh_rTW4(Map<String, String> table) {
         table.put("Saving...",
                 "\u6b63\u5728\u5132\u5b58\u2026");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
@@ -5894,6 +6064,8 @@ public final class L10nTranslations {
                 "\u986f\u793a\u65e5\u671f\u8207\u6642\u9593");
         table.put("Shown. Tap to hide it.",
                 "\u5df2\u986f\u793a\u3002\u8f15\u89f8\u53ef\u96b1\u85cf\u3002");
+        table.put("Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.",
+                "\u4ee5\u4f60\u5728\u4e0b\u65b9\u9078\u64c7\u7684\u5b57\u578b\u6a94\u986f\u793a Threads \u7684\u6587\u5b57\u3002\u5716\u793a\u6703\u4fdd\u7559\u539f\u672c\u7684\u5b57\u578b\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
         table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
                 "\u5728\u52d5\u614b\u9802\u7aef\u4ee5 HushThreads \u6a19\u8a8c\u53d6\u4ee3 Threads \u6a19\u8a8c\u3002\u91cd\u65b0\u6574\u7406\u52d5\u614b\u6642\u4e0d\u6703\u65cb\u8f49\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
         table.put("Smallest",
@@ -5956,6 +6128,11 @@ public final class L10nTranslations {
                 "\u8f15\u89f8\u4ee5\u67e5\u770b\u9805\u76ee\u3002");
         table.put("Tap to turn it back on.",
                 "\u8f15\u89f8\u4ee5\u91cd\u65b0\u555f\u7528\u3002");
+        table.put("That file is too large to be a font. Nothing was changed.",
+                "\u8a72\u6a94\u6848\u592a\u5927\uff0c\u4e0d\u53ef\u80fd\u662f\u5b57\u578b\u6a94\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+    }
+
+    private static void fillZh_rTW5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "\u8a72\u6a94\u6848\u592a\u5927\uff0c\u7121\u6cd5\u4f5c\u70ba\u8a2d\u5b9a\u6a94\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -5964,6 +6141,8 @@ public final class L10nTranslations {
                 "\u8a72\u6a94\u6848\u91cd\u8907\u5217\u51fa\u67d0\u500b\u8a2d\u5b9a\uff0c\u7121\u6cd5\u5224\u65b7\u8981\u4f7f\u7528\u54ea\u500b\u503c\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
         table.put("That isn't a HushThreads settings file. Nothing was changed.",
                 "\u90a3\u4e0d\u662f HushThreads \u8a2d\u5b9a\u6a94\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
+        table.put("That isn't a font file Android can use. Nothing was changed.",
+                "\u9019\u4e0d\u662f Android \u53ef\u4ee5\u4f7f\u7528\u7684\u5b57\u578b\u6a94\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
         table.put("That settings file holds a value HushThreads can't read. Nothing was changed.",
                 "\u8a72\u8a2d\u5b9a\u6a94\u5305\u542b HushThreads \u7121\u6cd5\u8b80\u53d6\u7684\u503c\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -5976,9 +6155,6 @@ public final class L10nTranslations {
                 "\u6301\u6709\u4e0a\u4e00\u500b\u8a2d\u5b9a\u6a94\u7684\u61c9\u7528\u7a0b\u5f0f\u5c1a\u672a\u56de\u61c9\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "\u6301\u6709\u8a2d\u5b9a\u6a94\u7684\u61c9\u7528\u7a0b\u5f0f\u56de\u61c9\u592a\u4e45\uff0cHushThreads \u5df2\u505c\u6b62\u7b49\u5f85\u3002\u5b83\u53ef\u80fd\u4ecd\u6703\u5b8c\u6210\u5132\u5b58\uff0c\u4f7f\u7528\u524d\u8acb\u6aa2\u67e5\u6a94\u6848\u3002");
-    }
-
-    private static void fillZh_rTW5(Map<String, String> table) {
         table.put("The app's icon on your home screen is the HushThreads logo.",
                 "\u4e3b\u756b\u9762\u4e0a\u7684\u61c9\u7528\u7a0b\u5f0f\u5716\u793a\u662f HushThreads \u6a19\u8a8c\u3002");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
@@ -6077,6 +6253,9 @@ public final class L10nTranslations {
                 "\u958b\u555f\u4e0a\u65b9\u958b\u95dc\u5f8c\uff0c\u7121\u8ad6\u96e2\u958b\u591a\u4e45\u90fd\u6703\u4fdd\u7559\u539f\u672c\u4f4d\u7f6e\u3002\u4e0b\u62c9\u91cd\u65b0\u6574\u7406\u8207\u91cd\u65b0\u555f\u52d5\u4ecd\u6703\u8f09\u5165\u65b0\u8cbc\u6587\u3002");
         table.put("You have the newest HushThreads release.",
                 "\u4f60\u6b63\u5728\u4f7f\u7528\u6700\u65b0\u7684 HushThreads \u7248\u672c\u3002");
+    }
+
+    private static void fillZh_rTW6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "\u4f60\u5df2\u66ab\u505c HushThreads\u3002");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -6099,9 +6278,6 @@ public final class L10nTranslations {
                 "\u91cd\u65b0\u7c3d\u7f72\u7248\u672c\u4fee\u6b63");
         table.put("the removed advertising ID permission",
                 "\u5df2\u79fb\u9664\u7684\u5ee3\u544a ID \u6b0a\u9650");
-    }
-
-    private static void fillZh_rTW6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "\u5df2\u79fb\u9664\u7684\u5206\u4eab\u9762\u677f\u9805\u76ee");
         table.put("the user certificate trust",

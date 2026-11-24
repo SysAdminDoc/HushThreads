@@ -309,6 +309,17 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/theme/CustomFont.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/misc/theme/CustomFontPatch.kt"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Custom font for discussion #28: right after each of the three loads in Threads' font repository (asset, Android family and font resource), the typeface goes to the extension with what it was loaded by, and the extension answers with a picked font file for text fonts at Threads' weight and slant. The file is picked through HushThreads' settings file picker and copied into Threads' files. Found by reading TypefaceRepository in 457, with no outside code."
+    },
+    {
+      "paths": [
         "patches/src/main/kotlin/app/morphe/patches/threads/misc/icon/HushThreadsLogo.kt"
       ],
       "origin": "original",

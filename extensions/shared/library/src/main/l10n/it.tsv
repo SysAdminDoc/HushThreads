@@ -408,3 +408,15 @@ Shows the HushThreads logo at the top of your feed in place of the Threads logo.
 HushThreads icon	Icona di HushThreads
 The app's icon on your home screen is the HushThreads logo.	L'icona dell'app nella schermata Home è il logo di HushThreads.
 the HushThreads icon	l'icona di HushThreads
+# Custom font's switch and its Font file row under Appearance, and what picking a font file says
+Custom font	Carattere personalizzato
+Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.	Mostra il testo di Threads con il file di carattere che scegli qui sotto. Le icone mantengono il loro carattere. Riavvia Threads per vedere la modifica.
+Font file	File del carattere
+No font picked yet. Pick a .ttf or .otf file.	Nessun carattere scelto. Scegli un file .ttf o .otf.
+A font file is picked. Tap to pick another.	È stato scelto un file di carattere. Tocca per sceglierne un altro.
+%1$s is picked. Tap to pick another.	Hai scelto %1$s. Tocca per sceglierne un altro.
+Copying the font file	Copia del file del carattere
+Font file saved. Restart Threads to see it.	File del carattere salvato. Riavvia Threads per vederlo.
+Font file saved. Turn on Custom font to use it.	File del carattere salvato. Attiva Carattere personalizzato per usarlo.
+That file is too large to be a font. Nothing was changed.	Quel file è troppo grande per essere un carattere. Non è cambiato nulla.
+That isn't a font file Android can use. Nothing was changed.	Quello non è un file di carattere che Android può usare. Non è cambiato nulla.

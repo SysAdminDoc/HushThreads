@@ -32,6 +32,7 @@ public final class FamilyNames {
     public static final String SPOOF_SIM_REGION = "Spoof SIM region";
     public static final String PURE_BLACK = "Pure black dark mode";
     public static final String HEADER_LOGO = "HushThreads header logo";
+    public static final String CUSTOM_FONT = "Custom font";
     public static final String HIDE_INSTAGRAM_BUTTON = "Hide the Instagram button";
     public static final String HIDE_GHOST_POST_BUBBLES = "Hide ghost post bubbles";
     public static final String HIDE_POST_BUTTONS = "Hide post buttons";
