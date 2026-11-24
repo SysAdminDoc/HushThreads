@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -38,10 +37,12 @@ import app.morphe.extension.shared.settings.Setting;
  * Threads' text in a font file the person picks (#28).
  *
  * <p>Most of Threads' text never asks for a font itself: its theme names Android's sans-serif
- * families, and the rest draws in Android's default. Both come from the font table Android sets up
- * for each process before the application starts. Right after the extension gets its context, at
- * the start of the application's onCreate, the picked font goes into that table in place of each
- * sans-serif family, at that family's weight and slant, and in place of Android's defaults.
+ * families, and the rest draws in Android's default. The families come from the font table Android
+ * sets up for each process before the application starts. Right after the extension gets its
+ * context, at the start of the application's onCreate, the picked font goes into that table in
+ * place of each sans-serif family, at that family's weight and slant, and in place of Android's
+ * defaults by style. Android won't let Typeface.DEFAULT, SANS_SERIF or DEFAULT_BOLD change, so the
+ * patch points each of Threads' reads of them at {@link #androidDefault} and its two neighbors.
  *
  * <p>Threads loads its own fonts through one repository, by an asset file's name, an Android font
  * family's name or a font resource, and keeps what it loaded. The patch hands each load's result
@@ -73,14 +74,16 @@ public final class CustomFont {
     static final String SWAPPED = "used the picked font";
     /** Count label for Android's sans-serif families put in at Threads' start, one per family. */
     static final String ANDROID_SWAPPED = "put the picked font in Android's font table";
-    /** Count label for Android's default fonts put in at Threads' start. */
-    static final String DEFAULTS_SWAPPED = "put the picked font in as Android's default";
+    /** Count label for Android's defaults by style put in at Threads' start. */
+    static final String DEFAULTS_SWAPPED = "put the picked font in as Android's default for each style";
+    /** Count label for the picked font put in where Threads' code reads Android's default fonts. */
+    static final String DEFAULT_READS = "put the picked font in where Threads reads Android's default";
     /** Prefix for a refusal's count label; one label per fixed reason. */
     static final String LEFT_TO_THREADS = "left the font to Threads: ";
     /** Android's sans-serif families couldn't be reached at Threads' start. */
     static final String NO_TABLE = "Android's font table is out of reach";
-    /** Some of Android's default fonts couldn't be reached at Threads' start. */
-    static final String NO_DEFAULTS = "Android's default font is out of reach";
+    /** Android's defaults by style couldn't be reached at Threads' start. */
+    static final String NO_DEFAULTS = "Android's defaults by style are out of reach";
 
     private static final int REGULAR = 400;
     private static final int BOLD = 700;
@@ -112,14 +115,18 @@ public final class CustomFont {
         Map<String, Typeface> families() throws ReflectiveOperationException;
 
         /**
-         * Puts the four in as Android's default fonts: the one text is drawn in when nothing set
-         * one, Typeface.DEFAULT, SANS_SERIF and DEFAULT_BOLD, and Typeface.defaultFromStyle's.
-         * Tries every one, then throws the first failure.
+         * Puts the four in as what Typeface.defaultFromStyle answers for each style, which a
+         * TextView with no font of its own draws in.
          */
         void defaults(Typeface regular, Typeface bold, Typeface italic, Typeface boldItalic) throws ReflectiveOperationException;
     }
 
-    /** Android's fields and methods, reached by reflection: Android has no call that sets them. */
+    /**
+     * Android's fields, reached by reflection: Android has no call that sets them. Typeface.DEFAULT,
+     * SANS_SERIF and DEFAULT_BOLD can't be among them: Android 16 refuses a write to a static final
+     * field and keeps setDefault from apps (S25, 2026-11-24), so the patch points each of Threads'
+     * reads of those at {@link #androidDefault} and its two neighbors instead.
+     */
     static final AndroidFonts ANDROID_FONTS = new AndroidFonts() {
         @SuppressWarnings("unchecked")
         @Override
@@ -132,34 +139,12 @@ public final class CustomFont {
         @Override
         public void defaults(Typeface regular, Typeface bold, Typeface italic, Typeface boldItalic)
                 throws ReflectiveOperationException {
-            ReflectiveOperationException first = null;
-            try {
-                // What a Paint with no typeface draws in, TextView's own default included.
-                Method setDefault = Typeface.class.getDeclaredMethod("setDefault", Typeface.class);
-                setDefault.setAccessible(true);
-                setDefault.invoke(null, regular);
-            } catch (ReflectiveOperationException failure) {
-                first = failure;
-            }
-            try {
-                Field byStyle = Typeface.class.getDeclaredField("sDefaults");
-                byStyle.setAccessible(true);
-                Typeface[] styles = (Typeface[]) byStyle.get(null);
-                Typeface[] own = {regular, bold, italic, boldItalic};
-                if (styles != null) System.arraycopy(own, 0, styles, 0, Math.min(styles.length, own.length));
-            } catch (ReflectiveOperationException failure) {
-                if (first == null) first = failure;
-            }
-            for (String name : new String[]{"DEFAULT", "SANS_SERIF", "DEFAULT_BOLD"}) {
-                try {
-                    Field field = Typeface.class.getField(name);
-                    field.setAccessible(true);
-                    field.set(null, name.equals("DEFAULT_BOLD") ? bold : regular);
-                } catch (ReflectiveOperationException failure) {
-                    if (first == null) first = failure;
-                }
-            }
-            if (first != null) throw first;
+            Field byStyle = Typeface.class.getDeclaredField("sDefaults");
+            byStyle.setAccessible(true);
+            Typeface[] styles = (Typeface[]) byStyle.get(null);
+            if (styles == null) throw new NoSuchFieldException("sDefaults is empty");
+            Typeface[] own = {regular, bold, italic, boldItalic};
+            System.arraycopy(own, 0, styles, 0, Math.min(styles.length, own.length));
         }
     };
 
@@ -169,6 +154,16 @@ public final class CustomFont {
     private static final Map<Integer, Typeface> made = new ConcurrentHashMap<>();
     /** The kept file wouldn't load, so it isn't tried again for every font Threads asks for. */
     private static volatile boolean unusable;
+
+    /*
+     * What Threads' code reads in place of Typeface.DEFAULT, SANS_SERIF and DEFAULT_BOLD: the patch
+     * points each of its reads of those at these. Compose draws text with no font family of its own
+     * in Typeface.DEFAULT, and Android won't let that field change. Android's own until Threads'
+     * start puts the picked font in, and for the whole run when it doesn't.
+     */
+    public static volatile Typeface androidDefault = Typeface.DEFAULT;
+    public static volatile Typeface androidSansSerif = Typeface.SANS_SERIF;
+    public static volatile Typeface androidDefaultBold = Typeface.DEFAULT_BOLD;
     @Nullable
     private static volatile String lastLogged;
 
@@ -193,6 +188,10 @@ public final class CustomFont {
                 log(off);
                 return;
             }
+            androidDefault = regular;
+            androidSansSerif = regular;
+            androidDefaultBold = bold;
+            HookStatus.counted(FamilyNames.CUSTOM_FONT, DEFAULT_READS);
             int families = 0;
             try {
                 families = replaceTextFamilies(androidFonts.families());
@@ -442,6 +441,9 @@ public final class CustomFont {
     static void forget() {
         made.clear();
         unusable = false;
+        androidDefault = Typeface.DEFAULT;
+        androidSansSerif = Typeface.SANS_SERIF;
+        androidDefaultBold = Typeface.DEFAULT_BOLD;
         lastLogged = null;
         loader = ANDROID;
         androidFonts = ANDROID_FONTS;

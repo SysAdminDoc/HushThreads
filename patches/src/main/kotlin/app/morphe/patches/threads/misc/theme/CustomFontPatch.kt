@@ -9,6 +9,7 @@ package app.morphe.patches.threads.misc.theme
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
@@ -22,14 +23,17 @@ import app.morphe.patches.threads.misc.extension.enableStatus
 import app.morphe.patches.threads.misc.extension.invokeStaticAt
 import app.morphe.patches.threads.misc.extension.requireStatusMethod
 import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
+import app.morphe.patches.threads.misc.settings.EXTENSION_ROOT
 import app.morphe.patches.threads.misc.settings.declaredInHierarchy
 import app.morphe.patches.threads.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.getReference
 import app.morphe.util.namedRegisters
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
@@ -61,7 +65,9 @@ internal class FontLoad(val call: Int, val result: Int, val name: Int, val hook:
  * Most of Threads' text never asks for a font itself: its theme names Android's sans-serif
  * families and the rest draws in Android's default. At the start of the application's onCreate,
  * right after the extension gets its context, the extension puts the picked font in Android's font
- * table and defaults for this process.
+ * table and defaults by style for this process. Android won't let Typeface.DEFAULT, SANS_SERIF or
+ * DEFAULT_BOLD change, so every read of them in Threads' code reads the extension's stand-in
+ * instead, Android's own font until the extension puts the picked one there.
  *
  * Threads loads its own fonts through one repository method: by an asset file's name, an Android
  * family's name, or a font resource through AndroidX's ResourcesCompat. Right after each of those
@@ -90,6 +96,17 @@ val customFontPatch = bytecodePatch(
         // Everything is found and checked before the first change.
         val loads = fontLoads(repository)
         val start = fontStart()
+        val defaults = defaultReads()
+        // Each read is swapped one for one, so no index anywhere moves.
+        defaults.forEach { reads ->
+            val method = mutableClassDefBy(reads.method.definingClass).methods.single {
+                it.name == reads.method.name && it.returnType == reads.method.returnType &&
+                    it.parameterTypes.map(Any::toString) == reads.method.parameterTypes.map(Any::toString)
+            }
+            reads.at.forEach { read ->
+                method.replaceInstruction(read.index, "sget-object v${read.register}, $CUSTOM_FONT->${read.field}:$TYPEFACE")
+            }
+        }
         start.method.addInstruction(
             start.at,
             "invoke-static/range { p0 .. p0 }, $CUSTOM_FONT->onThreadsStart(Landroid/content/Context;)V",
@@ -131,6 +148,50 @@ internal fun BytecodePatchContext.fontStart(): FontStart {
         throw PatchException("$CUSTOM_FONT_PATCH: $signature jumps to just after the extension gets its context")
     }
     return FontStart(onCreate, at)
+}
+
+/** Android's default fonts by field name, and the extension's field each read of one goes to. */
+internal val ANDROID_DEFAULTS = mapOf(
+    "DEFAULT" to "androidDefault",
+    "SANS_SERIF" to "androidSansSerif",
+    "DEFAULT_BOLD" to "androidDefaultBold",
+)
+
+/** A read of one of Android's default fonts: the instruction's [index], its [register], and the extension's [field]. */
+internal class DefaultRead(val index: Int, val register: Int, val field: String)
+
+/** A method of Threads' and its reads of Android's default fonts. */
+internal class DefaultReads(val method: Method, val at: List<DefaultRead>)
+
+/**
+ * Every read of Typeface.DEFAULT, SANS_SERIF and DEFAULT_BOLD in Threads' code. Compose's font
+ * resolver hands out Typeface.DEFAULT for text with no font family of its own, and Android 16
+ * refuses a write to those static final fields, so the reads themselves have to move. The
+ * extension's own reads stay. Threads with none at all is refused.
+ */
+internal fun BytecodePatchContext.defaultReads(): List<DefaultReads> {
+    val own = classDefByOrNull(CUSTOM_FONT)?.fields?.toList().orEmpty()
+    for (name in ANDROID_DEFAULTS.values) {
+        if (own.none { it.name == name && it.type == TYPEFACE && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) }) {
+            throw PatchException("$CUSTOM_FONT_PATCH: the extension has no field $name to read in place of Android's default font")
+        }
+    }
+    val fields = ANDROID_DEFAULTS.mapKeys { (name, _) -> "$TYPEFACE->$name:$TYPEFACE" }
+    val found = mutableListOf<DefaultReads>()
+    classDefForEach { classDef ->
+        if (classDef.type.startsWith(EXTENSION_ROOT)) return@classDefForEach
+        for (method in classDef.methods) {
+            val body = method.implementation?.instructions ?: continue
+            val reads = body.withIndex().mapNotNull { (index, instruction) ->
+                if (instruction.opcode != Opcode.SGET_OBJECT) return@mapNotNull null
+                val field = fields[instruction.getReference<FieldReference>()?.toString()] ?: return@mapNotNull null
+                DefaultRead(index, (instruction as OneRegisterInstruction).registerA, field)
+            }
+            if (reads.isNotEmpty()) found += DefaultReads(method, reads)
+        }
+    }
+    if (found.isEmpty()) throw PatchException("$CUSTOM_FONT_PATCH: Threads never reads Android's default font")
+    return found
 }
 
 /** The repository's asset, Android family and resource loads, in that order. */

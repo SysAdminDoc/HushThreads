@@ -27,6 +27,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.junit.Assert.assertEquals
@@ -39,8 +40,9 @@ import java.io.File
  * Custom font (#28) on each declared build: right after the extension gets its context in the
  * application's onCreate, the extension puts the picked font in Android's font table, and right
  * after each of the font repository's three loads, the typeface goes to the extension with what it
- * was loaded by, and the answer takes its place. The three loads are read by hand on 512708508,
- * apart from how the patch finds them.
+ * was loaded by, and the answer takes its place. Every read of Typeface.DEFAULT, SANS_SERIF and
+ * DEFAULT_BOLD in Threads' code reads the extension's stand-in instead. The three loads and the
+ * Compose resolver's two reads are read by hand on 512708508, apart from how the patch finds them.
  */
 class CustomFontFixtureTest {
     @Test
@@ -180,6 +182,56 @@ class CustomFontFixtureTest {
         }
     }
 
+    @Test
+    fun `each declared build reads the extension's fonts wherever it read Android's default`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val where = build.name
+            val context = context(build)
+            // Every read in Threads' classes, found here apart from the patch.
+            val stock = mutableListOf<Pair<Method, List<Instruction>>>()
+            context.classDefForEach { classDef ->
+                if (classDef.type.startsWith("Lapp/morphe/extension/")) return@classDefForEach
+                classDef.methods.map { it to it.body() }.filterTo(stock) { (_, body) -> body.any { it.androidDefault() != null } }
+            }
+            assertTrue(where, stock.isNotEmpty())
+
+            BY_HAND_DEFAULTS[where.substringAfterLast('-').substringBefore('.')]?.let { (method, reads) ->
+                val body = stock.single { (found, _) -> found.toString() == method }.second
+                assertEquals(where, reads, body.withIndex().filter { it.value.androidDefault() != null }
+                    .map { (index, read) -> "$index: v${(read as OneRegisterInstruction).registerA} ${read.androidDefault()}" })
+            }
+
+            customFontPatch.execute(context)
+
+            var swapped = 0
+            for ((method, before) in stock) {
+                val after = context.mutableClassDefBy(method.definingClass).methods.single { it.same(method) }.body()
+                assertEquals("$where $method", before.map { it.kind() }, after.map { it.kind() })
+                for (index in before.indices) {
+                    val android = before[index].androidDefault() ?: continue
+                    val read = after[index].getReference<FieldReference>().toString()
+                    assertEquals("$where $method @$index", "$CUSTOM_FONT->${STAND_INS[android]}:Landroid/graphics/Typeface;", read)
+                    assertEquals("$where $method @$index", (before[index] as OneRegisterInstruction).registerA,
+                        (after[index] as OneRegisterInstruction).registerA)
+                    swapped++
+                }
+                assertTrue("$where $method", after.none { it.androidDefault() != null })
+            }
+            assertTrue(where, swapped >= stock.size)
+            // The extension keeps Android's own as its starting point.
+            val own = context.mutableClassDefBy(CUSTOM_FONT).methods.single { it.name == "<clinit>" }.body()
+            assertEquals(where, 3, own.count { it.androidDefault() != null })
+            assertEquals(where, 1, status(context))
+        }
+
+        val extension = ExtensionDex.classDef(CUSTOM_FONT)
+        for (name in STAND_INS.values) {
+            val field = extension.fields.single { it.name == name }
+            assertTrue(name, AccessFlags.STATIC.isSet(field.accessFlags) && AccessFlags.PUBLIC.isSet(field.accessFlags))
+            assertEquals(name, "Landroid/graphics/Typeface;", field.type)
+        }
+    }
+
     private fun repository(build: File): Method = fixture(build).classes.flatMap { it.methods }.single { method ->
         method.returnType == "Landroid/graphics/Typeface;" && method.parameterTypes.size == 1 &&
             method.body().any { it.string() == LOAD_TYPEFACE }
@@ -187,11 +239,18 @@ class CustomFontFixtureTest {
 
     private class Fixture(val classes: List<ClassDef>, val application: List<ClassDef>)
 
-    /** The repository's class and ResourcesCompat, each found by its own string, read once per build. */
+    /**
+     * The repository's class and ResourcesCompat, each found by its own string, and every class
+     * that reads one of Android's default fonts, read once per build.
+     */
     private fun fixture(build: File): Fixture = fixtures.getOrPut(build) {
-        val holding = { text: String -> { method: Method -> method.body().any { it.string()?.startsWith(text) == true } } }
-        Fixture((FixtureDex.classesWhere(build, { true }, holding(LOAD_TYPEFACE)) +
-            FixtureDex.classesWhere(build, { true }, holding(FONT_RESOURCE))).distinctBy { it.type }, applicationChain(build))
+        val wanted = { method: Method ->
+            method.body().any { instruction ->
+                instruction.androidDefault() != null ||
+                    instruction.string()?.let { it.startsWith(LOAD_TYPEFACE) || it.startsWith(FONT_RESOURCE) } == true
+            }
+        }
+        Fixture(FixtureDex.classesWhere(build, { true }, wanted).distinctBy { it.type }, applicationChain(build))
     }
 
     /** The application and its parents in the APK, where the extension gets its context. */
@@ -227,6 +286,14 @@ class CustomFontFixtureTest {
     private fun Instruction.string() =
         if (opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO) getReference<StringReference>()?.string else null
 
+    /** Which of Android's default fonts this reads, DEFAULT, SANS_SERIF or DEFAULT_BOLD, or null. */
+    private fun Instruction.androidDefault(): String? {
+        if (opcode != Opcode.SGET_OBJECT) return null
+        val field = getReference<FieldReference>() ?: return null
+        if (field.definingClass != "Landroid/graphics/Typeface;" || field.type != "Landroid/graphics/Typeface;") return null
+        return field.name.takeIf { it in setOf("DEFAULT", "SANS_SERIF", "DEFAULT_BOLD") }
+    }
+
     /** An insert can push a branch past a plain goto's reach, and dexlib2 widens it. */
     private fun Instruction.kind() = when (opcode) {
         Opcode.GOTO_16, Opcode.GOTO_32 -> Opcode.GOTO
@@ -241,6 +308,17 @@ class CustomFontFixtureTest {
                 "164: v5 from v1", "66: v5 from v2", "75: v5 from v1",
             ),
         )
+
+        /**
+         * 512708508's Compose font resolver, by hand from its dump: text with no font family, or the
+         * default one at a weight, starts from Typeface.DEFAULT.
+         */
+        val BY_HAND_DEFAULTS = mapOf(
+            "512708508" to ("LX/0NG;->AeX(LX/0VP;LX/3nS;I)Landroid/graphics/Typeface;" to listOf("11: v0 DEFAULT", "14: v3 DEFAULT")),
+        )
+
+        /** The extension's field each of Android's default fonts is read from instead. */
+        val STAND_INS = mapOf("DEFAULT" to "androidDefault", "SANS_SERIF" to "androidSansSerif", "DEFAULT_BOLD" to "androidDefaultBold")
 
         /** One read of each build serves every test; each test patches its own copy. */
         val fixtures = PerBuild<Fixture>()

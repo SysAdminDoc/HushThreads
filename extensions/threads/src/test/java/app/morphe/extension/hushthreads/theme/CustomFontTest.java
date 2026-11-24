@@ -165,6 +165,56 @@ public class CustomFontTest {
         assertTrue(HookStatus.missing(FamilyNames.CUSTOM_FONT).isEmpty());
     }
 
+    /**
+     * Android won't let Typeface.DEFAULT, SANS_SERIF or DEFAULT_BOLD change (S25, 2026-11-24), and
+     * Compose draws text with no font family of its own in Typeface.DEFAULT. Each of Threads' reads
+     * of them comes back as the picked font once Threads' start put it in, bold for the bold one.
+     */
+    @Test public void androidsDefaultReadsGetThePickedFontFromThreadsStart() throws IOException {
+        CustomFontForTests.keep(context, CustomFontForTests.FONT + " picked");
+        CustomFontForTests.AndroidFonts android = CustomFontForTests.installAndroidFonts();
+        assertAndroidsOwn("before Threads' start");
+
+        CustomFont.onThreadsStart(context);
+
+        Typeface regular = android.defaults.get(0);
+        Typeface bold = android.defaults.get(1);
+        assertTrue(loader.made(regular));
+        assertNotSame(regular, bold);
+        assertSame(regular, CustomFont.androidDefault);
+        assertSame(regular, CustomFont.androidSansSerif);
+        assertSame(bold, CustomFont.androidDefaultBold);
+        assertTrue(report(), report().contains(CustomFont.DEFAULT_READS + " 1"));
+    }
+
+    /** Off, paused, or with no file or one that won't load, every read keeps Android's default. */
+    @Test public void androidsDefaultReadsStayWhenTheSwitchDoesNotApply() throws IOException {
+        CustomFontForTests.installAndroidFonts();
+        CustomFont.onThreadsStart(context);
+        assertAndroidsOwn("no file");
+
+        CustomFontForTests.keep(context, "JUNK");
+        CustomFont.onThreadsStart(context);
+        assertAndroidsOwn("won't load");
+
+        CustomFontForTests.keep(context, CustomFontForTests.FONT + " picked");
+        Settings.CUSTOM_FONT.save(false);
+        CustomFont.onThreadsStart(context);
+        assertAndroidsOwn("off");
+
+        Settings.CUSTOM_FONT.save(true);
+        PauseForTests.pause(HushThreadsPause.Reason.SWITCH);
+        CustomFont.onThreadsStart(context);
+        assertAndroidsOwn("paused");
+        assertFalse(report(), report().contains(CustomFont.DEFAULT_READS));
+    }
+
+    private static void assertAndroidsOwn(String when) {
+        assertSame(when, Typeface.DEFAULT, CustomFont.androidDefault);
+        assertSame(when, Typeface.SANS_SERIF, CustomFont.androidSansSerif);
+        assertSame(when, Typeface.DEFAULT_BOLD, CustomFont.androidDefaultBold);
+    }
+
     /** Icon, logo and other fonts stay Threads' own, and so does a resource Threads doesn't have. */
     @Test public void otherFontsStayThreads() throws IOException {
         CustomFontForTests.keep(context, CustomFontForTests.FONT + " picked");
