@@ -893,7 +893,7 @@ dependencies {
     // exact version at run time; this puts it on the test compile classpath as well.
     testImplementation("com.android.tools.build:apksig:9.1.1")
     // Reads the resource tables of the fixtures, for the Material You theme's colour table. This is
-    // the module and commit patcher 2.4.0 brings at run time; it puts that copy on the test compile
+    // the module and commit patcher 2.5.0 (like 2.4.0) brings at run time; it puts that copy on the test compile
     // classpath as well. Gradle keeps whichever of two commits sorts higher, and 675bed2de3 (2.3.0's)
     // sorts above 50418a07a8, so this pin moves with the patcher. REAndroid's own arsclib is a
     // different module sharing most of its com.reandroid classes, so it sat beside the patcher's copy
