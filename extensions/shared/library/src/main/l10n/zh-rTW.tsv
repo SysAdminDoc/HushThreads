@@ -403,3 +403,9 @@ Hide the share button	隱藏分享按鈕
 Takes the share button off posts and replies. Restart Threads to see the change.	移除貼文和回覆上的分享按鈕。重新啟動 Threads 以查看變更。
 Hide the save button	隱藏儲存按鈕
 Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.	移除貼文和回覆上的儲存按鈕，以免誤觸。重新啟動 Threads 以查看變更。
+# The header logo switch under Appearance, then the row under Set when you patched for the launcher icon, and the launcher icon as one item of the list of what stays while HushThreads is paused
+Use the HushThreads logo	使用 HushThreads 標誌
+Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.	在動態頂端以 HushThreads 標誌取代 Threads 標誌。重新整理動態時不會旋轉。重新啟動 Threads 以查看變更。
+HushThreads icon	HushThreads 圖示
+The app's icon on your home screen is the HushThreads logo.	主畫面上的應用程式圖示是 HushThreads 標誌。
+the HushThreads icon	HushThreads 圖示

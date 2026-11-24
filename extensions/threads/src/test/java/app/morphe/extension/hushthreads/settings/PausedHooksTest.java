@@ -54,6 +54,7 @@ import app.morphe.extension.hushthreads.profile.InstagramButton;
 import app.morphe.extension.hushthreads.profile.ProfilePictureForTests;
 import app.morphe.extension.hushthreads.profile.ProfileSuggestions;
 import app.morphe.extension.hushthreads.search.SearchSuggestions;
+import app.morphe.extension.hushthreads.theme.HeaderLogoForTests;
 import app.morphe.extension.hushthreads.theme.PureBlack;
 import app.morphe.extension.shared.SettingsContextRule;
 import app.morphe.extension.shared.settings.BaseSettings;
@@ -187,6 +188,8 @@ public class PausedHooksTest {
         // Threads' dark gray background comes back black.
         probes.put(PatchFamily.PURE_BLACK, Collections.singletonList(
                 () -> PureBlack.color(0xff101010L << 32) == 0xff00000000000000L));
+        // The HushThreads logo is drawn over Threads' own at the top of the feed.
+        probes.put(PatchFamily.HEADER_LOGO, Collections.singletonList(HeaderLogoForTests::drawsOver));
         // A profile header Threads would draw with the Instagram button is drawn without it.
         probes.put(PatchFamily.HIDE_INSTAGRAM_BUTTON, Collections.singletonList(() -> !InstagramButton.show(true)));
         // A ghost post bubble Threads would show, on a profile or in the feed's row, isn't shown.

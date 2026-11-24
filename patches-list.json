@@ -167,6 +167,42 @@
       "options": []
     },
     {
+      "name": "Custom launcher icon",
+      "description": "Swaps the Threads icon on your home screen for the HushThreads logo, with a one-color version for themed icons, so a patched copy is easy to spot. It isn't selected by default. Works as soon as you patch it in, with no switch.",
+      "category": "Interface",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings",
+        "ResourcePatch"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "457.0.0.57.74"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "457.0.0.57.74",
+              "experimental": false,
+              "versionCodes": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Disable analytics",
       "description": "Stops Threads from sending most of its usage reports to Meta. A few may still get through. Good if you'd rather share less about how you use the app. On by default. Turn it off in HushThreads settings > Privacy.",
       "category": "Privacy",
@@ -519,6 +555,41 @@
     {
       "name": "Hide the Instagram button",
       "description": "Takes the Instagram button off the top of profiles, yours and other people's. The other buttons stay. Good for a tidier profile. Starts off. Turn it on in HushThreads settings > Appearance.",
+      "category": "Interface",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "457.0.0.57.74"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "457.0.0.57.74",
+              "experimental": false,
+              "versionCodes": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "HushThreads header logo",
+      "description": "Shows the HushThreads logo at the top of your feed instead of the Threads logo. It stays still while the feed refreshes, where Threads' logo spins. Starts off. Turn it on in HushThreads settings > Appearance.",
       "category": "Interface",
       "use": true,
       "dependencies": [

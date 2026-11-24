@@ -7,6 +7,8 @@ d962e762	androidx.compose.animation.AnimatedVisibility (AnimatedVisibility.kt:52
 449a8981	androidx.compose.animation.AnimatedVisibility (AnimatedVisibility.kt:593)
 a0bbceda	com.instagram.barcelona.bds.theme.BdsTheme.<anonymous> (BdsTheme.kt:38)
 6b2b90b5	com.instagram.barcelona.common.ui.mediahighlights.AutoplayingMediaHighlightVideo (TrendMediaHighlightsPreview.kt:260)
+65cb0045	com.instagram.barcelona.common.ui.pulltorefresh.ProgressIndicator (BarcelonaProgressIndicator.kt:440)
+345cff49	com.instagram.barcelona.common.ui.pulltorefresh.WordmarkProgressIndicator (BarcelonaWordmarkIndicator.kt:64)
 5bb8269a	com.instagram.barcelona.feed.mediaviewer.ui.MediaViewerVideo (VideoMediaBox.kt:269)
 783f2379	com.instagram.barcelona.feed.post.actionmenu.PostActionMenuSheet.<anonymous> (PostActionMenuSheet.kt:248)
 7b429a2d	com.instagram.barcelona.feed.post.ufi.ui.LikeButtonWithMultiAccount (PostDenseUfi.kt:756)

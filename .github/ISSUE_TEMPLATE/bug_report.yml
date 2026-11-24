@@ -76,6 +76,7 @@ body:
         - Change app name
         - Change package name
         - Change version code
+        - Custom launcher icon
         - Disable analytics
         - Disable screenshot detection
         - Disable swipe to Search
@@ -87,6 +88,7 @@ body:
         - Hide post buttons
         - Hide suggested users
         - Hide the Instagram button
+        - HushThreads header logo
         - HushThreads settings
         - Max image quality
         - Open links in browser

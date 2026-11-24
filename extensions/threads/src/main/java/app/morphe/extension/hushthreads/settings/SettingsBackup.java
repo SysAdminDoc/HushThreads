@@ -88,6 +88,7 @@ public final class SettingsBackup {
             Settings.DISABLE_SCREENSHOT_DETECTION,
             Settings.SPOOF_SIM_REGION,
             Settings.PURE_BLACK,
+            Settings.HEADER_LOGO,
             Settings.HIDE_INSTAGRAM_BUTTON,
             Settings.HIDE_GHOST_POST_BUBBLES,
             Settings.FULL_SIZE_PROFILE_PICTURES,

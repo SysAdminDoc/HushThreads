@@ -9,6 +9,8 @@ Changes in the source build, then released versions.
 * HushThreads now patches Threads 457.0.0.57.74 only, on all ten APKMirror variants (arm64-v8a, armeabi-v7a, x86_64 and x86). Update Threads to 457 before you patch. v0.0.18 is the last release for 455.0.0.55.72.
 * `Hide ads` and `Hide suggested users` now also check the For You posts Threads loads ahead of time in the background. On 456 those went into the feed cache without passing the filter.
 * New `Hide post buttons` patch. The like, reply, repost, share and save buttons under posts and replies each get a Hide switch of their own under Posts in HushThreads settings, and a hidden button takes its count with it. All five start out showing, and Threads picks up a change after a restart. Asked for in #27.
+* New `HushThreads header logo` patch. It puts the HushThreads logo at the top of your feed where the Threads logo goes, and it stays still while the feed refreshes. It's in Manager's default selection, but its switch under Appearance in HushThreads settings starts off, and Threads picks up a change after a restart. Asked for in #26.
+* New `Custom launcher icon` patch. The icon on your home screen becomes the HushThreads logo, with a one-color version for themed icons, so you can tell your patched Threads apart at a glance. It isn't in Manager's default selection. Asked for in #26.
 
 ## 0.0.18 (2026-11-13)
 

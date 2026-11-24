@@ -434,7 +434,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
             saves = new SaveSettingsRows.Saves(downloads);
         }
 
-        if (build.contains(PatchFamily.PURE_BLACK) || build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)
+        if (build.contains(PatchFamily.PURE_BLACK) || build.contains(PatchFamily.HEADER_LOGO)
+                || build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)
                 || build.contains(PatchFamily.HIDE_GHOST_POST_BUBBLES)
                 || build.contains(PatchFamily.FULL_SIZE_PROFILE_PICTURES)) {
             PreferenceCategory appearance = category(screen, L10n.t("Appearance"));
@@ -442,6 +443,11 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 appearance.addPreference(toggle(context, Settings.PURE_BLACK, L10n.t("Pure black dark mode"),
                         L10n.t("Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. "
                             + "Restart Threads to see the change.")));
+            }
+            if (build.contains(PatchFamily.HEADER_LOGO)) {
+                appearance.addPreference(toggle(context, Settings.HEADER_LOGO, L10n.t("Use the HushThreads logo"),
+                        L10n.t("Shows the HushThreads logo at the top of your feed in place of the Threads logo. "
+                            + "It doesn't spin while the feed refreshes. Restart Threads to see the change.")));
             }
             if (build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)) {
                 appearance.addPreference(toggle(context, Settings.HIDE_INSTAGRAM_BUTTON, L10n.t("Hide the Instagram button"),
@@ -515,7 +521,8 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         if (build.contains(PatchFamily.REMOVE_AD_ID) || build.contains(PatchFamily.RESTORE_TRUST)
                 || build.contains(PatchFamily.VERSION_CODE) || build.contains(PatchFamily.REMOVE_SHARE_TARGETS)
                 || build.contains(PatchFamily.TRUST_USER_CERTIFICATES)
-                || build.contains(PatchFamily.CHANGE_PACKAGE_NAME) || build.contains(PatchFamily.CHANGE_APP_NAME)) {
+                || build.contains(PatchFamily.CHANGE_PACKAGE_NAME) || build.contains(PatchFamily.CHANGE_APP_NAME)
+                || build.contains(PatchFamily.CUSTOM_LAUNCHER_ICON)) {
             PreferenceCategory patched = category(screen, L10n.t("Set when you patched"));
             // Each shows its value as Android has it, which is what the patch set, isolated so it
             // reads the same way round in a right-to-left sentence.
@@ -529,6 +536,10 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                         L10n.t("The name under the app's icon.") + "\n"
                                 + L10n.isolate(context.getApplicationInfo().loadLabel(context.getPackageManager()))),
                         SettingsIcons.BUILD));
+            }
+            if (build.contains(PatchFamily.CUSTOM_LAUNCHER_ICON)) {
+                patched.addPreference(mark(info(context, L10n.t("HushThreads icon"),
+                        L10n.t("The app's icon on your home screen is the HushThreads logo.")), SettingsIcons.APPEARANCE));
             }
             if (build.contains(PatchFamily.REMOVE_AD_ID)) {
                 patched.addPreference(mark(info(context, L10n.t("Advertising ID removed"),
@@ -1172,6 +1183,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         else if (setting == Settings.SPOOF_SIM_REGION) icon = SettingsIcons.SIM_CARD;
         else if (setting == Settings.SAVE_MEDIA) icon = SettingsIcons.DOWNLOADS;
         else if (setting == Settings.PURE_BLACK) icon = SettingsIcons.MOON;
+        else if (setting == Settings.HEADER_LOGO) icon = SettingsIcons.APPEARANCE;
         else if (setting == Settings.HIDE_INSTAGRAM_BUTTON) icon = SettingsIcons.CAMERA;
         else if (setting == Settings.HIDE_GHOST_POST_BUBBLES) icon = SettingsIcons.CHAT;
         else if (setting == Settings.FULL_SIZE_PROFILE_PICTURES) icon = SettingsIcons.PERSON;

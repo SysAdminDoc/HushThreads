@@ -402,3 +402,9 @@ Hide the share button	공유 버튼 숨기기
 Takes the share button off posts and replies. Restart Threads to see the change.	게시물과 답글에서 공유 버튼을 제거합니다. 변경 사항을 보려면 Threads를 다시 시작하세요.
 Hide the save button	저장 버튼 숨기기
 Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.	실수로 누르지 않도록 게시물과 답글에서 저장 버튼을 제거합니다. 변경 사항을 보려면 Threads를 다시 시작하세요.
+# The header logo switch under Appearance, then the row under Set when you patched for the launcher icon, and the launcher icon as one item of the list of what stays while HushThreads is paused
+Use the HushThreads logo	HushThreads 로고 사용
+Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.	피드 상단에 Threads 로고 대신 HushThreads 로고를 표시합니다. 피드를 새로고침하는 동안 회전하지 않습니다. 변경 사항을 보려면 Threads를 다시 시작하세요.
+HushThreads icon	HushThreads 아이콘
+The app's icon on your home screen is the HushThreads logo.	홈 화면의 앱 아이콘이 HushThreads 로고입니다.
+the HushThreads icon	HushThreads 아이콘

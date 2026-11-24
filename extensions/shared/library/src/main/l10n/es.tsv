@@ -401,3 +401,9 @@ Hide the share button	Ocultar el botón de compartir
 Takes the share button off posts and replies. Restart Threads to see the change.	Quita el botón de compartir de las publicaciones y respuestas. Reinicia Threads para ver el cambio.
 Hide the save button	Ocultar el botón de guardar
 Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.	Quita el botón de guardar de las publicaciones y respuestas, para que no lo toques sin querer. Reinicia Threads para ver el cambio.
+# The header logo switch under Appearance, then the row under Set when you patched for the launcher icon, and the launcher icon as one item of the list of what stays while HushThreads is paused
+Use the HushThreads logo	Usar el logotipo de HushThreads
+Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.	Muestra el logotipo de HushThreads en la parte superior del feed en lugar del logotipo de Threads. No gira mientras el feed se actualiza. Reinicia Threads para ver el cambio.
+HushThreads icon	Icono de HushThreads
+The app's icon on your home screen is the HushThreads logo.	El icono de la app en tu pantalla de inicio es el logotipo de HushThreads.
+the HushThreads icon	el icono de HushThreads

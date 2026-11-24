@@ -78,6 +78,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean headerLogo() {
+        return false;
+    }
+
     public static boolean hideInstagramButton() {
         return false;
     }
@@ -127,6 +131,10 @@ public final class SettingsStatus {
     }
 
     public static boolean changeAppName() {
+        return false;
+    }
+
+    public static boolean customLauncherIcon() {
         return false;
     }
 }

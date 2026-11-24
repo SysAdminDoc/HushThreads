@@ -38,6 +38,14 @@ internal class FixtureResources private constructor(private val work: File, priv
         return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
     }
 
+    /**
+     * Decodes the files matching [globs], such as `res/mipmap-anydpi-v26/ic_launcher.xml`, as a resource
+     * patch's own `get` asks the patcher for them, and gives back the paths it decoded.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun decode(vararg globs: String): List<String> =
+        CODER.getMethod("decode", Collection::class.java, String::class.java).invoke(coder, globs.toList(), null) as List<String>
+
     override fun close() {
         coder.close()
         work.deleteRecursively()

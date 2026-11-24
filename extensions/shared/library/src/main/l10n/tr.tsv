@@ -401,3 +401,9 @@ Hide the share button	Paylaş düğmesini gizle
 Takes the share button off posts and replies. Restart Threads to see the change.	Gönderilerdeki ve yanıtlardaki paylaş düğmesini kaldırır. Değişikliği görmek için Threads'i yeniden başlat.
 Hide the save button	Kaydet düğmesini gizle
 Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.	Yanlışlıkla dokunmaman için gönderilerdeki ve yanıtlardaki kaydet düğmesini kaldırır. Değişikliği görmek için Threads'i yeniden başlat.
+# The header logo switch under Appearance, then the row under Set when you patched for the launcher icon, and the launcher icon as one item of the list of what stays while HushThreads is paused
+Use the HushThreads logo	HushThreads logosunu kullan
+Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.	Akışının üstünde Threads logosu yerine HushThreads logosunu gösterir. Akış yenilenirken dönmez. Değişikliği görmek için Threads'i yeniden başlat.
+HushThreads icon	HushThreads simgesi
+The app's icon on your home screen is the HushThreads logo.	Ana ekranındaki uygulama simgesi HushThreads logosudur.
+the HushThreads icon	HushThreads simgesi

@@ -53,13 +53,14 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(714);
+        Map<String, String> table = new HashMap<>(724);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
         fillDe3(table);
         fillDe4(table);
         fillDe5(table);
+        fillDe6(table);
         return table;
     }
 
@@ -342,6 +343,8 @@ public final class L10nTranslations {
                 "HushThreads %1$s auf Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "HushThreads %1$s ist f\u00fcr Threads %2$s gedacht.");
+        table.put("HushThreads icon",
+                "HushThreads-Symbol");
         table.put("HushThreads is on",
                 "HushThreads ist aktiv");
         table.put("HushThreads is paused",
@@ -428,11 +431,11 @@ public final class L10nTranslations {
                 "Einstellungen \u00fcber das Logo \u00f6ffnen");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201eUnterst\u00fctzte Links \u00f6ffnen\u201c ist f\u00fcr diese App in den Android-Einstellungen aus. Tippe, um es einzuschalten.");
-        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
-                "\u00d6ffnet eine GitHub-Meldung, in der deine Versionen und Einstellungen schon stehen. Erg\u00e4nze, was passiert ist.");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "\u00d6ffnet eine GitHub-Meldung, in der deine Versionen und Einstellungen schon stehen. Erg\u00e4nze, was passiert ist.");
         table.put("Own app name",
                 "Eigener App-Name");
         table.put("Own package name",
@@ -551,11 +554,11 @@ public final class L10nTranslations {
                 "Video wird gespeichert");
         table.put("Saving the settings file",
                 "Einstellungsdatei wird gespeichert");
-        table.put("Saving...",
-                "Wird gespeichert \u2026");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("Saving...",
+                "Wird gespeichert \u2026");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Speichern ... Zum Abbrechen: Downloads in HushThreads.");
         table.put("Search settings",
@@ -592,6 +595,8 @@ public final class L10nTranslations {
                 "Datum und Uhrzeit anzeigen");
         table.put("Shown. Tap to hide it.",
                 "Werden angezeigt. Tippe, um sie auszublenden.");
+        table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
+                "Zeigt oben in deinem Feed das HushThreads-Logo statt des Threads-Logos. Es dreht sich nicht, w\u00e4hrend der Feed aktualisiert wird. Starte Threads neu, damit die \u00c4nderung greift.");
         table.put("Smallest",
                 "Kleinste");
         table.put("Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.",
@@ -672,13 +677,15 @@ public final class L10nTranslations {
                 "Die App mit der letzten Einstellungsdatei hat noch immer nicht geantwortet. Versuche es sp\u00e4ter noch einmal.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Die App, in der die Einstellungsdatei liegt, braucht zu lange, deshalb wartet HushThreads nicht mehr. Sie kann das Speichern noch abschlie\u00dfen, also pr\u00fcfe die Datei, bevor du dich darauf verl\u00e4sst.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
+        table.put("The app's icon on your home screen is the HushThreads logo.",
+                "Das App-Symbol auf deinem Startbildschirm ist das HushThreads-Logo.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Der Diagnosebericht lie\u00df sich noch nicht speichern. Versuche es gleich noch einmal.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Der Diagnosebericht lie\u00df sich nicht speichern. Versuche es noch einmal.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "Die Datei %1$s lie\u00df sich nicht entfernen. L\u00f6sche sie aus %2$s, um HushThreads wieder einzuschalten.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -743,6 +750,8 @@ public final class L10nTranslations {
                 "Bis zum Fortsetzen verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv.");
         table.put("Updates",
                 "Updates");
+        table.put("Use the HushThreads logo",
+                "HushThreads-Logo verwenden");
         table.put("User certificates trusted",
                 "Eigenen Zertifikaten wird vertraut");
         table.put("Version",
@@ -779,6 +788,8 @@ public final class L10nTranslations {
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
         table.put("none",
                 "keine");
+        table.put("the HushThreads icon",
+                "das HushThreads-Symbol");
         table.put("the new app name",
                 "der neue App-Name");
         table.put("the new package name",
@@ -789,6 +800,9 @@ public final class L10nTranslations {
                 "der Fix f\u00fcr neu signierte Builds");
         table.put("the removed advertising ID permission",
                 "die entfernte Berechtigung f\u00fcr die Werbe-ID");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "der entfernte Eintrag im Teilen-Men\u00fc");
         table.put("the user certificate trust",
@@ -796,13 +810,14 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(714);
+        Map<String, String> table = new HashMap<>(724);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
         fillEs3(table);
         fillEs4(table);
         fillEs5(table);
+        fillEs6(table);
         return table;
     }
 
@@ -1085,6 +1100,8 @@ public final class L10nTranslations {
                 "HushThreads %1$s en Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "HushThreads %1$s est\u00e1 pensado para Threads %2$s.");
+        table.put("HushThreads icon",
+                "Icono de HushThreads");
         table.put("HushThreads is on",
                 "HushThreads est\u00e1 activado");
         table.put("HushThreads is paused",
@@ -1171,11 +1188,11 @@ public final class L10nTranslations {
                 "Abrir la configuraci\u00f3n desde el logotipo");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir enlaces compatibles\u201d est\u00e1 desactivado para esta app en los ajustes de Android. Toca para activarlo.");
-        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
-                "Abre un informe en GitHub con tus versiones y ajustes ya puestos. A\u00f1ade qu\u00e9 pas\u00f3.");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "Abre un informe en GitHub con tus versiones y ajustes ya puestos. A\u00f1ade qu\u00e9 pas\u00f3.");
         table.put("Own app name",
                 "Nombre de app propio");
         table.put("Own package name",
@@ -1294,11 +1311,11 @@ public final class L10nTranslations {
                 "Guardando un video");
         table.put("Saving the settings file",
                 "Guardando el archivo de configuraci\u00f3n");
-        table.put("Saving...",
-                "Guardando...");
     }
 
     private static void fillEs4(Map<String, String> table) {
+        table.put("Saving...",
+                "Guardando...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Guardando... Para cancelar, ve a Descargas en HushThreads.");
         table.put("Search settings",
@@ -1335,6 +1352,8 @@ public final class L10nTranslations {
                 "Mostrar la fecha y la hora");
         table.put("Shown. Tap to hide it.",
                 "Visible. Toca para ocultarla.");
+        table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
+                "Muestra el logotipo de HushThreads en la parte superior del feed en lugar del logotipo de Threads. No gira mientras el feed se actualiza. Reinicia Threads para ver el cambio.");
         table.put("Smallest",
                 "La m\u00e1s peque\u00f1a");
         table.put("Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.",
@@ -1415,13 +1434,15 @@ public final class L10nTranslations {
                 "La app del \u00faltimo archivo de configuraci\u00f3n a\u00fan no ha respondido. Int\u00e9ntalo m\u00e1s tarde.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "La app que guarda el archivo de configuraci\u00f3n tarda demasiado, as\u00ed que HushThreads dej\u00f3 de esperar. Esa app a\u00fan puede terminar de guardarlo, as\u00ed que revisa el archivo antes de confiar en \u00e9l.");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
+        table.put("The app's icon on your home screen is the HushThreads logo.",
+                "El icono de la app en tu pantalla de inicio es el logotipo de HushThreads.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Todav\u00eda no se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo en un momento.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "No se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo.");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "No se pudo eliminar el archivo %1$s. B\u00f3rralo de %2$s para volver a activar HushThreads.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -1486,6 +1507,8 @@ public final class L10nTranslations {
                 "Hasta que reanudes, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene.");
         table.put("Updates",
                 "Actualizaciones");
+        table.put("Use the HushThreads logo",
+                "Usar el logotipo de HushThreads");
         table.put("User certificates trusted",
                 "Certificados del usuario de confianza");
         table.put("Version",
@@ -1522,6 +1545,8 @@ public final class L10nTranslations {
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
         table.put("none",
                 "ninguna");
+        table.put("the HushThreads icon",
+                "el icono de HushThreads");
         table.put("the new app name",
                 "el nuevo nombre de la app");
         table.put("the new package name",
@@ -1532,6 +1557,9 @@ public final class L10nTranslations {
                 "el arreglo para la nueva firma");
         table.put("the removed advertising ID permission",
                 "el permiso del ID de publicidad eliminado");
+    }
+
+    private static void fillEs6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "la entrada eliminada del men\u00fa para compartir");
         table.put("the user certificate trust",
@@ -1539,13 +1567,14 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(714);
+        Map<String, String> table = new HashMap<>(724);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
         fillIn3(table);
         fillIn4(table);
         fillIn5(table);
+        fillIn6(table);
         return table;
     }
 
@@ -1828,6 +1857,8 @@ public final class L10nTranslations {
                 "HushThreads %1$s di Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "HushThreads %1$s ditujukan untuk Threads %2$s.");
+        table.put("HushThreads icon",
+                "Ikon HushThreads");
         table.put("HushThreads is on",
                 "HushThreads aktif");
         table.put("HushThreads is paused",
@@ -1914,11 +1945,11 @@ public final class L10nTranslations {
                 "Buka pengaturan dari logo");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cBuka link yang didukung\u201d nonaktif untuk aplikasi ini di pengaturan Android. Ketuk untuk mengaktifkannya.");
-        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
-                "Membuka laporan GitHub dengan versi dan pengaturan Anda yang sudah terisi. Tambahkan apa yang terjadi.");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "Membuka laporan GitHub dengan versi dan pengaturan Anda yang sudah terisi. Tambahkan apa yang terjadi.");
         table.put("Own app name",
                 "Nama aplikasi sendiri");
         table.put("Own package name",
@@ -2037,11 +2068,11 @@ public final class L10nTranslations {
                 "Menyimpan video");
         table.put("Saving the settings file",
                 "Menyimpan file pengaturan");
-        table.put("Saving...",
-                "Menyimpan...");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("Saving...",
+                "Menyimpan...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Menyimpan... Untuk membatalkan, buka Unduhan di HushThreads.");
         table.put("Search settings",
@@ -2078,6 +2109,8 @@ public final class L10nTranslations {
                 "Tampilkan tanggal dan waktu");
         table.put("Shown. Tap to hide it.",
                 "Ditampilkan. Ketuk untuk menyembunyikannya.");
+        table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
+                "Menampilkan logo HushThreads di bagian atas feed sebagai ganti logo Threads. Logo ini tidak berputar saat feed dimuat ulang. Mulai ulang Threads untuk melihat perubahannya.");
         table.put("Smallest",
                 "Terkecil");
         table.put("Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.",
@@ -2158,13 +2191,15 @@ public final class L10nTranslations {
                 "Aplikasi yang menyimpan file pengaturan terakhir masih belum merespons. Coba lagi nanti.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushThreads berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
+        table.put("The app's icon on your home screen is the HushThreads logo.",
+                "Ikon aplikasi di layar utama adalah logo HushThreads.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Laporan diagnostik belum dapat disimpan. Coba lagi dalam beberapa saat.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Laporan diagnostik tidak dapat disimpan. Coba lagi.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "File %1$s tidak dapat dihapus. Hapus file itu dari %2$s untuk mengaktifkan HushThreads lagi.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -2229,6 +2264,8 @@ public final class L10nTranslations {
                 "Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif.");
         table.put("Updates",
                 "Pembaruan");
+        table.put("Use the HushThreads logo",
+                "Gunakan logo HushThreads");
         table.put("User certificates trusted",
                 "Sertifikat pengguna dipercaya");
         table.put("Version",
@@ -2265,6 +2302,8 @@ public final class L10nTranslations {
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
         table.put("none",
                 "tidak ada");
+        table.put("the HushThreads icon",
+                "ikon HushThreads");
         table.put("the new app name",
                 "nama aplikasi baru");
         table.put("the new package name",
@@ -2275,6 +2314,9 @@ public final class L10nTranslations {
                 "perbaikan build yang ditandatangani ulang");
         table.put("the removed advertising ID permission",
                 "izin ID iklan yang dihapus");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "entri lembar bagikan yang dihapus");
         table.put("the user certificate trust",
@@ -2282,13 +2324,14 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIt() {
-        Map<String, String> table = new HashMap<>(714);
+        Map<String, String> table = new HashMap<>(724);
         fillIt0(table);
         fillIt1(table);
         fillIt2(table);
         fillIt3(table);
         fillIt4(table);
         fillIt5(table);
+        fillIt6(table);
         return table;
     }
 
@@ -2571,6 +2614,8 @@ public final class L10nTranslations {
                 "HushThreads %1$s su Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "HushThreads %1$s \u00e8 pensato per Threads %2$s.");
+        table.put("HushThreads icon",
+                "Icona di HushThreads");
         table.put("HushThreads is on",
                 "HushThreads \u00e8 attivo");
         table.put("HushThreads is paused",
@@ -2657,11 +2702,11 @@ public final class L10nTranslations {
                 "Apri le impostazioni dal logo");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "L'apertura dei link supportati \u00e8 disattivata per questa app nelle impostazioni di Android. Tocca per attivarla.");
-        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
-                "Apre una segnalazione su GitHub con le tue versioni e impostazioni gi\u00e0 compilate. Aggiungi cos'\u00e8 successo.");
     }
 
     private static void fillIt3(Map<String, String> table) {
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "Apre una segnalazione su GitHub con le tue versioni e impostazioni gi\u00e0 compilate. Aggiungi cos'\u00e8 successo.");
         table.put("Own app name",
                 "Nome dell'app proprio");
         table.put("Own package name",
@@ -2780,11 +2825,11 @@ public final class L10nTranslations {
                 "Salvataggio di un video");
         table.put("Saving the settings file",
                 "Salvataggio del file di impostazioni");
-        table.put("Saving...",
-                "Salvataggio...");
     }
 
     private static void fillIt4(Map<String, String> table) {
+        table.put("Saving...",
+                "Salvataggio...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Salvataggio... Per annullare, apri Download in HushThreads.");
         table.put("Search settings",
@@ -2821,6 +2866,8 @@ public final class L10nTranslations {
                 "Mostra data e ora");
         table.put("Shown. Tap to hide it.",
                 "Visibili. Tocca per nasconderle.");
+        table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
+                "Mostra il logo di HushThreads in cima al feed al posto del logo di Threads. Non gira mentre il feed si aggiorna. Riavvia Threads per vedere la modifica.");
         table.put("Smallest",
                 "Minima");
         table.put("Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.",
@@ -2901,13 +2948,15 @@ public final class L10nTranslations {
                 "L'app che contiene l'ultimo file di impostazioni non ha ancora risposto. Riprova pi\u00f9 tardi.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "L'app che contiene il file di impostazioni ci sta mettendo troppo, quindi HushThreads ha smesso di aspettare. Quell'app potrebbe comunque finire di salvarlo, quindi controlla il file prima di farci affidamento.");
+    }
+
+    private static void fillIt5(Map<String, String> table) {
+        table.put("The app's icon on your home screen is the HushThreads logo.",
+                "L'icona dell'app nella schermata Home \u00e8 il logo di HushThreads.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Impossibile salvare ancora il report diagnostico. Riprova tra un attimo.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Impossibile salvare il report diagnostico. Riprova.");
-    }
-
-    private static void fillIt5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "Impossibile rimuovere il file %1$s. Eliminalo da %2$s per riattivare HushThreads.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -2972,6 +3021,8 @@ public final class L10nTranslations {
                 "Finch\u00e9 non riprendi, ogni interruttore tranne Log di debug agisce come se fosse disattivato. Le modifiche fatte durante la patch restano attive.");
         table.put("Updates",
                 "Aggiornamenti");
+        table.put("Use the HushThreads logo",
+                "Usa il logo di HushThreads");
         table.put("User certificates trusted",
                 "Certificati utente considerati attendibili");
         table.put("Version",
@@ -3008,6 +3059,8 @@ public final class L10nTranslations {
                 "I tuoi interruttori corrispondono gi\u00e0 a quel file, quindi non cambier\u00e0 nulla.");
         table.put("none",
                 "nessuno");
+        table.put("the HushThreads icon",
+                "l'icona di HushThreads");
         table.put("the new app name",
                 "il nuovo nome dell'app");
         table.put("the new package name",
@@ -3018,6 +3071,9 @@ public final class L10nTranslations {
                 "la correzione per le build rifirmate");
         table.put("the removed advertising ID permission",
                 "il permesso dell'ID pubblicitario rimosso");
+    }
+
+    private static void fillIt6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "la voce del menu di condivisione rimossa");
         table.put("the user certificate trust",
@@ -3025,13 +3081,14 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildKo() {
-        Map<String, String> table = new HashMap<>(714);
+        Map<String, String> table = new HashMap<>(724);
         fillKo0(table);
         fillKo1(table);
         fillKo2(table);
         fillKo3(table);
         fillKo4(table);
         fillKo5(table);
+        fillKo6(table);
         return table;
     }
 
@@ -3314,6 +3371,8 @@ public final class L10nTranslations {
                 "Threads %2$s\uc758 HushThreads %1$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "HushThreads %1$s\ub294 Threads %2$s\uc6a9\uc785\ub2c8\ub2e4.");
+        table.put("HushThreads icon",
+                "HushThreads \uc544\uc774\ucf58");
         table.put("HushThreads is on",
                 "HushThreads \uc2e4\ud589 \uc911");
         table.put("HushThreads is paused",
@@ -3400,11 +3459,11 @@ public final class L10nTranslations {
                 "\ub85c\uace0\uc5d0\uc11c \uc124\uc815 \uc5f4\uae30");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "Android \uc124\uc815\uc5d0\uc11c \uc774 \uc571\uc758 \uc9c0\uc6d0\ub418\ub294 \ub9c1\ud06c \uc5f4\uae30\uac00 \uaebc\uc838 \uc788\uc2b5\ub2c8\ub2e4. \ud0ed\ud574\uc11c \ucf1c\uc138\uc694.");
-        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
-                "\ubc84\uc804\uacfc \uc124\uc815\uc774 \ubbf8\ub9ac \ucc44\uc6cc\uc9c4 GitHub \uc2e0\uace0\ub97c \uc5fd\ub2c8\ub2e4. \ubb34\uc2a8 \uc77c\uc774 \uc788\uc5c8\ub294\uc9c0 \uc801\uc5b4 \uc8fc\uc138\uc694.");
     }
 
     private static void fillKo3(Map<String, String> table) {
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "\ubc84\uc804\uacfc \uc124\uc815\uc774 \ubbf8\ub9ac \ucc44\uc6cc\uc9c4 GitHub \uc2e0\uace0\ub97c \uc5fd\ub2c8\ub2e4. \ubb34\uc2a8 \uc77c\uc774 \uc788\uc5c8\ub294\uc9c0 \uc801\uc5b4 \uc8fc\uc138\uc694.");
         table.put("Own app name",
                 "\ubcc4\ub3c4 \uc571 \uc774\ub984");
         table.put("Own package name",
@@ -3523,11 +3582,11 @@ public final class L10nTranslations {
                 "\ub3d9\uc601\uc0c1\uc744 \uc800\uc7a5\ud558\ub294 \uc911");
         table.put("Saving the settings file",
                 "\uc124\uc815 \ud30c\uc77c\uc744 \uc800\uc7a5\ud558\ub294 \uc911");
-        table.put("Saving...",
-                "\uc800\uc7a5\ud558\ub294 \uc911...");
     }
 
     private static void fillKo4(Map<String, String> table) {
+        table.put("Saving...",
+                "\uc800\uc7a5\ud558\ub294 \uc911...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "\uc800\uc7a5 \uc911... \ucde8\uc18c\ud558\ub824\uba74 HushThreads \uc124\uc815\uc5d0\uc11c \ub2e4\uc6b4\ub85c\ub4dc\ub97c \uc5ec\uc138\uc694.");
         table.put("Search settings",
@@ -3564,6 +3623,8 @@ public final class L10nTranslations {
                 "\ub0a0\uc9dc\uc640 \uc2dc\uac04 \ud45c\uc2dc");
         table.put("Shown. Tap to hide it.",
                 "\ud45c\uc2dc\ub428. \uc228\uae30\ub824\uba74 \ud0ed\ud558\uc138\uc694.");
+        table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
+                "\ud53c\ub4dc \uc0c1\ub2e8\uc5d0 Threads \ub85c\uace0 \ub300\uc2e0 HushThreads \ub85c\uace0\ub97c \ud45c\uc2dc\ud569\ub2c8\ub2e4. \ud53c\ub4dc\ub97c \uc0c8\ub85c\uace0\uce68\ud558\ub294 \ub3d9\uc548 \ud68c\uc804\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
         table.put("Smallest",
                 "\ucd5c\uc18c");
         table.put("Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.",
@@ -3644,13 +3705,15 @@ public final class L10nTranslations {
                 "\ub9c8\uc9c0\ub9c9 \uc124\uc815 \ud30c\uc77c\uc744 \ubcf4\uad00\ud558\ub294 \uc571\uc774 \uc544\uc9c1 \uc751\ub2f5\ud558\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4. \ub098\uc911\uc5d0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "\uc124\uc815 \ud30c\uc77c\uc744 \ubcf4\uad00\ud558\ub294 \uc571\uc758 \uc751\ub2f5\uc774 \ub108\ubb34 \ub2a6\uc5b4 HushThreads\uac00 \uae30\ub2e4\ub9ac\uae30\ub97c \uba48\ucdc4\uc2b5\ub2c8\ub2e4. \uadf8 \uc571\uc774 \uc800\uc7a5\uc744 \ub9c8\uce60 \uc218\ub3c4 \uc788\uc73c\ub2c8 \ud30c\uc77c\uc744 \uc0ac\uc6a9\ud558\uae30 \uc804\uc5d0 \ud655\uc778\ud558\uc138\uc694.");
+    }
+
+    private static void fillKo5(Map<String, String> table) {
+        table.put("The app's icon on your home screen is the HushThreads logo.",
+                "\ud648 \ud654\uba74\uc758 \uc571 \uc544\uc774\ucf58\uc774 HushThreads \ub85c\uace0\uc785\ub2c8\ub2e4.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "\uc544\uc9c1 \uc9c4\ub2e8 \ubcf4\uace0\uc11c\ub97c \uc800\uc7a5\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "\uc9c4\ub2e8 \ubcf4\uace0\uc11c\ub97c \uc800\uc7a5\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
-    }
-
-    private static void fillKo5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "%1$s \ud30c\uc77c\uc744 \uc81c\uac70\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. HushThreads\ub97c \ub2e4\uc2dc \ucf1c\ub824\uba74 %2$s\uc5d0\uc11c \uc774 \ud30c\uc77c\uc744 \uc0ad\uc81c\ud558\uc138\uc694.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -3715,6 +3778,8 @@ public final class L10nTranslations {
                 "\uc7ac\uac1c\ud560 \ub54c\uae4c\uc9c0 \ub514\ubc84\uadf8 \ub85c\uadf8\ub97c \uc81c\uc678\ud55c \ubaa8\ub4e0 \uc2a4\uc704\uce58\uac00 \uaebc\uc9c4 \uac83\ucc98\ub7fc \uc791\ub3d9\ud569\ub2c8\ub2e4. \ud328\uce58\ud560 \ub54c \uc801\uc6a9\ub41c \ubcc0\uacbd \uc0ac\ud56d\uc740 \uc720\uc9c0\ub429\ub2c8\ub2e4.");
         table.put("Updates",
                 "\uc5c5\ub370\uc774\ud2b8");
+        table.put("Use the HushThreads logo",
+                "HushThreads \ub85c\uace0 \uc0ac\uc6a9");
         table.put("User certificates trusted",
                 "\uc0ac\uc6a9\uc790 \uc778\uc99d\uc11c \uc2e0\ub8b0\ub428");
         table.put("Version",
@@ -3751,6 +3816,8 @@ public final class L10nTranslations {
                 "\uc2a4\uc704\uce58\uac00 \uc774\ubbf8 \uadf8 \ud30c\uc77c\uacfc \uac19\uc73c\ubbc0\ub85c \uc544\ubb34\uac83\ub3c4 \ubc14\ub00c\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
         table.put("none",
                 "\uc5c6\uc74c");
+        table.put("the HushThreads icon",
+                "HushThreads \uc544\uc774\ucf58");
         table.put("the new app name",
                 "\uc0c8 \uc571 \uc774\ub984");
         table.put("the new package name",
@@ -3761,6 +3828,9 @@ public final class L10nTranslations {
                 "\ub2e4\uc2dc \uc11c\uba85\ub41c \ube4c\ub4dc \uc218\uc815");
         table.put("the removed advertising ID permission",
                 "\uc81c\uac70\ub41c \uad11\uace0 ID \uad8c\ud55c");
+    }
+
+    private static void fillKo6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "\uc81c\uac70\ub41c \uacf5\uc720 \uc2dc\ud2b8 \ud56d\ubaa9");
         table.put("the user certificate trust",
@@ -3768,13 +3838,14 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(714);
+        Map<String, String> table = new HashMap<>(724);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
         fillPt_rBR3(table);
         fillPt_rBR4(table);
         fillPt_rBR5(table);
+        fillPt_rBR6(table);
         return table;
     }
 
@@ -4057,6 +4128,8 @@ public final class L10nTranslations {
                 "HushThreads %1$s no Threads %2$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "O HushThreads %1$s \u00e9 compat\u00edvel com o Threads %2$s.");
+        table.put("HushThreads icon",
+                "\u00cdcone do HushThreads");
         table.put("HushThreads is on",
                 "O HushThreads est\u00e1 ativo");
         table.put("HushThreads is paused",
@@ -4143,11 +4216,11 @@ public final class L10nTranslations {
                 "Abrir as configura\u00e7\u00f5es pelo logotipo");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir links compat\u00edveis\u201d est\u00e1 desativado para este app nas configura\u00e7\u00f5es do Android. Toque para ativar.");
-        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
-                "Abre um relato no GitHub com suas vers\u00f5es e configura\u00e7\u00f5es j\u00e1 preenchidas. Conte o que aconteceu.");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "Abre um relato no GitHub com suas vers\u00f5es e configura\u00e7\u00f5es j\u00e1 preenchidas. Conte o que aconteceu.");
         table.put("Own app name",
                 "Nome de app pr\u00f3prio");
         table.put("Own package name",
@@ -4266,11 +4339,11 @@ public final class L10nTranslations {
                 "Salvando um v\u00eddeo");
         table.put("Saving the settings file",
                 "Salvando o arquivo de configura\u00e7\u00f5es");
-        table.put("Saving...",
-                "Salvando...");
     }
 
     private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("Saving...",
+                "Salvando...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Salvando... Para cancelar, abra Downloads no HushThreads.");
         table.put("Search settings",
@@ -4307,6 +4380,8 @@ public final class L10nTranslations {
                 "Mostrar a data e a hora");
         table.put("Shown. Tap to hide it.",
                 "Vis\u00edveis. Toque para ocultar.");
+        table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
+                "Mostra o logotipo do HushThreads no topo do feed no lugar do logotipo do Threads. Ele n\u00e3o gira enquanto o feed atualiza. Reinicie o Threads para ver a mudan\u00e7a.");
         table.put("Smallest",
                 "A menor");
         table.put("Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.",
@@ -4387,13 +4462,15 @@ public final class L10nTranslations {
                 "O app do \u00faltimo arquivo de configura\u00e7\u00f5es ainda n\u00e3o respondeu. Tente de novo mais tarde.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "O app que guarda o arquivo de configura\u00e7\u00f5es est\u00e1 demorando demais, ent\u00e3o o HushThreads parou de esperar. Esse app ainda pode terminar de salv\u00e1-lo, ent\u00e3o confira o arquivo antes de confiar nele.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
+        table.put("The app's icon on your home screen is the HushThreads logo.",
+                "O \u00edcone do app na sua tela inicial \u00e9 o logotipo do HushThreads.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "O relat\u00f3rio de diagn\u00f3stico ainda n\u00e3o p\u00f4de ser salvo. Tente de novo em instantes.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "N\u00e3o foi poss\u00edvel salvar o relat\u00f3rio de diagn\u00f3stico. Tente de novo.");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "N\u00e3o foi poss\u00edvel remover o arquivo %1$s. Exclua-o de %2$s para reativar o HushThreads.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -4458,6 +4535,8 @@ public final class L10nTranslations {
                 "At\u00e9 voc\u00ea retomar, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo.");
         table.put("Updates",
                 "Atualiza\u00e7\u00f5es");
+        table.put("Use the HushThreads logo",
+                "Usar o logotipo do HushThreads");
         table.put("User certificates trusted",
                 "Certificados do usu\u00e1rio confi\u00e1veis");
         table.put("Version",
@@ -4494,6 +4573,8 @@ public final class L10nTranslations {
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
         table.put("none",
                 "nenhum");
+        table.put("the HushThreads icon",
+                "o \u00edcone do HushThreads");
         table.put("the new app name",
                 "o novo nome do app");
         table.put("the new package name",
@@ -4504,6 +4585,9 @@ public final class L10nTranslations {
                 "a corre\u00e7\u00e3o para vers\u00e3o reassinada");
         table.put("the removed advertising ID permission",
                 "a permiss\u00e3o do ID de publicidade removida");
+    }
+
+    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "a entrada removida do menu de compartilhamento");
         table.put("the user certificate trust",
@@ -4511,13 +4595,14 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(714);
+        Map<String, String> table = new HashMap<>(724);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
         fillTr3(table);
         fillTr4(table);
         fillTr5(table);
+        fillTr6(table);
         return table;
     }
 
@@ -4800,6 +4885,8 @@ public final class L10nTranslations {
                 "Threads %2$s \u00fczerinde HushThreads %1$s");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "HushThreads %1$s, Threads %2$s i\u00e7in haz\u0131rland\u0131.");
+        table.put("HushThreads icon",
+                "HushThreads simgesi");
         table.put("HushThreads is on",
                 "HushThreads a\u00e7\u0131k");
         table.put("HushThreads is paused",
@@ -4886,11 +4973,11 @@ public final class L10nTranslations {
                 "Ayarlar\u0131 logodan a\u00e7");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cDesteklenen ba\u011flant\u0131lar\u0131 a\u00e7\u201d Android ayarlar\u0131nda bu uygulama i\u00e7in kapal\u0131. A\u00e7mak i\u00e7in dokunun.");
-        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
-                "S\u00fcr\u00fcmlerin ve ayarlar\u0131n doldurulmu\u015f bir GitHub raporu a\u00e7ar. Ne oldu\u011funu ekle.");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "S\u00fcr\u00fcmlerin ve ayarlar\u0131n doldurulmu\u015f bir GitHub raporu a\u00e7ar. Ne oldu\u011funu ekle.");
         table.put("Own app name",
                 "Kendi uygulama ad\u0131");
         table.put("Own package name",
@@ -5009,11 +5096,11 @@ public final class L10nTranslations {
                 "Video kaydediliyor");
         table.put("Saving the settings file",
                 "Ayar dosyas\u0131 kaydediliyor");
-        table.put("Saving...",
-                "Kaydediliyor...");
     }
 
     private static void fillTr4(Map<String, String> table) {
+        table.put("Saving...",
+                "Kaydediliyor...");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Kaydediliyor... \u0130ptal i\u00e7in HushThreads'te \u0130ndirmeler'i a\u00e7.");
         table.put("Search settings",
@@ -5050,6 +5137,8 @@ public final class L10nTranslations {
                 "Tarihi ve saati g\u00f6ster");
         table.put("Shown. Tap to hide it.",
                 "G\u00f6steriliyor. Gizlemek i\u00e7in dokun.");
+        table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
+                "Ak\u0131\u015f\u0131n\u0131n \u00fcst\u00fcnde Threads logosu yerine HushThreads logosunu g\u00f6sterir. Ak\u0131\u015f yenilenirken d\u00f6nmez. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
         table.put("Smallest",
                 "En k\u00fc\u00e7\u00fck");
         table.put("Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.",
@@ -5130,13 +5219,15 @@ public final class L10nTranslations {
                 "Son ayar dosyas\u0131n\u0131 tutan uygulama h\u00e2l\u00e2 yan\u0131t vermedi. Daha sonra tekrar dene.");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Ayar dosyas\u0131n\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushThreads beklemeyi b\u0131rakt\u0131. O uygulama kaydetmeyi yine de bitirebilir, bu y\u00fczden dosyaya g\u00fcvenmeden \u00f6nce onu kontrol et.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
+        table.put("The app's icon on your home screen is the HushThreads logo.",
+                "Ana ekran\u0131ndaki uygulama simgesi HushThreads logosudur.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Tan\u0131lama raporu hen\u00fcz kaydedilemedi. Birazdan tekrar dene.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Tan\u0131lama raporu kaydedilemedi. Tekrar dene.");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "%1$s dosyas\u0131 kald\u0131r\u0131lamad\u0131. HushThreads'u yeniden a\u00e7mak i\u00e7in onu %2$s i\u00e7inden sil.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -5201,6 +5292,8 @@ public final class L10nTranslations {
                 "Devam ettirene kadar Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r.");
         table.put("Updates",
                 "G\u00fcncellemeler");
+        table.put("Use the HushThreads logo",
+                "HushThreads logosunu kullan");
         table.put("User certificates trusted",
                 "Kullan\u0131c\u0131 sertifikalar\u0131na g\u00fcveniliyor");
         table.put("Version",
@@ -5237,6 +5330,8 @@ public final class L10nTranslations {
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
         table.put("none",
                 "yok");
+        table.put("the HushThreads icon",
+                "HushThreads simgesi");
         table.put("the new app name",
                 "yeni uygulama ad\u0131");
         table.put("the new package name",
@@ -5247,6 +5342,9 @@ public final class L10nTranslations {
                 "yeniden imzalanm\u0131\u015f s\u00fcr\u00fcm d\u00fczeltmesi");
         table.put("the removed advertising ID permission",
                 "kald\u0131r\u0131lan reklam kimli\u011fi izni");
+    }
+
+    private static void fillTr6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "kald\u0131r\u0131lan payla\u015f\u0131m men\u00fcs\u00fc giri\u015fi");
         table.put("the user certificate trust",
@@ -5254,13 +5352,14 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildZh_rTW() {
-        Map<String, String> table = new HashMap<>(714);
+        Map<String, String> table = new HashMap<>(724);
         fillZh_rTW0(table);
         fillZh_rTW1(table);
         fillZh_rTW2(table);
         fillZh_rTW3(table);
         fillZh_rTW4(table);
         fillZh_rTW5(table);
+        fillZh_rTW6(table);
         return table;
     }
 
@@ -5543,6 +5642,8 @@ public final class L10nTranslations {
                 "HushThreads %1$s\uff08Threads %2$s\uff09");
         table.put("HushThreads %1$s targets Threads %2$s.",
                 "HushThreads %1$s \u7684\u76ee\u6a19\u7248\u672c\u662f Threads %2$s\u3002");
+        table.put("HushThreads icon",
+                "HushThreads \u5716\u793a");
         table.put("HushThreads is on",
                 "HushThreads \u5df2\u555f\u7528");
         table.put("HushThreads is paused",
@@ -5629,11 +5730,11 @@ public final class L10nTranslations {
                 "\u5f9e\u6a19\u8a8c\u958b\u555f\u8a2d\u5b9a");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u6b64\u61c9\u7528\u7a0b\u5f0f\u5728 Android \u8a2d\u5b9a\u4e2d\u7684\u300c\u958b\u555f\u652f\u63f4\u7684\u9023\u7d50\u300d\u5df2\u95dc\u9589\u3002\u8f15\u89f8\u4ee5\u555f\u7528\u3002");
-        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
-                "\u958b\u555f\u5df2\u586b\u5165\u4f60\u7684\u7248\u672c\u8207\u8a2d\u5b9a\u7684 GitHub \u554f\u984c\u56de\u5831\uff1b\u8acb\u88dc\u5145\u767c\u751f\u7684\u60c5\u6cc1\u3002");
     }
 
     private static void fillZh_rTW3(Map<String, String> table) {
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "\u958b\u555f\u5df2\u586b\u5165\u4f60\u7684\u7248\u672c\u8207\u8a2d\u5b9a\u7684 GitHub \u554f\u984c\u56de\u5831\uff1b\u8acb\u88dc\u5145\u767c\u751f\u7684\u60c5\u6cc1\u3002");
         table.put("Own app name",
                 "\u81ea\u8a02\u61c9\u7528\u7a0b\u5f0f\u540d\u7a31");
         table.put("Own package name",
@@ -5752,11 +5853,11 @@ public final class L10nTranslations {
                 "\u6b63\u5728\u5132\u5b58\u5f71\u7247");
         table.put("Saving the settings file",
                 "\u6b63\u5728\u5132\u5b58\u8a2d\u5b9a\u6a94");
-        table.put("Saving...",
-                "\u6b63\u5728\u5132\u5b58\u2026");
     }
 
     private static void fillZh_rTW4(Map<String, String> table) {
+        table.put("Saving...",
+                "\u6b63\u5728\u5132\u5b58\u2026");
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "\u6b63\u5728\u5132\u5b58\u2026\u8981\u53d6\u6d88\uff0c\u8acb\u5230 HushThreads \u8a2d\u5b9a\u7684\u300c\u4e0b\u8f09\u9805\u76ee\u300d\u3002");
         table.put("Search settings",
@@ -5793,6 +5894,8 @@ public final class L10nTranslations {
                 "\u986f\u793a\u65e5\u671f\u8207\u6642\u9593");
         table.put("Shown. Tap to hide it.",
                 "\u5df2\u986f\u793a\u3002\u8f15\u89f8\u53ef\u96b1\u85cf\u3002");
+        table.put("Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.",
+                "\u5728\u52d5\u614b\u9802\u7aef\u4ee5 HushThreads \u6a19\u8a8c\u53d6\u4ee3 Threads \u6a19\u8a8c\u3002\u91cd\u65b0\u6574\u7406\u52d5\u614b\u6642\u4e0d\u6703\u65cb\u8f49\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
         table.put("Smallest",
                 "\u6700\u5c0f");
         table.put("Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.",
@@ -5873,13 +5976,15 @@ public final class L10nTranslations {
                 "\u6301\u6709\u4e0a\u4e00\u500b\u8a2d\u5b9a\u6a94\u7684\u61c9\u7528\u7a0b\u5f0f\u5c1a\u672a\u56de\u61c9\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
         table.put("The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "\u6301\u6709\u8a2d\u5b9a\u6a94\u7684\u61c9\u7528\u7a0b\u5f0f\u56de\u61c9\u592a\u4e45\uff0cHushThreads \u5df2\u505c\u6b62\u7b49\u5f85\u3002\u5b83\u53ef\u80fd\u4ecd\u6703\u5b8c\u6210\u5132\u5b58\uff0c\u4f7f\u7528\u524d\u8acb\u6aa2\u67e5\u6a94\u6848\u3002");
+    }
+
+    private static void fillZh_rTW5(Map<String, String> table) {
+        table.put("The app's icon on your home screen is the HushThreads logo.",
+                "\u4e3b\u756b\u9762\u4e0a\u7684\u61c9\u7528\u7a0b\u5f0f\u5716\u793a\u662f HushThreads \u6a19\u8a8c\u3002");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "\u5c1a\u7121\u6cd5\u5132\u5b58\u8a3a\u65b7\u5831\u544a\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "\u7121\u6cd5\u5132\u5b58\u8a3a\u65b7\u5831\u544a\uff0c\u8acb\u518d\u8a66\u4e00\u6b21\u3002");
-    }
-
-    private static void fillZh_rTW5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "\u7121\u6cd5\u79fb\u9664\u6a94\u6848 %1$s\u3002\u8acb\u5f9e %2$s \u522a\u9664\u5b83\u4ee5\u91cd\u65b0\u555f\u7528 HushThreads\u3002");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -5944,6 +6049,8 @@ public final class L10nTranslations {
                 "\u5728\u4f60\u7e7c\u7e8c\u524d\uff0c\u9664\u4e86\u300c\u5075\u932f\u8a18\u9304\u300d\u5916\uff0c\u6240\u6709\u958b\u95dc\u90fd\u6703\u5982\u540c\u95dc\u9589\u822c\u904b\u4f5c\u3002\u4fee\u88dc\u6642\u7684\u8b8a\u66f4\u4ecd\u6703\u4fdd\u7559\u3002");
         table.put("Updates",
                 "\u66f4\u65b0");
+        table.put("Use the HushThreads logo",
+                "\u4f7f\u7528 HushThreads \u6a19\u8a8c");
         table.put("User certificates trusted",
                 "\u4fe1\u4efb\u4f7f\u7528\u8005\u6191\u8b49");
         table.put("Version",
@@ -5980,6 +6087,8 @@ public final class L10nTranslations {
                 "\u4f60\u7684\u958b\u95dc\u5df2\u7b26\u5408\u8a72\u6a94\u6848\uff0c\u56e0\u6b64\u4e0d\u6703\u8b8a\u66f4\u3002");
         table.put("none",
                 "\u7121");
+        table.put("the HushThreads icon",
+                "HushThreads \u5716\u793a");
         table.put("the new app name",
                 "\u65b0\u7684\u61c9\u7528\u7a0b\u5f0f\u540d\u7a31");
         table.put("the new package name",
@@ -5990,6 +6099,9 @@ public final class L10nTranslations {
                 "\u91cd\u65b0\u7c3d\u7f72\u7248\u672c\u4fee\u6b63");
         table.put("the removed advertising ID permission",
                 "\u5df2\u79fb\u9664\u7684\u5ee3\u544a ID \u6b0a\u9650");
+    }
+
+    private static void fillZh_rTW6(Map<String, String> table) {
         table.put("the removed share sheet entry",
                 "\u5df2\u79fb\u9664\u7684\u5206\u4eab\u9762\u677f\u9805\u76ee");
         table.put("the user certificate trust",

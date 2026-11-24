@@ -132,6 +132,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_pure_black", FALSE, true);
 
     /**
+     * The HushThreads logo is drawn at the top of the feed in place of the Threads logo
+     * ({@link app.morphe.extension.hushthreads.theme.HeaderLogo}). Threads draws that logo again
+     * only when it changes, so a change waits for a restart.
+     */
+    public static final BooleanSetting HEADER_LOGO =
+            new BooleanSetting("hushthreads_header_logo", FALSE, true);
+
+    /**
      * The Instagram button at the top of a profile isn't drawn, on your own profile or anyone
      * else's ({@link app.morphe.extension.hushthreads.profile.InstagramButton}). Threads keeps a
      * header it has drawn, so a change waits for a restart.
