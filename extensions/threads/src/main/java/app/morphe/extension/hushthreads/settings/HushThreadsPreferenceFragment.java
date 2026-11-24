@@ -473,6 +473,20 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                         + "in your phone's 12 or 24-hour format.")));
         }
 
+        if (build.contains(PatchFamily.HIDE_POST_BUTTONS)) {
+            posts.addPreference(toggle(context, Settings.HIDE_LIKE_BUTTON, L10n.t("Hide the like button"),
+                    L10n.t("Takes the like button off posts and replies, with its count. Restart Threads to see the change.")));
+            posts.addPreference(toggle(context, Settings.HIDE_REPLY_BUTTON, L10n.t("Hide the reply button"),
+                    L10n.t("Takes the reply button off posts and replies, with its count. Restart Threads to see the change.")));
+            posts.addPreference(toggle(context, Settings.HIDE_REPOST_BUTTON, L10n.t("Hide the repost button"),
+                    L10n.t("Takes the repost button off posts and replies, with its count. Restart Threads to see the change.")));
+            posts.addPreference(toggle(context, Settings.HIDE_SHARE_BUTTON, L10n.t("Hide the share button"),
+                    L10n.t("Takes the share button off posts and replies. Restart Threads to see the change.")));
+            posts.addPreference(toggle(context, Settings.HIDE_SAVE_BUTTON, L10n.t("Hide the save button"),
+                    L10n.t("Takes the save button off posts and replies, so you can't tap it by mistake. "
+                        + "Restart Threads to see the change.")));
+        }
+
         // In every build: Android checks Threads' links against Meta's signing key, which no
         // re-signed build has, whatever its patches.
         PreferenceCategory links = category(screen, L10n.t("Links"));
@@ -1163,6 +1177,11 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         else if (setting == Settings.FULL_SIZE_PROFILE_PICTURES) icon = SettingsIcons.PERSON;
         else if (setting == Settings.COPY_TEXT) icon = SettingsIcons.CHAT;
         else if (setting == Settings.EXACT_POST_TIMES) icon = SettingsIcons.CALENDAR;
+        else if (setting == Settings.HIDE_LIKE_BUTTON) icon = SettingsIcons.HEART;
+        else if (setting == Settings.HIDE_REPLY_BUTTON) icon = SettingsIcons.CHAT;
+        else if (setting == Settings.HIDE_REPOST_BUTTON) icon = SettingsIcons.UPDATES;
+        else if (setting == Settings.HIDE_SHARE_BUTTON) icon = SettingsIcons.SHARE;
+        else if (setting == Settings.HIDE_SAVE_BUTTON) icon = SettingsIcons.BOOKMARK;
         else if (setting == Settings.CHECK_FOR_RELEASES) icon = SettingsIcons.UPDATES;
         mark(preference, icon);
         return preference;

@@ -86,6 +86,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean hidePostButtons() {
+        return false;
+    }
+
     public static boolean fullSizeProfilePictures() {
         return false;
     }

@@ -447,6 +447,41 @@
       "options": []
     },
     {
+      "name": "Hide post buttons",
+      "description": "Takes the like, reply, repost, share and save buttons off posts and replies, each on its own switch. A hidden button's count goes with it. Good if you keep tapping one by mistake. Every button starts out showing. Pick the ones to hide in HushThreads settings > Posts.",
+      "category": "Feed",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "457.0.0.57.74"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "457.0.0.57.74",
+              "experimental": false,
+              "versionCodes": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide suggested users",
       "description": "Removes the cards that suggest accounts to follow, in your feed and on profiles, the Follow suggestions row in Search and the suggested threads under a post you open. Normal posts and reposts stay, and so do a post's replies and the rest of a profile or Search. Good if you only want posts in your feed. On by default. Its three switches are in HushThreads settings > Feed.",
       "category": "Feed",

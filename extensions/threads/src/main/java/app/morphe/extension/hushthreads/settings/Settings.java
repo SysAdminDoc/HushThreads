@@ -176,6 +176,46 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_download_compatible", FALSE);
 
     /**
+     * The like button under posts and replies isn't drawn
+     * ({@link app.morphe.extension.hushthreads.feed.PostButtons}). Threads keeps a row it has
+     * drawn, so a change waits for a restart.
+     */
+    public static final BooleanSetting HIDE_LIKE_BUTTON =
+            new BooleanSetting("hushthreads_hide_like_button", FALSE, true);
+
+    /**
+     * The reply button under posts and replies isn't drawn
+     * ({@link app.morphe.extension.hushthreads.feed.PostButtons}). Threads keeps a row it has
+     * drawn, so a change waits for a restart.
+     */
+    public static final BooleanSetting HIDE_REPLY_BUTTON =
+            new BooleanSetting("hushthreads_hide_reply_button", FALSE, true);
+
+    /**
+     * The repost button under posts and replies isn't drawn
+     * ({@link app.morphe.extension.hushthreads.feed.PostButtons}). Threads keeps a row it has
+     * drawn, so a change waits for a restart.
+     */
+    public static final BooleanSetting HIDE_REPOST_BUTTON =
+            new BooleanSetting("hushthreads_hide_repost_button", FALSE, true);
+
+    /**
+     * The share button under posts and replies isn't drawn
+     * ({@link app.morphe.extension.hushthreads.feed.PostButtons}). Threads keeps a row it has
+     * drawn, so a change waits for a restart.
+     */
+    public static final BooleanSetting HIDE_SHARE_BUTTON =
+            new BooleanSetting("hushthreads_hide_share_button", FALSE, true);
+
+    /**
+     * The save button under posts and replies isn't drawn
+     * ({@link app.morphe.extension.hushthreads.feed.PostButtons}). Threads keeps a row it has
+     * drawn, so a change waits for a restart.
+     */
+    public static final BooleanSetting HIDE_SAVE_BUTTON =
+            new BooleanSetting("hushthreads_hide_save_button", FALSE, true);
+
+    /**
      * Holding a post's text opens Threads' Copy text sheet, on an opened post too, in place of a
      * press that does nothing or Threads' word selection
      * ({@link app.morphe.extension.hushthreads.feed.CopyText}). The settings patch carries its

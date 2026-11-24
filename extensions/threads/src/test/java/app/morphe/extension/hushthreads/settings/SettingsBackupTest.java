@@ -192,6 +192,8 @@ public class SettingsBackupTest {
                 Settings.PURE_BLACK,
                 Settings.HIDE_INSTAGRAM_BUTTON, Settings.HIDE_GHOST_POST_BUBBLES, Settings.FULL_SIZE_PROFILE_PICTURES,
                 Settings.EXACT_POST_TIMES,
+                Settings.HIDE_LIKE_BUTTON, Settings.HIDE_REPLY_BUTTON, Settings.HIDE_REPOST_BUTTON,
+                Settings.HIDE_SHARE_BUTTON, Settings.HIDE_SAVE_BUTTON,
                 Settings.FILTER_COMMENTS, Settings.HIDE_COMMENT_LINKS, Settings.SAVE_MEDIA, Settings.DOWNLOAD_COMPATIBLE,
                 Settings.COPY_TEXT),
                 SettingsBackup.ALLOWLIST);

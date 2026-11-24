@@ -388,3 +388,13 @@ One pattern a line, or separated by commas. A shop's domain such as shopee.vn ta
 One pattern a line, or separated by commas. Matched whatever the letter case.	Um padrão por linha, ou separados por vírgulas. Comparado sem diferenciar maiúsculas de minúsculas.
 Hide comments with links	Ocultar comentários com links
 Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.	As respostas com um link da web ficam de fora, o que quer que os padrões digam. Adicione um nome de site sozinho, como shopee.vn, como padrão.
+Hide the like button	Ocultar o botão de curtir
+Takes the like button off posts and replies, with its count. Restart Threads to see the change.	Remove o botão de curtir dos posts e respostas, junto com a contagem. Reinicie o Threads para ver a mudança.
+Hide the reply button	Ocultar o botão de responder
+Takes the reply button off posts and replies, with its count. Restart Threads to see the change.	Remove o botão de responder dos posts e respostas, junto com a contagem. Reinicie o Threads para ver a mudança.
+Hide the repost button	Ocultar o botão de repostar
+Takes the repost button off posts and replies, with its count. Restart Threads to see the change.	Remove o botão de repostar dos posts e respostas, junto com a contagem. Reinicie o Threads para ver a mudança.
+Hide the share button	Ocultar o botão de compartilhar
+Takes the share button off posts and replies. Restart Threads to see the change.	Remove o botão de compartilhar dos posts e respostas. Reinicie o Threads para ver a mudança.
+Hide the save button	Ocultar o botão de salvar
+Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.	Remove o botão de salvar dos posts e respostas, para você não tocar nele sem querer. Reinicie o Threads para ver a mudança.

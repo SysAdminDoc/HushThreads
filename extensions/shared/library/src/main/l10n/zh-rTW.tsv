@@ -393,3 +393,13 @@ One pattern a line, or separated by commas. A shop's domain such as shopee.vn ta
 One pattern a line, or separated by commas. Matched whatever the letter case.	每行一條規則，或以逗號分隔。比對時不分大小寫。
 Hide comments with links	隱藏含連結的留言
 Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.	含有網頁連結的回覆都會被移除，不論規則為何。像 shopee.vn 這樣單獨的網站名稱，請加為規則。
+Hide the like button	隱藏讚按鈕
+Takes the like button off posts and replies, with its count. Restart Threads to see the change.	移除貼文和回覆上的讚按鈕及其數字。重新啟動 Threads 以查看變更。
+Hide the reply button	隱藏回覆按鈕
+Takes the reply button off posts and replies, with its count. Restart Threads to see the change.	移除貼文和回覆上的回覆按鈕及其數字。重新啟動 Threads 以查看變更。
+Hide the repost button	隱藏轉發按鈕
+Takes the repost button off posts and replies, with its count. Restart Threads to see the change.	移除貼文和回覆上的轉發按鈕及其數字。重新啟動 Threads 以查看變更。
+Hide the share button	隱藏分享按鈕
+Takes the share button off posts and replies. Restart Threads to see the change.	移除貼文和回覆上的分享按鈕。重新啟動 Threads 以查看變更。
+Hide the save button	隱藏儲存按鈕
+Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.	移除貼文和回覆上的儲存按鈕，以免誤觸。重新啟動 Threads 以查看變更。

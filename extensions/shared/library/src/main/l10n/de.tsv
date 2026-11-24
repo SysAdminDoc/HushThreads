@@ -391,3 +391,13 @@ One pattern a line, or separated by commas. A shop's domain such as shopee.vn ta
 One pattern a line, or separated by commas. Matched whatever the letter case.	Ein Muster pro Zeile oder durch Kommas getrennt. Geprüft unabhängig von Groß- und Kleinschreibung.
 Hide comments with links	Kommentare mit Links ausblenden
 Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.	Antworten mit einem Weblink fehlen, unabhängig von den Mustern. Einen bloßen Seitennamen wie shopee.vn fügst du als Muster hinzu.
+Hide the like button	Gefällt-mir-Button ausblenden
+Takes the like button off posts and replies, with its count. Restart Threads to see the change.	Entfernt den Gefällt-mir-Button samt Zahl unter Beiträgen und Antworten. Starte Threads neu, damit die Änderung greift.
+Hide the reply button	Antworten-Button ausblenden
+Takes the reply button off posts and replies, with its count. Restart Threads to see the change.	Entfernt den Antworten-Button samt Zahl unter Beiträgen und Antworten. Starte Threads neu, damit die Änderung greift.
+Hide the repost button	Reposten-Button ausblenden
+Takes the repost button off posts and replies, with its count. Restart Threads to see the change.	Entfernt den Reposten-Button samt Zahl unter Beiträgen und Antworten. Starte Threads neu, damit die Änderung greift.
+Hide the share button	Teilen-Button ausblenden
+Takes the share button off posts and replies. Restart Threads to see the change.	Entfernt den Teilen-Button unter Beiträgen und Antworten. Starte Threads neu, damit die Änderung greift.
+Hide the save button	Speichern-Button ausblenden
+Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.	Entfernt den Speichern-Button unter Beiträgen und Antworten, damit du ihn nicht aus Versehen antippst. Starte Threads neu, damit die Änderung greift.

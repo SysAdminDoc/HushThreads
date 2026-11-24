@@ -39,6 +39,7 @@ import app.morphe.extension.hushthreads.comments.SuggestedThreads;
 import app.morphe.extension.hushthreads.download.SavesForTests;
 import app.morphe.extension.hushthreads.feed.CopyText;
 import app.morphe.extension.hushthreads.feed.ImageQuality;
+import app.morphe.extension.hushthreads.feed.PostButtons;
 import app.morphe.extension.hushthreads.feed.PostTime;
 import app.morphe.extension.hushthreads.feed.ReturnRefresh;
 import app.morphe.extension.hushthreads.feed.SwipeToSearch;
@@ -193,6 +194,10 @@ public class PausedHooksTest {
                 () -> !GhostPostBubbles.showOnProfile(true), () -> !GhostPostBubbles.showTray(true)));
         // A profile picture Threads would enlarge into its circle opens full size in the viewer instead.
         probes.put(PatchFamily.FULL_SIZE_PROFILE_PICTURES, Collections.singletonList(ProfilePictureForTests::opensFullSize));
+        // Each button under a post Threads would draw is left out.
+        probes.put(PatchFamily.HIDE_POST_BUTTONS, Arrays.asList(
+                () -> !PostButtons.showLike(), () -> !PostButtons.showReply(), () -> !PostButtons.showRepost(),
+                () -> !PostButtons.showShare(), () -> !PostButtons.showSave()));
         // A post header's time is written out in full instead of left to Threads.
         probes.put(PatchFamily.EXACT_POST_TIMES, Collections.singletonList(
                 () -> PostTime.exact(RuntimeEnvironment.getApplication(), 1_700_000_000d) != null));

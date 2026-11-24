@@ -84,7 +84,7 @@ On a new phone, import the key before you patch anything. Reinstalling Manager o
 
 ## Patches
 
-HushThreads has 26 patches. Morphe Manager's default selection has all but five: `Change app name`, `Change package name`, `Change version code`, `Remove share targets` and `Trust user-added certificates`. Those five change Threads when you patch and have no switch to undo them. The first two make a second app you install beside Threads, with its own sign-in. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
+HushThreads has 27 patches. Morphe Manager's default selection has all but five: `Change app name`, `Change package name`, `Change version code`, `Remove share targets` and `Trust user-added certificates`. Those five change Threads when you patch and have no switch to undo them. The first two make a second app you install beside Threads, with its own sign-in. Most of the others have a switch in HushThreads settings, and each row below says where it is and how it starts.
 
 | Patch | What it does |
 |---|---|
@@ -100,6 +100,7 @@ HushThreads has 26 patches. Morphe Manager's default selection has all but five:
 | `Full size profile pictures` | Opens a profile picture full size when you tap it on a profile, so you can zoom in and save it, instead of Threads' small circle. Starts off. Turn it on in HushThreads settings > Appearance. |
 | `Hide ads` | Removes sponsored posts from your feed and from under the posts you open before Threads shows them, so they leave no gap. On by default. Turn it off in HushThreads settings > Feed. |
 | `Hide ghost post bubbles` | Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. The pictures and the ghost posts themselves stay. Good for a calmer look. Starts off. Turn it on in HushThreads settings > Appearance. |
+| `Hide post buttons` | Takes the like, reply, repost, share and save buttons off posts and replies, each on its own switch. A hidden button's count goes with it. Good if you keep tapping one by mistake. Every button starts out showing. Pick the ones to hide in HushThreads settings > Posts. |
 | `Hide suggested users` | Removes the cards that suggest accounts to follow, in your feed and on profiles, the Follow suggestions row in Search and the suggested threads under a post you open. Normal posts and reposts stay, and so do a post's replies and the rest of a profile or Search. Good if you only want posts in your feed. On by default. Its three switches are in HushThreads settings > Feed. |
 | `Hide the Instagram button` | Takes the Instagram button off the top of profiles, yours and other people's. The other buttons stay. Good for a tidier profile. Starts off. Turn it on in HushThreads settings > Appearance. |
 | `HushThreads settings` | Adds a HushThreads page to Threads where you turn features on or off, pause HushThreads, back up your settings and read the licenses. Open it from Threads' own settings, or long-press the Threads logo at the top of your feed. Works as soon as you patch it in. Each way in has its own switch under Pause, backup and diagnostics, and the last one that's on stays on. |
@@ -115,7 +116,7 @@ HushThreads has 26 patches. Morphe Manager's default selection has all but five:
 | `Show exact post times` | Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format. Good if you want to know exactly when something was posted. Starts off. Turn it on in HushThreads settings > Posts. |
 | `Trust user-added certificates` | Lets Threads accept security certificates you installed yourself, such as for a work network or a debugging proxy. Meta's own checks stay, so a proxy can't read most traffic. It isn't selected by default. Works as soon as you patch it in, with no switch. |
 
-The switches in the Appearance section take effect after you restart Threads. A Restart row shows at the top of HushThreads settings when you flip one. Tap it and Threads reopens in HushThreads settings.
+The switches in the Appearance section and the post button switches under Posts take effect after you restart Threads. A Restart row shows at the top of HushThreads settings when you flip one. Tap it and Threads reopens in HushThreads settings.
 
 ## Settings
 

@@ -346,6 +346,17 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/PostButtons.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/feed/postbuttons/HidePostButtonsPatch.kt"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Hide post buttons: the like, reply, repost, share and save buttons' Compose functions under a post each ask the extension first thing whether to draw, and return before drawing anything while that button's switch is on. Found by reading PostDenseUfi and its button functions in 457, with no outside code."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/profile/ProfileSuggestions.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/ads/ProfileSuggestedUsers.kt"
       ],

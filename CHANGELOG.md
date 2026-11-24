@@ -8,6 +8,7 @@ Changes in the source build, then released versions.
 * The bundle is built on Morphe patcher 2.5.0 now, the one that comes with Morphe Manager 2.7.0 and Morphe Desktop 2.3.0. Older Manager builds turn it down, so update Manager to 2.7.0 or newer first.
 * HushThreads now patches Threads 457.0.0.57.74 only, on all ten APKMirror variants (arm64-v8a, armeabi-v7a, x86_64 and x86). Update Threads to 457 before you patch. v0.0.18 is the last release for 455.0.0.55.72.
 * `Hide ads` and `Hide suggested users` now also check the For You posts Threads loads ahead of time in the background. On 456 those went into the feed cache without passing the filter.
+* New `Hide post buttons` patch. The like, reply, repost, share and save buttons under posts and replies each get a Hide switch of their own under Posts in HushThreads settings, and a hidden button takes its count with it. All five start out showing, and Threads picks up a change after a restart. Asked for in #27.
 
 ## 0.0.18 (2026-11-13)
 

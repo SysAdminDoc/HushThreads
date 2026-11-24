@@ -96,6 +96,7 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.PURE_BLACK, "Pure black dark mode");
         ROW_TITLES.put(PatchFamily.HIDE_INSTAGRAM_BUTTON, "Hide the Instagram button");
         ROW_TITLES.put(PatchFamily.HIDE_GHOST_POST_BUBBLES, "Hide ghost post bubbles");
+        ROW_TITLES.put(PatchFamily.HIDE_POST_BUTTONS, "Hide the like button");
         ROW_TITLES.put(PatchFamily.FULL_SIZE_PROFILE_PICTURES, "Full size profile pictures");
         ROW_TITLES.put(PatchFamily.EXACT_POST_TIMES, "Show the date and time");
         ROW_TITLES.put(PatchFamily.FILTER_COMMENTS, "Filter comments");
@@ -317,6 +318,24 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Show the date and time", String.valueOf(page.findPreference(Settings.EXACT_POST_TIMES.key).getTitle()));
             assertEquals("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's "
                 + "12 or 24-hour format.", String.valueOf(page.findPreference(Settings.EXACT_POST_TIMES.key).getSummary()));
+            // Each post button has its own switch under Posts, right after the post times.
+            String[][] buttons = {
+                {Settings.HIDE_LIKE_BUTTON.key, "Hide the like button",
+                    "Takes the like button off posts and replies, with its count. Restart Threads to see the change."},
+                {Settings.HIDE_REPLY_BUTTON.key, "Hide the reply button",
+                    "Takes the reply button off posts and replies, with its count. Restart Threads to see the change."},
+                {Settings.HIDE_REPOST_BUTTON.key, "Hide the repost button",
+                    "Takes the repost button off posts and replies, with its count. Restart Threads to see the change."},
+                {Settings.HIDE_SHARE_BUTTON.key, "Hide the share button",
+                    "Takes the share button off posts and replies. Restart Threads to see the change."},
+                {Settings.HIDE_SAVE_BUTTON.key, "Hide the save button",
+                    "Takes the save button off posts and replies, so you can't tap it by mistake. "
+                        + "Restart Threads to see the change."},
+            };
+            for (String[] button : buttons) {
+                assertEquals(button[1], String.valueOf(page.findPreference(button[0]).getTitle()));
+                assertEquals(button[2], String.valueOf(page.findPreference(button[0]).getSummary()));
+            }
             // A reply is matched with the posts shown under it, and a bare domain with no path isn't
             // a link, so both summaries say so.
             assertEquals("Replies matching the patterns below are left out of a post's replies, so a spam reply never "
@@ -335,12 +354,14 @@ public class HushThreadsPreferenceFragmentTest {
             }
             // The ones that joined it later start off, so a default build looks like Threads, and so
             // do Hide the Instagram button, Hide ghost post bubbles, Disable swipe to Search, Show
-            // exact post times and Full size profile pictures, which came after.
+            // exact post times, Full size profile pictures and the post buttons, which came after.
             for (BooleanSetting setting : Arrays.asList(Settings.BLOCK_RETURN_REFRESH, Settings.DISABLE_VIDEO_AUTOPLAY,
                     Settings.MAX_IMAGE_QUALITY, Settings.DISABLE_SCREENSHOT_DETECTION, Settings.SPOOF_SIM_REGION,
                     Settings.PURE_BLACK,
                     Settings.HIDE_INSTAGRAM_BUTTON, Settings.HIDE_GHOST_POST_BUBBLES, Settings.DISABLE_SWIPE_TO_SEARCH,
-                    Settings.EXACT_POST_TIMES, Settings.FULL_SIZE_PROFILE_PICTURES)) {
+                    Settings.EXACT_POST_TIMES, Settings.FULL_SIZE_PROFILE_PICTURES, Settings.HIDE_LIKE_BUTTON,
+                    Settings.HIDE_REPLY_BUTTON, Settings.HIDE_REPOST_BUTTON, Settings.HIDE_SHARE_BUTTON,
+                    Settings.HIDE_SAVE_BUTTON)) {
                 assertFalse(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             // The time limit holds until someone lifts it.

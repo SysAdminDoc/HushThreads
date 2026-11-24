@@ -391,3 +391,13 @@ One pattern a line, or separated by commas. A shop's domain such as shopee.vn ta
 One pattern a line, or separated by commas. Matched whatever the letter case.	Satu pola per baris, atau dipisahkan koma. Dicocokkan tanpa membedakan huruf besar-kecil.
 Hide comments with links	Sembunyikan komentar yang berisi tautan
 Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.	Balasan yang memuat tautan web tidak ditampilkan, apa pun polanya. Tambahkan nama situs saja seperti shopee.vn sebagai pola.
+Hide the like button	Sembunyikan tombol suka
+Takes the like button off posts and replies, with its count. Restart Threads to see the change.	Menghapus tombol suka beserta jumlahnya dari postingan dan balasan. Mulai ulang Threads untuk melihat perubahannya.
+Hide the reply button	Sembunyikan tombol balas
+Takes the reply button off posts and replies, with its count. Restart Threads to see the change.	Menghapus tombol balas beserta jumlahnya dari postingan dan balasan. Mulai ulang Threads untuk melihat perubahannya.
+Hide the repost button	Sembunyikan tombol posting ulang
+Takes the repost button off posts and replies, with its count. Restart Threads to see the change.	Menghapus tombol posting ulang beserta jumlahnya dari postingan dan balasan. Mulai ulang Threads untuk melihat perubahannya.
+Hide the share button	Sembunyikan tombol bagikan
+Takes the share button off posts and replies. Restart Threads to see the change.	Menghapus tombol bagikan dari postingan dan balasan. Mulai ulang Threads untuk melihat perubahannya.
+Hide the save button	Sembunyikan tombol simpan
+Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.	Menghapus tombol simpan dari postingan dan balasan agar tidak tersentuh tanpa sengaja. Mulai ulang Threads untuk melihat perubahannya.

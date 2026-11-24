@@ -53,7 +53,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(694);
+        Map<String, String> table = new HashMap<>(714);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -320,6 +320,16 @@ public final class L10nTranslations {
                 "Vorgeschlagene Nutzer ausblenden");
         table.put("Hide the Instagram button",
                 "Instagram-Button ausblenden");
+        table.put("Hide the like button",
+                "Gef\u00e4llt-mir-Button ausblenden");
+        table.put("Hide the reply button",
+                "Antworten-Button ausblenden");
+        table.put("Hide the repost button",
+                "Reposten-Button ausblenden");
+        table.put("Hide the save button",
+                "Speichern-Button ausblenden");
+        table.put("Hide the share button",
+                "Teilen-Button ausblenden");
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "Blendet Werbung und die Karten mit vorgeschlagenen Konten zum Folgen aus.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -420,6 +430,9 @@ public final class L10nTranslations {
                 "\u201eUnterst\u00fctzte Links \u00f6ffnen\u201c ist f\u00fcr diese App in den Android-Einstellungen aus. Tippe, um es einzuschalten.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "\u00d6ffnet eine GitHub-Meldung, in der deine Versionen und Einstellungen schon stehen. Erg\u00e4nze, was passiert ist.");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Own app name",
                 "Eigener App-Name");
         table.put("Own package name",
@@ -430,9 +443,6 @@ public final class L10nTranslations {
                 "Pausieren");
         table.put("Pause HushThreads",
                 "HushThreads pausieren");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Pause, backup and diagnostics",
                 "Pause, Sicherung und Diagnose");
         table.put("Photos and videos you save from posts",
@@ -543,6 +553,9 @@ public final class L10nTranslations {
                 "Einstellungsdatei wird gespeichert");
         table.put("Saving...",
                 "Wird gespeichert \u2026");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Speichern ... Zum Abbrechen: Downloads in HushThreads.");
         table.put("Search settings",
@@ -553,9 +566,6 @@ public final class L10nTranslations {
                 "Beim Patchen festgelegt");
         table.put("Settings couldn't open",
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Die Einstellungen lie\u00dfen sich nicht vollst\u00e4ndig aktualisieren. \u00d6ffne sie neu und versuche es noch einmal.");
         table.put("Settings exported.",
@@ -622,6 +632,16 @@ public final class L10nTranslations {
                 "Entfernt den Instagram-Button oben in Profilen, in deinem und in denen anderer. Starte Threads neu, damit die \u00c4nderung greift.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Entfernt die Ghost-Post-Blasen von Profilbildern, in Profilen und in der Reihe oben in deinem Feed. Starte Threads neu, damit die \u00c4nderung greift.");
+        table.put("Takes the like button off posts and replies, with its count. Restart Threads to see the change.",
+                "Entfernt den Gef\u00e4llt-mir-Button samt Zahl unter Beitr\u00e4gen und Antworten. Starte Threads neu, damit die \u00c4nderung greift.");
+        table.put("Takes the reply button off posts and replies, with its count. Restart Threads to see the change.",
+                "Entfernt den Antworten-Button samt Zahl unter Beitr\u00e4gen und Antworten. Starte Threads neu, damit die \u00c4nderung greift.");
+        table.put("Takes the repost button off posts and replies, with its count. Restart Threads to see the change.",
+                "Entfernt den Reposten-Button samt Zahl unter Beitr\u00e4gen und Antworten. Starte Threads neu, damit die \u00c4nderung greift.");
+        table.put("Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.",
+                "Entfernt den Speichern-Button unter Beitr\u00e4gen und Antworten, damit du ihn nicht aus Versehen antippst. Starte Threads neu, damit die \u00c4nderung greift.");
+        table.put("Takes the share button off posts and replies. Restart Threads to see the change.",
+                "Entfernt den Teilen-Button unter Beitr\u00e4gen und Antworten. Starte Threads neu, damit die \u00c4nderung greift.");
         table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
                 "Entfernt die vorgeschlagenen Threads unter einem Beitrag, den du \u00f6ffnest. Der Beitrag und seine Antworten bleiben.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
@@ -656,6 +676,9 @@ public final class L10nTranslations {
                 "Der Diagnosebericht lie\u00df sich noch nicht speichern. Versuche es gleich noch einmal.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Der Diagnosebericht lie\u00df sich nicht speichern. Versuche es noch einmal.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "Die Datei %1$s lie\u00df sich nicht entfernen. L\u00f6sche sie aus %2$s, um HushThreads wieder einzuschalten.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -676,9 +699,6 @@ public final class L10nTranslations {
                 "Es gibt keine Diagnosedaten zum L\u00f6schen.");
         table.put("There's no diagnostic data to put back.",
                 "Es gibt keine Diagnosedaten zum Wiederherstellen.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Diese werden beim Patchen in Morphe Manager ausgew\u00e4hlt, und die Pause schaltet sie nicht aus. Patche erneut, um sie zu \u00e4ndern.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
@@ -776,7 +796,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(694);
+        Map<String, String> table = new HashMap<>(714);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1043,6 +1063,16 @@ public final class L10nTranslations {
                 "Ocultar usuarios sugeridos");
         table.put("Hide the Instagram button",
                 "Ocultar el bot\u00f3n de Instagram");
+        table.put("Hide the like button",
+                "Ocultar el bot\u00f3n de me gusta");
+        table.put("Hide the reply button",
+                "Ocultar el bot\u00f3n de responder");
+        table.put("Hide the repost button",
+                "Ocultar el bot\u00f3n de republicar");
+        table.put("Hide the save button",
+                "Ocultar el bot\u00f3n de guardar");
+        table.put("Hide the share button",
+                "Ocultar el bot\u00f3n de compartir");
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "Oculta los anuncios y las tarjetas que sugieren cuentas para seguir.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -1143,6 +1173,9 @@ public final class L10nTranslations {
                 "\u201cAbrir enlaces compatibles\u201d est\u00e1 desactivado para esta app en los ajustes de Android. Toca para activarlo.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "Abre un informe en GitHub con tus versiones y ajustes ya puestos. A\u00f1ade qu\u00e9 pas\u00f3.");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Own app name",
                 "Nombre de app propio");
         table.put("Own package name",
@@ -1153,9 +1186,6 @@ public final class L10nTranslations {
                 "Pausar");
         table.put("Pause HushThreads",
                 "Pausar HushThreads");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Pause, backup and diagnostics",
                 "Pausa, copia de seguridad y diagn\u00f3stico");
         table.put("Photos and videos you save from posts",
@@ -1266,6 +1296,9 @@ public final class L10nTranslations {
                 "Guardando el archivo de configuraci\u00f3n");
         table.put("Saving...",
                 "Guardando...");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Guardando... Para cancelar, ve a Descargas en HushThreads.");
         table.put("Search settings",
@@ -1276,9 +1309,6 @@ public final class L10nTranslations {
                 "Aplicado al parchear");
         table.put("Settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "No se pudo actualizar la configuraci\u00f3n por completo. Vuelve a abrirla e int\u00e9ntalo de nuevo.");
         table.put("Settings exported.",
@@ -1345,6 +1375,16 @@ public final class L10nTranslations {
                 "Quita el bot\u00f3n de Instagram de la parte de arriba de los perfiles, el tuyo y los de otras personas. Reinicia Threads para ver el cambio.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Quita las burbujas de publicaciones fantasma de las fotos de perfil, en los perfiles y en la fila de arriba de tu feed. Reinicia Threads para ver el cambio.");
+        table.put("Takes the like button off posts and replies, with its count. Restart Threads to see the change.",
+                "Quita el bot\u00f3n de me gusta de las publicaciones y respuestas, junto con su contador. Reinicia Threads para ver el cambio.");
+        table.put("Takes the reply button off posts and replies, with its count. Restart Threads to see the change.",
+                "Quita el bot\u00f3n de responder de las publicaciones y respuestas, junto con su contador. Reinicia Threads para ver el cambio.");
+        table.put("Takes the repost button off posts and replies, with its count. Restart Threads to see the change.",
+                "Quita el bot\u00f3n de republicar de las publicaciones y respuestas, junto con su contador. Reinicia Threads para ver el cambio.");
+        table.put("Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.",
+                "Quita el bot\u00f3n de guardar de las publicaciones y respuestas, para que no lo toques sin querer. Reinicia Threads para ver el cambio.");
+        table.put("Takes the share button off posts and replies. Restart Threads to see the change.",
+                "Quita el bot\u00f3n de compartir de las publicaciones y respuestas. Reinicia Threads para ver el cambio.");
         table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
                 "Quita los hilos sugeridos del final de una publicaci\u00f3n que abres. La publicaci\u00f3n y sus respuestas se quedan.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
@@ -1379,6 +1419,9 @@ public final class L10nTranslations {
                 "Todav\u00eda no se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo en un momento.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "No se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo.");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "No se pudo eliminar el archivo %1$s. B\u00f3rralo de %2$s para volver a activar HushThreads.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -1399,9 +1442,6 @@ public final class L10nTranslations {
                 "No hay datos de diagn\u00f3stico que borrar.");
         table.put("There's no diagnostic data to put back.",
                 "No hay datos de diagn\u00f3stico que restaurar.");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Se eligen en Morphe Manager al parchear, y Pausar no los desactiva. Vuelve a parchear para cambiarlos.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
@@ -1499,7 +1539,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(694);
+        Map<String, String> table = new HashMap<>(714);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1766,6 +1806,16 @@ public final class L10nTranslations {
                 "Sembunyikan pengguna yang disarankan");
         table.put("Hide the Instagram button",
                 "Sembunyikan tombol Instagram");
+        table.put("Hide the like button",
+                "Sembunyikan tombol suka");
+        table.put("Hide the reply button",
+                "Sembunyikan tombol balas");
+        table.put("Hide the repost button",
+                "Sembunyikan tombol posting ulang");
+        table.put("Hide the save button",
+                "Sembunyikan tombol simpan");
+        table.put("Hide the share button",
+                "Sembunyikan tombol bagikan");
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "Menyembunyikan iklan dan kartu yang menyarankan akun untuk diikuti.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -1866,6 +1916,9 @@ public final class L10nTranslations {
                 "\u201cBuka link yang didukung\u201d nonaktif untuk aplikasi ini di pengaturan Android. Ketuk untuk mengaktifkannya.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "Membuka laporan GitHub dengan versi dan pengaturan Anda yang sudah terisi. Tambahkan apa yang terjadi.");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Own app name",
                 "Nama aplikasi sendiri");
         table.put("Own package name",
@@ -1876,9 +1929,6 @@ public final class L10nTranslations {
                 "Jeda");
         table.put("Pause HushThreads",
                 "Jeda HushThreads");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Pause, backup and diagnostics",
                 "Jeda, cadangan, dan diagnostik");
         table.put("Photos and videos you save from posts",
@@ -1989,6 +2039,9 @@ public final class L10nTranslations {
                 "Menyimpan file pengaturan");
         table.put("Saving...",
                 "Menyimpan...");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Menyimpan... Untuk membatalkan, buka Unduhan di HushThreads.");
         table.put("Search settings",
@@ -1999,9 +2052,6 @@ public final class L10nTranslations {
                 "Diatur saat Anda menambal");
         table.put("Settings couldn't open",
                 "Pengaturan tidak dapat dibuka");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Pengaturan tidak dapat dimuat ulang sepenuhnya. Buka kembali pengaturan lalu coba lagi.");
         table.put("Settings exported.",
@@ -2068,6 +2118,16 @@ public final class L10nTranslations {
                 "Menghapus tombol Instagram di bagian atas profil, milik Anda dan milik orang lain. Mulai ulang Threads untuk melihat perubahannya.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Menghapus gelembung postingan hantu dari foto profil, di profil dan di baris bagian atas feed Anda. Mulai ulang Threads untuk melihat perubahannya.");
+        table.put("Takes the like button off posts and replies, with its count. Restart Threads to see the change.",
+                "Menghapus tombol suka beserta jumlahnya dari postingan dan balasan. Mulai ulang Threads untuk melihat perubahannya.");
+        table.put("Takes the reply button off posts and replies, with its count. Restart Threads to see the change.",
+                "Menghapus tombol balas beserta jumlahnya dari postingan dan balasan. Mulai ulang Threads untuk melihat perubahannya.");
+        table.put("Takes the repost button off posts and replies, with its count. Restart Threads to see the change.",
+                "Menghapus tombol posting ulang beserta jumlahnya dari postingan dan balasan. Mulai ulang Threads untuk melihat perubahannya.");
+        table.put("Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.",
+                "Menghapus tombol simpan dari postingan dan balasan agar tidak tersentuh tanpa sengaja. Mulai ulang Threads untuk melihat perubahannya.");
+        table.put("Takes the share button off posts and replies. Restart Threads to see the change.",
+                "Menghapus tombol bagikan dari postingan dan balasan. Mulai ulang Threads untuk melihat perubahannya.");
         table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
                 "Menghapus utas yang disarankan dari bagian bawah postingan yang Anda buka. Postingan dan balasannya tetap ada.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
@@ -2102,6 +2162,9 @@ public final class L10nTranslations {
                 "Laporan diagnostik belum dapat disimpan. Coba lagi dalam beberapa saat.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Laporan diagnostik tidak dapat disimpan. Coba lagi.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "File %1$s tidak dapat dihapus. Hapus file itu dari %2$s untuk mengaktifkan HushThreads lagi.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -2122,9 +2185,6 @@ public final class L10nTranslations {
                 "Tidak ada data diagnostik yang dapat dihapus.");
         table.put("There's no diagnostic data to put back.",
                 "Tidak ada data diagnostik yang dapat dikembalikan.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Semua ini dipilih di Morphe Manager saat Anda menambal, dan Jeda tidak mematikannya. Tambal ulang untuk mengubahnya.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
@@ -2222,7 +2282,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIt() {
-        Map<String, String> table = new HashMap<>(694);
+        Map<String, String> table = new HashMap<>(714);
         fillIt0(table);
         fillIt1(table);
         fillIt2(table);
@@ -2489,6 +2549,16 @@ public final class L10nTranslations {
                 "Nascondi gli utenti suggeriti");
         table.put("Hide the Instagram button",
                 "Nascondi il pulsante di Instagram");
+        table.put("Hide the like button",
+                "Nascondi il pulsante Mi piace");
+        table.put("Hide the reply button",
+                "Nascondi il pulsante Rispondi");
+        table.put("Hide the repost button",
+                "Nascondi il pulsante Ripubblica");
+        table.put("Hide the save button",
+                "Nascondi il pulsante Salva");
+        table.put("Hide the share button",
+                "Nascondi il pulsante Condividi");
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "Nasconde gli annunci e le schede che suggeriscono account da seguire.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -2589,6 +2659,9 @@ public final class L10nTranslations {
                 "L'apertura dei link supportati \u00e8 disattivata per questa app nelle impostazioni di Android. Tocca per attivarla.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "Apre una segnalazione su GitHub con le tue versioni e impostazioni gi\u00e0 compilate. Aggiungi cos'\u00e8 successo.");
+    }
+
+    private static void fillIt3(Map<String, String> table) {
         table.put("Own app name",
                 "Nome dell'app proprio");
         table.put("Own package name",
@@ -2599,9 +2672,6 @@ public final class L10nTranslations {
                 "Pausa");
         table.put("Pause HushThreads",
                 "Metti in pausa HushThreads");
-    }
-
-    private static void fillIt3(Map<String, String> table) {
         table.put("Pause, backup and diagnostics",
                 "Pausa, backup e diagnostica");
         table.put("Photos and videos you save from posts",
@@ -2712,6 +2782,9 @@ public final class L10nTranslations {
                 "Salvataggio del file di impostazioni");
         table.put("Saving...",
                 "Salvataggio...");
+    }
+
+    private static void fillIt4(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Salvataggio... Per annullare, apri Download in HushThreads.");
         table.put("Search settings",
@@ -2722,9 +2795,6 @@ public final class L10nTranslations {
                 "Impostato durante la patch");
         table.put("Settings couldn't open",
                 "Impossibile aprire le impostazioni");
-    }
-
-    private static void fillIt4(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Impossibile aggiornare del tutto le impostazioni. Riapri le impostazioni e riprova.");
         table.put("Settings exported.",
@@ -2791,6 +2861,16 @@ public final class L10nTranslations {
                 "Toglie il pulsante di Instagram dalla parte alta dei profili, il tuo e quelli degli altri. Riavvia Threads per vedere la modifica.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Toglie le bolle dei post fantasma dalle immagini del profilo, sui profili e nella riga in cima al feed. Riavvia Threads per vedere la modifica.");
+        table.put("Takes the like button off posts and replies, with its count. Restart Threads to see the change.",
+                "Toglie il pulsante Mi piace dai post e dalle risposte, insieme al suo conteggio. Riavvia Threads per vedere la modifica.");
+        table.put("Takes the reply button off posts and replies, with its count. Restart Threads to see the change.",
+                "Toglie il pulsante Rispondi dai post e dalle risposte, insieme al suo conteggio. Riavvia Threads per vedere la modifica.");
+        table.put("Takes the repost button off posts and replies, with its count. Restart Threads to see the change.",
+                "Toglie il pulsante Ripubblica dai post e dalle risposte, insieme al suo conteggio. Riavvia Threads per vedere la modifica.");
+        table.put("Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.",
+                "Toglie il pulsante Salva dai post e dalle risposte, cos\u00ec non lo tocchi per sbaglio. Riavvia Threads per vedere la modifica.");
+        table.put("Takes the share button off posts and replies. Restart Threads to see the change.",
+                "Toglie il pulsante Condividi dai post e dalle risposte. Riavvia Threads per vedere la modifica.");
         table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
                 "Toglie i thread suggeriti dal fondo di un post che apri. Il post e le sue risposte restano.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
@@ -2825,6 +2905,9 @@ public final class L10nTranslations {
                 "Impossibile salvare ancora il report diagnostico. Riprova tra un attimo.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Impossibile salvare il report diagnostico. Riprova.");
+    }
+
+    private static void fillIt5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "Impossibile rimuovere il file %1$s. Eliminalo da %2$s per riattivare HushThreads.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -2845,9 +2928,6 @@ public final class L10nTranslations {
                 "Non ci sono dati diagnostici da cancellare.");
         table.put("There's no diagnostic data to put back.",
                 "Non ci sono dati diagnostici da ripristinare.");
-    }
-
-    private static void fillIt5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Si scelgono in Morphe Manager quando applichi la patch e Pausa non le disattiva. Applica di nuovo la patch per cambiarle.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
@@ -2945,7 +3025,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildKo() {
-        Map<String, String> table = new HashMap<>(694);
+        Map<String, String> table = new HashMap<>(714);
         fillKo0(table);
         fillKo1(table);
         fillKo2(table);
@@ -3212,6 +3292,16 @@ public final class L10nTranslations {
                 "\ucd94\ucc9c \uc0ac\uc6a9\uc790 \uc228\uae30\uae30");
         table.put("Hide the Instagram button",
                 "Instagram \ubc84\ud2bc \uc228\uae30\uae30");
+        table.put("Hide the like button",
+                "\uc88b\uc544\uc694 \ubc84\ud2bc \uc228\uae30\uae30");
+        table.put("Hide the reply button",
+                "\ub2f5\uae00 \ubc84\ud2bc \uc228\uae30\uae30");
+        table.put("Hide the repost button",
+                "\ub9ac\ud3ec\uc2a4\ud2b8 \ubc84\ud2bc \uc228\uae30\uae30");
+        table.put("Hide the save button",
+                "\uc800\uc7a5 \ubc84\ud2bc \uc228\uae30\uae30");
+        table.put("Hide the share button",
+                "\uacf5\uc720 \ubc84\ud2bc \uc228\uae30\uae30");
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "\uad11\uace0\uc640 \ud314\ub85c\uc6b0\ud560 \uacc4\uc815\uc744 \ucd94\ucc9c\ud558\ub294 \uce74\ub4dc\ub97c \uc228\uae41\ub2c8\ub2e4.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -3312,6 +3402,9 @@ public final class L10nTranslations {
                 "Android \uc124\uc815\uc5d0\uc11c \uc774 \uc571\uc758 \uc9c0\uc6d0\ub418\ub294 \ub9c1\ud06c \uc5f4\uae30\uac00 \uaebc\uc838 \uc788\uc2b5\ub2c8\ub2e4. \ud0ed\ud574\uc11c \ucf1c\uc138\uc694.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "\ubc84\uc804\uacfc \uc124\uc815\uc774 \ubbf8\ub9ac \ucc44\uc6cc\uc9c4 GitHub \uc2e0\uace0\ub97c \uc5fd\ub2c8\ub2e4. \ubb34\uc2a8 \uc77c\uc774 \uc788\uc5c8\ub294\uc9c0 \uc801\uc5b4 \uc8fc\uc138\uc694.");
+    }
+
+    private static void fillKo3(Map<String, String> table) {
         table.put("Own app name",
                 "\ubcc4\ub3c4 \uc571 \uc774\ub984");
         table.put("Own package name",
@@ -3322,9 +3415,6 @@ public final class L10nTranslations {
                 "\uc77c\uc2dc \uc815\uc9c0");
         table.put("Pause HushThreads",
                 "HushThreads \uc77c\uc2dc \uc815\uc9c0");
-    }
-
-    private static void fillKo3(Map<String, String> table) {
         table.put("Pause, backup and diagnostics",
                 "\uc77c\uc2dc \uc815\uc9c0, \ubc31\uc5c5 \ubc0f \uc9c4\ub2e8");
         table.put("Photos and videos you save from posts",
@@ -3435,6 +3525,9 @@ public final class L10nTranslations {
                 "\uc124\uc815 \ud30c\uc77c\uc744 \uc800\uc7a5\ud558\ub294 \uc911");
         table.put("Saving...",
                 "\uc800\uc7a5\ud558\ub294 \uc911...");
+    }
+
+    private static void fillKo4(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "\uc800\uc7a5 \uc911... \ucde8\uc18c\ud558\ub824\uba74 HushThreads \uc124\uc815\uc5d0\uc11c \ub2e4\uc6b4\ub85c\ub4dc\ub97c \uc5ec\uc138\uc694.");
         table.put("Search settings",
@@ -3445,9 +3538,6 @@ public final class L10nTranslations {
                 "\ud328\uce58\ud560 \ub54c \uc124\uc815\ub418\ub294 \uae30\ub2a5");
         table.put("Settings couldn't open",
                 "\uc124\uc815\uc744 \uc5f4 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4");
-    }
-
-    private static void fillKo4(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "\uc124\uc815\uc744 \uc644\uc804\ud788 \uc0c8\ub85c \uace0\uce58\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \uc124\uc815\uc744 \ub2e4\uc2dc \uc5f4\uace0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
         table.put("Settings exported.",
@@ -3514,6 +3604,16 @@ public final class L10nTranslations {
                 "\ub0b4 \ud504\ub85c\ud544\uacfc \ub2e4\ub978 \uc0ac\ub78c\uc758 \ud504\ub85c\ud544 \uc0c1\ub2e8\uc5d0\uc11c Instagram \ubc84\ud2bc\uc744 \uc81c\uac70\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "\ud504\ub85c\ud544\uacfc \ud53c\ub4dc \uc0c1\ub2e8 \uc904\uc758 \ud504\ub85c\ud544 \uc0ac\uc9c4\uc5d0\uc11c \uace0\uc2a4\ud2b8 \uac8c\uc2dc\ubb3c \ub9d0\ud48d\uc120\uc744 \uc81c\uac70\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Takes the like button off posts and replies, with its count. Restart Threads to see the change.",
+                "\uac8c\uc2dc\ubb3c\uacfc \ub2f5\uae00\uc5d0\uc11c \uc88b\uc544\uc694 \ubc84\ud2bc\uacfc \uadf8 \uc218\ub97c \uc81c\uac70\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Takes the reply button off posts and replies, with its count. Restart Threads to see the change.",
+                "\uac8c\uc2dc\ubb3c\uacfc \ub2f5\uae00\uc5d0\uc11c \ub2f5\uae00 \ubc84\ud2bc\uacfc \uadf8 \uc218\ub97c \uc81c\uac70\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Takes the repost button off posts and replies, with its count. Restart Threads to see the change.",
+                "\uac8c\uc2dc\ubb3c\uacfc \ub2f5\uae00\uc5d0\uc11c \ub9ac\ud3ec\uc2a4\ud2b8 \ubc84\ud2bc\uacfc \uadf8 \uc218\ub97c \uc81c\uac70\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.",
+                "\uc2e4\uc218\ub85c \ub204\ub974\uc9c0 \uc54a\ub3c4\ub85d \uac8c\uc2dc\ubb3c\uacfc \ub2f5\uae00\uc5d0\uc11c \uc800\uc7a5 \ubc84\ud2bc\uc744 \uc81c\uac70\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
+        table.put("Takes the share button off posts and replies. Restart Threads to see the change.",
+                "\uac8c\uc2dc\ubb3c\uacfc \ub2f5\uae00\uc5d0\uc11c \uacf5\uc720 \ubc84\ud2bc\uc744 \uc81c\uac70\ud569\ub2c8\ub2e4. \ubcc0\uacbd \uc0ac\ud56d\uc744 \ubcf4\ub824\uba74 Threads\ub97c \ub2e4\uc2dc \uc2dc\uc791\ud558\uc138\uc694.");
         table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
                 "\uc5ec\ub294 \uac8c\uc2dc\ubb3c \uc544\ub798\uc758 \ucd94\ucc9c \uc2a4\ub808\ub4dc\ub97c \uc81c\uac70\ud569\ub2c8\ub2e4. \uac8c\uc2dc\ubb3c\uacfc \ub2f5\uae00\uc740 \uadf8\ub300\ub85c \ub0a8\uc2b5\ub2c8\ub2e4.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
@@ -3548,6 +3648,9 @@ public final class L10nTranslations {
                 "\uc544\uc9c1 \uc9c4\ub2e8 \ubcf4\uace0\uc11c\ub97c \uc800\uc7a5\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "\uc9c4\ub2e8 \ubcf4\uace0\uc11c\ub97c \uc800\uc7a5\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.");
+    }
+
+    private static void fillKo5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "%1$s \ud30c\uc77c\uc744 \uc81c\uac70\ud558\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4. HushThreads\ub97c \ub2e4\uc2dc \ucf1c\ub824\uba74 %2$s\uc5d0\uc11c \uc774 \ud30c\uc77c\uc744 \uc0ad\uc81c\ud558\uc138\uc694.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -3568,9 +3671,6 @@ public final class L10nTranslations {
                 "\uc9c0\uc6b8 \uc9c4\ub2e8 \ub370\uc774\ud130\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.");
         table.put("There's no diagnostic data to put back.",
                 "\ubcf5\uc6d0\ud560 \uc9c4\ub2e8 \ub370\uc774\ud130\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.");
-    }
-
-    private static void fillKo5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "\ud328\uce58\ud560 \ub54c Morphe Manager\uc5d0\uc11c \uc120\ud0dd\ud558\uba70 \uc77c\uc2dc \uc815\uc9c0\ub85c\ub294 \ub04c \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \ubc14\uafb8\ub824\uba74 \ub2e4\uc2dc \ud328\uce58\ud558\uc138\uc694.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
@@ -3668,7 +3768,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(694);
+        Map<String, String> table = new HashMap<>(714);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -3935,6 +4035,16 @@ public final class L10nTranslations {
                 "Ocultar usu\u00e1rios sugeridos");
         table.put("Hide the Instagram button",
                 "Ocultar o bot\u00e3o do Instagram");
+        table.put("Hide the like button",
+                "Ocultar o bot\u00e3o de curtir");
+        table.put("Hide the reply button",
+                "Ocultar o bot\u00e3o de responder");
+        table.put("Hide the repost button",
+                "Ocultar o bot\u00e3o de repostar");
+        table.put("Hide the save button",
+                "Ocultar o bot\u00e3o de salvar");
+        table.put("Hide the share button",
+                "Ocultar o bot\u00e3o de compartilhar");
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "Oculta os an\u00fancios e os cart\u00f5es que sugerem contas para seguir.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -4035,6 +4145,9 @@ public final class L10nTranslations {
                 "\u201cAbrir links compat\u00edveis\u201d est\u00e1 desativado para este app nas configura\u00e7\u00f5es do Android. Toque para ativar.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "Abre um relato no GitHub com suas vers\u00f5es e configura\u00e7\u00f5es j\u00e1 preenchidas. Conte o que aconteceu.");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Own app name",
                 "Nome de app pr\u00f3prio");
         table.put("Own package name",
@@ -4045,9 +4158,6 @@ public final class L10nTranslations {
                 "Pausar");
         table.put("Pause HushThreads",
                 "Pausar o HushThreads");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Pause, backup and diagnostics",
                 "Pausa, backup e diagn\u00f3stico");
         table.put("Photos and videos you save from posts",
@@ -4158,6 +4268,9 @@ public final class L10nTranslations {
                 "Salvando o arquivo de configura\u00e7\u00f5es");
         table.put("Saving...",
                 "Salvando...");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Salvando... Para cancelar, abra Downloads no HushThreads.");
         table.put("Search settings",
@@ -4168,9 +4281,6 @@ public final class L10nTranslations {
                 "Definido ao aplicar os patches");
         table.put("Settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "N\u00e3o foi poss\u00edvel atualizar completamente as configura\u00e7\u00f5es. Reabra as configura\u00e7\u00f5es e tente novamente.");
         table.put("Settings exported.",
@@ -4237,6 +4347,16 @@ public final class L10nTranslations {
                 "Remove o bot\u00e3o do Instagram do topo dos perfis, o seu e os de outras pessoas. Reinicie o Threads para ver a mudan\u00e7a.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Remove os bal\u00f5es de posts fantasma das fotos de perfil, nos perfis e na fileira no topo do seu feed. Reinicie o Threads para ver a mudan\u00e7a.");
+        table.put("Takes the like button off posts and replies, with its count. Restart Threads to see the change.",
+                "Remove o bot\u00e3o de curtir dos posts e respostas, junto com a contagem. Reinicie o Threads para ver a mudan\u00e7a.");
+        table.put("Takes the reply button off posts and replies, with its count. Restart Threads to see the change.",
+                "Remove o bot\u00e3o de responder dos posts e respostas, junto com a contagem. Reinicie o Threads para ver a mudan\u00e7a.");
+        table.put("Takes the repost button off posts and replies, with its count. Restart Threads to see the change.",
+                "Remove o bot\u00e3o de repostar dos posts e respostas, junto com a contagem. Reinicie o Threads para ver a mudan\u00e7a.");
+        table.put("Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.",
+                "Remove o bot\u00e3o de salvar dos posts e respostas, para voc\u00ea n\u00e3o tocar nele sem querer. Reinicie o Threads para ver a mudan\u00e7a.");
+        table.put("Takes the share button off posts and replies. Restart Threads to see the change.",
+                "Remove o bot\u00e3o de compartilhar dos posts e respostas. Reinicie o Threads para ver a mudan\u00e7a.");
         table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
                 "Remove os threads sugeridos do fim de um post que voc\u00ea abre. O post e as respostas continuam.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
@@ -4271,6 +4391,9 @@ public final class L10nTranslations {
                 "O relat\u00f3rio de diagn\u00f3stico ainda n\u00e3o p\u00f4de ser salvo. Tente de novo em instantes.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "N\u00e3o foi poss\u00edvel salvar o relat\u00f3rio de diagn\u00f3stico. Tente de novo.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "N\u00e3o foi poss\u00edvel remover o arquivo %1$s. Exclua-o de %2$s para reativar o HushThreads.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -4291,9 +4414,6 @@ public final class L10nTranslations {
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para limpar.");
         table.put("There's no diagnostic data to put back.",
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para restaurar.");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Eles s\u00e3o escolhidos no Morphe Manager quando voc\u00ea aplica os patches, e a pausa n\u00e3o os desativa. Aplique os patches novamente para alter\u00e1-los.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
@@ -4391,7 +4511,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(694);
+        Map<String, String> table = new HashMap<>(714);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -4658,6 +4778,16 @@ public final class L10nTranslations {
                 "\u00d6nerilen kullan\u0131c\u0131lar\u0131 gizle");
         table.put("Hide the Instagram button",
                 "Instagram d\u00fc\u011fmesini gizle");
+        table.put("Hide the like button",
+                "Be\u011fen d\u00fc\u011fmesini gizle");
+        table.put("Hide the reply button",
+                "Yan\u0131tla d\u00fc\u011fmesini gizle");
+        table.put("Hide the repost button",
+                "Yeniden payla\u015f d\u00fc\u011fmesini gizle");
+        table.put("Hide the save button",
+                "Kaydet d\u00fc\u011fmesini gizle");
+        table.put("Hide the share button",
+                "Payla\u015f d\u00fc\u011fmesini gizle");
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "Reklamlar\u0131 ve takip edilecek hesap \u00f6neren kartlar\u0131 gizler.");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -4758,6 +4888,9 @@ public final class L10nTranslations {
                 "\u201cDesteklenen ba\u011flant\u0131lar\u0131 a\u00e7\u201d Android ayarlar\u0131nda bu uygulama i\u00e7in kapal\u0131. A\u00e7mak i\u00e7in dokunun.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "S\u00fcr\u00fcmlerin ve ayarlar\u0131n doldurulmu\u015f bir GitHub raporu a\u00e7ar. Ne oldu\u011funu ekle.");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Own app name",
                 "Kendi uygulama ad\u0131");
         table.put("Own package name",
@@ -4768,9 +4901,6 @@ public final class L10nTranslations {
                 "Duraklat");
         table.put("Pause HushThreads",
                 "HushThreads'u duraklat");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Pause, backup and diagnostics",
                 "Duraklatma, yedekleme ve tan\u0131lama");
         table.put("Photos and videos you save from posts",
@@ -4881,6 +5011,9 @@ public final class L10nTranslations {
                 "Ayar dosyas\u0131 kaydediliyor");
         table.put("Saving...",
                 "Kaydediliyor...");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "Kaydediliyor... \u0130ptal i\u00e7in HushThreads'te \u0130ndirmeler'i a\u00e7.");
         table.put("Search settings",
@@ -4891,9 +5024,6 @@ public final class L10nTranslations {
                 "Yamalad\u0131\u011f\u0131nda ayarlananlar");
         table.put("Settings couldn't open",
                 "Ayarlar a\u00e7\u0131lamad\u0131");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Ayarlar tamamen yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
         table.put("Settings exported.",
@@ -4960,6 +5090,16 @@ public final class L10nTranslations {
                 "Kendi profilinin ve ba\u015fkalar\u0131n\u0131n profillerinin \u00fcst\u00fcndeki Instagram d\u00fc\u011fmesini kald\u0131r\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "Profil foto\u011fraflar\u0131ndaki hayalet g\u00f6nderi balonlar\u0131n\u0131 kald\u0131r\u0131r, profillerde ve ak\u0131\u015f\u0131n\u0131n \u00fcst\u00fcndeki s\u0131rada. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
+        table.put("Takes the like button off posts and replies, with its count. Restart Threads to see the change.",
+                "G\u00f6nderilerdeki ve yan\u0131tlardaki be\u011fen d\u00fc\u011fmesini say\u0131s\u0131yla birlikte kald\u0131r\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
+        table.put("Takes the reply button off posts and replies, with its count. Restart Threads to see the change.",
+                "G\u00f6nderilerdeki ve yan\u0131tlardaki yan\u0131tla d\u00fc\u011fmesini say\u0131s\u0131yla birlikte kald\u0131r\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
+        table.put("Takes the repost button off posts and replies, with its count. Restart Threads to see the change.",
+                "G\u00f6nderilerdeki ve yan\u0131tlardaki yeniden payla\u015f d\u00fc\u011fmesini say\u0131s\u0131yla birlikte kald\u0131r\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
+        table.put("Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.",
+                "Yanl\u0131\u015fl\u0131kla dokunmaman i\u00e7in g\u00f6nderilerdeki ve yan\u0131tlardaki kaydet d\u00fc\u011fmesini kald\u0131r\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
+        table.put("Takes the share button off posts and replies. Restart Threads to see the change.",
+                "G\u00f6nderilerdeki ve yan\u0131tlardaki payla\u015f d\u00fc\u011fmesini kald\u0131r\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Threads'i yeniden ba\u015flat.");
         table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
                 "A\u00e7t\u0131\u011f\u0131n\u0131z bir g\u00f6nderinin alt\u0131ndaki \u00f6nerilen thread'leri kald\u0131r\u0131r. G\u00f6nderi ve yan\u0131tlar\u0131 kal\u0131r.");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
@@ -4994,6 +5134,9 @@ public final class L10nTranslations {
                 "Tan\u0131lama raporu hen\u00fcz kaydedilemedi. Birazdan tekrar dene.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Tan\u0131lama raporu kaydedilemedi. Tekrar dene.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "%1$s dosyas\u0131 kald\u0131r\u0131lamad\u0131. HushThreads'u yeniden a\u00e7mak i\u00e7in onu %2$s i\u00e7inden sil.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -5014,9 +5157,6 @@ public final class L10nTranslations {
                 "Temizlenecek tan\u0131lama verisi yok.");
         table.put("There's no diagnostic data to put back.",
                 "Geri getirilecek tan\u0131lama verisi yok.");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "Bunlar yamalarken Morphe Manager'da se\u00e7ilir ve Duraklatma bunlar\u0131 kapatmaz. De\u011fi\u015ftirmek i\u00e7in yeniden yamala.");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
@@ -5114,7 +5254,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildZh_rTW() {
-        Map<String, String> table = new HashMap<>(694);
+        Map<String, String> table = new HashMap<>(714);
         fillZh_rTW0(table);
         fillZh_rTW1(table);
         fillZh_rTW2(table);
@@ -5381,6 +5521,16 @@ public final class L10nTranslations {
                 "\u96b1\u85cf\u5efa\u8b70\u8ffd\u8e64\u7684\u7528\u6236");
         table.put("Hide the Instagram button",
                 "\u96b1\u85cf Instagram \u6309\u9215");
+        table.put("Hide the like button",
+                "\u96b1\u85cf\u8b9a\u6309\u9215");
+        table.put("Hide the reply button",
+                "\u96b1\u85cf\u56de\u8986\u6309\u9215");
+        table.put("Hide the repost button",
+                "\u96b1\u85cf\u8f49\u767c\u6309\u9215");
+        table.put("Hide the save button",
+                "\u96b1\u85cf\u5132\u5b58\u6309\u9215");
+        table.put("Hide the share button",
+                "\u96b1\u85cf\u5206\u4eab\u6309\u9215");
         table.put("Hides ads and the cards that suggest accounts to follow.",
                 "\u96b1\u85cf\u5ee3\u544a\u8207\u5efa\u8b70\u8ffd\u8e64\u5e33\u865f\u7684\u5361\u7247\u3002");
         table.put("Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.",
@@ -5481,6 +5631,9 @@ public final class L10nTranslations {
                 "\u6b64\u61c9\u7528\u7a0b\u5f0f\u5728 Android \u8a2d\u5b9a\u4e2d\u7684\u300c\u958b\u555f\u652f\u63f4\u7684\u9023\u7d50\u300d\u5df2\u95dc\u9589\u3002\u8f15\u89f8\u4ee5\u555f\u7528\u3002");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
                 "\u958b\u555f\u5df2\u586b\u5165\u4f60\u7684\u7248\u672c\u8207\u8a2d\u5b9a\u7684 GitHub \u554f\u984c\u56de\u5831\uff1b\u8acb\u88dc\u5145\u767c\u751f\u7684\u60c5\u6cc1\u3002");
+    }
+
+    private static void fillZh_rTW3(Map<String, String> table) {
         table.put("Own app name",
                 "\u81ea\u8a02\u61c9\u7528\u7a0b\u5f0f\u540d\u7a31");
         table.put("Own package name",
@@ -5491,9 +5644,6 @@ public final class L10nTranslations {
                 "\u66ab\u505c");
         table.put("Pause HushThreads",
                 "\u66ab\u505c HushThreads");
-    }
-
-    private static void fillZh_rTW3(Map<String, String> table) {
         table.put("Pause, backup and diagnostics",
                 "\u66ab\u505c\u3001\u5099\u4efd\u8207\u8a3a\u65b7");
         table.put("Photos and videos you save from posts",
@@ -5604,6 +5754,9 @@ public final class L10nTranslations {
                 "\u6b63\u5728\u5132\u5b58\u8a2d\u5b9a\u6a94");
         table.put("Saving...",
                 "\u6b63\u5728\u5132\u5b58\u2026");
+    }
+
+    private static void fillZh_rTW4(Map<String, String> table) {
         table.put("Saving... To cancel, open Downloads in HushThreads settings.",
                 "\u6b63\u5728\u5132\u5b58\u2026\u8981\u53d6\u6d88\uff0c\u8acb\u5230 HushThreads \u8a2d\u5b9a\u7684\u300c\u4e0b\u8f09\u9805\u76ee\u300d\u3002");
         table.put("Search settings",
@@ -5614,9 +5767,6 @@ public final class L10nTranslations {
                 "\u4fee\u88dc\u6642\u8a2d\u5b9a");
         table.put("Settings couldn't open",
                 "\u7121\u6cd5\u958b\u555f\u8a2d\u5b9a");
-    }
-
-    private static void fillZh_rTW4(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "\u7121\u6cd5\u5b8c\u6574\u91cd\u65b0\u6574\u7406\u8a2d\u5b9a\u3002\u8acb\u91cd\u65b0\u958b\u555f\u8a2d\u5b9a\u5f8c\u518d\u8a66\u3002");
         table.put("Settings exported.",
@@ -5683,6 +5833,16 @@ public final class L10nTranslations {
                 "\u79fb\u9664\u4f60\u81ea\u5df1\u8207\u4ed6\u4eba\u500b\u4eba\u6a94\u6848\u9802\u7aef\u7684 Instagram \u6309\u9215\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "\u79fb\u9664\u500b\u4eba\u6a94\u6848\u5927\u982d\u8cbc\u8207\u52d5\u614b\u6d88\u606f\u9802\u7aef\u5217\u4e2d\u7684\u5e7d\u9748\u8cbc\u6587\u6ce1\u6ce1\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
+        table.put("Takes the like button off posts and replies, with its count. Restart Threads to see the change.",
+                "\u79fb\u9664\u8cbc\u6587\u548c\u56de\u8986\u4e0a\u7684\u8b9a\u6309\u9215\u53ca\u5176\u6578\u5b57\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
+        table.put("Takes the reply button off posts and replies, with its count. Restart Threads to see the change.",
+                "\u79fb\u9664\u8cbc\u6587\u548c\u56de\u8986\u4e0a\u7684\u56de\u8986\u6309\u9215\u53ca\u5176\u6578\u5b57\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
+        table.put("Takes the repost button off posts and replies, with its count. Restart Threads to see the change.",
+                "\u79fb\u9664\u8cbc\u6587\u548c\u56de\u8986\u4e0a\u7684\u8f49\u767c\u6309\u9215\u53ca\u5176\u6578\u5b57\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
+        table.put("Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.",
+                "\u79fb\u9664\u8cbc\u6587\u548c\u56de\u8986\u4e0a\u7684\u5132\u5b58\u6309\u9215\uff0c\u4ee5\u514d\u8aa4\u89f8\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
+        table.put("Takes the share button off posts and replies. Restart Threads to see the change.",
+                "\u79fb\u9664\u8cbc\u6587\u548c\u56de\u8986\u4e0a\u7684\u5206\u4eab\u6309\u9215\u3002\u91cd\u65b0\u555f\u52d5 Threads \u4ee5\u67e5\u770b\u8b8a\u66f4\u3002");
         table.put("Takes the suggested threads off the bottom of a post you open. The post and its replies stay.",
                 "\u79fb\u9664\u4f60\u958b\u555f\u7684\u8cbc\u6587\u5e95\u90e8\u7684\u63a8\u85a6\u8cbc\u6587\u4e32\u3002\u8cbc\u6587\u8207\u56de\u8986\u4e0d\u53d7\u5f71\u97ff\u3002");
         table.put("Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.",
@@ -5717,6 +5877,9 @@ public final class L10nTranslations {
                 "\u5c1a\u7121\u6cd5\u5132\u5b58\u8a3a\u65b7\u5831\u544a\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66\u3002");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "\u7121\u6cd5\u5132\u5b58\u8a3a\u65b7\u5831\u544a\uff0c\u8acb\u518d\u8a66\u4e00\u6b21\u3002");
+    }
+
+    private static void fillZh_rTW5(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.",
                 "\u7121\u6cd5\u79fb\u9664\u6a94\u6848 %1$s\u3002\u8acb\u5f9e %2$s \u522a\u9664\u5b83\u4ee5\u91cd\u65b0\u555f\u7528 HushThreads\u3002");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -5737,9 +5900,6 @@ public final class L10nTranslations {
                 "\u6c92\u6709\u53ef\u6e05\u9664\u7684\u8a3a\u65b7\u8cc7\u6599\u3002");
         table.put("There's no diagnostic data to put back.",
                 "\u6c92\u6709\u53ef\u9084\u539f\u7684\u8a3a\u65b7\u8cc7\u6599\u3002");
-    }
-
-    private static void fillZh_rTW5(Map<String, String> table) {
         table.put("They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.",
                 "\u5b83\u5011\u662f\u5728 Morphe Manager \u4fee\u88dc\u6642\u9078\u53d6\u7684\uff0c\u300c\u66ab\u505c\u300d\u7121\u6cd5\u95dc\u9589\u3002\u8acb\u91cd\u65b0\u4fee\u88dc\u4ee5\u8b8a\u66f4\u3002");
         table.put("This build didn't record which report types it covers. Patch again to see them.",
