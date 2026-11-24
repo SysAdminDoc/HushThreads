@@ -7,6 +7,7 @@ package app.morphe.extension.hushthreads.theme;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -84,6 +85,84 @@ public class CustomFontTest {
         assertEquals("made once and kept", Collections.singletonList("400"), loader.asked);
         assertTrue(report(), report().contains(FamilyNames.CUSTOM_FONT + ": invoked 2"));
         assertTrue(report(), report().contains(CustomFont.SWAPPED + " 2"));
+    }
+
+    /**
+     * Most of Threads' text asks Android for sans-serif by name or draws in Android's default, never
+     * through the repository (on the S25, 2026-11-24, no repository load came before the profile
+     * showed). At Threads' start those become the picked font, and serif and monospace stay.
+     */
+    @Test public void atStartAndroidsTextFontsBecomeThePickedFont() throws IOException {
+        CustomFontForTests.keep(context, CustomFontForTests.FONT + " picked");
+        CustomFontForTests.AndroidFonts android = CustomFontForTests.installAndroidFonts();
+        android.families.put("sans-serif", Typeface.SANS_SERIF);
+        android.families.put("sans-serif-medium", Typeface.DEFAULT_BOLD);
+        android.families.put("serif", threads);
+        android.families.put("monospace", Typeface.MONOSPACE);
+
+        CustomFont.onThreadsStart(context);
+
+        assertNotSame(Typeface.SANS_SERIF, android.families.get("sans-serif"));
+        assertNotSame(Typeface.DEFAULT_BOLD, android.families.get("sans-serif-medium"));
+        assertTrue(loader.made(android.families.get("sans-serif")));
+        assertTrue(loader.made(android.families.get("sans-serif-medium")));
+        assertSame(threads, android.families.get("serif"));
+        assertSame(Typeface.MONOSPACE, android.families.get("monospace"));
+        assertFalse("a stock font looks made", loader.made(threads) || loader.made(Typeface.MONOSPACE));
+        assertEquals(4, android.defaults.size());
+        for (Typeface typeface : android.defaults) assertTrue(loader.made(typeface));
+        assertTrue(loader.asked.toString(), loader.asked.containsAll(Arrays.asList("400", "700", "400 italic", "700 italic")));
+        assertTrue(report(), report().contains(CustomFont.ANDROID_SWAPPED + " 2"));
+        assertTrue(report(), report().contains(CustomFont.DEFAULTS_SWAPPED + " 1"));
+        assertTrue(HookStatus.missing(FamilyNames.CUSTOM_FONT).isEmpty());
+    }
+
+    /** With no file, off, or paused, Android's fonts stay as they are and nothing is loaded. */
+    @Test public void atStartAndroidsFontsStayWhenTheSwitchDoesNotApply() throws IOException {
+        CustomFontForTests.AndroidFonts android = CustomFontForTests.installAndroidFonts();
+        android.families.put("sans-serif", Typeface.SANS_SERIF);
+
+        CustomFont.onThreadsStart(context);
+        CustomFontForTests.keep(context, CustomFontForTests.FONT + " picked");
+        Settings.CUSTOM_FONT.save(false);
+        CustomFont.onThreadsStart(context);
+        Settings.CUSTOM_FONT.save(true);
+        PauseForTests.pause(HushThreadsPause.Reason.SWITCH);
+        CustomFont.onThreadsStart(context);
+
+        assertSame(Typeface.SANS_SERIF, android.families.get("sans-serif"));
+        assertTrue(android.defaults.isEmpty());
+        assertTrue(loader.asked.isEmpty());
+        assertTrue(report(), report().contains(CustomFont.LEFT_TO_THREADS + "no font file picked 1"));
+        assertTrue(report(), report().contains(CustomFont.LEFT_TO_THREADS + "switch off 1"));
+        assertTrue(report(), report().contains(CustomFont.LEFT_TO_THREADS + "HushThreads paused 1"));
+    }
+
+    /** A kept file Android won't load leaves Android's fonts as they were. */
+    @Test public void atStartAFileThatWontLoadLeavesAndroidsFonts() throws IOException {
+        CustomFontForTests.keep(context, "JUNK");
+        CustomFontForTests.AndroidFonts android = CustomFontForTests.installAndroidFonts();
+        android.families.put("sans-serif", Typeface.SANS_SERIF);
+
+        CustomFont.onThreadsStart(context);
+
+        assertSame(Typeface.SANS_SERIF, android.families.get("sans-serif"));
+        assertTrue(android.defaults.isEmpty());
+        assertTrue(report(), report().contains(CustomFont.LEFT_TO_THREADS + "the font file won't load 1"));
+    }
+
+    /** A font table Android keeps out of reach is reported, and the defaults still go in. */
+    @Test public void atStartAnUnreachableTableIsReported() throws IOException {
+        CustomFontForTests.keep(context, CustomFontForTests.FONT + " picked");
+        CustomFontForTests.AndroidFonts android = CustomFontForTests.installAndroidFonts();
+        android.unreachable = new NoSuchFieldException("sSystemFontMap");
+
+        CustomFont.onThreadsStart(context);
+
+        assertEquals(4, android.defaults.size());
+        assertTrue(report(), report().contains(CustomFont.LEFT_TO_THREADS + CustomFont.NO_TABLE + " 1"));
+        assertTrue(report(), report().contains(CustomFont.DEFAULTS_SWAPPED + " 1"));
+        assertTrue(HookStatus.missing(FamilyNames.CUSTOM_FONT).isEmpty());
     }
 
     /** Icon, logo and other fonts stay Threads' own, and so does a resource Threads doesn't have. */

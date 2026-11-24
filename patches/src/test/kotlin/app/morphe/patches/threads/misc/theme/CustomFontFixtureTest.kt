@@ -13,6 +13,10 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.threads.misc.extension.SETTINGS_STATUS
+import app.morphe.patches.threads.misc.extension.SoLoaderInitFingerprint
+import app.morphe.patches.threads.misc.extension.THREADS_APPLICATION
+import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
+import app.morphe.patches.threads.misc.settings.declaredInHierarchy
 import app.morphe.util.getReference
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -22,6 +26,7 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.junit.Assert.assertEquals
@@ -31,9 +36,11 @@ import org.junit.Test
 import java.io.File
 
 /**
- * Custom font (#28) on each declared build: right after each of the font repository's three loads,
- * the typeface goes to the extension with what it was loaded by, and the answer takes its place.
- * The three loads are read by hand on 512708508, apart from how the patch finds them.
+ * Custom font (#28) on each declared build: right after the extension gets its context in the
+ * application's onCreate, the extension puts the picked font in Android's font table, and right
+ * after each of the font repository's three loads, the typeface goes to the extension with what it
+ * was loaded by, and the answer takes its place. The three loads are read by hand on 512708508,
+ * apart from how the patch finds them.
  */
 class CustomFontFixtureTest {
     @Test
@@ -43,6 +50,7 @@ class CustomFontFixtureTest {
             "assetFont" to "(Landroid/graphics/Typeface;Ljava/lang/String;)Landroid/graphics/Typeface;",
             "systemFont" to "(Landroid/graphics/Typeface;Ljava/lang/String;)Landroid/graphics/Typeface;",
             "resourceFont" to "(Landroid/graphics/Typeface;I)Landroid/graphics/Typeface;",
+            "onThreadsStart" to "(Landroid/content/Context;)V",
         )) {
             val method = extension.methods.single { it.name == name }
             assertTrue(name, AccessFlags.STATIC.isSet(method.accessFlags) && AccessFlags.PUBLIC.isSet(method.accessFlags))
@@ -72,7 +80,23 @@ class CustomFontFixtureTest {
                     loads.map { "${it.call}: v${it.result} from v${it.name}" })
             }
 
+            val onCreate = context.declaredInHierarchy(THREADS_APPLICATION, "onCreate")
+            val startBefore = onCreate.body()
             customFontPatch.execute(context)
+            // Threads' text mostly asks Android for its fonts, so the start goes in right after the context.
+            val start = onCreate.body()
+            assertEquals(where, startBefore.size + 1, start.size)
+            val setContext = start.indexOfFirst {
+                it.getReference<MethodReference>()?.toString() == "Lapp/morphe/extension/shared/Utils;->setContext(Landroid/content/Context;)V"
+            }
+            assertTrue(where, setContext >= 0)
+            val hook = start[setContext + 1]
+            assertEquals(where, Opcode.INVOKE_STATIC_RANGE, hook.opcode)
+            assertEquals(where, "$CUSTOM_FONT->onThreadsStart(Landroid/content/Context;)V", hook.getReference<MethodReference>().toString())
+            // p0, the application itself.
+            assertEquals(where, onCreate.implementation!!.registerCount - 1, (hook as RegisterRangeInstruction).startRegister)
+            assertEquals(where, 1, hook.registerCount)
+            assertEquals(where, startBefore.map { it.kind() }, start.filterIndexed { index, _ -> index != setContext + 1 }.map { it.kind() })
             val patched = context.mutableClassDefBy(repository.definingClass).methods.single { it.same(repository) }.body()
             assertEquals(where, stock.size + 2 * loads.size, patched.size)
             // Each hook lands right after its load's move-result, shifted by the hooks above it.
@@ -141,23 +165,55 @@ class CustomFontFixtureTest {
         }
     }
 
+    @Test
+    fun `an application that never gets the context is refused before anything changes`() {
+        for (build in Fixtures.declaredBuilds()) {
+            // The extension patch never ran, so onCreate has no context call to follow.
+            val context = context(build, withContext = false)
+            val repository = repository(build)
+            val mutable = context.mutableClassDefBy(repository.definingClass).methods.single { it.same(repository) }
+            val before = mutable.body().size
+            val error = assertThrows(build.name, PatchException::class.java) { customFontPatch.execute(context) }
+            assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("sets the extension's context 0 times, not once"))
+            assertEquals(build.name, before, mutable.body().size)
+            assertEquals(build.name, 0, status(context))
+        }
+    }
+
     private fun repository(build: File): Method = fixture(build).classes.flatMap { it.methods }.single { method ->
         method.returnType == "Landroid/graphics/Typeface;" && method.parameterTypes.size == 1 &&
             method.body().any { it.string() == LOAD_TYPEFACE }
     }
 
-    private class Fixture(val classes: List<ClassDef>)
+    private class Fixture(val classes: List<ClassDef>, val application: List<ClassDef>)
 
     /** The repository's class and ResourcesCompat, each found by its own string, read once per build. */
     private fun fixture(build: File): Fixture = fixtures.getOrPut(build) {
         val holding = { text: String -> { method: Method -> method.body().any { it.string()?.startsWith(text) == true } } }
         Fixture((FixtureDex.classesWhere(build, { true }, holding(LOAD_TYPEFACE)) +
-            FixtureDex.classesWhere(build, { true }, holding(FONT_RESOURCE))).distinctBy { it.type })
+            FixtureDex.classesWhere(build, { true }, holding(FONT_RESOURCE))).distinctBy { it.type }, applicationChain(build))
     }
 
-    private fun context(build: File): BytecodePatchContext {
+    /** The application and its parents in the APK, where the extension gets its context. */
+    private fun applicationChain(build: File): List<ClassDef> {
+        val chain = mutableListOf<ClassDef>()
+        var type: String? = THREADS_APPLICATION
+        while (type != null) {
+            val found = FixtureDex.classes(build, setOf(type))[type] ?: break
+            chain += found
+            type = found.superclass
+        }
+        return chain
+    }
+
+    /** The build's classes, after the extension patch [withContext], as every patch sees them. */
+    private fun context(build: File, withContext: Boolean = true): BytecodePatchContext {
         TypefaceRepositoryFingerprint.clearMatch()
-        return PatchContexts.of((ExtensionDex.classes() + fixture(build).classes).distinctBy { it.type })
+        SoLoaderInitFingerprint.clearMatch()
+        val fixture = fixture(build)
+        val context = PatchContexts.of((ExtensionDex.classes() + fixture.classes + fixture.application).distinctBy { it.type })
+        if (withContext) threadsExtensionPatch.execute(context)
+        return context
     }
 
     private fun status(context: BytecodePatchContext) = (context.mutableClassDefBy(SETTINGS_STATUS).methods

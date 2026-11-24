@@ -15,7 +15,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import app.morphe.extension.shared.Utils;
 
@@ -32,6 +35,7 @@ public final class CustomFontForTests {
      */
     static final class Loader implements CustomFont.Loader {
         final List<String> asked = new ArrayList<>();
+        private final List<Typeface> made = new ArrayList<>();
 
         @Override
         public Typeface load(File file, int weight, boolean italic) {
@@ -42,7 +46,16 @@ public final class CustomFontForTests {
             } catch (IOException unreadable) {
                 return null;
             }
-            return FONT.equals(new String(head, StandardCharsets.US_ASCII)) ? Typeface.create(Typeface.SERIF, Typeface.NORMAL) : null;
+            if (!FONT.equals(new String(head, StandardCharsets.US_ASCII))) return null;
+            Typeface typeface = Typeface.create(Typeface.SERIF, Typeface.NORMAL);
+            made.add(typeface);
+            return typeface;
+        }
+
+        /** Whether [typeface] is one this loader made. */
+        boolean made(Typeface typeface) {
+            for (Typeface one : made) if (one == typeface) return true;
+            return false;
         }
     }
 
@@ -50,6 +63,30 @@ public final class CustomFontForTests {
         Loader loader = new Loader();
         CustomFont.loader = loader;
         return loader;
+    }
+
+    /** Android's font table and defaults as a plain map and a list, out of reach when told to be. */
+    static final class AndroidFonts implements CustomFont.AndroidFonts {
+        final Map<String, Typeface> families = new LinkedHashMap<>();
+        final List<Typeface> defaults = new ArrayList<>();
+        ReflectiveOperationException unreachable;
+
+        @Override
+        public Map<String, Typeface> families() throws ReflectiveOperationException {
+            if (unreachable != null) throw unreachable;
+            return families;
+        }
+
+        @Override
+        public void defaults(Typeface regular, Typeface bold, Typeface italic, Typeface boldItalic) {
+            defaults.addAll(Arrays.asList(regular, bold, italic, boldItalic));
+        }
+    }
+
+    static AndroidFonts installAndroidFonts() {
+        AndroidFonts fonts = new AndroidFonts();
+        CustomFont.androidFonts = fonts;
+        return fonts;
     }
 
     /** Writes [text] where the picked font is kept, as if one had been picked. */

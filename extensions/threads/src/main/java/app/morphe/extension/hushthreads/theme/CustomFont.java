@@ -18,7 +18,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +37,13 @@ import app.morphe.extension.shared.settings.Setting;
 /**
  * Threads' text in a font file the person picks (#28).
  *
- * <p>Threads loads its fonts through one repository, by an asset file's name, an Android font
+ * <p>Most of Threads' text never asks for a font itself: its theme names Android's sans-serif
+ * families, and the rest draws in Android's default. Both come from the font table Android sets up
+ * for each process before the application starts. Right after the extension gets its context, at
+ * the start of the application's onCreate, the picked font goes into that table in place of each
+ * sans-serif family, at that family's weight and slant, and in place of Android's defaults.
+ *
+ * <p>Threads loads its own fonts through one repository, by an asset file's name, an Android font
  * family's name or a font resource, and keeps what it loaded. The patch hands each load's result
  * to this class with the name it loaded it by. While the switch is on and a font file is kept, a
  * text font (Threads' own Optimistic and Prism Sans, and Android's sans-serif families) comes back
@@ -61,8 +71,19 @@ public final class CustomFont {
 
     /** Count label for a font swapped. */
     static final String SWAPPED = "used the picked font";
+    /** Count label for Android's sans-serif families put in at Threads' start, one per family. */
+    static final String ANDROID_SWAPPED = "put the picked font in Android's font table";
+    /** Count label for Android's default fonts put in at Threads' start. */
+    static final String DEFAULTS_SWAPPED = "put the picked font in as Android's default";
     /** Prefix for a refusal's count label; one label per fixed reason. */
     static final String LEFT_TO_THREADS = "left the font to Threads: ";
+    /** Android's sans-serif families couldn't be reached at Threads' start. */
+    static final String NO_TABLE = "Android's font table is out of reach";
+    /** Some of Android's default fonts couldn't be reached at Threads' start. */
+    static final String NO_DEFAULTS = "Android's default font is out of reach";
+
+    private static final int REGULAR = 400;
+    private static final int BOLD = 700;
 
     /** How a picked file went. */
     public enum Outcome { KEPT, TOO_LARGE, NOT_A_FONT, UNREADABLE }
@@ -85,6 +106,65 @@ public final class CustomFont {
 
     static volatile Loader loader = ANDROID;
 
+    /** Android's own fonts in this process: its sans-serif families by name, and its defaults. */
+    interface AndroidFonts {
+        /** The table Typeface.create(String, int) and a theme's font family names are looked up in. */
+        Map<String, Typeface> families() throws ReflectiveOperationException;
+
+        /**
+         * Puts the four in as Android's default fonts: the one text is drawn in when nothing set
+         * one, Typeface.DEFAULT, SANS_SERIF and DEFAULT_BOLD, and Typeface.defaultFromStyle's.
+         * Tries every one, then throws the first failure.
+         */
+        void defaults(Typeface regular, Typeface bold, Typeface italic, Typeface boldItalic) throws ReflectiveOperationException;
+    }
+
+    /** Android's fields and methods, reached by reflection: Android has no call that sets them. */
+    static final AndroidFonts ANDROID_FONTS = new AndroidFonts() {
+        @SuppressWarnings("unchecked")
+        @Override
+        public Map<String, Typeface> families() throws ReflectiveOperationException {
+            Field table = Typeface.class.getDeclaredField("sSystemFontMap");
+            table.setAccessible(true);
+            return (Map<String, Typeface>) table.get(null);
+        }
+
+        @Override
+        public void defaults(Typeface regular, Typeface bold, Typeface italic, Typeface boldItalic)
+                throws ReflectiveOperationException {
+            ReflectiveOperationException first = null;
+            try {
+                // What a Paint with no typeface draws in, TextView's own default included.
+                Method setDefault = Typeface.class.getDeclaredMethod("setDefault", Typeface.class);
+                setDefault.setAccessible(true);
+                setDefault.invoke(null, regular);
+            } catch (ReflectiveOperationException failure) {
+                first = failure;
+            }
+            try {
+                Field byStyle = Typeface.class.getDeclaredField("sDefaults");
+                byStyle.setAccessible(true);
+                Typeface[] styles = (Typeface[]) byStyle.get(null);
+                Typeface[] own = {regular, bold, italic, boldItalic};
+                if (styles != null) System.arraycopy(own, 0, styles, 0, Math.min(styles.length, own.length));
+            } catch (ReflectiveOperationException failure) {
+                if (first == null) first = failure;
+            }
+            for (String name : new String[]{"DEFAULT", "SANS_SERIF", "DEFAULT_BOLD"}) {
+                try {
+                    Field field = Typeface.class.getField(name);
+                    field.setAccessible(true);
+                    field.set(null, name.equals("DEFAULT_BOLD") ? bold : regular);
+                } catch (ReflectiveOperationException failure) {
+                    if (first == null) first = failure;
+                }
+            }
+            if (first != null) throw first;
+        }
+    };
+
+    static volatile AndroidFonts androidFonts = ANDROID_FONTS;
+
     /** The picked font at each weight and slant asked for, by weight * 2 plus one when slanted. */
     private static final Map<Integer, Typeface> made = new ConcurrentHashMap<>();
     /** The kept file wouldn't load, so it isn't tried again for every font Threads asks for. */
@@ -93,6 +173,65 @@ public final class CustomFont {
     private static volatile String lastLogged;
 
     private CustomFont() { }
+
+    /**
+     * At the start of Threads' application onCreate, right after the extension gets its context and
+     * before Threads draws any text. Puts the picked font in Android's font table and defaults while
+     * the switch is on and a font file is kept. Never throws.
+     */
+    public static void onThreadsStart(@Nullable Context context) {
+        try {
+            HookStatus.invoked(FamilyNames.CUSTOM_FONT);
+            String off = offBecause();
+            Typeface regular = off == null ? picked(REGULAR, false) : null;
+            Typeface bold = regular != null ? picked(BOLD, false) : null;
+            Typeface italic = bold != null ? picked(REGULAR, true) : null;
+            Typeface boldItalic = italic != null ? picked(BOLD, true) : null;
+            if (off == null && boldItalic == null) off = unusable ? "the font file won't load" : "no font file picked";
+            if (off != null) {
+                HookStatus.counted(FamilyNames.CUSTOM_FONT, LEFT_TO_THREADS + off);
+                log(off);
+                return;
+            }
+            int families = 0;
+            try {
+                families = replaceTextFamilies(androidFonts.families());
+                if (families > 0) HookStatus.counted(FamilyNames.CUSTOM_FONT, ANDROID_SWAPPED, families);
+            } catch (ReflectiveOperationException | RuntimeException unreachable) {
+                HookStatus.counted(FamilyNames.CUSTOM_FONT, LEFT_TO_THREADS + NO_TABLE);
+                Logger.printInfo(() -> "Custom font: " + NO_TABLE + ", " + unreachable.getClass().getSimpleName());
+            }
+            try {
+                androidFonts.defaults(regular, bold, italic, boldItalic);
+                HookStatus.counted(FamilyNames.CUSTOM_FONT, DEFAULTS_SWAPPED);
+            } catch (ReflectiveOperationException | RuntimeException unreachable) {
+                HookStatus.counted(FamilyNames.CUSTOM_FONT, LEFT_TO_THREADS + NO_DEFAULTS);
+                Logger.printInfo(() -> "Custom font: " + NO_DEFAULTS + ", " + unreachable.getClass().getSimpleName());
+            }
+            int swapped = families;
+            Logger.printDebug(() -> "Custom font: put in for " + swapped + " of Android's sans-serif families");
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.CUSTOM_FONT, "custom font at start", failure);
+        }
+    }
+
+    /**
+     * Puts the picked font in place of each text font of [families], at the weight and slant of the
+     * one it replaces, and returns how many. Every one is loaded before the first goes in, so a file
+     * that won't load leaves the table as it was. Only names already there are written, so the
+     * table never grows under a thread reading it.
+     */
+    static int replaceTextFamilies(Map<String, Typeface> families) {
+        Map<String, Typeface> own = new LinkedHashMap<>();
+        for (String name : new ArrayList<>(families.keySet())) {
+            if (!isTextFont(name)) continue;
+            Typeface typeface = picked(families.get(name));
+            if (typeface == null) return 0;
+            own.put(name, typeface);
+        }
+        for (Map.Entry<String, Typeface> entry : own.entrySet()) families.put(entry.getKey(), entry.getValue());
+        return own.size();
+    }
 
     /** After Threads loads the asset font [name] into [loaded]. Never throws. */
     public static Typeface assetFont(@Nullable Typeface loaded, @Nullable String name) {
@@ -170,11 +309,15 @@ public final class CustomFont {
     /** The picked font at [loaded]'s weight and slant, or null when none is kept or it won't load. */
     @Nullable
     private static Typeface picked(@Nullable Typeface loaded) {
+        return picked(loaded != null ? loaded.getWeight() : REGULAR, loaded != null && loaded.isItalic());
+    }
+
+    /** The picked font at [weight], slanted when [italic], or null when none is kept or it won't load. */
+    @Nullable
+    private static Typeface picked(int weight, boolean italic) {
         if (unusable) return null;
-        int weight = loaded != null ? loaded.getWeight() : 400;
         // Typeface.create takes 1 to 1000 and throws on anything else.
-        if (weight < 1 || weight > 1000) weight = 400;
-        boolean italic = loaded != null && loaded.isItalic();
+        if (weight < 1 || weight > 1000) weight = REGULAR;
         int key = weight * 2 + (italic ? 1 : 0);
         Typeface ready = made.get(key);
         if (ready != null) return ready;
@@ -301,5 +444,6 @@ public final class CustomFont {
         unusable = false;
         lastLogged = null;
         loader = ANDROID;
+        androidFonts = ANDROID_FONTS;
     }
 }

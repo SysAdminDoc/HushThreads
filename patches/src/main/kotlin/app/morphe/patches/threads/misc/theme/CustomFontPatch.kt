@@ -7,17 +7,22 @@
 package app.morphe.patches.threads.misc.theme
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
+import app.morphe.patches.shared.misc.extension.EXTENSION_CLASS_DESCRIPTOR
 import app.morphe.patches.threads.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.threads.misc.extension.THREADS_APPLICATION
 import app.morphe.patches.threads.misc.extension.enableStatus
 import app.morphe.patches.threads.misc.extension.invokeStaticAt
 import app.morphe.patches.threads.misc.extension.requireStatusMethod
 import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
+import app.morphe.patches.threads.misc.settings.declaredInHierarchy
 import app.morphe.patches.threads.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.getReference
@@ -53,15 +58,20 @@ internal class FontLoad(val call: Int, val result: Int, val name: Int, val hook:
 /**
  * Shows Threads' text in a font file the person picks (#28).
  *
- * Threads loads its fonts through one repository method: by an asset file's name, an Android
+ * Most of Threads' text never asks for a font itself: its theme names Android's sans-serif
+ * families and the rest draws in Android's default. At the start of the application's onCreate,
+ * right after the extension gets its context, the extension puts the picked font in Android's font
+ * table and defaults for this process.
+ *
+ * Threads loads its own fonts through one repository method: by an asset file's name, an Android
  * family's name, or a font resource through AndroidX's ResourcesCompat. Right after each of those
  * three loads, the typeface goes to the extension with the name or resource it was loaded by, and
  * the extension's answer takes its place. The extension swaps text fonts only, and only while the
  * switch is on and a file is picked.
  *
  * Each load has to be the method's only one of its kind, keep its typeface, keep what it loaded by
- * in another register, and be something nothing jumps past. Anything else refuses before the
- * first change.
+ * in another register, and be something nothing jumps past, and onCreate has to set the context
+ * once with nothing jumping past it. Anything else refuses before the first change.
  */
 @Suppress("unused")
 val customFontPatch = bytecodePatch(
@@ -79,6 +89,11 @@ val customFontPatch = bytecodePatch(
         val repository = TypefaceRepositoryFingerprint.method
         // Everything is found and checked before the first change.
         val loads = fontLoads(repository)
+        val start = fontStart()
+        start.method.addInstruction(
+            start.at,
+            "invoke-static/range { p0 .. p0 }, $CUSTOM_FONT->onThreadsStart(Landroid/content/Context;)V",
+        )
         // From the last up, so each index still names its call.
         loads.sortedByDescending { it.call }.forEach { load ->
             val at = load.call + 2
@@ -90,6 +105,32 @@ val customFontPatch = bytecodePatch(
         }
         enableStatus("customFont")
     }
+}
+
+/** Where the extension hands the application its context; the font goes in right after. */
+internal const val SET_CONTEXT = "$EXTENSION_CLASS_DESCRIPTOR->setContext(Landroid/content/Context;)V"
+
+/** The application's onCreate and the index right after the extension gets its context there. */
+internal class FontStart(val method: MutableMethod, val at: Int)
+
+/**
+ * Where Android's font table is set up for Threads: the application's onCreate, right after the
+ * extension patch hands the extension its context and before Threads' own startup. Android fills
+ * the table before onCreate, so what goes in there stays for the whole run.
+ */
+internal fun BytecodePatchContext.fontStart(): FontStart {
+    val onCreate = declaredInHierarchy(THREADS_APPLICATION, "onCreate")
+    val body = onCreate.implementation?.instructions?.toList().orEmpty()
+    val signature = "${onCreate.definingClass}->onCreate"
+    val calls = body.indices.filter { body[it].getReference<MethodReference>()?.toString() == SET_CONTEXT }
+    val call = calls.singleOrNull()
+        ?: throw PatchException("$CUSTOM_FONT_PATCH: $signature sets the extension's context ${calls.size} times, not once")
+    val at = call + 1
+    val flow = ControlFlow.of(onCreate)
+    if (body.indices.any { it != call && at in flow.normal[it] }) {
+        throw PatchException("$CUSTOM_FONT_PATCH: $signature jumps to just after the extension gets its context")
+    }
+    return FontStart(onCreate, at)
 }
 
 /** The repository's asset, Android family and resource loads, in that order. */
