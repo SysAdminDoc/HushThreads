@@ -102,8 +102,9 @@ internal fun Method.relatedThreadRow(): String {
  * thread, and writes the rows into the post's state, where an answer with no threads clears them.
  * On 455 the collector held the permalink repository, and 456 moved that to a class of its own, so
  * it's found as the one `emit` that builds that row. The answer is the type its first cast names,
- * and the read is the answer's one List field, walked with each entry cast to what the row is built
- * from. Anything else, or a branch onto the instruction after the read, and the patch refuses.
+ * and the read is the answer's one List field, walked with each entry cast to something the row is
+ * built from: the thread, which up to 456 was the row's only source and since 457 sits beside the
+ * header's own. Anything else, or a branch onto the instruction after the read, and the patch refuses.
  */
 internal fun BytecodePatchContext.relatedThreadsFetch(): RelatedThreadsFetch {
     val row = RepliesParseFingerprint.method.relatedThreadRow()
@@ -127,17 +128,18 @@ internal fun BytecodePatchContext.relatedThreadsFetch(): RelatedThreadsFetch {
         body[at].opcode == Opcode.IGET_OBJECT && field.definingClass == answer && field.type == LIST
     }.singleOrPatchException("$PATCH: the threads $signature reads off $answer")
     val list = (body[read] as TwoRegisterInstruction).registerA
-    val source = body.mapNotNull { instruction ->
+    val constructor = body.mapNotNull { instruction ->
         val call = instruction.getReference<MethodReference>() ?: return@mapNotNull null
         if (instruction.opcode !in setOf(Opcode.INVOKE_DIRECT, Opcode.INVOKE_DIRECT_RANGE) ||
             call.definingClass != row || call.name != "<init>"
         ) {
             return@mapNotNull null
         }
-        call.parameterTypes.firstOrNull()?.toString()
-    }.toSet().singleOrPatchException("$PATCH: what $signature builds each $row from")
+        call.parameterTypes.map(CharSequence::toString)
+    }.toSet().singleOrPatchException("$PATCH: the $row constructor $signature calls")
+    val sources = constructor.filter { it.startsWith("L") && it != STRING }
     val walked = body.entryCast(read, list)
-    if (walked != source) throw PatchException("$PATCH: $signature walks $answer's threads as $walked, not $source")
+    if (walked !in sources) throw PatchException("$PATCH: $signature walks $answer's threads as $walked, not one of $sources")
     // The hook goes in front of the instruction after the read. A branch or handler landing there
     // would skip it and hand Threads the threads untouched, so that build is refused.
     val flow = ControlFlow.of(method)
@@ -195,4 +197,5 @@ internal fun hookRelatedThreadsFetch(fetch: RelatedThreadsFetch) {
 
 private const val LIST = "Ljava/util/List;"
 private const val OBJECT = "Ljava/lang/Object;"
+private const val STRING = "Ljava/lang/String;"
 private val MOVES = setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16)

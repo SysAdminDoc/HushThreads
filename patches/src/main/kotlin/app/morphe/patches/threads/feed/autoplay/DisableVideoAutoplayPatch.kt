@@ -25,6 +25,7 @@ import app.morphe.patches.threads.misc.extension.holdsNote
 import app.morphe.patches.threads.misc.extension.requireStatusMethod
 import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
 import app.morphe.patches.threads.misc.settings.settingsPatch
+import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.argumentRegister
 import app.morphe.util.findMutableMethodOf
@@ -556,6 +557,9 @@ private fun BytecodePatchContext.handedBooleanFrom(
     if (reaching.fromEntry) sources += player.parameterIndex(register)?.takeIf { player.parameterTypes[it].toString() == "Z" } ?: return null
     for (write in reaching.writes) {
         val instruction = body[write]
+        // 457 writes the default in place, behind a test of its bit: the path skipping the write
+        // carries the flag, and that path is the other write reaching here.
+        inlineDefault(player, write)?.let { defaults += it; continue }
         sources += when {
             instruction.opcode.isMove() -> handedBoolean(player, write, (instruction as TwoRegisterInstruction).registerB, defaults, following)
             instruction.opcode == Opcode.MOVE_RESULT -> {
@@ -572,6 +576,27 @@ private fun BytecodePatchContext.handedBooleanFrom(
         } ?: return null
     }
     return sources.singleOrNull()
+}
+
+/**
+ * Compose's default for a boolean written in place, as 457's player does it, or null: [write] is a
+ * 0 or 1 into the boolean's register, reached only by falling through an `if-eqz` right before it
+ * on one bit of an int parameter, the default mask, so it runs only while the caller leaves that
+ * boolean out.
+ */
+private fun inlineDefault(player: Method, write: Int): PlayerDefault? {
+    val body = player.implementation!!.instructions.toList()
+    val value = body[write].takeIf { it.opcode in CONSTANTS } as? NarrowLiteralInstruction ?: return null
+    if (value.narrowLiteral !in 0..1) return null
+    val test = body.getOrNull(write - 1)?.takeIf { it.opcode == Opcode.IF_EQZ } ?: return null
+    val flow = ControlFlow.of(player)
+    val into = flow.instructions.indices.filter { write in flow.normal[it] || write in flow.exceptional[it] }
+    if (into != listOf(write - 1)) return null
+    val (tested, _) = player.origin(write - 1, (test as OneRegisterInstruction).registerA)?.takeIf { it.first >= 0 } ?: return null
+    val (bit, source) = player.maskedBit(tested)?.takeIf { it.first.countOneBits() == 1 } ?: return null
+    val (from, masked) = player.origin(tested, source) ?: return null
+    val mask = player.parameterIndex(masked)?.takeIf { from < 0 && player.parameterTypes[it].toString() == "I" } ?: return null
+    return PlayerDefault(mask, bit, value.narrowLiteral)
 }
 
 /**

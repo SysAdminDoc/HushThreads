@@ -6,7 +6,7 @@ Changes in the source build, then released versions.
 
 * **Tooling:** The GitHub release notes carry the Threads bullets and the update steps now. The Docs and Tooling bullets stay here in the changelog, and the notes no longer end with a Validation section.
 * The bundle is built on Morphe patcher 2.5.0 now, the one that comes with Morphe Manager 2.7.0 and Morphe Desktop 2.3.0. Older Manager builds turn it down, so update Manager to 2.7.0 or newer first.
-* HushThreads now patches Threads 456.0.0.57.80 only, on all eleven APKMirror variants (arm64-v8a, armeabi-v7a, x86_64 and x86). Update Threads to 456 before you patch. v0.0.18 is the last release for 455.0.0.55.72.
+* HushThreads now patches Threads 457.0.0.57.74 only, on all ten APKMirror variants (arm64-v8a, armeabi-v7a, x86_64 and x86). Update Threads to 457 before you patch. v0.0.18 is the last release for 455.0.0.55.72.
 * `Hide ads` and `Hide suggested users` now also check the For You posts Threads loads ahead of time in the background. On 456 those went into the feed cache without passing the filter.
 
 ## 0.0.18 (2026-11-13)

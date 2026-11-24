@@ -25,6 +25,7 @@ import app.morphe.patches.threads.misc.extension.parameterRegisterNumber
 import app.morphe.patches.threads.misc.extension.requireParameterIntact
 import app.morphe.patches.threads.misc.extension.threadsExtensionPatch
 import app.morphe.util.ControlFlow
+import app.morphe.util.RegisterLiveness
 import app.morphe.util.findMutableMethodOf
 import app.morphe.util.getReference
 import app.morphe.util.literalReads
@@ -233,7 +234,11 @@ private fun Method.overrideAction(flow: ControlFlow, guard: Int): FieldReference
             ?: return null
         val between = (at + 1 until tested).all { body[it].opcode == Opcode.IF_NEZ || body[it].opcode == Opcode.IF_EQZ }
         val test = body[tested].opcode
-        return action.takeIf { between && (test == Opcode.IF_NEZ || test == Opcode.IF_EQZ) }
+        if (!between || (test != Opcode.IF_NEZ && test != Opcode.IF_EQZ)) return null
+        // The long press is used past its test. 457's text lambda also null-tests the override's
+        // other action, to decide whether to show the post, and drops it right after.
+        val liveness = RegisterLiveness.of(this)
+        return action.takeIf { flow.normal[tested].any { get.registerA in liveness.liveInto(it) } }
     }
     return null
 }

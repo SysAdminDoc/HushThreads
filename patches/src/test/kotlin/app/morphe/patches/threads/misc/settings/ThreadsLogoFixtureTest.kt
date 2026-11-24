@@ -391,7 +391,12 @@ class ThreadsLogoFixtureTest {
         val keys = holders.flatMap { it.methods }.filter { it.name == "<clinit>" }.mapNotNull { init ->
             val body = init.body()
             val at = body.indexOfFirst { it.string() == CONTENT_DESCRIPTION }
-            if (at < 0) null else body.drop(at + 1).firstOrNull { it.opcode == Opcode.SPUT_OBJECT }?.getReference<FieldReference>()?.name()
+            if (at < 0) return@mapNotNull null
+            val store = (at + 1 until body.size).firstOrNull { body[it].opcode == Opcode.SPUT_OBJECT } ?: return@mapNotNull null
+            val field = body[store].getReference<FieldReference>()!!
+            // The key is an object built from its name. 457 also files the name in a set of
+            // property names, stored the same way, which isn't a key.
+            field.name().takeIf { field.type in body.subList(at + 1, store).made() }
         }.distinct()
         assertEquals("$where: one field is stored after \"$CONTENT_DESCRIPTION\": $keys", 1, keys.size)
         val key = keys.single()

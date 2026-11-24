@@ -77,17 +77,16 @@ internal object ProfileSuggestionsFixture {
 class ProfileSuggestionsFixtureTest {
     /** The carousel's read, its check and the check's landing, then the view model's check, by version code. */
     private val buildOffsets = mapOf(
-        "512608732" to intArrayOf(581, 582, 1049, 288),
-        "512608736" to intArrayOf(581, 582, 1049, 288),
-        "512608737" to intArrayOf(581, 582, 1049, 288),
-        "512608738" to intArrayOf(581, 582, 1049, 288),
-        "512608746" to intArrayOf(581, 582, 1049, 286),
-        "512608747" to intArrayOf(581, 582, 1049, 288),
-        "512608748" to intArrayOf(581, 582, 1049, 288),
-        "512608756" to intArrayOf(581, 582, 1049, 286),
-        "512608757" to intArrayOf(581, 582, 1049, 288),
-        "512608758" to intArrayOf(581, 582, 1049, 288),
-        "512608759" to intArrayOf(581, 582, 1049, 288),
+        "512708483" to intArrayOf(614, 615, 655, 250),
+        "512708484" to intArrayOf(614, 615, 655, 249),
+        "512708486" to intArrayOf(613, 614, 654, 249),
+        "512708487" to intArrayOf(614, 615, 655, 250),
+        "512708497" to intArrayOf(612, 613, 653, 249),
+        "512708498" to intArrayOf(614, 615, 655, 250),
+        "512708507" to intArrayOf(613, 614, 654, 249),
+        "512708508" to intArrayOf(614, 615, 655, 250),
+        "512708509" to intArrayOf(614, 615, 655, 249),
+        "512708510" to intArrayOf(614, 615, 655, 250),
     )
 
     @Test

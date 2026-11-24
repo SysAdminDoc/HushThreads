@@ -50,10 +50,10 @@ import java.io.File
  * since 455 through the lambda it hands the flag to, each feed post's call to PostVideo hands that
  * flag to the extension first, and so do the Instagram post, trend preview and ad card calls. The
  * two of those that leave the flag to PostVideo's default get that default's bit cleared and ask
- * about the default's 1 instead. Since 454 they go through a shortened forwarder that pins the flag
- * to false, so there the hook asks about the 1 and keeps the mask's bit only when the video may
- * play. PostVideo, its lambda, that forwarder, the video player, its playback effect and the
- * full-screen viewer are left as they were.
+ * about the default's 1 instead. From 454 to 456 they went through a shortened forwarder that pinned
+ * the flag to false, so there the hook asked about the 1 and kept the mask's bit only when the video
+ * may play. 457's two forwarders hand the caller's flag and mask on. PostVideo, its lambda, the
+ * forwarders, the video player, its playback effect and the full-screen viewer are left as they were.
  */
 class DisableVideoAutoplayFixtureTest {
     private val play = "$VIDEO_AUTOPLAY->play(Z)Z"
@@ -359,24 +359,25 @@ class DisableVideoAutoplayFixtureTest {
     fun `a shortened PostVideo forwarder that changes its play flag or default mask is refused`() {
         for (build in Fixtures.declaredBuilds()) {
             val fixture = fixture(build)
-            val forwarder = fixture.forwarder ?: continue
-            val original = forwarder.body()
-            val call = original.indices.single { original[it].reference() == fixture.postVideo.reference() }
-            val parameter = fixture.shape.parameter
-            val mask = fixture.postVideo.parameterTypes.map { it.toString() }.lastIndexOf("I")
-            // A flag pinned to true would play whatever the caller's mask says, and a mask that isn't the caller's can't be chosen.
-            for ((argument, message) in listOf(parameter to "pins PostVideo's play flag to 1", mask to "doesn't forward PostVideo's I")) {
-                val register = original[call].argumentRegister(fixture.postVideo.argumentOffset(argument))!!
-                val write = (call - 1 downTo 0).first {
-                    original[it].opcode.setsRegister() && (original[it] as? OneRegisterInstruction)?.registerA == register
-                }
-                val context = context(fixture)
-                context.mutableMethod(forwarder).replaceInstruction(write, "const/16 v$register, 0x1")
-                val error = assertThrows(build.name, PatchException::class.java) { disableVideoAutoplayPatch.execute(context) }
-                assertTrue(error.message.orEmpty(), error.message.orEmpty().contains(message))
-                assertEquals(build.name, 0, status(context))
-                for (site in fixture.sites + fixture.embeds) {
-                    assertFalse(build.name, context.method(site.method).any { it.reference() == play })
+            for (forwarder in fixture.forwarders) {
+                val original = forwarder.body()
+                val call = original.indices.single { original[it].reference() == fixture.postVideo.reference() }
+                val parameter = fixture.shape.parameter
+                val mask = fixture.postVideo.parameterTypes.map { it.toString() }.lastIndexOf("I")
+                // A flag pinned to true would play whatever the caller's mask says, and a mask that isn't the caller's can't be chosen.
+                for ((argument, message) in listOf(parameter to "pins PostVideo's play flag to 1", mask to "doesn't forward PostVideo's I")) {
+                    val register = original[call].argumentRegister(fixture.postVideo.argumentOffset(argument))!!
+                    val write = (call - 1 downTo 0).first {
+                        original[it].opcode.setsRegister() && (original[it] as? OneRegisterInstruction)?.registerA == register
+                    }
+                    val context = context(fixture)
+                    context.mutableMethod(forwarder).replaceInstruction(write, "const/16 v$register, 0x1")
+                    val error = assertThrows(build.name, PatchException::class.java) { disableVideoAutoplayPatch.execute(context) }
+                    assertTrue(error.message.orEmpty(), error.message.orEmpty().contains(message))
+                    assertEquals(build.name, 0, status(context))
+                    for (site in fixture.sites + fixture.embeds) {
+                        assertFalse(build.name, context.method(site.method).any { it.reference() == play })
+                    }
                 }
             }
         }
@@ -530,7 +531,7 @@ class DisableVideoAutoplayFixtureTest {
         val effect: Method,
         val shape: PlayTest,
         val players: List<Method>,
-        val forwarder: Method?,
+        val forwarders: List<Method>,
         val sites: List<Site>,
         val embeds: List<Site>,
         val viewer: List<Method>,
@@ -540,7 +541,7 @@ class DisableVideoAutoplayFixtureTest {
 
     /** What the patch must leave as Threads wrote it. */
     private val Fixture.untouched
-        get() = (listOfNotNull(postVideo, effect, forwarder, shape.method) + players + viewer).distinctBy { it.reference() }
+        get() = (listOf(postVideo, effect, shape.method) + forwarders + players + viewer).distinctBy { it.reference() }
 
     /** A forwarder's parameter count, the parameter carrying PostVideo's play flag (null when it pins it), and its mask, the last int. */
     private data class Forwarder(val size: Int, val play: Int?, val mask: Int)
@@ -564,20 +565,20 @@ class DisableVideoAutoplayFixtureTest {
         val parameter = shape.parameter
         // The default mask is PostVideo's last int on 450.
         val maskParameter = postVideo.parameterTypes.map { it.toString() }.lastIndexOf("I")
-        // Read independently: the shorter overload calls PostVideo once and returns. 454's has 14
+        // Read independently: a shorter overload calls PostVideo once and returns. 454's has 14
         // parameters, ending on four ints and a boolean, so the mask is its last int (12). It has no
-        // play flag: PostVideo's is pinned to a 0 the overload loads itself.
-        val overload = FORWARDERS.entries.singleOrNull { build.name.startsWith(it.key) }?.value
+        // play flag: PostVideo's is pinned to a 0 the overload loads itself. 457 has two, and both
+        // hand their own play flag on.
+        val overloads = FORWARDERS.entries.singleOrNull { build.name.startsWith(it.key) }?.value.orEmpty()
         val forwarders = methods.filter { method ->
             method.definingClass == postVideo.definingClass && method.reference() != postVideo.reference() &&
                 method.body().any { it.reference() == postVideo.reference() }
+        }.associateWith { forwarder ->
+            overloads.singleOrNull { it.size == forwarder.parameterTypes.size }
+                ?: throw AssertionError("${build.name}: an unexpected PostVideo overload ${forwarder.parameterTypes}")
         }
-        assertTrue("${build.name}: one shortened PostVideo overload", forwarders.size <= 1)
-        val forwarder = forwarders.singleOrNull()
-        assertEquals("${build.name}: the shortened overload", overload != null, forwarder != null)
-        if (forwarder != null) {
-            overload!!
-            assertEquals(build.name, overload.size, forwarder.parameterTypes.size)
+        assertEquals("${build.name}: the shortened overloads", overloads.sortedBy { it.size }, forwarders.values.sortedBy { it.size })
+        for ((forwarder, overload) in forwarders) {
             assertEquals(build.name, List(overload.size - overload.mask - 1) { "Z" }, forwarder.parameterTypes.drop(overload.mask + 1).map { it.toString() })
             assertEquals(build.name, "I", forwarder.parameterTypes[overload.mask].toString())
             val body = forwarder.body()
@@ -602,14 +603,12 @@ class DisableVideoAutoplayFixtureTest {
         fun calls(method: Method): List<Site> {
             val body = method.body()
             return body.indices.mapNotNull { at ->
-                val target = when (body[at].reference()) {
-                    postVideo.reference() -> postVideo
-                    forwarder?.reference() -> forwarder ?: return@mapNotNull null
-                    else -> return@mapNotNull null
-                }
-                val passedMask = if (target == postVideo) maskParameter else overload!!.mask
+                val reference = body[at].reference()
+                val overload = forwarders.entries.singleOrNull { it.key.reference() == reference }
+                val target = if (reference == postVideo.reference()) postVideo else overload?.key ?: return@mapNotNull null
+                val passedMask = overload?.value?.mask ?: maskParameter
                 // A forwarder that pins the flag takes only the mask.
-                val passedPlay = if (target == postVideo) parameter else overload!!.play ?: passedMask
+                val passedPlay = if (overload == null) parameter else overload.value.play ?: passedMask
                 val maskRegister = body[at].argumentRegister(target.argumentOffset(passedMask))!!
                 // On 450 every caller loads its mask as a constant, last written just before the call.
                 val write = (at - 1 downTo 0).first { body[it].opcode.setsRegister() && (body[it] as? OneRegisterInstruction)?.registerA == maskRegister }
@@ -622,7 +621,7 @@ class DisableVideoAutoplayFixtureTest {
         val embeds = methods.filter { method -> EMBEDS.any { method.holdsNote(it) } }.flatMap(::calls)
         val viewer = methods.filter { it.holdsNote(MEDIA_VIEWER) }
         val players = methods.filter { it.holdsNote(VIDEO_PLAYER) }
-        Fixture(classes, postVideo, effect, shape, players, forwarder, sites, embeds, viewer, viewer.flatMap(::calls), prefetch(build))
+        Fixture(classes, postVideo, effect, shape, players, forwarders.keys.toList(), sites, embeds, viewer, viewer.flatMap(::calls), prefetch(build))
     }
 
     /**
@@ -695,9 +694,9 @@ class DisableVideoAutoplayFixtureTest {
         /** The composables that show a video inside a post rather than as its own media. */
         val EMBEDS = listOf(INLINE_IG_VIDEO, TREND_PREVIEW_VIDEO, AD_CARD)
 
-        /** The shortened PostVideo forwarder of each build that has one: its parameter count, play flag and mask. */
+        /** The shortened PostVideo forwarders of each build that has them: their parameter counts, play flags and masks. */
         val FORWARDERS = mapOf(
-            "threads-456." to Forwarder(size = 14, play = null, mask = 12),
+            "threads-457." to listOf(Forwarder(size = 22, play = 19, mask = 16), Forwarder(size = 12, play = 11, mask = 10)),
         )
 
         /** The bit of PostVideo's default mask that hands its play flag to the default, since 454 (0x4000 from 450 to 453). */

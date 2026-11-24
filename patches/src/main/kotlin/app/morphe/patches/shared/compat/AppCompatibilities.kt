@@ -47,42 +47,43 @@ internal object AppCompatibilities {
      * stable release. A newer stable build replaces it in the same release, and the one before
      * goes.
      */
-    const val THREADS_TARGET_VERSION = "456.0.0.57.80"
+    const val THREADS_TARGET_VERSION = "457.0.0.57.74"
 
     /**
      * The version code of the arm64-v8a build of [THREADS_TARGET_VERSION] the fixtures were read
      * from: APKMirror's 480-640dpi ARM64 bundle. Other density variants have different codes.
      */
-    const val THREADS_TARGET_VERSION_CODE = 512608757
+    const val THREADS_TARGET_VERSION_CODE = 512708508
 
     /**
      * The version code of the armeabi-v7a build of [THREADS_TARGET_VERSION], APKMirror's 480dpi
      * ARM bundle.
      */
-    const val THREADS_TARGET_ARMV7_VERSION_CODE = 512608746
+    const val THREADS_TARGET_ARMV7_VERSION_CODE = 512708486
 
     /**
      * Every version code APKMirror shipped for [THREADS_TARGET_VERSION] when it was read
-     * (2026-11-18): four arm64-v8a density variants, two armeabi-v7a, three x86 and two x86_64.
-     * APKMirror has a second 512608757 bundle, 480dpi with feature splits, whose dex is the same.
+     * (2026-11-24): four arm64-v8a density variants, three armeabi-v7a, two x86 and one x86_64.
      * The bundle names the version without pinning a code, so any genuine build of this version
      * patches, including a variant APKMirror adds later.
      */
     internal val THREADS_TARGET_VERSION_CODES = setOf(
-        512608732, // arm64-v8a, 240-480dpi
-        512608736, // arm64-v8a, 120-480dpi
-        512608737, // x86, 480dpi, Android 8.0+
-        512608738, // x86_64, 480dpi
-        512608746, // armeabi-v7a, 480dpi, Android 8.0+
-        512608747, // arm64-v8a, 480dpi
-        512608748, // x86, 480dpi, Android 8.0+
-        512608756, // armeabi-v7a, 480dpi, Android 8.0+
-        512608757, // arm64-v8a, 480-640dpi
-        512608758, // x86, 480dpi, Android 8.0+
-        512608759, // x86_64, 480dpi
+        512708483, // arm64-v8a, 640dpi
+        512708484, // x86, 480dpi, Android 8.0+
+        512708486, // armeabi-v7a, 480dpi, Android 8.0+
+        512708487, // arm64-v8a, 640dpi
+        512708497, // armeabi-v7a, 480dpi, Android 8.0+
+        512708498, // arm64-v8a, 480dpi
+        512708507, // armeabi-v7a, 480dpi, Android 8.0+
+        512708508, // arm64-v8a, 480-640dpi
+        512708509, // x86, 480dpi, Android 8.0+
+        512708510, // x86_64, 480dpi
     )
 
-    /** Threads' own floor on this build, Android 9. */
+    /**
+     * The floor HushThreads asks for, Android 9, the extension's own minSdk. Threads' arm64-v8a
+     * and x86_64 builds of 457 ask the same, and its armeabi-v7a and x86 builds go down to 8.0.
+     */
     const val THREADS_TARGET_MIN_SDK = 28
 
     fun threads(): Array<Compatibility> = arrayOf(

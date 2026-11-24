@@ -31,9 +31,10 @@ import java.util.WeakHashMap
  *     invoke-static { v0 }, <trace start>(I)V
  *
  * compose-notes.tsv holds the notes the patches and their tests name, with the key each had in
- * 455. The Compose compiler derives a key from its source file, so a key survives only while Meta
- * leaves that file alone: a note missing from the table is one whose file changed, and whoever
- * needs it finds the new key by reading the method and adds a row.
+ * 455, or the key read off the same method in a later build where its file changed. The Compose
+ * compiler derives a key from its source file, so a key survives only while Meta leaves that file
+ * alone: a note missing from the table is one whose file changed, and whoever needs it finds the
+ * new key by reading the method and adds a row. The line in a moved row's note is still 455's.
  */
 
 private const val NOTES_FILE = "compose-notes.tsv"

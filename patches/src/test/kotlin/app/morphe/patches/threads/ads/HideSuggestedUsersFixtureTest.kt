@@ -17,7 +17,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
-import app.morphe.patches.threads.comments.PERMALINK_REPOSITORY
+import app.morphe.patches.threads.comments.PERMALINK_SCREEN
 import app.morphe.patches.threads.comments.RepliesParseFingerprint
 import app.morphe.patches.threads.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.threads.misc.extension.parameterRegisterNumber
@@ -101,7 +101,7 @@ class HideSuggestedUsersFixtureTest {
             val chaining = FixtureDex.classesWhere(build, { true }) { it.hasString(CHAINING_PREFIX) }
             // An opened post's suggested threads are read in the parse of its page of replies, and
             // the ones Threads fetches on their own by a collector holding the same repository.
-            val permalink = FixtureDex.classes(build, setOf(PERMALINK_REPOSITORY)).values
+            val permalink = FixtureDex.classes(build, setOf(PERMALINK_SCREEN)).values
             val fetched = RelatedThreadsFetchFixture.classes(build)
             val classes = (anchors + cache + done + item + kinds + rawParsers + wrappers.values + profile + search +
                 chaining + permalink + fetched).distinctBy { it.type }
@@ -132,8 +132,9 @@ class HideSuggestedUsersFixtureTest {
                 vendor.name, listOf("A0V", "A0M", "A0L", "A0u"),
                 listOf(targets.suggestedSlot, targets.kickstartSlot, targets.rawType, targets.content).map { it.name },
             )
-            // The row built after a follow keeps its id in the item's own public field, A17 on 456 (A16 on 455).
-            assertEquals(vendor.name, targets.media.definingClass to "A17",
+            // The row built after a follow keeps its id in the item's own public field: A18 on 457, which
+            // stores a new Integer in A17 (A17 on 456, A16 on 455).
+            assertEquals(vendor.name, targets.media.definingClass to "A18",
                 targets.chainingId.definingClass to targets.chainingId.name)
             hideSuggestedUsersPatch.execute(context)
             val stubs = context.mutableClassDefBy(FEED_ADS).methods

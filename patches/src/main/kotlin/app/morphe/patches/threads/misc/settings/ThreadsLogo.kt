@@ -255,7 +255,11 @@ internal fun BytecodePatchContext.logoSemantics(modifier: String): LogoSemantics
     return LogoSemantics(setter, receiver, clearAndSet)
 }
 
-/** The field [initializer] stores first after it loads [CONTENT_DESCRIPTION], before any other string, or null. */
+/**
+ * The field [initializer] stores first after it loads [CONTENT_DESCRIPTION], before any other string,
+ * when what it stores is a new object of the field's type, built from the name: the key. 457 also
+ * files the name in a set of property names, stored the same way, which isn't one.
+ */
 private fun semanticsKey(initializer: Method): FieldReference? {
     val body = initializer.body()
     val named = body.indexOfFirst { it.getReference<StringReference>()?.string == CONTENT_DESCRIPTION }
@@ -264,7 +268,11 @@ private fun semanticsKey(initializer: Method): FieldReference? {
         body[at].opcode == Opcode.SPUT_OBJECT || body[at].getReference<StringReference>() != null
     } ?: return null
     if (body[store].opcode != Opcode.SPUT_OBJECT) return null
-    return body[store].getReference<FieldReference>()?.takeIf { it.definingClass == initializer.definingClass }
+    val field = body[store].getReference<FieldReference>()?.takeIf { it.definingClass == initializer.definingClass } ?: return null
+    val built = body.subList(named + 1, store).any {
+        it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == field.type
+    }
+    return field.takeIf { built }
 }
 
 /**
