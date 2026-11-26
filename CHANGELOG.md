@@ -12,6 +12,7 @@ Changes in the source build, then released versions.
 * New `HushThreads header logo` patch. It puts the HushThreads logo at the top of your feed where the Threads logo goes, and it stays still while the feed refreshes. It's in Manager's default selection, but its switch under Appearance in HushThreads settings starts off, and Threads picks up a change after a restart. Asked for in #26.
 * New `Custom launcher icon` patch. The icon on your home screen becomes the HushThreads logo, with a one-color version for themed icons, so you can tell your patched Threads apart at a glance. It isn't in Manager's default selection. Asked for in #26.
 * New `Custom font` patch. Pick a .ttf or .otf file under Appearance in HushThreads settings and Threads shows its text in that font, at the weights Threads uses. Icons keep their own font. It's in Manager's default selection with its switch off, and Threads picks up a change after a restart. Asked for in #28.
+* HushThreads settings come in Russian now. With your phone set to Russian, every row, summary, dialog and toast reads in Russian, and counts use Russian's own plural forms.
 
 ## 0.0.18 (2026-11-13)
 
