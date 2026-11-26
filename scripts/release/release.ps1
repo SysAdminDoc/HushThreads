@@ -403,11 +403,11 @@ try {
             Step 'clearing patches/build/release'
             $releaseFolder = Join-Path $root 'patches/build/release'
             if (Test-Path -LiteralPath $releaseFolder) { Remove-Item -LiteralPath $releaseFolder -Recurse -Force }
-            # --rerun, as Gradle calls the same inputs up to date. Rerun only past what the tests read: anything outside scripts/ and two scripts/ files.
+            # --rerun, as Gradle calls the same inputs up to date. A fix reruns them only if it reaches what they read (not scripts/, docs or the CHANGELOG).
             $stamp = Join-Path $root "build/release-tested-$Version.txt"
             $tested = if (Test-Path -LiteralPath $stamp) { (Get-Content -LiteralPath $stamp -Raw).Trim() } else { '' }
             $read = @(@(if ($tested) { Invoke-Git @('diff', '--name-only', $tested, $head); if ($LASTEXITCODE) { 'all' } } else { 'all' }) |
-                Where-Object { $_ -notlike 'scripts/*' -or $_ -in 'scripts/injected-mutation-contracts.txt', 'scripts/gen-l10n.py' })
+                Where-Object { $_ -notmatch '^(scripts/|docs/|\.github/|CHANGELOG\.md$)' -or $_ -eq 'scripts/injected-mutation-contracts.txt' })
             if ($read.Count -eq 0) { Step "tests passed on $tested, and nothing they read has changed since" } else {
                 Step "runtime and patch tests from $head, both lints"
                 Invoke-Gradle @(':extensions:threads:testDebugUnitTest', '--rerun', ':patches:test', '--rerun',
