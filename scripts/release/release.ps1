@@ -378,8 +378,6 @@ try {
         'preflight' {
             Assert-Clean
             Assert-Prepared
-            # The tests run once, in build. Running them here too, and again in a push gate, tripled
-            # a release's test time.
             Invoke-FactsPrecheck
 
             $head = Get-GitLine @('rev-parse', 'HEAD') 'HEAD'
@@ -398,24 +396,24 @@ try {
             if ($remoteTag -and $remoteTag -ne $head) { throw "origin's $tag names $remoteTag, not $head." }
             $localTag = Get-LocalTag
             if ($localTag -and $localTag -ne $head) { throw "$tag names $localTag here, not $head." }
-            # The fixture tests read the folder too, and a skipped one leaves no count a release can quote.
-            if (-not $env:HUSHTHREADS_FIXTURE_DIR -or -not (Test-Path -LiteralPath $env:HUSHTHREADS_FIXTURE_DIR -PathType Container)) {
-                throw 'HUSHTHREADS_FIXTURE_DIR has to name the folder that holds the declared Threads builds.'
-            }
+            if (-not $env:HUSHTHREADS_FIXTURE_DIR -or -not (Test-Path -LiteralPath $env:HUSHTHREADS_FIXTURE_DIR -PathType Container)) { throw 'HUSHTHREADS_FIXTURE_DIR has to name the folder that holds the declared Threads builds.' }
             $desktopJar = Resolve-DesktopCli -Root $root -Required
             $catalog = Get-Content -LiteralPath (Join-Path $root 'patches-list.json') -Raw | ConvertFrom-Json
             $fixtures = @(Get-ReleaseFixtures -Target (Get-PatchTarget -PatchList $catalog))
-
             Step 'clearing patches/build/release'
             $releaseFolder = Join-Path $root 'patches/build/release'
             if (Test-Path -LiteralPath $releaseFolder) { Remove-Item -LiteralPath $releaseFolder -Recurse -Force }
-
-            # Named with --rerun: Gradle calls a run of the same inputs up to date, and the facts
-            # check holds the results to the sources' dates. The aggregate :extensions:threads:test
-            # --rerun reruns only itself, not testDebugUnitTest.
-            Step "runtime and patch tests again from $head, both lints"
-            Invoke-Gradle @(':extensions:threads:testDebugUnitTest', '--rerun', ':patches:test', '--rerun',
-                ':extensions:shared:library:lint', ':extensions:threads:lint')
+            # --rerun, as Gradle calls the same inputs up to date. Rerun only past what the tests read: anything outside scripts/ and two scripts/ files.
+            $stamp = Join-Path $root "build/release-tested-$Version.txt"
+            $tested = if (Test-Path -LiteralPath $stamp) { (Get-Content -LiteralPath $stamp -Raw).Trim() } else { '' }
+            $read = @(@(if ($tested) { Invoke-Git @('diff', '--name-only', $tested, $head); if ($LASTEXITCODE) { 'all' } } else { 'all' }) |
+                Where-Object { $_ -notlike 'scripts/*' -or $_ -in 'scripts/injected-mutation-contracts.txt', 'scripts/gen-l10n.py' })
+            if ($read.Count -eq 0) { Step "tests passed on $tested, and nothing they read has changed since" } else {
+                Step "runtime and patch tests from $head, both lints"
+                Invoke-Gradle @(':extensions:threads:testDebugUnitTest', '--rerun', ':patches:test', '--rerun',
+                    ':extensions:shared:library:lint', ':extensions:threads:lint')
+                New-Item -ItemType File -Force -Path $stamp -Value $head | Out-Null
+            }
 
             Step 'patch list'
             Invoke-Gradle @(':patches:generatePatchesList')
