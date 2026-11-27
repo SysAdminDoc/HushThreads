@@ -1,0 +1,445 @@
+# Arabic for HushThreads: the English key, a tab, the translation. One row per string.
+# After editing, run python scripts/gen-l10n.py from the repository root.
+Build %1$s	البناء %1$s
+%1$d item in that file isn't a setting this version of HushThreads knows, so it'll be left out.	%1$d عنصر في ذلك الملف ليس إعدادًا تعرفه هذه النسخة من HushThreads، لذا سيُستبعد.
+%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.	%1$d عناصر في ذلك الملف ليست إعدادات تعرفها هذه النسخة من HushThreads، لذا ستُستبعد.
+%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.|zero	%1$d من العناصر في ذلك الملف ليست إعدادات تعرفها هذه النسخة من HushThreads، لذا ستُستبعد.
+%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.|two	%1$d عنصران في ذلك الملف ليسا إعدادين تعرفهما هذه النسخة من HushThreads، لذا سيُستبعدان.
+%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.|few	%1$d عناصر في ذلك الملف ليست إعدادات تعرفها هذه النسخة من HushThreads، لذا ستُستبعد.
+%1$d items in that file aren't settings this version of HushThreads knows, so they'll be left out.|many	%1$d عنصرًا في ذلك الملف ليست إعدادات تعرفها هذه النسخة من HushThreads، لذا ستُستبعد.
+%1$d switch will change.	سيتغير %1$d مفتاح.
+%1$d switches will change.	ستتغير %1$d مفاتيح.
+%1$d switches will change.|zero	سيتغير %1$d مفتاح.
+%1$d switches will change.|two	سيتغير %1$d مفتاحان.
+%1$d switches will change.|few	ستتغير %1$d مفاتيح.
+%1$d switches will change.|many	ستتغير %1$d مفتاحًا.
+%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.	%1$s. تم ضبطه عند تطبيق التصحيح، لذا لا يمكن للإيقاف المؤقت إيقافه. لاستبعاده، طبّق التصحيح مجددًا واترك ذلك التصحيح.
+%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.	%1$s. تم ضبطها عند تطبيق التصحيح، لذا لا يمكن للإيقاف المؤقت إيقافها. لاستبعاد أحدها، طبّق التصحيح مجددًا واترك التصحيح الموجود بين الأقواس بعده.
+A diagnostic report is already being saved.	جارٍ حفظ تقرير تشخيصي بالفعل.
+A file named %1$s in %2$s paused HushThreads.	أوقف ملف باسم %1$s في %2$s تطبيق HushThreads مؤقتًا.
+About	حول
+Advertising ID removed	تمت إزالة معرّف الإعلانات
+Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.	لا يوضح Android 11 والإصدارات الأقدم الروابط التي تُفتح هنا. انقر لفتح إعدادات هذا التطبيق، ثم فتح افتراضيًا.
+Android only sends Threads links to an app signed by Meta. Selecting the addresses sends their links here instead. Your other link settings stay as they are.	يرسل Android روابط Threads فقط إلى تطبيق موقّع من Meta. عند تحديد العناوين تُرسل روابطها هنا بدلًا من ذلك. تبقى إعدادات الروابط الأخرى كما هي.
+Android verified this app for Threads' web addresses, so their links open here.	تحقق Android من هذا التطبيق لعناوين الويب الخاصة بـ Threads، لذا تُفتح روابطها هنا.
+Android's settings for this app didn't open. Open App info from Threads' icon, then Open by default.	لم تُفتح إعدادات Android لهذا التطبيق. افتح معلومات التطبيق من أيقونة Threads، ثم فتح افتراضيًا.
+Back	رجوع
+Cancel	إلغاء
+Changing these	تغيير هذه
+Choose a settings file. Before anything is imported, you'll see how many switches it changes.	اختر ملف إعدادات. قبل استيراد أي شيء، سترى كم عدد المفاتيح التي سيغيّرها.
+Clear diagnostic data	مسح البيانات التشخيصية
+Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.	انسخ تقريرًا سريعًا أو احفظ التقرير الكامل في Download/Morphe. يتم استبعاد الروابط والمعرّفات وملفات تعريف الارتباط ورموز تسجيل الدخول. تحقق منه بحثًا عن أي نص خاص آخر قبل مشاركته.
+Copy quick report	نسخ تقرير سريع
+Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.	تعذّر استيراد الإعدادات، وتعذّرت استعادة الإعدادات السابقة. تحقق من المفاتيح على هذه الشاشة.
+Couldn't import the settings. Nothing was changed.	تعذّر استيراد الإعدادات. لم يتم تغيير أي شيء.
+Couldn't open that file. Nothing was changed.	تعذّر فتح ذلك الملف. لم يتم تغيير أي شيء.
+Couldn't open the file picker. Try again.	تعذّر فتح منتقي الملفات. حاول مرة أخرى.
+Couldn't put back the diagnostic data. Try again.	تعذّرت استعادة البيانات التشخيصية. حاول مرة أخرى.
+Couldn't save the settings file. Try again.	تعذّر حفظ ملف الإعدادات. حاول مرة أخرى.
+Couldn't start that. Try again in a moment.	تعذّر بدء ذلك. حاول مرة أخرى بعد قليل.
+Couldn't start the report export. Try again shortly.	تعذّر بدء تصدير التقرير. حاول مرة أخرى قريبًا.
+Couldn't turn HushThreads back on. Try again.	تعذّر إعادة تشغيل HushThreads. حاول مرة أخرى.
+Debug logging	تسجيل التصحيح
+Diagnostic data cleared. Tap again to put it back.	تم مسح البيانات التشخيصية. انقر مرة أخرى لاستعادتها.
+Diagnostic data put back.	تمت استعادة البيانات التشخيصية.
+Diagnostic report copied to the clipboard.	تم نسخ التقرير التشخيصي إلى الحافظة.
+Clears the saved log, patch check results and any kept crash that a report would include.	يمسح السجل المحفوظ ونتائج فحص التصحيحات وأي تعطل محتفظ به يمكن أن يتضمنه التقرير.
+Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.	يعمل كل مفتاح عدا تسجيل التصحيح كما لو كان متوقفًا، وما تم ضبطه عند تطبيق التصحيح يبقى. تبقى إعداداتك كما هي.
+Export diagnostic report	تصدير التقرير التشخيصي
+Export settings	تصدير الإعدادات
+Feed	الخلاصة
+Turns off every HushThreads switch except Debug logging the next time Threads starts. What you chose when you patched stays, and your choices are saved.	يُوقف كل مفتاح في HushThreads عدا تسجيل التصحيح في المرة التالية التي يبدأ فيها Threads. ما اخترته عند تطبيق التصحيح يبقى، ويتم حفظ اختياراتك.
+Hide ads	إخفاء الإعلانات
+HushThreads %1$s on Threads %2$s	HushThreads %1$s على Threads %2$s
+HushThreads %1$s targets Threads %2$s.	يستهدف HushThreads %1$s الإصدار Threads %2$s.
+HushThreads pauses when Threads restarts.	يتوقف HushThreads مؤقتًا عند إعادة تشغيل Threads.
+HushThreads turns back on when Threads restarts.	يعمل HushThreads مجددًا عند إعادة تشغيل Threads.
+It targets Threads %1$s.	يستهدف Threads %1$s.
+None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	لم يتم تحديد أي من عناوين الويب الخاصة بـ Threads لهذا التطبيق، لذا تُفتح روابطها في مكان آخر. انقر لتحديدها في إعدادات Android.
+Only some of Threads' web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	تم تحديد بعض عناوين الويب الخاصة بـ Threads فقط لهذا التطبيق، وتُفتح روابط الباقي في مكان آخر. انقر لتحديدها في إعدادات Android.
+Privacy	الخصوصية
+Save your switches to a file. Pause and Debug logging aren't included, and neither is the release check.	احفظ مفاتيحك في ملف. لا يتم تضمين الإيقاف المؤقت وتسجيل التصحيح، ولا فحص الإصدارات.
+Saved. Restart Threads to apply this change.	تم الحفظ. أعد تشغيل Threads لتطبيق هذا التغيير.
+Some Threads screens check who signed the app and fail on a patched one. This fix makes them open again.	تتحقق بعض شاشات Threads من الجهة التي وقّعت التطبيق وتفشل مع التطبيق المعدّل. هذا الإصلاح يجعلها تُفتح مجددًا.
+Settings exported. The app holding the file wouldn't let HushThreads read it back, so it wasn't checked.	تم تصدير الإعدادات. لم يسمح التطبيق الذي يحمل الملف لـ HushThreads بقراءته مجددًا، لذلك لم يتم التحقق منه.
+# context: summary of the Hide ads switch; For you and Following are the names of Threads' two feeds, written as the app shows them in this language
+Sponsored posts come out of For you, Following and the posts you open before Threads shows them, so no gap is left.	تُزال المنشورات المدعومة من «لك» و«المتابَعون» والمنشورات التي تفتحها قبل أن يعرضها Threads، لذلك لا تُترك فجوة.
+# context: summary of the Feed section link on the overview; the same two feed names as the Hide ads switch
+Sponsored posts in For you and Following	المنشورات المدعومة في «لك» و«المتابَعون»
+# context: Feed overview summaries when suggestions alone, or both feed rules, are selected
+Suggested accounts in your feed	الحسابات المقترحة في خلاصتك
+Ads and suggested accounts in your feed	الإعلانات والحسابات المقترحة في خلاصتك
+Stop analytics uploads	إيقاف رفع بيانات التحليلات
+# context: xmt and slof are the tags' own names in the link and stay as they are
+Takes tracking tags such as xmt and slof off the post links you copy or share. A short share link becomes the post's own link.	يزيل وسوم التتبع مثل xmt وslof من روابط المنشورات التي تنسخها أو تشاركها. يصبح رابط المشاركة القصير رابط المنشور نفسه.
+The app holding that file is taking too long, so HushThreads stopped waiting. Nothing was changed.	يستغرق التطبيق الذي يحمل ذلك الملف وقتًا طويلًا، لذلك توقف HushThreads عن الانتظار. لم يتم تغيير أي شيء.
+The app holding the last settings file still hasn't answered. Try again later.	لم يرد التطبيق الذي يحمل آخر ملف إعدادات بعد. حاول مرة أخرى لاحقًا.
+The app holding the settings file is taking too long, so HushThreads stopped waiting. That app may still finish saving it, so check the file before you rely on it.	يستغرق التطبيق الذي يحمل ملف الإعدادات وقتًا طويلًا، لذلك توقف HushThreads عن الانتظار. قد يظل ذلك التطبيق يكمل حفظه، لذا تحقق من الملف قبل الاعتماد عليه.
+The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	تعذّرت إزالة الملف %1$s. احذفه من %2$s، ثم انقر متابعة مرة أخرى.
+The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.	تم حفظ ملف الإعدادات، لكنه لا يُقرأ مجددًا كما كُتب. احفظه مرة أخرى كملف جديد.
+Stops most usage reports from reaching Meta. Some may still get through. Turn this off to send them as before.	يمنع معظم تقارير الاستخدام من الوصول إلى Meta. قد يمر بعضها. أوقف هذا لإرسالها كما كان من قبل.
+Analytics address coverage	تغطية عناوين التحليلات
+Blocked: %1$s. Not found in this build: %2$s.	محظور: %1$s. غير موجود في هذا البناء: %2$s.
+This build didn't record which report types it covers. Patch again to see them.	لم يسجل هذا البناء أنواع التقارير التي يغطيها. طبّق التصحيح مجددًا لرؤيتها.
+none	لا شيء
+Threads can't read your phone's advertising ID. The permission for it is gone from this build.	لا يستطيع Threads قراءة معرّف الإعلانات لهاتفك. تم حذف الإذن الخاص به من هذا البناء.
+Threads crashed or froze within a minute of starting three times in a row, so HushThreads paused itself.	تعطل Threads أو تجمد خلال دقيقة من البدء ثلاث مرات متتالية، لذلك أوقف HushThreads نفسه مؤقتًا.
+Threads' web addresses are selected for this app in Android's settings, so their links open here.	عناوين الويب الخاصة بـ Threads محددة لهذا التطبيق في إعدادات Android، لذا تُفتح روابطها هنا.
+Tracking in links and analytics uploads	التتبع في الروابط ورفع بيانات التحليلات
+Try again, or go back to Threads.	حاول مرة أخرى، أو ارجع إلى Threads.
+Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.	إلى أن تتابع، يعمل كل مفتاح عدا تسجيل التصحيح كما لو كان متوقفًا. التغييرات التي أُجريت عند تطبيق التصحيح تبقى.
+Full report saved to %1$s	تم حفظ التقرير الكامل في %1$s
+GPL-3.0, with the notices of the projects this is built on	GPL-3.0، مع إشعارات المشاريع التي بُني عليها
+HushThreads is on	HushThreads قيد التشغيل
+HushThreads is paused	HushThreads متوقف مؤقتًا
+HushThreads settings	إعدادات HushThreads
+HushThreads settings couldn't open	تعذّر فتح إعدادات HushThreads
+Import	استيراد
+Import settings	استيراد الإعدادات
+Importing settings	جارٍ استيراد الإعدادات
+Licenses	التراخيص
+Links	الروابط
+OK	حسنًا
+Pause HushThreads	إيقاف HushThreads مؤقتًا
+Re-signed build fix	إصلاح البناء المعاد توقيعه
+Reading the settings file	جارٍ قراءة ملف الإعدادات
+Remove tracking from shared links	إزالة التتبع من الروابط المشتركة
+Retry	إعادة المحاولة
+Save full report	حفظ التقرير الكامل
+# The release check: its switch and Check now row under Updates, the status card's line about a newer release, and what a failed try says.
+Check for new HushThreads releases	التحقق من وجود إصدارات جديدة من HushThreads
+Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.	مرة واحدة يوميًا، عند بدء Threads، يتحقق من GitHub بحثًا عن إصدار أحدث من HushThreads ويخبرك هنا. لا يتم تنزيل أي شيء.
+Check now	تحقق الآن
+Asks GitHub for the newest release right now, even with the switch above off.	يطلب من GitHub أحدث إصدار الآن، حتى مع إيقاف المفتاح أعلاه.
+Checking GitHub now.	جارٍ التحقق من GitHub الآن.
+HushThreads %1$s is out. Update it in Morphe Manager.	الإصدار HushThreads %1$s متاح. حدّثه في Morphe Manager.
+Version %1$s for Threads %2$s	الإصدار %1$s لـ Threads %2$s
+You have the newest HushThreads release.	لديك أحدث إصدار من HushThreads.
+The newest HushThreads release is %1$s.	أحدث إصدار من HushThreads هو %1$s.
+Couldn't reach GitHub. Try again later.	تعذّر الوصول إلى GitHub. حاول مرة أخرى لاحقًا.
+GitHub is turning away checks from this network for now. Try again later.	يرفض GitHub حاليًا طلبات التحقق من هذه الشبكة. حاول مرة أخرى لاحقًا.
+GitHub sent back something HushThreads couldn't read. Try again later.	أرسل GitHub شيئًا لم يستطع HushThreads قراءته. حاول مرة أخرى لاحقًا.
+Saving the settings file	جارٍ حفظ ملف الإعدادات
+Set when you patched	تم ضبطه عند تطبيق التصحيح
+Settings couldn't open	تعذّر فتح الإعدادات
+Settings couldn't refresh completely. Reopen settings and try again.	تعذّر تحديث الإعدادات بالكامل. أعد فتح الإعدادات وحاول مرة أخرى.
+Settings exported.	تم تصدير الإعدادات.
+Settings imported. %1$d switch changed.	تم استيراد الإعدادات. تغيّر %1$d مفتاح.
+Settings imported. %1$d switches changed.	تم استيراد الإعدادات. تغيّرت %1$d مفاتيح.
+Settings imported. %1$d switches changed.|zero	تم استيراد الإعدادات. تغيّر %1$d مفتاح.
+Settings imported. %1$d switches changed.|two	تم استيراد الإعدادات. تغيّر %1$d مفتاحان.
+Settings imported. %1$d switches changed.|few	تم استيراد الإعدادات. تغيّرت %1$d مفاتيح.
+Settings imported. %1$d switches changed.|many	تم استيراد الإعدادات. تغيّرت %1$d مفتاحًا.
+Source code and issues	الشيفرة المصدرية والمشكلات
+Stays in while paused	يبقى أثناء الإيقاف المؤقت
+Tap to turn it back on.	انقر لإعادة تشغيله.
+That file is too large to be a settings file. Nothing was changed.	ذلك الملف أكبر من أن يكون ملف إعدادات. لم يتم تغيير أي شيء.
+That file isn't readable text, so it may have been damaged on the way. Nothing was changed.	ذلك الملف ليس نصًا قابلاً للقراءة، لذا ربما يكون قد تلف أثناء النقل. لم يتم تغيير أي شيء.
+That file lists a setting twice, so there's no telling which value to use. Nothing was changed.	يسرد ذلك الملف إعدادًا مرتين، لذا لا يمكن تحديد القيمة المستخدمة. لم يتم تغيير أي شيء.
+That isn't a HushThreads settings file. Nothing was changed.	هذا ليس ملف إعدادات HushThreads. لم يتم تغيير أي شيء.
+That settings file holds a value HushThreads can't read. Nothing was changed.	يحتوي ملف الإعدادات هذا على قيمة لا يستطيع HushThreads قراءتها. لم يتم تغيير أي شيء.
+That settings file is damaged or only partly downloaded. Nothing was changed.	ملف الإعدادات هذا تالف أو تم تنزيله جزئيًا فقط. لم يتم تغيير أي شيء.
+That settings file was written by a newer HushThreads than this one. Nothing was changed.	تم كتابة ملف الإعدادات هذا بواسطة إصدار أحدث من HushThreads من هذا الإصدار. لم يتم تغيير أي شيء.
+The diagnostic report couldn't be saved yet. Try again in a moment.	تعذّر حفظ التقرير التشخيصي بعد. حاول مرة أخرى بعد قليل.
+The diagnostic report couldn't be saved. Try again.	تعذّر حفظ التقرير التشخيصي. حاول مرة أخرى.
+The file %1$s couldn't be removed. Delete it from %2$s to turn HushThreads back on.	تعذّرت إزالة الملف %1$s. احذفه من %2$s لإعادة تشغيل HushThreads.
+Your choices are saved. Tap Resume, then restart Threads.	تم حفظ اختياراتك. انقر متابعة، ثم أعد تشغيل Threads.
+the re-signed build fix	إصلاح البناء المعاد توقيعه
+The setting couldn't finish updating. Its saved value is shown.	تعذّر على الإعداد إكمال التحديث. يتم عرض قيمته المحفوظة.
+There's no diagnostic data to clear.	لا توجد بيانات تشخيصية لمسحها.
+There's no diagnostic data to put back.	لا توجد بيانات تشخيصية لاستعادتها.
+They're chosen in Morphe Manager when you patch, and Pause doesn't turn them off. Patch again to change them.	يتم اختيارها في Morphe Manager عند تطبيق التصحيح، ولا يوقفها الإيقاف المؤقت. طبّق التصحيح مجددًا لتغييرها.
+This phone has no file picker, so there's no way to choose a file here.	لا يحتوي هذا الهاتف على منتقي ملفات، لذا لا توجد طريقة لاختيار ملف هنا.
+Version	الإصدار
+Record patch activity and show errors for a bug report. Leave off during normal use.	يسجل نشاط التصحيح ويعرض الأخطاء لتقرير الأخطاء. اتركه متوقفًا أثناء الاستخدام العادي.
+You paused HushThreads.	لقد أوقفت HushThreads مؤقتًا.
+Your switches already match that file, so nothing will change.	مفاتيحك تطابق ذلك الملف بالفعل، لذا لن يتغير شيء.
+Copy a short report to the clipboard.	انسخ تقريرًا قصيرًا إلى الحافظة.
+Save the full report in Download/Morphe.	احفظ التقرير الكامل في Download/Morphe.
+Settings imported.	تم استيراد الإعدادات.
+No app on this phone can open the link. The address is %1$s.	لا يوجد تطبيق على هذا الهاتف يمكنه فتح الرابط. العنوان هو %1$s.
+Pause, backup and diagnostics	الإيقاف المؤقت والنسخ الاحتياطي والتشخيص
+Updates	التحديثات
+Jump to a section	الانتقال إلى قسم
+Go straight to one group of settings. Back returns to where you were.	انتقل مباشرة إلى مجموعة واحدة من الإعدادات. يعيدك الرجوع إلى حيث كنت.
+No matching settings	لا توجد إعدادات مطابقة
+%1$d setting found	تم العثور على %1$d إعداد
+%1$d settings found	تم العثور على %1$d إعدادات
+%1$d settings found|zero	تم العثور على %1$d إعداد.
+%1$d settings found|two	تم العثور على %1$d إعدادين.
+%1$d settings found|few	تم العثور على %1$d إعدادات.
+%1$d settings found|many	تم العثور على %1$d إعدادًا.
+Try a different word or clear the search.	جرّب كلمة مختلفة أو امسح البحث.
+Search settings	البحث في الإعدادات
+Clear search	مسح البحث
+Saves	المحفوظات
+No saves in progress.	لا توجد عمليات حفظ جارية.
+Pause	إيقاف مؤقت
+Resume	متابعة
+Undo	تراجع
+
+# context: Links section, the Supported links row. It reads Android's own per-app selection of Threads' web addresses (Android 12 and later) and opens Android's Open by default page for this app. Use the phone's own names for Open supported links, Open by default and App info.
+Supported links	الروابط المدعومة
+Opening supported links is off for this app in Android's settings. Tap to turn it on.	فتح الروابط المدعومة متوقف لهذا التطبيق في إعدادات Android. انقر لتشغيله.
+Android didn't say which links open here. Tap to check in Android's settings.	لم يوضح Android الروابط التي تُفتح هنا. انقر للتحقق في إعدادات Android.
+Selecting links by hand	تحديد الروابط يدويًا
+# context: an item in the sentence about what Pause can't turn off; the patch name Remove the advertising ID follows it in brackets, so it mustn't repeat that name
+the removed advertising ID permission	إذن معرّف الإعلانات الذي تمت إزالته
+
+# context: optional feed rule and its scope
+Hide suggested users	إخفاء المستخدمين المقترحين
+Removes the cards that suggest accounts to follow, in your feed and on profiles. Normal posts and reposts stay.	يزيل البطاقات التي تقترح حسابات للمتابعة، في خلاصتك وفي الملفات الشخصية. تبقى المنشورات العادية وإعادة النشر.
+Keep feed position on return	الاحتفاظ بموضع الخلاصة عند الرجوع
+Returning to Threads within ten minutes keeps your place. Pull to refresh still works.	العودة إلى Threads خلال عشر دقائق تحافظ على موضعك. لا يزال السحب للتحديث يعمل.
+No time limit	لا يوجد حد زمني
+With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.	مع تشغيل المفتاح أعلاه، يبقى موضعك مهما طال غيابك. لا يزال السحب للتحديث والبدء من جديد يحمّلان منشورات جديدة.
+Where you left off in your feed	حيث توقفت في خلاصتك
+Open links in your browser	فتح الروابط في متصفحك
+Links you tap open in your browser or the site's app, skipping Threads' link tracking. Threads and Instagram pages still open in Threads.	الروابط التي تنقر عليها تُفتح في متصفحك أو تطبيق الموقع، مع تجاوز تتبع الروابط في Threads. لا تزال صفحات Threads وInstagram تُفتح في Threads.
+Tap to play videos	انقر لتشغيل مقاطع الفيديو
+Videos in your feed wait for a tap instead of playing as you scroll.	تنتظر مقاطع الفيديو في خلاصتك نقرة بدلًا من التشغيل أثناء التمرير.
+Videos in your feed	مقاطع الفيديو في خلاصتك
+
+# context: overview disclosure for default patches omitted from this build (Hushfacebook 814acd23)
+Tap to see which.	انقر لمعرفة أيها.
+%1$d default patch isn't in this build	%1$d تصحيح افتراضي غير موجود في هذا البناء
+%1$d default patches aren't in this build	%1$d تصحيحات افتراضية غير موجودة في هذا البناء
+%1$d default patches aren't in this build|zero	%1$d تصحيح افتراضي غير موجود في هذا البناء.
+%1$d default patches aren't in this build|two	%1$d تصحيحان افتراضيان غير موجودين في هذا البناء.
+%1$d default patches aren't in this build|few	%1$d تصحيحات افتراضية غير موجودة في هذا البناء.
+%1$d default patches aren't in this build|many	%1$d تصحيحًا افتراضيًا غير موجود في هذا البناء.
+Not in this build: %1$s. Morphe Manager selects it by default. Patch again with it selected to get what it does.	غير موجود في هذا البناء: %1$s. يحدده Morphe Manager افتراضيًا. طبّق التصحيح مجددًا مع تحديده للحصول على ما يفعله.
+Not in this build: %1$s. Morphe Manager selects them by default. Patch again with them selected to get what they do.	غير موجود في هذا البناء: %1$s. يحددها Morphe Manager افتراضيًا. طبّق التصحيح مجددًا مع تحديدها للحصول على ما تفعله.
+Appearance	المظهر
+Pure black dark mode	الوضع الداكن الأسود النقي
+Dark mode uses true black instead of dark gray. Turn on dark mode in Threads to see it. Restart Threads to see the change.	يستخدم الوضع الداكن اللون الأسود الحقيقي بدلًا من الرمادي الداكن. شغّل الوضع الداكن في Threads لرؤيته. أعد تشغيل Threads لرؤية التغيير.
+Hide the Instagram button	إخفاء زر Instagram
+Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.	يزيل زر Instagram من أعلى الملفات الشخصية، ملفك وملفات الآخرين. أعد تشغيل Threads لرؤية التغيير.
+Hide ghost post bubbles	إخفاء فقاعات المنشورات الشبحية
+Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.	يزيل فقاعات المنشورات الشبحية من الصور الشخصية، في الملفات الشخصية وفي الصف أعلى خلاصتك. أعد تشغيل Threads لرؤية التغيير.
+Full size profile pictures	صور شخصية بالحجم الكامل
+A profile picture you open on a profile shows full size, where you can zoom in and save it, instead of the small circle.	الصورة الشخصية التي تفتحها في ملف شخصي تظهر بالحجم الكامل، حيث يمكنك التكبير وحفظها، بدلًا من الدائرة الصغيرة.
+Close	إغلاق
+Couldn't load the picture. Try again in a moment.	تعذّر تحميل الصورة. حاول مرة أخرى بعد قليل.
+Turn features on or off	تشغيل الميزات أو إيقافها
+# Fotos und Videos speichern
+%1$d saved in lower quality than on Threads.	تم حفظ %1$d بجودة أقل من Threads.
+%1$d saves stopped. Reopen the post and save again.	توقف %1$d عمليات حفظ. أعد فتح المنشور واحفظ مرة أخرى.
+%1$d saves were interrupted	تمت مقاطعة %1$d عمليات حفظ
+%1$s becomes the date and time of the save, %2$s the video's number on Threads, %3$s who posted it and %4$s the day it was posted. What a save doesn't know is left out, and a name with none of these gets the date added. When the name is already in the folder, the time of the save goes on the end. Invalid characters become underscores. Leave it blank to use the default, %5$s.	يصبح %1$s تاريخ ووقت الحفظ، و%2$s رقم الفيديو على Threads، و%3$s من نشره، و%4$s اليوم الذي نُشر فيه. يتم استبعاد ما لا يعرفه الحفظ، ويُضاف التاريخ إلى اسم لا يحتوي على أي من هذه. عندما يكون الاسم موجودًا في المجلد بالفعل، يُضاف وقت الحفظ في النهاية. تصبح الأحرف غير الصالحة شرطات سفلية. اتركه فارغًا لاستخدام الافتراضي، %5$s.
+%1$s of %2$s	%1$s من %2$s
+%1$s so far	%1$s حتى الآن
+A save stopped. Reopen the post and save again.	توقف عملية حفظ. أعد فتح المنشور واحفظ مرة أخرى.
+A save was interrupted	تمت مقاطعة عملية حفظ
+Adds Save to a post's menu. A post with several photos or videos saves them all. Off or paused, you get Threads' normal menu.	يضيف حفظ إلى قائمة المنشور. المنشور الذي يحتوي على عدة صور أو مقاطع فيديو يحفظها جميعًا. عند الإيقاف أو الإيقاف المؤقت، تحصل على قائمة Threads العادية.
+Best	الأفضل
+Cancel saving this carousel	إلغاء حفظ هذه الشرائح
+Cancel saving this photo	إلغاء حفظ هذه الصورة
+Cancel saving this video	إلغاء حفظ هذا الفيديو
+Carousel cancelled. Saved %1$d. Failed %2$d. Skipped %3$d.	تم إلغاء الشرائح. تم حفظ %1$d. فشل %2$d. تم تخطي %3$d.
+Choose a folder name under Movies and Pictures. Invalid characters become underscores. Leave it blank to use the default folder, %1$s.	اختر اسم مجلد ضمن Movies وPictures. تصبح الأحرف غير الصالحة شرطات سفلية. اتركه فارغًا لاستخدام المجلد الافتراضي، %1$s.
+Copying to the gallery	جارٍ النسخ إلى المعرض
+Download failed. Try again in a moment.	فشل التنزيل. حاول مرة أخرى بعد قليل.
+Download quality	جودة التنزيل
+Downloading	جارٍ التنزيل
+Downloads	التنزيلات
+Each video saves at %1$s or the closest quality below it. A video with nothing that low saves at the closest quality above.	يُحفظ كل فيديو بدقة %1$s أو أقرب جودة أقل منها. الفيديو الذي لا يحتوي على جودة منخفضة تُحفظ بأقرب جودة أعلى.
+Each video saves at its lowest quality, for the smallest file.	يُحفظ كل فيديو بأدنى جودة لديه، للحصول على أصغر ملف.
+Each video saves at the best quality the player streams.	يُحفظ كل فيديو بأفضل جودة يبثها المشغل.
+Example without post details	مثال بدون تفاصيل المنشور
+File name	اسم الملف
+File name set to %1$s.	تم تعيين اسم الملف إلى %1$s.
+Folder name	اسم المجلد
+Folder set to %1$s.	تم تعيين المجلد إلى %1$s.
+Helps if WhatsApp, an editor like CapCut or InShot, or a gallery plays your saved video without sound. May lower quality.	يساعد إذا قام WhatsApp أو محرر مثل CapCut أو InShot أو معرض بتشغيل الفيديو المحفوظ بدون صوت. قد يقلل الجودة.
+How far a photo or video you're saving has got, with a button to cancel it	مدى تقدم حفظ الصورة أو الفيديو، مع زر لإلغائه
+HushThreads saves	حفظ HushThreads
+Joining the picture and sound	جارٍ دمج الصورة والصوت
+Last carousel save	آخر حفظ للشرائح
+Link expired. Reopen the post and try again	انتهت صلاحية الرابط. أعد فتح المنشور وحاول مرة أخرى
+Not saved: a carousel can have at most %1$d pages	لم يتم الحفظ: يمكن أن تحتوي الشرائح على %1$d صفحات كحد أقصى
+Not saved: that isn't a Threads photo or video	لم يتم الحفظ: هذا ليس صورة أو فيديو من Threads
+Not saved: the file is over 512 MB	لم يتم الحفظ: الملف أكبر من 512 ميجابايت
+Page %1$d of %2$d	الصفحة %1$d من %2$d
+Photos and videos you save from posts	الصور ومقاطع الفيديو التي تحفظها من المنشورات
+Reopen the post and save again.	أعد فتح المنشور واحفظ مرة أخرى.
+Save	حفظ
+Save all	حفظ الكل
+Save cancelled	تم إلغاء الحفظ
+Save folder	مجلد الحفظ
+Save photo	حفظ الصورة
+Save photos and videos	حفظ الصور ومقاطع الفيديو
+Save video	حفظ الفيديو
+Save videos other apps can open	حفظ مقاطع فيديو يمكن لتطبيقات أخرى فتحها
+Saved %1$d. Failed %2$d. Skipped %3$d.	تم حفظ %1$d. فشل %2$d. تم تخطي %3$d.
+Saved to %1$s	تم الحفظ في %1$s
+Saved to %1$s in lower quality than on Threads	تم الحفظ في %1$s بجودة أقل من Threads
+Saved to the gallery	تم الحفظ في المعرض
+Saved to the gallery in lower quality than on Threads	تم الحفظ في المعرض بجودة أقل من Threads
+Saving a carousel	جارٍ حفظ الشرائح
+Saving a photo	جارٍ حفظ الصورة
+Saving a video	جارٍ حفظ الفيديو
+Saving...	جارٍ الحفظ...
+Saving... To cancel, open Downloads in HushThreads settings.	جارٍ الحفظ... للإلغاء، افتح التنزيلات في إعدادات HushThreads.
+Smallest	الأصغر
+Video file name	اسم ملف الفيديو
+Videos are named %1$s. Photos are always named %2$s followed by the date and time.	تُسمى مقاطع الفيديو %1$s. تُسمى الصور دائمًا %2$s متبوعة بالتاريخ والوقت.
+Videos go to %1$s and photos to %2$s.	تذهب مقاطع الفيديو إلى %1$s والصور إلى %2$s.
+Version code raised	تم رفع رمز الإصدار
+The version number is set as high as Android allows, so Google Play won't offer Meta's updates over this build. Threads still sees its real version. To go back to stock Threads, uninstall this one first, which deletes Threads' data on this phone. Later HushThreads builds need Change version code too, or they won't install over this one.	تم تعيين رقم الإصدار بأعلى مستوى يسمح به Android، لذا لن يقدم Google Play تحديثات Meta فوق هذا البناء. لا يزال Threads يرى إصداره الحقيقي. للعودة إلى Threads الأصلي، قم بإلغاء تثبيت هذا أولًا، مما يحذف بيانات Threads على هذا الهاتف. تحتاج إصدارات HushThreads اللاحقة أيضًا إلى تغيير رمز الإصدار، وإلا فلن تُثبت فوق هذا الإصدار.
+the raised version code	رمز الإصدار المرفوع
+Share sheet entry removed	تمت إزالة عنصر قائمة المشاركة
+Threads doesn't show up when you share from other apps. Sharing from Threads to other apps still works.	لا يظهر Threads عندما تشارك من تطبيقات أخرى. لا تزال المشاركة من Threads إلى تطبيقات أخرى تعمل.
+the removed share sheet entry	عنصر قائمة المشاركة الذي تمت إزالته
+User certificates trusted	تم الوثوق بالشهادات التي أضفتها
+Threads accepts security certificates you added to your phone. Its own checks on Meta's certificates are unchanged, so a proxy still can't read most of its traffic.	يقبل Threads شهادات الأمان التي أضفتها إلى هاتفك. لم تتغير فحوصاته الخاصة لشهادات Meta، لذلك لا يزال بإمكان الوكيل قراءة معظم حركة المرور.
+the user certificate trust	الثقة في الشهادات التي تضيفها
+Own package name	اسم حزمة خاص
+This copy installs beside Threads as an app of its own, with its own sign-in.	تُثبت هذه النسخة بجانب Threads كتطبيق خاص بها، مع تسجيل دخول خاص بها.
+the new package name	اسم الحزمة الجديد
+Own app name	اسم تطبيق خاص
+The name under the app's icon.	الاسم أسفل أيقونة التطبيق.
+the new app name	اسم التطبيق الجديد
+Hide screenshots from Threads	إخفاء لقطات الشاشة عن Threads
+Threads isn't told when you take a screenshot, so it can't log it or react to it.	لا يتم إخبار Threads عندما تلتقط لقطة شاشة، لذلك لا يمكنه تسجيلها أو التفاعل معها.
+Spoof SIM region	ادعاء منطقة SIM
+Threads sees your SIM and network as the region picked below. Meta can still go by your connection and your account. Restart Threads to see the change.	يرى Threads شريحة SIM والشبكة كمنطقة مختارة أدناه. لا يزال بإمكان Meta الاعتماد على اتصالك وحسابك. أعد تشغيل Threads لرؤية التغيير.
+SIM region	منطقة SIM
+Full size photos	صور بالحجم الكامل
+Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.	يتم تحميل الصور بأكبر حجم متوفر في Threads، وليس بحجم مختار لشاشاتك. تبدو أكثر وضوحًا وتستخدم بيانات أكثر.
+No swipe into Search	لا يوجد سحب إلى البحث
+A sideways swipe on your feed no longer slides into Search. The Search button still opens it. Restart Threads to see the change.	لم يعد السحب الجانبي في خلاصتك ينتقل إلى البحث. لا يزال زر البحث يفتحه. أعد تشغيل Threads لرؤية التغيير.
+# context: title of the last row on the settings home page; a tap opens the maintainer's Ko-fi page in a browser
+Support HushThreads	دعم HushThreads
+# context: reports use the app's own Downloads folder on Android 9, where the shared Downloads collection isn't available
+Copy a quick report or save the full one in Threads' own Downloads folder. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.	انسخ تقريرًا سريعًا أو احفظ التقرير الكامل في مجلد التنزيلات الخاص بـ Threads. يتم استبعاد الروابط والمعرّفات وملفات تعريف الارتباط ورموز تسجيل الدخول. تحقق منه بحثًا عن أي نص خاص آخر قبل مشاركته.
+Save the full report in Threads' own Downloads folder.	احفظ التقرير الكامل في مجلد التنزيلات الخاص بـ Threads.
+# context: diagnostic clear row's title when its next tap restores what was cleared
+Restore diagnostic data	استعادة البيانات التشخيصية
+# context: disabled backup row. The placeholder names the file action that is running on the other row
+%1$s. This action will be available when it finishes.	%1$s. سيكون هذا الإجراء متاحًا عند الانتهاء.
+
+# context: TalkBack action for a long press on the Threads logo in the feed header
+Open HushThreads settings	فتح إعدادات HushThreads
+
+# context: the restart row's title while one change waits for a restart; a tap restarts Threads
+Restart Threads to apply this change	أعد تشغيل Threads لتطبيق هذا التغيير
+# context: the same row with several changes waiting; %1$d is how many
+Restart Threads to apply %1$d changes	أعد تشغيل Threads لتطبيق %1$d تغييرات
+# context: the restart row's summary; the settings screen comes back on the page it was on
+Threads closes and reopens on this page.	يُغلق Threads ويُعاد فتحه على هذه الصفحة.
+# Copy text on long press (#9): its heading, the heading's line on the main page, the switch and its summary. Copy text is the name of Threads' own menu item for copying a post, so use the name Threads shows in this language.
+Posts	المنشورات
+Copy text when you hold a post	نسخ النص عندما تضغط مطولًا على منشور
+Copy text on long press	نسخ النص بالضغط المطول
+Holding a post's text opens Copy text, on an opened post too, so you get the whole post with its links instead of picking out words.	الضغط المطول على نص منشور يفتح نسخ النص، حتى في المنشور المفتوح، لذلك تحصل على المنشور كاملاً مع روابطه بدلاً من انتقاء الكلمات.
+# Show exact post times: the Posts heading's line on the main page when the patch is in the build, the switch and its summary. 3h and 2d stand for the short "how long ago" Threads shows on a post; say it the way this language's Threads does, or describe it.
+Copy text and exact post times	نسخ النص وأوقات المنشورات الدقيقة
+Show the date and time	إظهار التاريخ والوقت
+Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.	تُظهر المنشورات والردود التاريخ والوقت الذي نُشرت فيه بدلاً من 3h أو 2d، بتنسيق 12 أو 24 ساعة الخاص بهاتفك.
+# Quick setups: the main page row and its summary, the three choices, the toast after one applies (%1$d is how many switches changed). Quiet, Privacy and Back to defaults are names of a set of switches.
+Quick setups	الإعدادات السريعة
+Quiet	هادئ
+Hides ads and the cards that suggest accounts to follow.	يخفي الإعلانات والبطاقات التي تقترح حسابات للمتابعة.
+Stops most usage reports and takes tracking off the links you share. Threads isn't told about your screenshots either.	يوقف معظم تقارير الاستخدام ويزيل التتبع من الروابط التي تشاركها. لا يتم إخبار Threads بلقطات الشاشة الخاصة بك أيضًا.
+Back to defaults	العودة إلى الافتراضي
+Puts every feature switch back the way it started.	يعيد كل مفتاح ميزة إلى حالته الأصلية.
+Changed %1$d setting	تم تغيير %1$d إعداد
+Changed %1$d settings	تم تغيير %1$d إعدادات
+Changed %1$d settings|zero	تم تغيير %1$d إعداد.
+Changed %1$d settings|two	تم تغيير %1$d إعدادين.
+Changed %1$d settings|few	تم تغيير %1$d إعدادات.
+Changed %1$d settings|many	تم تغيير %1$d إعدادًا.
+# Report a problem: the main page row and its summary. A tap opens a new GitHub bug report in the browser.
+Report a problem	الإبلاغ عن مشكلة
+Opens a GitHub report with your versions and settings filled in. Add what happened.	يفتح تقرير GitHub مع تعبئة إصداراتك وإعداداتك. أضف ما حدث.
+# The Links page's line beside a Meta-signed Instagram (#8): Instagram's own launcher won't hand a post or profile to a patched Threads, and the error is Instagram's.
+Instagram won't open posts here	لن يفتح Instagram المنشورات هنا
+Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.	إن Instagram الخاص بك موقّع من Meta، ولن يفتح منشورات وملفات Threads الشخصية إلا في Threads موقّع من Meta. النقر على أحدها في Instagram يعرض خطأ يقول إنه تعذر تحميل الموقع. المنشورات التي تفتحها في Threads نفسه تعمل كالمعتاد. قم بتصحيح Instagram باستخدام HushGram، موقّعًا بنفس مفتاح HushThreads، وسيفتحها هنا.
+Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.	قم بتشغيل مجموعة من المفاتيح بنقرة واحدة، أو أعد كل مفتاح إلى حالته الأصلية. اضغط مطولاً لإخفاء هذا الصف.
+Quick setups on the home page	الإعدادات السريعة على الصفحة الرئيسية
+Hidden. Tap to show it again.	مخفي. انقر لإظهاره مرة أخرى.
+Shown. Tap to hide it.	ظاهر. انقر لإخفائه.
+Quick setups hidden. Bring it back from Pause, backup and diagnostics.	الإعدادات السريعة مخفية. استرجعها من الإيقاف المؤقت والنسخ الاحتياطي والتشخيص.
+# Android 9 only, a save without Threads' Storage permission: the toast, then the same advice as the line under a carousel's counts. Storage and Permissions are the names Android's app info screen shows in this language.
+Not saved: Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	لم يتم الحفظ: يحتاج Threads إلى إذن التخزين للحفظ على Android 9. قم بتشغيله في معلومات تطبيق Threads ضمن الأذونات، ثم احفظ مرة أخرى.
+Threads needs the Storage permission to save on Android 9. Turn it on in Threads' app info under Permissions, then save again.	يحتاج Threads إلى إذن التخزين للحفظ على Android 9. قم بتشغيله في معلومات تطبيق Threads ضمن الأذونات، ثم احفظ مرة أخرى.
+# A save whose download took longer than its time limit (ten minutes for one file): the toast. The connection is the phone's internet connection. Android 12 and later cut a toast after two lines, so it stays short.
+Not saved: the download was too slow. Try a faster connection.	لم يتم الحفظ: كان التنزيل بطيئًا جدًا. جرب اتصالاً أسرع.
+Hide follow suggestions in Search	إخفاء اقتراحات المتابعة في البحث
+Takes the Follow suggestions row off the Search screen. Your searches and topics stay.	يزيل صف اقتراحات المتابعة من شاشة البحث. تبقى عمليات البحث والمواضيع الخاصة بك.
+Hide suggested threads	إخفاء المحادثات المقترحة
+Takes the suggested threads off the bottom of a post you open. The post and its replies stay.	يزيل المحادثات المقترحة من أسفل المنشور الذي تفتحه. يبقى المنشور وردوده.
+# A save stopped because a proxy server on the phone's network (Wi-Fi or global proxy setting) asked for a user name and password: the toast. HushThreads never sends one for a download. Android 12 and later cut a toast after two lines, so it stays short.
+Not saved: the proxy wants a password. Try another network.	لم يتم الحفظ: يطلب الوكيل كلمة مرور. جرب شبكة أخرى.
+# The same, as an extra line under a carousel's 'Saved %1$d. Failed %2$d. Skipped %3$d.' summary. Android 12 and later cut a toast after two lines, so it stays short.
+The proxy wants a password. Try another network.	يريد الوكيل كلمة مرور. جرب شبكة أخرى.
+# The switch on the Pause, backup and diagnostics page that adds or takes away the HushThreads settings shortcut in the menu a long press on Threads' launcher icon shows.
+Settings shortcut on the app icon	اختصار الإعدادات على أيقونة التطبيق
+Puts HushThreads settings in the menu you get by holding Threads' icon. Off, it leaves that menu.	يضع إعدادات HushThreads في القائمة التي تظهر بالضغط المطول على أيقونة Threads. عند الإيقاف، يزيلها من تلك القائمة.
+# The switches on the same page for the HushThreads row in Threads' own settings and for the long press on the Threads logo, then what a switch says while it's the last way in that's on, which can't be turned off
+Settings row in Threads' settings	صف الإعدادات في إعدادات Threads
+Adds a HushThreads row just above More settings in Threads' settings. Off, the row is gone the next time you open Threads' settings.	يضيف صف HushThreads مباشرة فوق المزيد من الإعدادات في إعدادات Threads. عند الإيقاف، يختفي الصف في المرة التالية التي تفتح فيها إعدادات Threads.
+Open settings from the logo	فتح الإعدادات من الشعار
+A long press on the Threads logo at the top of the feed opens these settings. Off, the long press does nothing.	الضغط المطول على شعار Threads أعلى الخلاصة يفتح هذه الإعدادات. عند الإيقاف، لا يفعل الضغط المطول شيئًا.
+Stays on, since it's the only way left into these settings.	يبقى قيد التشغيل، لأنه الطريقة الوحيدة المتبقية للوصول إلى هذه الإعدادات.
+# context: the toggle under search that shows every section's rows on one page
+Show all settings as a list	إظهار جميع الإعدادات كقائمة
+# context: the same toggle while the list view shows, back to one button per section
+Show settings by category	إظهار الإعدادات حسب الفئة
+# context: what a screen reader says about a section button that is folded open
+Expanded	موسّع
+# context: what a screen reader says about a section button that is folded shut
+Collapsed	مطوي
+# context: the last section button: Report a problem, Restart Threads and the Ko-fi link
+Support	الدعم
+# context: the line under the Support section button
+Reports, restart and app information	التقارير وإعادة التشغيل ومعلومات التطبيق
+# context: small heading over Report a problem and Restart Threads in Support
+Help and restart	المساعدة وإعادة التشغيل
+# context: small heading over the Ko-fi link in Support
+Support the project	دعم المشروع
+# context: a row in Support that closes Threads and reopens it on the settings page
+Restart Threads	إعادة تشغيل Threads
+Version %1$s	الإصدار %1$s
+Build %1$s (modified)	البناء %1$s (معدّل)
+Build %1$s (source known)	البناء %1$s (المصدر معروف)
+Build %1$s (source unknown)	البناء %1$s (المصدر غير معروف)
+# The Comments page: the section title, Filter comments' switch and summary, and the words and domains row with its dialog text and the Hide comments row.
+Comments	التعليقات
+Spam replies by words or links	الردود المزعجة بالكلمات أو الروابط
+Filter comments	تصفية التعليقات
+Replies matching the patterns below are left out of a post's replies, so a spam reply never shows. A reply and the replies shown under it are checked and left out as one. Normal replies keep their order.	يتم استبعاد الردود المطابقة للأنماط أدناه من ردود المنشور، لذلك لا يظهر الرد المزعج أبدًا. يتم فحص الرد والردود المعروضة تحته واستبعادها كوحدة واحدة. تحتفظ الردود العادية بترتيبها.
+Blocked words and domains	الكلمات والنطاقات المحظورة
+One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.	نمط واحد في كل سطر، أو مفصول بفواصل. يزيل نطاق متجر مثل shopee.vn الردود التي تربط به.
+One pattern a line, or separated by commas. Matched whatever the letter case.	نمط واحد في كل سطر، أو مفصول بفواصل. تتم المطابقة بغض النظر عن حالة الأحرف.
+Hide comments with links	إخفاء التعليقات التي تحتوي على روابط
+Replies with a web link are left out, whatever the patterns say. Add a bare site name such as shopee.vn as a pattern.	يتم استبعاد الردود التي تحتوي على رابط ويب، بغض النظر عن الأنماط. أضف اسم موقع مجرد مثل shopee.vn كنمط.
+Hide the like button	إخفاء زر الإعجاب
+Takes the like button off posts and replies, with its count. Restart Threads to see the change.	يزيل زر الإعجاب من المنشورات والردود، مع عدده. أعد تشغيل Threads لرؤية التغيير.
+Hide the reply button	إخفاء زر الرد
+Takes the reply button off posts and replies, with its count. Restart Threads to see the change.	يزيل زر الرد من المنشورات والردود، مع عدده. أعد تشغيل Threads لرؤية التغيير.
+Hide the repost button	إخفاء زر إعادة النشر
+Takes the repost button off posts and replies, with its count. Restart Threads to see the change.	يزيل زر إعادة النشر من المنشورات والردود، مع عدده. أعد تشغيل Threads لرؤية التغيير.
+Hide the share button	إخفاء زر المشاركة
+Takes the share button off posts and replies. Restart Threads to see the change.	يزيل زر المشاركة من المنشورات والردود. أعد تشغيل Threads لرؤية التغيير.
+Hide the save button	إخفاء زر الحفظ
+Takes the save button off posts and replies, so you can't tap it by mistake. Restart Threads to see the change.	يزيل زر الحفظ من المنشورات والردود، حتى لا تنقر عليه بالخطأ. أعد تشغيل Threads لرؤية التغيير.
+# The header logo switch under Appearance, then the row under Set when you patched for the launcher icon, and the launcher icon as one item of the list of what stays while HushThreads is paused
+Use the HushThreads logo	استخدام شعار HushThreads
+Shows the HushThreads logo at the top of your feed in place of the Threads logo. It doesn't spin while the feed refreshes. Restart Threads to see the change.	يعرض شعار HushThreads أعلى خلاصتك بدلاً من شعار Threads. لا يدور أثناء تحديث الخلاصة. أعد تشغيل Threads لرؤية التغيير.
+HushThreads icon	أيقونة HushThreads
+The app's icon on your home screen is the HushThreads logo.	أيقونة التطبيق على شاشة منزلك هي شعار HushThreads.
+the HushThreads icon	أيقونة HushThreads
+# Custom font's switch and its Font file row under Appearance, and what picking a font file says
+Custom font	خط مخصص
+Shows Threads' text in the font file you pick below. Icons keep their own font. Restart Threads to see the change.	يعرض نص Threads في ملف الخط الذي تختاره أدناه. تحتفظ الأيقونات بخطها الخاص. أعد تشغيل Threads لرؤية التغيير.
+Font file	ملف الخط
+No font picked yet. Pick a .ttf or .otf file.	لم يتم اختيار خط بعد. اختر ملف .ttf أو .otf.
+A font file is picked. Tap to pick another.	تم اختيار ملف خط. انقر لاختيار ملف آخر.
+%1$s is picked. Tap to pick another.	تم اختيار %1$s. انقر لاختيار ملف آخر.
+Copying the font file	جارٍ نسخ ملف الخط
+Font file saved. Restart Threads to see it.	تم حفظ ملف الخط. أعد تشغيل Threads لرؤيته.
+Font file saved. Turn on Custom font to use it.	تم حفظ ملف الخط. قم بتشغيل الخط المخصص لاستخدامه.
+That file is too large to be a font. Nothing was changed.	هذا الملف كبير جدًا ليكون خطًا. لم يتم تغيير أي شيء.
+That isn't a font file Android can use. Nothing was changed.	هذا ليس ملف خط يمكن لـ Android استخدامه. لم يتم تغيير أي شيء.
