@@ -588,6 +588,41 @@
       "options": []
     },
     {
+      "name": "Hide the Create group button",
+      "description": "Takes the Create group button off the share sheet, so picking two people or more only offers Send separately. You can still start a group from your messages. Starts off. Turn it on in HushThreads settings > Appearance.",
+      "category": "Interface",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushThreads settings"
+      ],
+      "compatiblePackages": {
+        "com.instagram.barcelona": [
+          "457.0.0.57.74"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Threads",
+          "packageName": "com.instagram.barcelona",
+          "description": null,
+          "appIconColor": 0,
+          "signatures": [
+            "5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432",
+            "8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500"
+          ],
+          "targets": [
+            {
+              "version": "457.0.0.57.74",
+              "experimental": false,
+              "versionCodes": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide the Instagram button",
       "description": "Takes the Instagram button off the top of profiles, yours and other people's. The other buttons stay. Good for a tidier profile. Starts off. Turn it on in HushThreads settings > Appearance.",
       "category": "Interface",

@@ -2,6 +2,10 @@
 
 Changes in the source build, then released versions.
 
+## Unreleased
+
+* New `Hide the Create group button` patch. Pick two people or more on a post's share sheet and Threads offers Send separately and Create group; with the switch on, only Send separately is left, and it still sends to each person on their own. You can still start a group from your messages. It's in Manager's default selection with its switch off. Turn it on under Appearance in HushThreads settings. The idea comes from HushGram's share sheet group buttons.
+
 ## 0.0.19 (2026-11-25)
 
 * **Tooling:** The GitHub release notes carry the Threads bullets and the update steps now. The Docs and Tooling bullets stay here in the changelog, and the notes no longer end with a Validation section.

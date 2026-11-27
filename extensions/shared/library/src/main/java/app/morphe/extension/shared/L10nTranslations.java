@@ -55,7 +55,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(746);
+        Map<String, String> table = new HashMap<>(750);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -335,6 +335,8 @@ public final class L10nTranslations {
                 "Vorgeschlagene Threads ausblenden");
         table.put("Hide suggested users",
                 "Vorgeschlagene Nutzer ausblenden");
+        table.put("Hide the Create group button",
+                "\u201eGruppe erstellen\u201c ausblenden");
         table.put("Hide the Instagram button",
                 "Instagram-Button ausblenden");
         table.put("Hide the like button",
@@ -431,11 +433,11 @@ public final class L10nTranslations {
                 "Nicht gespeichert: Die Datei ist \u00fcber 512 MB gro\u00df");
         table.put("Not saved: the proxy wants a password. Try another network.",
                 "Nicht gespeichert: Der Proxy will ein Passwort. Wechsle das Netz.");
-        table.put("OK",
-                "OK");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("OK",
+                "OK");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Pr\u00fcft einmal am Tag beim Start von Threads auf GitHub, ob es ein neueres HushThreads gibt, und sagt es dir hier. Es wird nichts heruntergeladen.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -470,6 +472,8 @@ public final class L10nTranslations {
                 "Fotos und Videos, die du aus Beitr\u00e4gen speicherst");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
                 "Fotos werden in der gr\u00f6\u00dften Gr\u00f6\u00dfe geladen, die Threads hat, nicht in einer f\u00fcr deinen Bildschirm gew\u00e4hlten. Sie wirken sch\u00e4rfer und verbrauchen mehr Daten.");
+        table.put("Picking two people or more on the share sheet only offers Send separately, without Create group. You can still start a group from your messages.",
+                "W\u00e4hlst du im Teilen-Men\u00fc zwei oder mehr Personen aus, gibt es nur noch \u201eSeparat senden\u201c, ohne \u201eGruppe erstellen\u201c. Eine Gruppe kannst du weiterhin in deinen Nachrichten starten.");
         table.put("Posts",
                 "Beitr\u00e4ge");
         table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
@@ -552,13 +556,13 @@ public final class L10nTranslations {
                 "Speichert deine Schalter in einer Datei. Pause und Debug-Protokollierung sind nicht enthalten, die Suche nach neuen Versionen auch nicht.");
         table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "Gespeichert %1$d. Fehlgeschlagen %2$d. \u00dcbersprungen %3$d.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Saved to %1$s",
                 "Gespeichert unter %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "In %1$s gespeichert. Qualit\u00e4t geringer als auf Threads");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "In der Galerie gespeichert");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -675,13 +679,13 @@ public final class L10nTranslations {
                 "Videos per Tippen abspielen");
         table.put("Tap to see which.",
                 "Tippe, um sie zu sehen.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
         table.put("That file is too large to be a font. Nothing was changed.",
                 "Diese Datei ist zu gro\u00df f\u00fcr eine Schriftart. Es wurde nichts ge\u00e4ndert.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Diese Datei ist zu gro\u00df f\u00fcr eine Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -798,13 +802,13 @@ public final class L10nTranslations {
                 "Videos in deinem Feed warten auf ein Tippen, statt beim Scrollen abzuspielen.");
         table.put("Where you left off in your feed",
                 "Wo du in deinem Feed aufgeh\u00f6rt hast");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Wenn der Schalter oben an ist, bleibt deine Stelle erhalten, egal wie lange du weg bist. Zum Aktualisieren ziehen und ein Neustart laden weiterhin neue Beitr\u00e4ge.");
         table.put("You have the newest HushThreads release.",
                 "Du hast die neueste Version von HushThreads.");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Du hast HushThreads pausiert.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -834,7 +838,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(746);
+        Map<String, String> table = new HashMap<>(750);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1114,6 +1118,8 @@ public final class L10nTranslations {
                 "Ocultar hilos sugeridos");
         table.put("Hide suggested users",
                 "Ocultar usuarios sugeridos");
+        table.put("Hide the Create group button",
+                "Ocultar el bot\u00f3n Crear grupo");
         table.put("Hide the Instagram button",
                 "Ocultar el bot\u00f3n de Instagram");
         table.put("Hide the like button",
@@ -1210,11 +1216,11 @@ public final class L10nTranslations {
                 "No se guard\u00f3: el archivo supera los 512 MB");
         table.put("Not saved: the proxy wants a password. Try another network.",
                 "No se guard\u00f3: el proxy pide una contrase\u00f1a. Prueba otra red.");
-        table.put("OK",
-                "Aceptar");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("OK",
+                "Aceptar");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Una vez al d\u00eda, al abrir Threads, busca en GitHub un HushThreads m\u00e1s nuevo y te avisa aqu\u00ed. No se descarga nada.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -1249,6 +1255,8 @@ public final class L10nTranslations {
                 "Fotos y videos que guardas de las publicaciones");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
                 "Las fotos se cargan en el tama\u00f1o m\u00e1s grande que tiene Threads, no en uno elegido para tu pantalla. Se ven m\u00e1s n\u00edtidas y usan m\u00e1s datos.");
+        table.put("Picking two people or more on the share sheet only offers Send separately, without Create group. You can still start a group from your messages.",
+                "Al elegir dos o m\u00e1s personas en el men\u00fa de compartir, solo aparece Enviar por separado, sin Crear grupo. Puedes seguir creando un grupo desde tus mensajes.");
         table.put("Posts",
                 "Publicaciones");
         table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
@@ -1331,13 +1339,13 @@ public final class L10nTranslations {
                 "Guarda tus interruptores en un archivo. La pausa y el Registro de depuraci\u00f3n no se incluyen, y la b\u00fasqueda de nuevas versiones tampoco.");
         table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "Guardados %1$d. Fallidos %2$d. Omitidos %3$d.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Saved to %1$s",
                 "Se guard\u00f3 en %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Se guard\u00f3 en %1$s con menos calidad que en Threads");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Se guard\u00f3 en la galer\u00eda");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -1454,13 +1462,13 @@ public final class L10nTranslations {
                 "Tocar para reproducir videos");
         table.put("Tap to see which.",
                 "Toca para ver cu\u00e1les.");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
         table.put("That file is too large to be a font. Nothing was changed.",
                 "Ese archivo es demasiado grande para ser una fuente. No se cambi\u00f3 nada.");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Ese archivo es demasiado grande para ser un archivo de configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -1577,13 +1585,13 @@ public final class L10nTranslations {
                 "Los videos de tu feed esperan a que los toques en lugar de reproducirse mientras te desplazas.");
         table.put("Where you left off in your feed",
                 "Donde te quedaste en tu feed");
+    }
+
+    private static void fillEs6(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Con el interruptor de arriba activado, tu lugar se mantiene sin importar cu\u00e1nto tiempo est\u00e9s fuera. Deslizar para actualizar y abrir la app de nuevo siguen cargando publicaciones nuevas.");
         table.put("You have the newest HushThreads release.",
                 "Tienes la versi\u00f3n m\u00e1s reciente de HushThreads.");
-    }
-
-    private static void fillEs6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Pausaste HushThreads.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -1613,7 +1621,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(746);
+        Map<String, String> table = new HashMap<>(750);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1893,6 +1901,8 @@ public final class L10nTranslations {
                 "Sembunyikan utas yang disarankan");
         table.put("Hide suggested users",
                 "Sembunyikan pengguna yang disarankan");
+        table.put("Hide the Create group button",
+                "Sembunyikan tombol Buat grup");
         table.put("Hide the Instagram button",
                 "Sembunyikan tombol Instagram");
         table.put("Hide the like button",
@@ -1989,11 +1999,11 @@ public final class L10nTranslations {
                 "Tidak disimpan: file lebih dari 512 MB");
         table.put("Not saved: the proxy wants a password. Try another network.",
                 "Tidak disimpan: proxy butuh kata sandi. Coba jaringan lain.");
-        table.put("OK",
-                "Oke");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("OK",
+                "Oke");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Sekali sehari, saat Threads dibuka, memeriksa GitHub untuk HushThreads yang lebih baru dan memberi tahu Anda di sini. Tidak ada yang diunduh.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -2028,6 +2038,8 @@ public final class L10nTranslations {
                 "Foto dan video yang Anda simpan dari postingan");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
                 "Foto dimuat dalam ukuran terbesar yang dimiliki Threads, bukan ukuran yang dipilih untuk layarmu. Foto terlihat lebih tajam dan memakai lebih banyak data.");
+        table.put("Picking two people or more on the share sheet only offers Send separately, without Create group. You can still start a group from your messages.",
+                "Saat memilih dua orang atau lebih di lembar bagikan, hanya ada Kirim secara terpisah, tanpa Buat grup. Anda tetap bisa membuat grup dari pesan Anda.");
         table.put("Posts",
                 "Postingan");
         table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
@@ -2110,13 +2122,13 @@ public final class L10nTranslations {
                 "Simpan sakelar Anda ke sebuah file. Jeda dan Pencatatan debug tidak disertakan, begitu pula pemeriksaan rilis.");
         table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "Disimpan %1$d. Gagal %2$d. Dilewati %3$d.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Saved to %1$s",
                 "Disimpan ke %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Disimpan ke %1$s, kualitas lebih rendah dari Threads");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Disimpan ke galeri");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -2233,13 +2245,13 @@ public final class L10nTranslations {
                 "Ketuk untuk memutar video");
         table.put("Tap to see which.",
                 "Ketuk untuk melihat yang mana.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushThreads lagi.");
         table.put("That file is too large to be a font. Nothing was changed.",
                 "File itu terlalu besar untuk sebuah font. Tidak ada yang diubah.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "File itu terlalu besar untuk sebuah file pengaturan. Tidak ada yang diubah.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -2356,13 +2368,13 @@ public final class L10nTranslations {
                 "Video di feed Anda menunggu diketuk, bukan diputar saat Anda menggulir.");
         table.put("Where you left off in your feed",
                 "Posisi terakhir Anda di feed");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Jika sakelar di atas aktif, posisi Anda tetap tersimpan berapa lama pun Anda pergi. Tarik untuk memuat ulang dan membuka ulang aplikasi tetap memuat postingan baru.");
         table.put("You have the newest HushThreads release.",
                 "Anda sudah memakai rilis HushThreads terbaru.");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Anda menjeda HushThreads.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -2392,7 +2404,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIt() {
-        Map<String, String> table = new HashMap<>(746);
+        Map<String, String> table = new HashMap<>(750);
         fillIt0(table);
         fillIt1(table);
         fillIt2(table);
@@ -2672,6 +2684,8 @@ public final class L10nTranslations {
                 "Nascondi i thread suggeriti");
         table.put("Hide suggested users",
                 "Nascondi gli utenti suggeriti");
+        table.put("Hide the Create group button",
+                "Nascondi il pulsante Crea gruppo");
         table.put("Hide the Instagram button",
                 "Nascondi il pulsante di Instagram");
         table.put("Hide the like button",
@@ -2768,11 +2782,11 @@ public final class L10nTranslations {
                 "Non salvato: il file supera i 512 MB");
         table.put("Not saved: the proxy wants a password. Try another network.",
                 "Non salvato: il proxy chiede una password. Prova un'altra rete.");
-        table.put("OK",
-                "OK");
     }
 
     private static void fillIt3(Map<String, String> table) {
+        table.put("OK",
+                "OK");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Una volta al giorno, all'avvio di Threads, controlla su GitHub se c'\u00e8 un HushThreads pi\u00f9 recente e te lo dice qui. Non viene scaricato nulla.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -2807,6 +2821,8 @@ public final class L10nTranslations {
                 "Foto e video che salvi dai post");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
                 "Le foto si caricano alla dimensione pi\u00f9 grande che Threads ha, non a una scelta per il tuo schermo. Sono pi\u00f9 nitide e usano pi\u00f9 dati.");
+        table.put("Picking two people or more on the share sheet only offers Send separately, without Create group. You can still start a group from your messages.",
+                "Scegliendo due o pi\u00f9 persone nel menu di condivisione, compare solo Invia separatamente, senza Crea gruppo. Puoi sempre creare un gruppo dai tuoi messaggi.");
         table.put("Posts",
                 "Post");
         table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
@@ -2889,13 +2905,13 @@ public final class L10nTranslations {
                 "Salva i tuoi interruttori in un file. Pausa e Log di debug non sono inclusi, e nemmeno il controllo delle nuove versioni.");
         table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "Salvati %1$d. Falliti %2$d. Saltati %3$d.");
+    }
+
+    private static void fillIt4(Map<String, String> table) {
         table.put("Saved to %1$s",
                 "Salvato in %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Salvato in %1$s con qualit\u00e0 inferiore a Threads");
-    }
-
-    private static void fillIt4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Salvato nella galleria");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -3012,13 +3028,13 @@ public final class L10nTranslations {
                 "Tocca per riprodurre i video");
         table.put("Tap to see which.",
                 "Tocca per vedere quali.");
+    }
+
+    private static void fillIt5(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Tocca per riattivarlo.");
         table.put("That file is too large to be a font. Nothing was changed.",
                 "Quel file \u00e8 troppo grande per essere un carattere. Non \u00e8 cambiato nulla.");
-    }
-
-    private static void fillIt5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Quel file \u00e8 troppo grande per essere un file di impostazioni. Non \u00e8 cambiato nulla.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -3135,13 +3151,13 @@ public final class L10nTranslations {
                 "I video nel feed aspettano un tocco invece di partire mentre scorri.");
         table.put("Where you left off in your feed",
                 "Dove ti eri fermato nel feed");
+    }
+
+    private static void fillIt6(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Con l'interruttore qui sopra attivo, resti dov'eri per quanto tempo tu stia via. Trascinare per aggiornare e un nuovo avvio caricano comunque nuovi post.");
         table.put("You have the newest HushThreads release.",
                 "Hai la versione pi\u00f9 recente di HushThreads.");
-    }
-
-    private static void fillIt6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Hai messo in pausa HushThreads.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -3171,7 +3187,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildKo() {
-        Map<String, String> table = new HashMap<>(746);
+        Map<String, String> table = new HashMap<>(750);
         fillKo0(table);
         fillKo1(table);
         fillKo2(table);
@@ -3451,6 +3467,8 @@ public final class L10nTranslations {
                 "\ucd94\ucc9c \uc2a4\ub808\ub4dc \uc228\uae30\uae30");
         table.put("Hide suggested users",
                 "\ucd94\ucc9c \uc0ac\uc6a9\uc790 \uc228\uae30\uae30");
+        table.put("Hide the Create group button",
+                "\uadf8\ub8f9 \ub9cc\ub4e4\uae30 \ubc84\ud2bc \uc228\uae30\uae30");
         table.put("Hide the Instagram button",
                 "Instagram \ubc84\ud2bc \uc228\uae30\uae30");
         table.put("Hide the like button",
@@ -3547,11 +3565,11 @@ public final class L10nTranslations {
                 "\uc800\uc7a5\ub418\uc9c0 \uc54a\uc74c: \ud30c\uc77c \ud06c\uae30\uac00 512MB\ub97c \ucd08\uacfc\ud568");
         table.put("Not saved: the proxy wants a password. Try another network.",
                 "\uc800\uc7a5\ub418\uc9c0 \uc54a\uc74c: \ud504\ub85d\uc2dc \ube44\ubc00\ubc88\ud638 \ud544\uc694. \ub2e4\ub978 \ub124\ud2b8\uc6cc\ud06c\ub97c \uc4f0\uc138\uc694.");
-        table.put("OK",
-                "\ud655\uc778");
     }
 
     private static void fillKo3(Map<String, String> table) {
+        table.put("OK",
+                "\ud655\uc778");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "\ud558\ub8e8\uc5d0 \ud55c \ubc88 Threads\ub97c \uc2dc\uc791\ud560 \ub54c GitHub\uc5d0\uc11c \uc0c8 HushThreads\uac00 \uc788\ub294\uc9c0 \ud655\uc778\ud558\uace0 \uc5ec\uae30\uc5d0 \uc54c\ub824 \uc90d\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ub2e4\uc6b4\ub85c\ub4dc\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -3586,6 +3604,8 @@ public final class L10nTranslations {
                 "\uac8c\uc2dc\ubb3c\uc5d0\uc11c \uc800\uc7a5\ud558\ub294 \uc0ac\uc9c4\uacfc \ub3d9\uc601\uc0c1");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
                 "\ud654\uba74\uc5d0 \ub9de\ucd98 \ud06c\uae30\uac00 \uc544\ub2c8\ub77c Threads\uac00 \uac00\uc9c4 \uac00\uc7a5 \ud070 \ud06c\uae30\ub85c \uc0ac\uc9c4\uc744 \ubd88\ub7ec\uc635\ub2c8\ub2e4. \ub354 \uc120\uba85\ud558\uc9c0\ub9cc \ub370\uc774\ud130\ub97c \ub354 \ub9ce\uc774 \uc0ac\uc6a9\ud569\ub2c8\ub2e4.");
+        table.put("Picking two people or more on the share sheet only offers Send separately, without Create group. You can still start a group from your messages.",
+                "\uacf5\uc720 \uc2dc\ud2b8\uc5d0\uc11c \ub450 \uba85 \uc774\uc0c1\uc744 \uc120\ud0dd\ud558\uba74 \uadf8\ub8f9 \ub9cc\ub4e4\uae30 \uc5c6\uc774 \ub530\ub85c \ubcf4\ub0b4\uae30\ub9cc \ud45c\uc2dc\ub429\ub2c8\ub2e4. \uadf8\ub8f9\uc740 \uba54\uc2dc\uc9c0\uc5d0\uc11c \uacc4\uc18d \ub9cc\ub4e4 \uc218 \uc788\uc2b5\ub2c8\ub2e4.");
         table.put("Posts",
                 "\uac8c\uc2dc\ubb3c");
         table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
@@ -3668,13 +3688,13 @@ public final class L10nTranslations {
                 "\uc2a4\uc704\uce58\ub97c \ud30c\uc77c\ub85c \uc800\uc7a5\ud569\ub2c8\ub2e4. \uc77c\uc2dc \uc815\uc9c0\uc640 \ub514\ubc84\uadf8 \ub85c\uadf8\ub294 \ud3ec\ud568\ub418\uc9c0 \uc54a\uc73c\uba70 \uc0c8 \ubc84\uc804 \ud655\uc778\ub3c4 \ud3ec\ud568\ub418\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.");
         table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "\uc800\uc7a5 %1$d\uac1c. \uc2e4\ud328 %2$d\uac1c. \uac74\ub108\ub700 %3$d\uac1c.");
+    }
+
+    private static void fillKo4(Map<String, String> table) {
         table.put("Saved to %1$s",
                 "%1$s\uc5d0 \uc800\uc7a5\ub428");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Threads\ubcf4\ub2e4 \ub0ae\uc740 \ud654\uc9c8\ub85c %1$s\uc5d0 \uc800\uc7a5\ub428");
-    }
-
-    private static void fillKo4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "\uac24\ub7ec\ub9ac\uc5d0 \uc800\uc7a5\ub428");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -3791,13 +3811,13 @@ public final class L10nTranslations {
                 "\ud0ed\ud574\uc11c \ub3d9\uc601\uc0c1 \uc7ac\uc0dd");
         table.put("Tap to see which.",
                 "\ud0ed\ud574\uc11c \ud655\uc778\ud558\uc138\uc694.");
+    }
+
+    private static void fillKo5(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "\ub2e4\uc2dc \ucf1c\ub824\uba74 \ud0ed\ud558\uc138\uc694.");
         table.put("That file is too large to be a font. Nothing was changed.",
                 "\uae00\uaf34\uc774\ub77c\uace0 \ud558\uae30\uc5d0\ub294 \ud30c\uc77c\uc774 \ub108\ubb34 \ud07d\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
-    }
-
-    private static void fillKo5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "\uc124\uc815 \ud30c\uc77c\uc774\ub77c\uace0 \ud558\uae30\uc5d0\ub294 \ud30c\uc77c\uc774 \ub108\ubb34 \ud07d\ub2c8\ub2e4. \uc544\ubb34\uac83\ub3c4 \ubcc0\uacbd\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -3914,13 +3934,13 @@ public final class L10nTranslations {
                 "\ud53c\ub4dc\uc758 \ub3d9\uc601\uc0c1\uc774 \uc2a4\ud06c\ub864\ud560 \ub54c \uc790\ub3d9\uc73c\ub85c \uc7ac\uc0dd\ub418\uc9c0 \uc54a\uace0 \ud0ed\ud560 \ub54c\uae4c\uc9c0 \uae30\ub2e4\ub9bd\ub2c8\ub2e4.");
         table.put("Where you left off in your feed",
                 "\ud53c\ub4dc\uc5d0\uc11c \ub9c8\uc9c0\ub9c9\uc73c\ub85c \ubcf4\ub358 \uc704\uce58");
+    }
+
+    private static void fillKo6(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "\uc704 \uc2a4\uc704\uce58\uac00 \ucf1c\uc838 \uc788\uc73c\uba74 \uc5bc\ub9c8\ub098 \uc624\ub798 \ub5a0\ub098 \uc788\uc5b4\ub3c4 \ubcf4\ub358 \uc704\uce58\uac00 \uc720\uc9c0\ub429\ub2c8\ub2e4. \ub2f9\uaca8\uc11c \uc0c8\ub85c\uace0\uce68\ud558\uac70\ub098 \uc0c8\ub85c \uc2dc\uc791\ud558\uba74 \uc0c8 \uac8c\uc2dc\ubb3c\uc744 \ubd88\ub7ec\uc635\ub2c8\ub2e4.");
         table.put("You have the newest HushThreads release.",
                 "\ucd5c\uc2e0 HushThreads \ub9b4\ub9ac\uc2a4\ub97c \uc0ac\uc6a9 \uc911\uc785\ub2c8\ub2e4.");
-    }
-
-    private static void fillKo6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "HushThreads\ub97c \uc77c\uc2dc \uc815\uc9c0\ud588\uc2b5\ub2c8\ub2e4.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -3950,7 +3970,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(746);
+        Map<String, String> table = new HashMap<>(750);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -4230,6 +4250,8 @@ public final class L10nTranslations {
                 "Ocultar threads sugeridos");
         table.put("Hide suggested users",
                 "Ocultar usu\u00e1rios sugeridos");
+        table.put("Hide the Create group button",
+                "Ocultar o bot\u00e3o Criar grupo");
         table.put("Hide the Instagram button",
                 "Ocultar o bot\u00e3o do Instagram");
         table.put("Hide the like button",
@@ -4326,11 +4348,11 @@ public final class L10nTranslations {
                 "N\u00e3o foi salvo: o arquivo tem mais de 512 MB");
         table.put("Not saved: the proxy wants a password. Try another network.",
                 "N\u00e3o foi salvo: o proxy pede uma senha. Tente outra rede.");
-        table.put("OK",
-                "OK");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("OK",
+                "OK");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "Uma vez por dia, quando o Threads abre, procura no GitHub um HushThreads mais novo e avisa voc\u00ea aqui. Nada \u00e9 baixado.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -4365,6 +4387,8 @@ public final class L10nTranslations {
                 "Fotos e v\u00eddeos que voc\u00ea salva das publica\u00e7\u00f5es");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
                 "As fotos carregam no maior tamanho que o Threads tem, n\u00e3o em um escolhido para a sua tela. Ficam mais n\u00edtidas e usam mais dados.");
+        table.put("Picking two people or more on the share sheet only offers Send separately, without Create group. You can still start a group from your messages.",
+                "Ao escolher duas ou mais pessoas no menu de compartilhamento, s\u00f3 aparece Enviar separadamente, sem Criar grupo. Voc\u00ea ainda pode criar um grupo nas suas mensagens.");
         table.put("Posts",
                 "Publica\u00e7\u00f5es");
         table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
@@ -4447,13 +4471,13 @@ public final class L10nTranslations {
                 "Salve suas op\u00e7\u00f5es em um arquivo. Pausa e Registro de depura\u00e7\u00e3o n\u00e3o s\u00e3o inclu\u00eddos, nem a verifica\u00e7\u00e3o de novas vers\u00f5es.");
         table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "Salvos %1$d. Falhas %2$d. Ignorados %3$d.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Saved to %1$s",
                 "Salvo em %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Salvo em %1$s com qualidade menor que no Threads");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Salvo na galeria");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -4570,13 +4594,13 @@ public final class L10nTranslations {
                 "Tocar para reproduzir v\u00eddeos");
         table.put("Tap to see which.",
                 "Toque para ver quais.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
         table.put("That file is too large to be a font. Nothing was changed.",
                 "Esse arquivo \u00e9 grande demais para ser uma fonte. Nada foi alterado.");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Esse arquivo \u00e9 grande demais para ser um arquivo de configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -4693,13 +4717,13 @@ public final class L10nTranslations {
                 "Os v\u00eddeos do seu feed esperam um toque em vez de come\u00e7ar a tocar enquanto voc\u00ea rola a tela.");
         table.put("Where you left off in your feed",
                 "Onde voc\u00ea parou no seu feed");
+    }
+
+    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Com a op\u00e7\u00e3o acima ativada, voc\u00ea continua no ponto em que estava, n\u00e3o importa quanto tempo fique fora. Puxar para atualizar e iniciar o Threads novamente continuam carregando novas publica\u00e7\u00f5es.");
         table.put("You have the newest HushThreads release.",
                 "Voc\u00ea j\u00e1 est\u00e1 usando a vers\u00e3o mais nova do HushThreads.");
-    }
-
-    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "Voc\u00ea pausou o HushThreads.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -4729,7 +4753,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildRu() {
-        Map<String, String> table = new HashMap<>(770);
+        Map<String, String> table = new HashMap<>(774);
         fillRu0(table);
         fillRu1(table);
         fillRu2(table);
@@ -5029,6 +5053,8 @@ public final class L10nTranslations {
                 "\u0421\u043a\u0440\u044b\u0432\u0430\u0442\u044c \u0440\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0443\u0435\u043c\u044b\u0435 \u0432\u0435\u0442\u043a\u0438");
         table.put("Hide suggested users",
                 "\u0421\u043a\u0440\u044b\u0432\u0430\u0442\u044c \u0440\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0443\u0435\u043c\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439");
+        table.put("Hide the Create group button",
+                "\u0421\u043a\u0440\u044b\u0432\u0430\u0442\u044c \u043a\u043d\u043e\u043f\u043a\u0443 \u00ab\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0433\u0440\u0443\u043f\u043f\u0443\u00bb");
         table.put("Hide the Instagram button",
                 "\u0421\u043a\u0440\u044b\u0432\u0430\u0442\u044c \u043a\u043d\u043e\u043f\u043a\u0443 Instagram");
         table.put("Hide the like button",
@@ -5105,11 +5131,11 @@ public final class L10nTranslations {
                 "\u0421\u0435\u0439\u0447\u0430\u0441 \u043d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u0441\u043e\u0445\u0440\u0430\u043d\u044f\u0435\u0442\u0441\u044f.");
         table.put("No swipe into Search",
                 "\u0411\u0435\u0437 \u0441\u0432\u0430\u0439\u043f\u0430 \u0432 \u043f\u043e\u0438\u0441\u043a");
-        table.put("No time limit",
-                "\u0411\u0435\u0437 \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0438\u044f \u0432\u0440\u0435\u043c\u0435\u043d\u0438");
     }
 
     private static void fillRu3(Map<String, String> table) {
+        table.put("No time limit",
+                "\u0411\u0435\u0437 \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0438\u044f \u0432\u0440\u0435\u043c\u0435\u043d\u0438");
         table.put("None of Threads' web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
                 "\u041d\u0438 \u043e\u0434\u0438\u043d \u0438\u0437 \u0432\u0435\u0431-\u0430\u0434\u0440\u0435\u0441\u043e\u0432 Threads \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d \u0434\u043b\u044f \u044d\u0442\u043e\u0433\u043e \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u044f, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u0438\u0445 \u0441\u0441\u044b\u043b\u043a\u0438 \u043e\u0442\u043a\u0440\u044b\u0432\u0430\u044e\u0442\u0441\u044f \u0432 \u0434\u0440\u0443\u0433\u043e\u043c \u043c\u0435\u0441\u0442\u0435. \u041d\u0430\u0436\u043c\u0438\u0442\u0435, \u0447\u0442\u043e\u0431\u044b \u0432\u044b\u0431\u0440\u0430\u0442\u044c \u0438\u0445 \u0432 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430\u0445 Android.");
         table.put("Not in this build: %1$s. Morphe Manager selects it by default. Patch again with it selected to get what it does.",
@@ -5164,6 +5190,8 @@ public final class L10nTranslations {
                 "\u0424\u043e\u0442\u043e \u0438 \u0432\u0438\u0434\u0435\u043e, \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u043d\u044b\u0435 \u0438\u0437 \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0439");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
                 "\u0424\u043e\u0442\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0430\u044e\u0442\u0441\u044f \u0432 \u0441\u0430\u043c\u043e\u043c \u0431\u043e\u043b\u044c\u0448\u043e\u043c \u0440\u0430\u0437\u043c\u0435\u0440\u0435, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0435\u0441\u0442\u044c \u0443 Threads, \u0430 \u043d\u0435 \u0432 \u043f\u043e\u0434\u043e\u0431\u0440\u0430\u043d\u043d\u043e\u043c \u043f\u043e\u0434 \u044d\u043a\u0440\u0430\u043d. \u041e\u043d\u0438 \u0447\u0435\u0442\u0447\u0435, \u043d\u043e \u0440\u0430\u0441\u0445\u043e\u0434\u0443\u044e\u0442 \u0431\u043e\u043b\u044c\u0448\u0435 \u0442\u0440\u0430\u0444\u0438\u043a\u0430.");
+        table.put("Picking two people or more on the share sheet only offers Send separately, without Create group. You can still start a group from your messages.",
+                "\u0415\u0441\u043b\u0438 \u0432\u044b\u0431\u0440\u0430\u0442\u044c \u0434\u0432\u0443\u0445 \u0438\u043b\u0438 \u0431\u043e\u043b\u044c\u0448\u0435 \u0447\u0435\u043b\u043e\u0432\u0435\u043a \u0432 \u043c\u0435\u043d\u044e \u00ab\u041f\u043e\u0434\u0435\u043b\u0438\u0442\u044c\u0441\u044f\u00bb, \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u00ab\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u043f\u043e \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u0438\u00bb, \u0431\u0435\u0437 \u00ab\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0433\u0440\u0443\u043f\u043f\u0443\u00bb. \u0413\u0440\u0443\u043f\u043f\u0443 \u043f\u043e-\u043f\u0440\u0435\u0436\u043d\u0435\u043c\u0443 \u043c\u043e\u0436\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u0432 \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f\u0445.");
         table.put("Posts",
                 "\u041f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438");
         table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
@@ -5226,13 +5254,13 @@ public final class L10nTranslations {
                 "\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u0432\u0441\u0435");
         table.put("Save cancelled",
                 "\u0421\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0435 \u043e\u0442\u043c\u0435\u043d\u0435\u043d\u043e");
+    }
+
+    private static void fillRu4(Map<String, String> table) {
         table.put("Save folder",
                 "\u041f\u0430\u043f\u043a\u0430 \u0434\u043b\u044f \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u044f");
         table.put("Save full report",
                 "\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u043f\u043e\u043b\u043d\u044b\u0439 \u043e\u0442\u0447\u0435\u0442");
-    }
-
-    private static void fillRu4(Map<String, String> table) {
         table.put("Save photo",
                 "\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u0444\u043e\u0442\u043e");
         table.put("Save photos and videos",
@@ -5349,13 +5377,13 @@ public final class L10nTranslations {
                 "\u041f\u043e\u0434\u0434\u0435\u0440\u0436\u0430\u0442\u044c \u043f\u0440\u043e\u0435\u043a\u0442");
         table.put("Supported links",
                 "\u041f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u043c\u044b\u0435 \u0441\u0441\u044b\u043b\u043a\u0438");
+    }
+
+    private static void fillRu5(Map<String, String> table) {
         table.put("Takes the Follow suggestions row off the Search screen. Your searches and topics stay.",
                 "\u0423\u0431\u0438\u0440\u0430\u0435\u0442 \u0440\u044f\u0434 \u0440\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0430\u0446\u0438\u0439 \u043f\u043e\u0434\u043f\u0438\u0441\u043e\u043a \u0441 \u044d\u043a\u0440\u0430\u043d\u0430 \u043f\u043e\u0438\u0441\u043a\u0430. \u0412\u0430\u0448\u0438 \u0437\u0430\u043f\u0440\u043e\u0441\u044b \u0438 \u0442\u0435\u043c\u044b \u043e\u0441\u0442\u0430\u044e\u0442\u0441\u044f.");
         table.put("Takes the Instagram button off the top of profiles, yours and other people's. Restart Threads to see the change.",
                 "\u0423\u0431\u0438\u0440\u0430\u0435\u0442 \u043a\u043d\u043e\u043f\u043a\u0443 Instagram \u0432\u0432\u0435\u0440\u0445\u0443 \u043f\u0440\u043e\u0444\u0438\u043b\u0435\u0439, \u0432\u0430\u0448\u0435\u0433\u043e \u0438 \u0447\u0443\u0436\u0438\u0445. \u041f\u0435\u0440\u0435\u0437\u0430\u043f\u0443\u0441\u0442\u0438\u0442\u0435 Threads, \u0447\u0442\u043e\u0431\u044b \u0443\u0432\u0438\u0434\u0435\u0442\u044c \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u0435.");
-    }
-
-    private static void fillRu5(Map<String, String> table) {
         table.put("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top of your feed. Restart Threads to see the change.",
                 "\u0423\u0431\u0438\u0440\u0430\u0435\u0442 \u043f\u0443\u0437\u044b\u0440\u0438 \u0438\u0441\u0447\u0435\u0437\u0430\u044e\u0449\u0438\u0445 \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0439 \u0441 \u0444\u043e\u0442\u043e \u043f\u0440\u043e\u0444\u0438\u043b\u044f, \u0432 \u043f\u0440\u043e\u0444\u0438\u043b\u044f\u0445 \u0438 \u0432 \u0440\u044f\u0434\u0443 \u0432\u0432\u0435\u0440\u0445\u0443 \u043b\u0435\u043d\u0442\u044b. \u041f\u0435\u0440\u0435\u0437\u0430\u043f\u0443\u0441\u0442\u0438\u0442\u0435 Threads, \u0447\u0442\u043e\u0431\u044b \u0443\u0432\u0438\u0434\u0435\u0442\u044c \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u0435.");
         table.put("Takes the like button off posts and replies, with its count. Restart Threads to see the change.",
@@ -5472,13 +5500,13 @@ public final class L10nTranslations {
                 "\u041f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0432\u043e\u0437\u043e\u0431\u043d\u043e\u0432\u0438\u0442\u0435 \u0440\u0430\u0431\u043e\u0442\u0443, \u0432\u0441\u0435 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0442\u0435\u043b\u0438, \u043a\u0440\u043e\u043c\u0435 \u00ab\u0416\u0443\u0440\u043d\u0430\u043b\u0430 \u043e\u0442\u043b\u0430\u0434\u043a\u0438\u00bb, \u0440\u0430\u0431\u043e\u0442\u0430\u044e\u0442 \u0442\u0430\u043a, \u0431\u0443\u0434\u0442\u043e \u0432\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u044b. \u0418\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f, \u0432\u043d\u0435\u0441\u0435\u043d\u043d\u044b\u0435 \u043f\u0440\u0438 \u043f\u0430\u0442\u0447\u0438\u043d\u0433\u0435, \u043e\u0441\u0442\u0430\u044e\u0442\u0441\u044f.");
         table.put("Updates",
                 "\u041e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u044f");
+    }
+
+    private static void fillRu6(Map<String, String> table) {
         table.put("Use the HushThreads logo",
                 "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c \u043b\u043e\u0433\u043e\u0442\u0438\u043f HushThreads");
         table.put("User certificates trusted",
                 "\u0414\u043e\u0432\u0435\u0440\u0438\u0435 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u0441\u043a\u0438\u043c \u0441\u0435\u0440\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u0430\u043c");
-    }
-
-    private static void fillRu6(Map<String, String> table) {
         table.put("Version",
                 "\u0412\u0435\u0440\u0441\u0438\u044f");
         table.put("Version %1$s",
@@ -5532,7 +5560,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(746);
+        Map<String, String> table = new HashMap<>(750);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -5812,6 +5840,8 @@ public final class L10nTranslations {
                 "\u00d6nerilen thread'leri gizle");
         table.put("Hide suggested users",
                 "\u00d6nerilen kullan\u0131c\u0131lar\u0131 gizle");
+        table.put("Hide the Create group button",
+                "Grup olu\u015ftur d\u00fc\u011fmesini gizle");
         table.put("Hide the Instagram button",
                 "Instagram d\u00fc\u011fmesini gizle");
         table.put("Hide the like button",
@@ -5908,11 +5938,11 @@ public final class L10nTranslations {
                 "Kaydedilmedi: Dosya 512 MB'tan b\u00fcy\u00fck");
         table.put("Not saved: the proxy wants a password. Try another network.",
                 "Kaydedilmedi: Proxy parola istiyor. Ba\u015fka bir a\u011f dene.");
-        table.put("OK",
-                "Tamam");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("OK",
+                "Tamam");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "G\u00fcnde bir kez, Threads a\u00e7\u0131l\u0131rken GitHub'da daha yeni bir HushThreads olup olmad\u0131\u011f\u0131na bakar ve burada s\u00f6yler. Hi\u00e7bir \u015fey indirilmez.");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -5947,6 +5977,8 @@ public final class L10nTranslations {
                 "G\u00f6nderilerden kaydetti\u011fin foto\u011fraflar ve videolar");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
                 "Foto\u011fraflar ekran\u0131na g\u00f6re se\u00e7ilen bir boyutta de\u011fil, Threads'te bulunan en b\u00fcy\u00fck boyutta y\u00fcklenir. Daha net g\u00f6r\u00fcn\u00fcr ve daha fazla veri kullan\u0131r.");
+        table.put("Picking two people or more on the share sheet only offers Send separately, without Create group. You can still start a group from your messages.",
+                "Payla\u015f\u0131m sayfas\u0131nda iki veya daha fazla ki\u015fi se\u00e7ti\u011finde yaln\u0131zca Ayr\u0131 olarak g\u00f6nder \u00e7\u0131kar, Grup olu\u015ftur \u00e7\u0131kmaz. Mesajlar\u0131ndan yine grup ba\u015flatabilirsin.");
         table.put("Posts",
                 "G\u00f6nderiler");
         table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
@@ -6029,13 +6061,13 @@ public final class L10nTranslations {
                 "Anahtarlar\u0131n\u0131 bir dosyaya kaydet. Duraklatma ve Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc dahil edilmez, s\u00fcr\u00fcm denetimi de edilmez.");
         table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "Kaydedilen %1$d. Ba\u015far\u0131s\u0131z %2$d. Atlanan %3$d.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Saved to %1$s",
                 "\u015euraya kaydedildi: %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "Threads'tekinden d\u00fc\u015f\u00fck kalitede kaydedildi: %1$s");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "Galeriye kaydedildi");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -6152,13 +6184,13 @@ public final class L10nTranslations {
                 "Videolar\u0131 dokunarak oynat");
         table.put("Tap to see which.",
                 "Hangileri oldu\u011funu g\u00f6rmek i\u00e7in dokun.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("That file is too large to be a font. Nothing was changed.",
                 "Bu dosya bir yaz\u0131 tipi olamayacak kadar b\u00fcy\u00fck. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Bu dosya bir ayar dosyas\u0131 olamayacak kadar b\u00fcy\u00fck. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -6275,13 +6307,13 @@ public final class L10nTranslations {
                 "Ak\u0131\u015ftaki videolar, kayd\u0131r\u0131rken kendili\u011finden oynamak yerine dokunman\u0131 bekler.");
         table.put("Where you left off in your feed",
                 "Ak\u0131\u015fta kald\u0131\u011f\u0131n yer");
+    }
+
+    private static void fillTr6(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "Yukar\u0131daki anahtar a\u00e7\u0131kken ne kadar uzun s\u00fcre uzakta kal\u0131rsan kal yerin korunur. Yenilemek i\u00e7in \u00e7ekmek ve uygulamay\u0131 yeniden ba\u015flatmak yine yeni g\u00f6nderileri y\u00fckler.");
         table.put("You have the newest HushThreads release.",
                 "En yeni HushThreads s\u00fcr\u00fcm\u00fcn\u00fc kullan\u0131yorsun.");
-    }
-
-    private static void fillTr6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "HushThreads'u duraklatt\u0131n.");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",
@@ -6311,7 +6343,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildZh_rTW() {
-        Map<String, String> table = new HashMap<>(746);
+        Map<String, String> table = new HashMap<>(750);
         fillZh_rTW0(table);
         fillZh_rTW1(table);
         fillZh_rTW2(table);
@@ -6591,6 +6623,8 @@ public final class L10nTranslations {
                 "\u96b1\u85cf\u63a8\u85a6\u8cbc\u6587\u4e32");
         table.put("Hide suggested users",
                 "\u96b1\u85cf\u5efa\u8b70\u8ffd\u8e64\u7684\u7528\u6236");
+        table.put("Hide the Create group button",
+                "\u96b1\u85cf\u300c\u5efa\u7acb\u7fa4\u7d44\u300d\u6309\u9215");
         table.put("Hide the Instagram button",
                 "\u96b1\u85cf Instagram \u6309\u9215");
         table.put("Hide the like button",
@@ -6687,11 +6721,11 @@ public final class L10nTranslations {
                 "\u672a\u5132\u5b58\uff1a\u6a94\u6848\u8d85\u904e 512 MB");
         table.put("Not saved: the proxy wants a password. Try another network.",
                 "\u672a\u5132\u5b58\uff1a\u4ee3\u7406\u4f3a\u670d\u5668\u8981\u6c42\u5bc6\u78bc\u3002\u8acb\u5617\u8a66\u5176\u4ed6\u7db2\u8def\u3002");
-        table.put("OK",
-                "\u78ba\u5b9a");
     }
 
     private static void fillZh_rTW3(Map<String, String> table) {
+        table.put("OK",
+                "\u78ba\u5b9a");
         table.put("Once a day, when Threads starts, checks GitHub for a newer HushThreads and tells you here. Nothing is downloaded.",
                 "\u6bcf\u5929\u5728 Threads \u555f\u52d5\u6642\u6aa2\u67e5 GitHub \u662f\u5426\u6709\u8f03\u65b0\u7684 HushThreads\uff0c\u4e26\u5728\u6b64\u901a\u77e5\u4f60\u3002\u4e0d\u6703\u4e0b\u8f09\u4efb\u4f55\u5167\u5bb9\u3002");
         table.put("One pattern a line, or separated by commas. A shop's domain such as shopee.vn takes out the replies linking to it.",
@@ -6726,6 +6760,8 @@ public final class L10nTranslations {
                 "\u4f60\u5f9e\u8cbc\u6587\u5132\u5b58\u7684\u76f8\u7247\u8207\u5f71\u7247");
         table.put("Photos load at the largest size Threads has, not one picked for your screen. They look sharper and use more data.",
                 "\u76f8\u7247\u6703\u4ee5 Threads \u63d0\u4f9b\u7684\u6700\u5927\u5c3a\u5bf8\u8f09\u5165\uff0c\u800c\u975e\u4f9d\u87a2\u5e55\u9078\u64c7\u7684\u5c3a\u5bf8\u3002\u756b\u9762\u6703\u66f4\u6e05\u6670\uff0c\u4f46\u6703\u4f7f\u7528\u66f4\u591a\u6d41\u91cf\u3002");
+        table.put("Picking two people or more on the share sheet only offers Send separately, without Create group. You can still start a group from your messages.",
+                "\u5728\u5206\u4eab\u9762\u677f\u9078\u53d6\u5169\u4eba\u4ee5\u4e0a\u6642\uff0c\u53ea\u6703\u986f\u793a\u300c\u500b\u5225\u767c\u9001\u300d\uff0c\u4e0d\u6703\u51fa\u73fe\u300c\u5efa\u7acb\u7fa4\u7d44\u300d\u3002\u4f60\u4ecd\u7136\u53ef\u4ee5\u5f9e\u8a0a\u606f\u4e2d\u5efa\u7acb\u7fa4\u7d44\u3002");
         table.put("Posts",
                 "\u8cbc\u6587");
         table.put("Posts and replies show the date and time they went up instead of 3h or 2d, in your phone's 12 or 24-hour format.",
@@ -6808,13 +6844,13 @@ public final class L10nTranslations {
                 "\u5c07\u4f60\u7684\u958b\u95dc\u5132\u5b58\u81f3\u6a94\u6848\u3002\u4e0d\u6703\u5305\u542b\u300c\u66ab\u505c\u300d\u3001\u300c\u5075\u932f\u8a18\u9304\u300d\u53ca\u7248\u672c\u6aa2\u67e5\u3002");
         table.put("Saved %1$d. Failed %2$d. Skipped %3$d.",
                 "\u5df2\u5132\u5b58 %1$d \u500b\u3001\u5931\u6557 %2$d \u500b\u3001\u7565\u904e %3$d \u500b\u3002");
+    }
+
+    private static void fillZh_rTW4(Map<String, String> table) {
         table.put("Saved to %1$s",
                 "\u5df2\u5132\u5b58\u81f3 %1$s");
         table.put("Saved to %1$s in lower quality than on Threads",
                 "\u5df2\u5132\u5b58\u81f3 %1$s\uff0c\u756b\u8cea\u4f4e\u65bc Threads");
-    }
-
-    private static void fillZh_rTW4(Map<String, String> table) {
         table.put("Saved to the gallery",
                 "\u5df2\u5132\u5b58\u81f3\u5716\u5eab");
         table.put("Saved to the gallery in lower quality than on Threads",
@@ -6931,13 +6967,13 @@ public final class L10nTranslations {
                 "\u8f15\u89f8\u64ad\u653e\u5f71\u7247");
         table.put("Tap to see which.",
                 "\u8f15\u89f8\u4ee5\u67e5\u770b\u9805\u76ee\u3002");
+    }
+
+    private static void fillZh_rTW5(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "\u8f15\u89f8\u4ee5\u91cd\u65b0\u555f\u7528\u3002");
         table.put("That file is too large to be a font. Nothing was changed.",
                 "\u8a72\u6a94\u6848\u592a\u5927\uff0c\u4e0d\u53ef\u80fd\u662f\u5b57\u578b\u6a94\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
-    }
-
-    private static void fillZh_rTW5(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "\u8a72\u6a94\u6848\u592a\u5927\uff0c\u7121\u6cd5\u4f5c\u70ba\u8a2d\u5b9a\u6a94\u3002\u672a\u8b8a\u66f4\u4efb\u4f55\u9805\u76ee\u3002");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -7054,13 +7090,13 @@ public final class L10nTranslations {
                 "\u52d5\u614b\u6d88\u606f\u4e2d\u7684\u5f71\u7247\u6703\u7b49\u5f85\u4f60\u8f15\u89f8\uff0c\u4e0d\u6703\u5728\u6372\u52d5\u6642\u81ea\u52d5\u64ad\u653e\u3002");
         table.put("Where you left off in your feed",
                 "\u52d5\u614b\u6d88\u606f\u4e2d\u4e0a\u6b21\u700f\u89bd\u7684\u4f4d\u7f6e");
+    }
+
+    private static void fillZh_rTW6(Map<String, String> table) {
         table.put("With the switch above on, your place stays however long you're away. Pull to refresh and a fresh start still load new posts.",
                 "\u958b\u555f\u4e0a\u65b9\u958b\u95dc\u5f8c\uff0c\u7121\u8ad6\u96e2\u958b\u591a\u4e45\u90fd\u6703\u4fdd\u7559\u539f\u672c\u4f4d\u7f6e\u3002\u4e0b\u62c9\u91cd\u65b0\u6574\u7406\u8207\u91cd\u65b0\u555f\u52d5\u4ecd\u6703\u8f09\u5165\u65b0\u8cbc\u6587\u3002");
         table.put("You have the newest HushThreads release.",
                 "\u4f60\u6b63\u5728\u4f7f\u7528\u6700\u65b0\u7684 HushThreads \u7248\u672c\u3002");
-    }
-
-    private static void fillZh_rTW6(Map<String, String> table) {
         table.put("You paused HushThreads.",
                 "\u4f60\u5df2\u66ab\u505c HushThreads\u3002");
         table.put("Your Instagram is signed by Meta, and it only opens Threads posts and profiles in a Threads signed by Meta. Tapping one in Instagram shows an error saying it couldn't load the website. Posts you open in Threads itself work as usual. Patch Instagram with HushGram, signed with the same key as HushThreads, and it opens them here.",

@@ -437,6 +437,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
 
         if (build.contains(PatchFamily.PURE_BLACK) || build.contains(PatchFamily.HEADER_LOGO)
                 || build.contains(PatchFamily.CUSTOM_FONT) || build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)
+                || build.contains(PatchFamily.HIDE_CREATE_GROUP_BUTTON)
                 || build.contains(PatchFamily.HIDE_GHOST_POST_BUBBLES)
                 || build.contains(PatchFamily.FULL_SIZE_PROFILE_PICTURES)) {
             PreferenceCategory appearance = category(screen, L10n.t("Appearance"));
@@ -462,6 +463,13 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
                 appearance.addPreference(toggle(context, Settings.HIDE_INSTAGRAM_BUTTON, L10n.t("Hide the Instagram button"),
                         L10n.t("Takes the Instagram button off the top of profiles, yours and other people's. "
                             + "Restart Threads to see the change.")));
+            }
+            if (build.contains(PatchFamily.HIDE_CREATE_GROUP_BUTTON)) {
+                // Read each time the share sheet draws its bar, so no restart line.
+                appearance.addPreference(toggle(context, Settings.HIDE_CREATE_GROUP_BUTTON,
+                        L10n.t("Hide the Create group button"),
+                        L10n.t("Picking two people or more on the share sheet only offers Send separately, "
+                            + "without Create group. You can still start a group from your messages.")));
             }
             if (build.contains(PatchFamily.HIDE_GHOST_POST_BUBBLES)) {
                 appearance.addPreference(toggle(context, Settings.HIDE_GHOST_POST_BUBBLES, L10n.t("Hide ghost post bubbles"),
@@ -1203,6 +1211,7 @@ public final class HushThreadsPreferenceFragment extends AbstractPreferenceFragm
         else if (setting == Settings.HEADER_LOGO) icon = SettingsIcons.APPEARANCE;
         else if (setting == Settings.CUSTOM_FONT) icon = SettingsIcons.APPEARANCE;
         else if (setting == Settings.HIDE_INSTAGRAM_BUTTON) icon = SettingsIcons.CAMERA;
+        else if (setting == Settings.HIDE_CREATE_GROUP_BUTTON) icon = SettingsIcons.SHARE;
         else if (setting == Settings.HIDE_GHOST_POST_BUBBLES) icon = SettingsIcons.CHAT;
         else if (setting == Settings.FULL_SIZE_PROFILE_PICTURES) icon = SettingsIcons.PERSON;
         else if (setting == Settings.COPY_TEXT) icon = SettingsIcons.CHAT;

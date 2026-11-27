@@ -34,6 +34,7 @@ public final class FamilyNames {
     public static final String HEADER_LOGO = "HushThreads header logo";
     public static final String CUSTOM_FONT = "Custom font";
     public static final String HIDE_INSTAGRAM_BUTTON = "Hide the Instagram button";
+    public static final String HIDE_CREATE_GROUP_BUTTON = "Hide the Create group button";
     public static final String HIDE_GHOST_POST_BUBBLES = "Hide ghost post bubbles";
     public static final String HIDE_POST_BUTTONS = "Hide post buttons";
     public static final String FULL_SIZE_PROFILE_PICTURES = "Full size profile pictures";

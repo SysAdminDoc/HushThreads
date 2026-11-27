@@ -156,6 +156,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushthreads_hide_instagram_button", FALSE, true);
 
     /**
+     * The share sheet's Create group button isn't drawn when two people or more are picked, so
+     * only Send separately is left ({@link app.morphe.extension.hushthreads.share.CreateGroupButton}).
+     * Threads draws the bar again each time the sheet changes, so no restart is needed.
+     */
+    public static final BooleanSetting HIDE_CREATE_GROUP_BUTTON =
+            new BooleanSetting("hushthreads_hide_create_group_button", FALSE);
+
+    /**
      * The ghost post bubbles on profile pictures aren't drawn, the one on a profile's header and
      * the row of them at the top of the feed
      * ({@link app.morphe.extension.hushthreads.profile.GhostPostBubbles}). Threads keeps what it

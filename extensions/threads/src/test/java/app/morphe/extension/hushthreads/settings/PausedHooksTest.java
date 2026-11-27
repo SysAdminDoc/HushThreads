@@ -54,6 +54,7 @@ import app.morphe.extension.hushthreads.profile.InstagramButton;
 import app.morphe.extension.hushthreads.profile.ProfilePictureForTests;
 import app.morphe.extension.hushthreads.profile.ProfileSuggestions;
 import app.morphe.extension.hushthreads.search.SearchSuggestions;
+import app.morphe.extension.hushthreads.share.CreateGroupButton;
 import app.morphe.extension.hushthreads.theme.CustomFontForTests;
 import app.morphe.extension.hushthreads.theme.HeaderLogoForTests;
 import app.morphe.extension.hushthreads.theme.PureBlack;
@@ -195,6 +196,8 @@ public class PausedHooksTest {
         probes.put(PatchFamily.CUSTOM_FONT, Collections.singletonList(CustomFontForTests::swaps));
         // A profile header Threads would draw with the Instagram button is drawn without it.
         probes.put(PatchFamily.HIDE_INSTAGRAM_BUTTON, Collections.singletonList(() -> !InstagramButton.show(true)));
+        // A share sheet bar Threads would draw with Create group is drawn without it.
+        probes.put(PatchFamily.HIDE_CREATE_GROUP_BUTTON, Collections.singletonList(() -> !CreateGroupButton.show(true)));
         // A ghost post bubble Threads would show, on a profile or in the feed's row, isn't shown.
         probes.put(PatchFamily.HIDE_GHOST_POST_BUBBLES, Arrays.asList(
                 () -> !GhostPostBubbles.showOnProfile(true), () -> !GhostPostBubbles.showTray(true)));
