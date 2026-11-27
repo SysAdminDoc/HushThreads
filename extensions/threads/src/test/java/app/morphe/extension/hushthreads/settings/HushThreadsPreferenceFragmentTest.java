@@ -97,6 +97,7 @@ public class HushThreadsPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HEADER_LOGO, "Use the HushThreads logo");
         ROW_TITLES.put(PatchFamily.CUSTOM_FONT, "Custom font");
         ROW_TITLES.put(PatchFamily.HIDE_INSTAGRAM_BUTTON, "Hide the Instagram button");
+        ROW_TITLES.put(PatchFamily.HIDE_CREATE_GROUP_BUTTON, "Hide the Create group button");
         ROW_TITLES.put(PatchFamily.HIDE_GHOST_POST_BUBBLES, "Hide ghost post bubbles");
         ROW_TITLES.put(PatchFamily.HIDE_POST_BUTTONS, "Hide the like button");
         ROW_TITLES.put(PatchFamily.FULL_SIZE_PROFILE_PICTURES, "Full size profile pictures");
@@ -223,6 +224,7 @@ public class HushThreadsPreferenceFragmentTest {
                 if (build.contains(PatchFamily.SAVE_MEDIA)) expected.add("Downloads");
                 if (build.contains(PatchFamily.PURE_BLACK) || build.contains(PatchFamily.HEADER_LOGO)
                         || build.contains(PatchFamily.CUSTOM_FONT) || build.contains(PatchFamily.HIDE_INSTAGRAM_BUTTON)
+                        || build.contains(PatchFamily.HIDE_CREATE_GROUP_BUTTON)
                         || build.contains(PatchFamily.HIDE_GHOST_POST_BUBBLES)
                         || build.contains(PatchFamily.FULL_SIZE_PROFILE_PICTURES)) {
                     expected.add("Appearance");
@@ -322,6 +324,12 @@ public class HushThreadsPreferenceFragmentTest {
             assertEquals("Takes the Instagram button off the top of profiles, yours and other people's. "
                 + "Restart Threads to see the change.",
                     String.valueOf(page.findPreference(Settings.HIDE_INSTAGRAM_BUTTON.key).getSummary()));
+            // Read each time the share sheet draws its bar, so its summary carries no restart line.
+            assertEquals("Hide the Create group button",
+                    String.valueOf(page.findPreference(Settings.HIDE_CREATE_GROUP_BUTTON.key).getTitle()));
+            assertEquals("Picking two people or more on the share sheet only offers Send separately, "
+                + "without Create group. You can still start a group from your messages.",
+                    String.valueOf(page.findPreference(Settings.HIDE_CREATE_GROUP_BUTTON.key).getSummary()));
             assertEquals("Hide ghost post bubbles", String.valueOf(page.findPreference(Settings.HIDE_GHOST_POST_BUBBLES.key).getTitle()));
             assertEquals("Takes the ghost post bubbles off profile pictures, on profiles and in the row at the top "
                 + "of your feed. Restart Threads to see the change.",
@@ -369,12 +377,14 @@ public class HushThreadsPreferenceFragmentTest {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             // The ones that joined it later start off, so a default build looks like Threads, and so
-            // do Hide the Instagram button, Hide ghost post bubbles, Disable swipe to Search, Show
-            // exact post times, Full size profile pictures and the post buttons, which came after.
+            // do Hide the Instagram button, Hide the Create group button, Hide ghost post bubbles,
+            // Disable swipe to Search, Show exact post times, Full size profile pictures and the post
+            // buttons, which came after.
             for (BooleanSetting setting : Arrays.asList(Settings.BLOCK_RETURN_REFRESH, Settings.DISABLE_VIDEO_AUTOPLAY,
                     Settings.MAX_IMAGE_QUALITY, Settings.DISABLE_SCREENSHOT_DETECTION, Settings.SPOOF_SIM_REGION,
                     Settings.PURE_BLACK, Settings.HEADER_LOGO, Settings.CUSTOM_FONT,
-                    Settings.HIDE_INSTAGRAM_BUTTON, Settings.HIDE_GHOST_POST_BUBBLES, Settings.DISABLE_SWIPE_TO_SEARCH,
+                    Settings.HIDE_INSTAGRAM_BUTTON, Settings.HIDE_CREATE_GROUP_BUTTON, Settings.HIDE_GHOST_POST_BUBBLES,
+                    Settings.DISABLE_SWIPE_TO_SEARCH,
                     Settings.EXACT_POST_TIMES, Settings.FULL_SIZE_PROFILE_PICTURES, Settings.HIDE_LIKE_BUTTON,
                     Settings.HIDE_REPLY_BUTTON, Settings.HIDE_REPOST_BUTTON, Settings.HIDE_SHARE_BUTTON,
                     Settings.HIDE_SAVE_BUTTON)) {

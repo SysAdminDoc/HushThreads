@@ -90,6 +90,10 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean hideCreateGroupButton() {
+        return false;
+    }
+
     public static boolean hideGhostPostBubbles() {
         return false;
     }

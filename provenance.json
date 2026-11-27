@@ -367,6 +367,17 @@
     },
     {
       "paths": [
+        "extensions/threads/src/main/java/app/morphe/extension/hushthreads/share/CreateGroupButton.java",
+        "patches/src/main/kotlin/app/morphe/patches/threads/share/**"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushThreads",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Hide the Create group button: the share sheet's bottom bar asks the extension for its Create group flag right where Threads checks it, after the send button tagged post_share_sheet_send_button is drawn, and the check Threads already has skips the button while the switch is on. Found by reading 457. The idea comes from HushGram's share sheet group buttons; no code was taken from it."
+    },
+    {
+      "paths": [
         "extensions/threads/src/main/java/app/morphe/extension/hushthreads/feed/SwipeToSearch.java",
         "patches/src/main/kotlin/app/morphe/patches/threads/feed/swipesearch/DisableSwipeToSearchPatch.kt"
       ],

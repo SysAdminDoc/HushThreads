@@ -69,6 +69,8 @@ public enum PatchFamily {
             Settings.CUSTOM_FONT),
     HIDE_INSTAGRAM_BUTTON(FamilyNames.HIDE_INSTAGRAM_BUTTON, "hideInstagramButton", null,
             Settings.HIDE_INSTAGRAM_BUTTON),
+    HIDE_CREATE_GROUP_BUTTON(FamilyNames.HIDE_CREATE_GROUP_BUTTON, "hideCreateGroupButton", null,
+            Settings.HIDE_CREATE_GROUP_BUTTON),
     HIDE_GHOST_POST_BUBBLES(FamilyNames.HIDE_GHOST_POST_BUBBLES, "hideGhostPostBubbles", null,
             Settings.HIDE_GHOST_POST_BUBBLES),
     HIDE_POST_BUTTONS(FamilyNames.HIDE_POST_BUTTONS, "hidePostButtons", null,
